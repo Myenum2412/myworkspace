@@ -1,1 +1,1 @@
-export { default } from "./addprojects-interactive.client"
+export { default } from "./addprojects-interactive.client";

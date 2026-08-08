@@ -1,7 +1,13 @@
 import NodeCache from "node-cache";
-import { valkeyGet, valkeySet, valkeyDel, isValkeyConnected, valkeyDelByPattern } from "./valkey.js";
 import { logger } from "./logger/index.js";
 import { metricsRegistry } from "./monitoring/index.js";
+import {
+  isValkeyConnected,
+  valkeyDel,
+  valkeyDelByPattern,
+  valkeyGet,
+  valkeySet,
+} from "./valkey.js";
 
 const env = {
   CACHE_TTL: parseInt(process.env.CACHE_TTL || "300", 10),
@@ -168,7 +174,11 @@ export class CacheManager {
 
 export const cacheManager = new CacheManager();
 
-export async function getOrSet<T>(key: string, factory: () => Promise<T>, ttlMs?: number): Promise<T> {
+export async function getOrSet<T>(
+  key: string,
+  factory: () => Promise<T>,
+  ttlMs?: number,
+): Promise<T> {
   const ttlSec = ttlMs !== undefined ? Math.ceil(ttlMs / 1000) : 30;
   return cacheManager.getOrSet(key, factory, ttlSec);
 }

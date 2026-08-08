@@ -1,15 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Grid } from "@/components/charts/grid";
 import { LineChart } from "@/components/charts/line-chart";
-import { ProfitLossLine } from "@/components/charts/profit-loss-line";
 import { ProfitLossLegend } from "@/components/charts/profit-loss-legend";
 import { ProfitLossLegendHoverProvider } from "@/components/charts/profit-loss-legend-hover";
+import { ProfitLossLine } from "@/components/charts/profit-loss-line";
 import { ChartTooltip, type TooltipRow } from "@/components/charts/tooltip";
-import { Grid } from "@/components/charts/grid";
 import { XAxis } from "@/components/charts/x-axis";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export type ProfitLossRow = {
@@ -37,9 +37,21 @@ const currencyFmt = new Intl.NumberFormat("en-US", {
 function costToRows(point: Record<string, unknown>): TooltipRow[] {
   const profit = point.profit as number;
   return [
-    { label: "Revenue", value: currencyFmt.format(point.revenue as number), color: "var(--color-emerald-500)" },
-    { label: "Expenses", value: currencyFmt.format(point.expenses as number), color: "var(--color-red-500)" },
-    { label: "Profit", value: currencyFmt.format(profit), color: profit >= 0 ? "var(--color-emerald-500)" : "var(--color-red-500)" },
+    {
+      label: "Revenue",
+      value: currencyFmt.format(point.revenue as number),
+      color: "var(--color-emerald-500)",
+    },
+    {
+      label: "Expenses",
+      value: currencyFmt.format(point.expenses as number),
+      color: "var(--color-red-500)",
+    },
+    {
+      label: "Profit",
+      value: currencyFmt.format(profit),
+      color: profit >= 0 ? "var(--color-emerald-500)" : "var(--color-red-500)",
+    },
   ];
 }
 
@@ -54,7 +66,7 @@ export function ProfitLossChart({ data, className }: Props) {
         revenue: d.revenue,
         expenses: d.expenses,
       })),
-    [data]
+    [data],
   );
 
   if (data.length === 0) {

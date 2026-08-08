@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   }
 
   try {
-    const result = await db.collection(collections.timeEntries).deleteOne({ id, userId: session.user.id });
+    const result = await db
+      .collection(collections.timeEntries)
+      .deleteOne({ id, userId: session.user.id });
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }

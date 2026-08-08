@@ -1,11 +1,11 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ShieldAlertIcon, HomeIcon } from "@/lib/icons";
-import Link from "next/link";
+import { HomeIcon, ShieldAlertIcon } from "@/lib/icons";
 
 export default function OrgLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -37,8 +37,8 @@ export default function OrgLayout({ children }: { children: React.ReactNode }) {
             <ShieldAlertIcon className="size-12 text-destructive mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
             <p className="text-muted-foreground">
-              You do not have permission to access this area.
-              This section is restricted to the authorized administrator.
+              You do not have permission to access this area. This section is restricted to the
+              authorized administrator.
             </p>
             <Link
               href="/dashboard"

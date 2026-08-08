@@ -1,18 +1,18 @@
-"use client"
+"use client";
+import type { TerminatedEmployee } from "@/app/employees/columns";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { UserX, Calendar, User, Mail, Briefcase, Building2, FileText, Tag } from "@/lib/icons";
-import type { TerminatedEmployee } from "@/app/employees/columns";
+import { Briefcase, Building2, Calendar, FileText, Mail, Tag, User, UserX } from "@/lib/icons";
 
 type TerminatedViewDialogProps = {
   employee: TerminatedEmployee | null;
@@ -20,14 +20,30 @@ type TerminatedViewDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
-function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: string }>; label: string; value?: string | number | null }) {
+function Field({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon?: React.FC<{ className?: string }>;
+  label: string;
+  value?: string | number | null;
+}) {
   return (
     <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
       {Icon && <Icon className="size-4 text-muted-foreground shrink-0 mt-0.5" />}
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          {label}
+        </p>
         <p className="text-sm font-medium mt-0.5 break-words">{value ?? "\u2014"}</p>
       </div>
     </div>
@@ -37,10 +53,10 @@ function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: str
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {children}
-      </div>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {title}
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{children}</div>
     </div>
   );
 }
@@ -62,7 +78,9 @@ export function TerminatedViewDialog({ employee, open, onOpenChange }: Terminate
               <DialogDescription className="mt-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm text-muted-foreground">{employee.email}</span>
-                  <Badge variant="outline" className="capitalize">{employee.role}</Badge>
+                  <Badge variant="outline" className="capitalize">
+                    {employee.role}
+                  </Badge>
                 </div>
               </DialogDescription>
             </div>
@@ -72,9 +90,16 @@ export function TerminatedViewDialog({ employee, open, onOpenChange }: Terminate
 
         <div className="flex-1 px-6 py-4 overflow-y-auto">
           <div className="space-y-6 pb-4">
-
             <Section title="Termination Details">
-              <Field icon={Calendar} label="Termination Date" value={employee.terminateDate ? new Date(employee.terminateDate).toLocaleDateString() : null} />
+              <Field
+                icon={Calendar}
+                label="Termination Date"
+                value={
+                  employee.terminateDate
+                    ? new Date(employee.terminateDate).toLocaleDateString()
+                    : null
+                }
+              />
               <div className="sm:col-span-2">
                 <Field icon={FileText} label="Reason" value={employee.terminateReason} />
               </div>
@@ -88,7 +113,13 @@ export function TerminatedViewDialog({ employee, open, onOpenChange }: Terminate
               <Field icon={Tag} label="Employment Type" value={employee.employmentType} />
               <Field icon={User} label="Role" value={employee.role} />
               <Field icon={Building2} label="Branch" value={employee.branchName} />
-              <Field icon={Calendar} label="Joining Date" value={employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString() : null} />
+              <Field
+                icon={Calendar}
+                label="Joining Date"
+                value={
+                  employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString() : null
+                }
+              />
               <Field icon={Tag} label="Location" value={employee.location} />
               <Field icon={Tag} label="Shift" value={employee.shift} />
             </Section>
@@ -105,12 +136,13 @@ export function TerminatedViewDialog({ employee, open, onOpenChange }: Terminate
               <Field icon={User} label="Country" value={employee.country} />
               <Field icon={User} label="Postal Code" value={employee.zipCode} />
             </Section>
-
           </div>
         </div>
 
         <DialogFooter className="shrink-0 border-t px-6 py-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

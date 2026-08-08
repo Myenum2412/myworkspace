@@ -1,29 +1,50 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import {
-  CopyIcon,
-  CheckIcon,
-  DownloadIcon,
-  WrapTextIcon,
-  SearchIcon,
-  XIcon,
-} from "@/lib/icons";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getFileExtension } from "@/lib/file-system/types";
+import { CheckIcon, CopyIcon, DownloadIcon, SearchIcon, WrapTextIcon, XIcon } from "@/lib/icons";
 
 const extToLang: Record<string, string> = {
-  js: "javascript", ts: "typescript", jsx: "javascript", tsx: "typescript",
-  py: "python", rb: "ruby", go: "go", rs: "rust", java: "java",
-  c: "c", cpp: "cpp", h: "c", cs: "csharp",
-  php: "php", swift: "swift", kt: "kotlin", scala: "scala",
-  html: "html", css: "css", scss: "scss", less: "less",
-  json: "json", xml: "xml", yaml: "yaml", yml: "yaml",
-  md: "markdown", sql: "sql", sh: "bash", bash: "bash",
-  bat: "batch", ps1: "powershell",
-  txt: "text", log: "text", cfg: "ini", ini: "ini", env: "env",
-  dockerfile: "dockerfile", toml: "toml",
+  js: "javascript",
+  ts: "typescript",
+  jsx: "javascript",
+  tsx: "typescript",
+  py: "python",
+  rb: "ruby",
+  go: "go",
+  rs: "rust",
+  java: "java",
+  c: "c",
+  cpp: "cpp",
+  h: "c",
+  cs: "csharp",
+  php: "php",
+  swift: "swift",
+  kt: "kotlin",
+  scala: "scala",
+  html: "html",
+  css: "css",
+  scss: "scss",
+  less: "less",
+  json: "json",
+  xml: "xml",
+  yaml: "yaml",
+  yml: "yaml",
+  md: "markdown",
+  sql: "sql",
+  sh: "bash",
+  bash: "bash",
+  bat: "batch",
+  ps1: "powershell",
+  txt: "text",
+  log: "text",
+  cfg: "ini",
+  ini: "ini",
+  env: "env",
+  dockerfile: "dockerfile",
+  toml: "toml",
 };
 
 function detectLanguage(filename: string): string {
@@ -84,10 +105,13 @@ export function CodeViewer({ src, fileName }: CodeViewerProps) {
   }, [search, content]);
 
   const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(content).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {});
+    navigator.clipboard
+      .writeText(content)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {});
   }, [content]);
 
   const lines = content.split("\n");
@@ -100,9 +124,13 @@ export function CodeViewer({ src, fileName }: CodeViewerProps) {
     const regex = new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
     const parts = line.split(regex);
     return parts.map((part, i) =>
-      regex.test(part)
-        ? <mark key={i} className="bg-yellow-300/40 dark:bg-yellow-500/30 rounded-sm px-0.5">{part}</mark>
-        : part,
+      regex.test(part) ? (
+        <mark key={i} className="bg-yellow-300/40 dark:bg-yellow-500/30 rounded-sm px-0.5">
+          {part}
+        </mark>
+      ) : (
+        part
+      ),
     );
   };
 
@@ -133,16 +161,30 @@ export function CodeViewer({ src, fileName }: CodeViewerProps) {
           <span className="text-xs text-muted-foreground">{lines.length} lines</span>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="p-0" onClick={() => setShowSearch(!showSearch)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-0"
+            onClick={() => setShowSearch(!showSearch)}
+          >
             <SearchIcon className="size-3.5" />
           </Button>
           <Button variant="ghost" size="sm" className="p-0" onClick={() => setWordWrap(!wordWrap)}>
             <WrapTextIcon className="size-3.5" />
           </Button>
           <Button variant="ghost" size="sm" className="p-0" onClick={handleCopy}>
-            {copied ? <CheckIcon className="size-3.5 text-green-500" /> : <CopyIcon className="size-3.5" />}
+            {copied ? (
+              <CheckIcon className="size-3.5 text-green-500" />
+            ) : (
+              <CopyIcon className="size-3.5" />
+            )}
           </Button>
-          <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(src, "_blank")}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-0"
+            onClick={() => window.open(src, "_blank")}
+          >
             <DownloadIcon className="size-3.5" />
           </Button>
         </div>
@@ -174,12 +216,23 @@ export function CodeViewer({ src, fileName }: CodeViewerProps) {
             {lines.map((line, i) => (
               <tr
                 key={i}
-                className={`hover:bg-accent/30 ${ searchMatches.length > 0 && searchMatches.some((m) => { const lineStart = content.split("\n").slice(0, i).join("\n").length + (i > 0 ? 1 : 0); return m >= lineStart && m < lineStart + line.length + 1; }) ? "bg-yellow-300/10" : "" }`}
+                className={`hover:bg-accent/30 ${
+                  searchMatches.length > 0 &&
+                  searchMatches.some((m) => {
+                    const lineStart =
+                      content.split("\n").slice(0, i).join("\n").length + (i > 0 ? 1 : 0);
+                    return m >= lineStart && m < lineStart + line.length + 1;
+                  })
+                    ? "bg-yellow-300/10"
+                    : ""
+                }`}
               >
                 <td className="px-3 py-0 text-right text-muted-foreground/50 select-none w-12 border-r border-border align-top">
                   <span className="text-[11px] leading-5">{i + 1}</span>
                 </td>
-                <td className={`px-4 py-0 leading-5 ${wordWrap ? "whitespace-pre-wrap" : "whitespace-pre"}`}>
+                <td
+                  className={`px-4 py-0 leading-5 ${wordWrap ? "whitespace-pre-wrap" : "whitespace-pre"}`}
+                >
                   {highlightLine(line) || " "}
                 </td>
               </tr>

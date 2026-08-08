@@ -1,6 +1,6 @@
 "use client";
 
-import { openDB, type IDBPDatabase } from "idb";
+import { type IDBPDatabase, openDB } from "idb";
 
 const DB_NAME = "myworkspace-sync-engine";
 const DB_VERSION = 2;
@@ -102,10 +102,16 @@ async function getEncryptionKey(): Promise<CryptoKey> {
   const db = await getDb();
   const meta = await db.get(STORES.metadata, "encryptionKey");
   if (meta?.value) {
-    return await crypto.subtle.importKey("raw", meta.value, "AES-GCM", false, ["encrypt", "decrypt"]);
+    return await crypto.subtle.importKey("raw", meta.value, "AES-GCM", false, [
+      "encrypt",
+      "decrypt",
+    ]);
   }
 
-  const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+  const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
+    "encrypt",
+    "decrypt",
+  ]);
   const raw = await crypto.subtle.exportKey("raw", key);
   await db.put(STORES.metadata, { key: "encryptionKey", value: Array.from(new Uint8Array(raw)) });
   return key;
@@ -136,7 +142,10 @@ export async function saveRecord(
 ): Promise<void> {
   const db = await getDb();
   const checksum = await calculateChecksum(data);
-  const existing = await db.getFromIndex(STORES.records, "collection_doc", [collection, documentId]);
+  const existing = await db.getFromIndex(STORES.records, "collection_doc", [
+    collection,
+    documentId,
+  ]);
 
   const record: SyncRecord = {
     ...(existing || {}),

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusCircleIcon, Search, X, Trash2, Pencil, Loader2 } from "@/lib/icons";
-import Link from "next/link";
+import { Loader2, Pencil, PlusCircleIcon, Search, Trash2, X } from "@/lib/icons";
 
 interface Service {
   id: string;
@@ -43,9 +43,10 @@ export default function BillingServicesPage() {
   }
 
   const toggleSelectItem = (id: string) => {
-    setSelectedItems(prev => {
+    setSelectedItems((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -54,7 +55,7 @@ export default function BillingServicesPage() {
     if (selectedItems.size === filtered.length) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(filtered.map(s => s.id)));
+      setSelectedItems(new Set(filtered.map((s) => s.id)));
     }
   };
 
@@ -68,7 +69,7 @@ export default function BillingServicesPage() {
         body: JSON.stringify({ ids: Array.from(selectedItems) }),
       });
       if (res.ok) {
-        setServices(prev => prev.filter(s => !selectedItems.has(s.id)));
+        setServices((prev) => prev.filter((s) => !selectedItems.has(s.id)));
         setSelectedItems(new Set());
       }
     } catch (error) {
@@ -85,8 +86,12 @@ export default function BillingServicesPage() {
         method: "DELETE",
       });
       if (res.ok) {
-        setServices(prev => prev.filter(s => s.id !== id));
-        setSelectedItems(prev => { const next = new Set(prev); next.delete(id); return next; });
+        setServices((prev) => prev.filter((s) => s.id !== id));
+        setSelectedItems((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
       }
     } catch (error) {
       console.error("Failed to delete service:", error);
@@ -95,10 +100,11 @@ export default function BillingServicesPage() {
     }
   };
 
-  const filtered = services.filter(s =>
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    s.description.toLowerCase().includes(search.toLowerCase()) ||
-    s.category.toLowerCase().includes(search.toLowerCase())
+  const filtered = services.filter(
+    (s) =>
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.description.toLowerCase().includes(search.toLowerCase()) ||
+      s.category.toLowerCase().includes(search.toLowerCase()),
   );
 
   if (loading) {
@@ -139,7 +145,10 @@ export default function BillingServicesPage() {
             className="pl-9 h-9"
           />
           {search && (
-            <X className="size-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" onClick={() => setSearch("")} />
+            <X
+              className="size-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
+              onClick={() => setSearch("")}
+            />
           )}
         </div>
       </div>
@@ -150,7 +159,12 @@ export default function BillingServicesPage() {
             <thead className="sticky top-0 z-10">
               <tr>
                 <th className="w-10 px-2">
-                  <input type="checkbox" checked={selectedItems.size === filtered.length && filtered.length > 0} onChange={toggleSelectAll} className="size-4 accent-blue-600" />
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.size === filtered.length && filtered.length > 0}
+                    onChange={toggleSelectAll}
+                    className="size-4 accent-blue-600"
+                  />
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
                   <span className="text-black">Name</span>
@@ -184,20 +198,38 @@ export default function BillingServicesPage() {
                 </tr>
               ) : (
                 filtered.map((service) => (
-                  <tr key={service.id} className="border-b border-gray-200 bg-white hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={service.id}
+                    className="border-b border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                  >
                     <td className="px-2 align-middle">
-                      <input type="checkbox" checked={selectedItems.has(service.id)} onChange={() => toggleSelectItem(service.id)} className="size-4 accent-blue-600" />
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.has(service.id)}
+                        onChange={() => toggleSelectItem(service.id)}
+                        className="size-4 accent-blue-600"
+                      />
                     </td>
-                    <td className="px-4 py-3 align-middle font-medium text-gray-900">{service.name}</td>
+                    <td className="px-4 py-3 align-middle font-medium text-gray-900">
+                      {service.name}
+                    </td>
                     <td className="px-4 py-3 align-middle text-gray-500">{service.category}</td>
-                    <td className="px-4 py-3 align-middle text-gray-500 max-w-[200px] truncate">{service.description}</td>
-                    <td className="px-4 py-3 align-middle text-right text-gray-700">${service.rate.toFixed(2)}</td>
+                    <td className="px-4 py-3 align-middle text-gray-500 max-w-[200px] truncate">
+                      {service.description}
+                    </td>
+                    <td className="px-4 py-3 align-middle text-right text-gray-700">
+                      ${service.rate.toFixed(2)}
+                    </td>
                     <td className="px-4 py-3 align-middle text-gray-700">{service.unit}</td>
                     <td className="px-4 py-3 align-middle">
                       {service.status === "Active" ? (
-                        <span className="inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Active</span>
+                        <span className="inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                          Active
+                        </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10">Inactive</span>
+                        <span className="inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                          Inactive
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-3 align-middle text-center">

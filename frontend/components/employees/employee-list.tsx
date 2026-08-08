@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import type { Employee } from "@/app/employees/columns";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -12,21 +14,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  UsersIcon,
-  PlusIcon,
-  SearchIcon,
+  ArrowDownIcon,
   ArrowUpDownIcon,
   ArrowUpIcon,
-  ArrowDownIcon,
-  XIcon,
   ChevronLeft,
   ChevronRight,
+  PlusIcon,
+  SearchIcon,
+  UsersIcon,
+  XIcon,
 } from "@/lib/icons";
-import { PageHeader } from "@/components/page-header";
-import type { Employee } from "@/app/employees/columns";
-import type { SortField, SortDir } from "./employee-types";
 import { EmployeeTableRow } from "./employee-table-row";
-
+import type { SortDir, SortField } from "./employee-types";
 
 type EmployeeListProps = {
   filteredCount: number;
@@ -51,11 +50,12 @@ type EmployeeListProps = {
 
 function getSortIcon(field: SortField, sortField: SortField, sortDir: SortDir) {
   if (sortField !== field) return <ArrowUpDownIcon className="size-3.5 text-muted-foreground/40" />;
-  return sortDir === "asc"
-    ? <ArrowUpIcon className="size-3.5 text-foreground" />
-    : <ArrowDownIcon className="size-3.5 text-foreground" />;
+  return sortDir === "asc" ? (
+    <ArrowUpIcon className="size-3.5 text-foreground" />
+  ) : (
+    <ArrowDownIcon className="size-3.5 text-foreground" />
+  );
 }
-
 
 export function EmployeeList({
   filteredCount,
@@ -96,7 +96,8 @@ export function EmployeeList({
     }
   };
 
-  const allSelected = paginatedEmployees.length > 0 && selectedIds.size === paginatedEmployees.length;
+  const allSelected =
+    paginatedEmployees.length > 0 && selectedIds.size === paginatedEmployees.length;
 
   return (
     <>
@@ -145,10 +146,18 @@ export function EmployeeList({
               <thead className="sticky top-0 z-10">
                 <tr>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-10">
-                    <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} aria-label="Select all" className="border-white" />
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all"
+                      className="border-white"
+                    />
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("name")} className="inline-flex items-center gap-1.5 text-white-800 transition-colors">
+                    <button
+                      onClick={() => onSort("name")}
+                      className="inline-flex items-center gap-1.5 text-white-800 transition-colors"
+                    >
                       Employee {getSortIcon("name", sortField, sortDir)}
                     </button>
                   </th>
@@ -156,52 +165,82 @@ export function EmployeeList({
                     <span className="text-gray-800">ID</span>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("email")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                    <button
+                      onClick={() => onSort("email")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
                       Email {getSortIcon("email", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("department")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                    <button
+                      onClick={() => onSort("department")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
                       Department {getSortIcon("department", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("designation")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                    <button
+                      onClick={() => onSort("designation")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
                       Designation {getSortIcon("designation", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("phone")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                    <button
+                      onClick={() => onSort("phone")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
                       Phone {getSortIcon("phone", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("employmentType")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                    <button
+                      onClick={() => onSort("employmentType")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
                       Type {getSortIcon("employmentType", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("branchName")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                    <button
+                      onClick={() => onSort("branchName")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
                       Branch {getSortIcon("branchName", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("location")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                    <button
+                      onClick={() => onSort("location")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
                       Location {getSortIcon("location", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("role")} className="inline-flex items-center gap-1.5 text-white-800  transition-colors">
+                    <button
+                      onClick={() => onSort("role")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
                       Role {getSortIcon("role", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("joiningDate")} className="inline-flex items-center gap-1.5 text-white-800 hover:text-white transition-colors">
+                    <button
+                      onClick={() => onSort("joiningDate")}
+                      className="inline-flex items-center gap-1.5 text-white-800 hover:text-white transition-colors"
+                    >
                       Joined {getSortIcon("joiningDate", sortField, sortDir)}
                     </button>
                   </th>
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => onSort("status")} className="inline-flex items-center gap-1.5 text-white-800 transition-colors">
+                    <button
+                      onClick={() => onSort("status")}
+                      className="inline-flex items-center gap-1.5 text-white-800 transition-colors"
+                    >
                       Status {getSortIcon("status", sortField, sortDir)}
                     </button>
                   </th>
@@ -220,7 +259,9 @@ export function EmployeeList({
                         </div>
                         <div>
                           <p className="text-sm font-medium text-muted-foreground">
-                            {hasActiveFilters ? "No employees match your filters" : "No employees yet"}
+                            {hasActiveFilters
+                              ? "No employees match your filters"
+                              : "No employees yet"}
                           </p>
                           <p className="text-xs text-muted-foreground/60 mt-1">
                             {hasActiveFilters
@@ -258,7 +299,9 @@ export function EmployeeList({
                 {filteredCount} {filteredCount === 1 ? "employee" : "employees"}
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Rows per page:
+                </span>
                 <Select
                   value={String(rowsPerPage)}
                   onValueChange={(value) => onRowsPerPageChange(Number(value))}

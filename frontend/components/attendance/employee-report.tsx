@@ -1,34 +1,34 @@
-"use client"
-import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+"use client";
+import { useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import {
-  SearchIcon,
-  XIcon,
-  Loader2Icon,
-  FileIcon,
+  BriefcaseIcon,
+  CalendarIcon,
   DownloadIcon,
   ExternalLinkIcon,
-  BriefcaseIcon,
+  FileIcon,
   GraduationCapIcon,
-  UsersIcon,
-  PhoneIcon,
+  Loader2Icon,
   MailIcon,
   MapPinIcon,
-  CalendarIcon,
+  PhoneIcon,
+  SearchIcon,
+  UsersIcon,
+  XIcon,
 } from "@/lib/icons";
-import { Separator } from "@/components/ui/separator";
 
 type Employee = Record<string, any>;
 
@@ -37,7 +37,12 @@ type EmployeeReportProps = {
 };
 
 const getInitials = (name: string) =>
-  name?.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "?";
+  name
+    ?.split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || "?";
 
 const statusColors: Record<string, string> = {
   active: "bg-green-50 text-green-700 ring-green-600/20",
@@ -60,12 +65,13 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return employees;
     const q = searchQuery.toLowerCase();
-    return employees.filter((e) =>
-      (e.name as string)?.toLowerCase().includes(q) ||
-      (e.email as string)?.toLowerCase().includes(q) ||
-      (e.displayId as string)?.toLowerCase().includes(q) ||
-      (e.department as string)?.toLowerCase().includes(q) ||
-      (e.designation as string)?.toLowerCase().includes(q)
+    return employees.filter(
+      (e) =>
+        (e.name as string)?.toLowerCase().includes(q) ||
+        (e.email as string)?.toLowerCase().includes(q) ||
+        (e.displayId as string)?.toLowerCase().includes(q) ||
+        (e.department as string)?.toLowerCase().includes(q) ||
+        (e.designation as string)?.toLowerCase().includes(q),
     );
   }, [employees, searchQuery]);
 
@@ -120,7 +126,9 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
     const status = (emp.status as string) || "active";
     const color = statusColors[status] || "bg-gray-100 text-gray-700";
     return (
-      <span className={`inline-flex items-center rounded-2xl px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${color}`}>
+      <span
+        className={`inline-flex items-center rounded-2xl px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${color}`}
+      >
         {status}
       </span>
     );
@@ -137,11 +145,20 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
               <Input
                 placeholder="Search employees..."
                 value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(0);
+                }}
                 className="pl-9 h-9 bg-white"
               />
               {searchQuery && (
-                <button onClick={() => { setSearchQuery(""); setPage(0); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setPage(0);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
                   <XIcon className="size-4" />
                 </button>
               )}
@@ -160,13 +177,21 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                       aria-label="Select all"
                     />
                   </th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Employee</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Employee
+                  </th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">ID</th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Email</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Department</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Designation</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Department
+                  </th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Designation
+                  </th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Role</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Joining Date</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Joining Date
+                  </th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
                 </tr>
               </thead>
@@ -201,7 +226,9 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="font-mono text-xs text-gray-500">{(emp.displayId as string) || "\u2014"}</span>
+                        <span className="font-mono text-xs text-gray-500">
+                          {(emp.displayId as string) || "\u2014"}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-gray-700">{emp.email as string}</span>
@@ -211,10 +238,14 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                           <span className="inline-flex items-center rounded-sm bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-medium">
                             {emp.department as string}
                           </span>
-                        ) : <span className="text-gray-300">\u2014</span>}
+                        ) : (
+                          <span className="text-gray-300">\u2014</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-gray-800">{(emp.designation as string) || "\u2014"}</span>
+                        <span className="text-gray-800">
+                          {(emp.designation as string) || "\u2014"}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center rounded-sm border border-gray-200 text-gray-700 px-2 py-0.5 text-xs font-medium capitalize">
@@ -224,7 +255,11 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                       <td className="px-4 py-3">
                         <span className="text-gray-500 text-xs">
                           {emp.joiningDate
-                            ? new Date(emp.joiningDate as string).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                            ? new Date(emp.joiningDate as string).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
                             : "\u2014"}
                         </span>
                       </td>
@@ -235,12 +270,18 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
               </tbody>
             </table>
           </div>
-
-
         </CardContent>
       </Card>
 
-      <Dialog open={!!selectedEmployee} onOpenChange={(open) => { if (!open) { setSelectedEmployee(null); setEmployeeDetails(null); } }}>
+      <Dialog
+        open={!!selectedEmployee}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedEmployee(null);
+            setEmployeeDetails(null);
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
           {detailsLoading ? (
             <div className="flex items-center justify-center py-16">
@@ -251,15 +292,21 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
               <DialogHeader>
                 <div className="flex items-center gap-4">
                   <Avatar className="size-14">
-                    {employeeDetails.avatar ? <AvatarImage src={employeeDetails.avatar as string} /> : null}
-                    <AvatarFallback className="text-base">{getInitials(employeeDetails.name as string)}</AvatarFallback>
+                    {employeeDetails.avatar ? (
+                      <AvatarImage src={employeeDetails.avatar as string} />
+                    ) : null}
+                    <AvatarFallback className="text-base">
+                      {getInitials(employeeDetails.name as string)}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <DialogTitle className="text-xl">{employeeDetails.name as string}</DialogTitle>
-                  <DialogDescription>
-                    {employeeDetails.displayId ? <span className="font-mono mr-3">#{String(employeeDetails.displayId)}</span> : null}
-                    {String(employeeDetails.email || "")}
-                  </DialogDescription>
+                    <DialogDescription>
+                      {employeeDetails.displayId ? (
+                        <span className="font-mono mr-3">#{String(employeeDetails.displayId)}</span>
+                      ) : null}
+                      {String(employeeDetails.email || "")}
+                    </DialogDescription>
                   </div>
                 </div>
               </DialogHeader>
@@ -267,7 +314,9 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
               <div className="space-y-6 py-4">
                 {/* Basic Information */}
                 <div>
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Basic Information</h3>
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                    Basic Information
+                  </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <FieldDisplay label="First Name" value={employeeDetails.firstName as string} />
                     <FieldDisplay label="Last Name" value={employeeDetails.lastName as string} />
@@ -283,17 +332,40 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <FieldDisplay label="Department" value={employeeDetails.department as string} />
-                    <FieldDisplay label="Designation" value={employeeDetails.designation as string} />
+                    <FieldDisplay
+                      label="Designation"
+                      value={employeeDetails.designation as string}
+                    />
                     <FieldDisplay label="Role" value={employeeDetails.role as string} />
-                    <FieldDisplay label="Employment Type" value={employeeDetails.employmentType as string} />
+                    <FieldDisplay
+                      label="Employment Type"
+                      value={employeeDetails.employmentType as string}
+                    />
                     <FieldDisplay label="Branch" value={employeeDetails.branchName as string} />
                     <FieldDisplay label="Shift" value={employeeDetails.shift as string} />
                     <FieldDisplay label="Location" value={employeeDetails.location as string} />
-                    <FieldDisplay label="Source of Hire" value={employeeDetails.sourceOfHire as string} />
-                    <FieldDisplay label="Current Experience" value={employeeDetails.currentExperience as string} />
-                    <FieldDisplay label="Total Experience" value={employeeDetails.totalExperience as string} />
-                    <FieldDisplay label="Joining Date" value={employeeDetails.joiningDate as string} type="date" />
-                    <FieldDisplay label="Status" value={employeeDetails.status as string} type="badge" />
+                    <FieldDisplay
+                      label="Source of Hire"
+                      value={employeeDetails.sourceOfHire as string}
+                    />
+                    <FieldDisplay
+                      label="Current Experience"
+                      value={employeeDetails.currentExperience as string}
+                    />
+                    <FieldDisplay
+                      label="Total Experience"
+                      value={employeeDetails.totalExperience as string}
+                    />
+                    <FieldDisplay
+                      label="Joining Date"
+                      value={employeeDetails.joiningDate as string}
+                      type="date"
+                    />
+                    <FieldDisplay
+                      label="Status"
+                      value={employeeDetails.status as string}
+                      type="badge"
+                    />
                   </div>
                 </div>
                 <Separator />
@@ -305,7 +377,10 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <FieldDisplay label="Phone" value={employeeDetails.phone as string} />
-                    <FieldDisplay label="Alternate Email" value={employeeDetails.alternateEmail as string} />
+                    <FieldDisplay
+                      label="Alternate Email"
+                      value={employeeDetails.alternateEmail as string}
+                    />
                     <FieldDisplay label="Address" value={employeeDetails.address as string} />
                     <FieldDisplay label="City" value={employeeDetails.city as string} />
                     <FieldDisplay label="State" value={employeeDetails.state as string} />
@@ -316,15 +391,36 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                 <Separator />
 
                 {/* Social Links */}
-                {(employeeDetails.linkedin || employeeDetails.github || employeeDetails.twitter || employeeDetails.website) && (
+                {(employeeDetails.linkedin ||
+                  employeeDetails.github ||
+                  employeeDetails.twitter ||
+                  employeeDetails.website) && (
                   <>
                     <div>
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Social & Web</h3>
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                        Social & Web
+                      </h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        <FieldDisplay label="LinkedIn" value={employeeDetails.linkedin as string} type="link" />
-                        <FieldDisplay label="GitHub" value={employeeDetails.github as string} type="link" />
-                        <FieldDisplay label="Twitter" value={employeeDetails.twitter as string} type="link" />
-                        <FieldDisplay label="Website" value={employeeDetails.website as string} type="link" />
+                        <FieldDisplay
+                          label="LinkedIn"
+                          value={employeeDetails.linkedin as string}
+                          type="link"
+                        />
+                        <FieldDisplay
+                          label="GitHub"
+                          value={employeeDetails.github as string}
+                          type="link"
+                        />
+                        <FieldDisplay
+                          label="Twitter"
+                          value={employeeDetails.twitter as string}
+                          type="link"
+                        />
+                        <FieldDisplay
+                          label="Website"
+                          value={employeeDetails.website as string}
+                          type="link"
+                        />
                       </div>
                     </div>
                     <Separator />
@@ -332,75 +428,99 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                 )}
 
                 {/* Work Experience */}
-                {employeeDetails.workExperience && (employeeDetails.workExperience as any[]).length > 0 && (
-                  <>
-                    <div>
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <BriefcaseIcon className="size-3.5" /> Work Experience
-                      </h3>
-                      <div className="space-y-3">
-                        {(employeeDetails.workExperience as any[]).map((exp: any, i: number) => (
-                          <div key={exp.id || i} className="border rounded-sm p-3 bg-gray-50">
-                            <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <p className="font-medium text-sm">{exp.company}{exp.title ? ` \u2013 ${exp.title}` : ""}</p>
-                                {exp.from && <p className="text-xs text-muted-foreground mt-0.5">{exp.from}{exp.to ? ` to ${exp.to}` : ""}</p>}
+                {employeeDetails.workExperience &&
+                  (employeeDetails.workExperience as any[]).length > 0 && (
+                    <>
+                      <div>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <BriefcaseIcon className="size-3.5" /> Work Experience
+                        </h3>
+                        <div className="space-y-3">
+                          {(employeeDetails.workExperience as any[]).map((exp: any, i: number) => (
+                            <div key={exp.id || i} className="border rounded-sm p-3 bg-gray-50">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="font-medium text-sm">
+                                    {exp.company}
+                                    {exp.title ? ` \u2013 ${exp.title}` : ""}
+                                  </p>
+                                  {exp.from && (
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                      {exp.from}
+                                      {exp.to ? ` to ${exp.to}` : ""}
+                                    </p>
+                                  )}
+                                </div>
+                                {exp.relevant && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Relevant
+                                  </Badge>
+                                )}
                               </div>
-                              {exp.relevant && <Badge variant="outline" className="text-xs">Relevant</Badge>}
+                              {exp.description && (
+                                <p className="text-xs text-gray-600 mt-2">{exp.description}</p>
+                              )}
                             </div>
-                            {exp.description && <p className="text-xs text-gray-600 mt-2">{exp.description}</p>}
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    <Separator />
-                  </>
-                )}
+                      <Separator />
+                    </>
+                  )}
 
                 {/* Education Details */}
-                {employeeDetails.educationDetails && (employeeDetails.educationDetails as any[]).length > 0 && (
-                  <>
-                    <div>
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <GraduationCapIcon className="size-3.5" /> Education Details
-                      </h3>
-                      <div className="space-y-3">
-                        {(employeeDetails.educationDetails as any[]).map((edu: any, i: number) => (
-                          <div key={edu.id || i} className="border rounded-sm p-3 bg-gray-50">
-                            <p className="font-medium text-sm">{edu.institute}</p>
-                            <p className="text-xs text-gray-600 mt-0.5">
-                              {[edu.degree, edu.specialization].filter(Boolean).join(" \u2013 ")}
-                              {edu.completionDate ? ` | ${edu.completionDate}` : ""}
-                            </p>
-                          </div>
-                        ))}
+                {employeeDetails.educationDetails &&
+                  (employeeDetails.educationDetails as any[]).length > 0 && (
+                    <>
+                      <div>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <GraduationCapIcon className="size-3.5" /> Education Details
+                        </h3>
+                        <div className="space-y-3">
+                          {(employeeDetails.educationDetails as any[]).map(
+                            (edu: any, i: number) => (
+                              <div key={edu.id || i} className="border rounded-sm p-3 bg-gray-50">
+                                <p className="font-medium text-sm">{edu.institute}</p>
+                                <p className="text-xs text-gray-600 mt-0.5">
+                                  {[edu.degree, edu.specialization]
+                                    .filter(Boolean)
+                                    .join(" \u2013 ")}
+                                  {edu.completionDate ? ` | ${edu.completionDate}` : ""}
+                                </p>
+                              </div>
+                            ),
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <Separator />
-                  </>
-                )}
+                      <Separator />
+                    </>
+                  )}
 
                 {/* Dependent Details */}
-                {employeeDetails.dependentDetails && (employeeDetails.dependentDetails as any[]).length > 0 && (
-                  <>
-                    <div>
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <UsersIcon className="size-3.5" /> Dependent Details
-                      </h3>
-                      <div className="space-y-3">
-                        {(employeeDetails.dependentDetails as any[]).map((dep: any, i: number) => (
-                          <div key={dep.id || i} className="border rounded-sm p-3 bg-gray-50">
-                            <p className="font-medium text-sm">{dep.name}</p>
-                            <p className="text-xs text-gray-600 mt-0.5">
-                              {dep.relationship}{dep.dob ? ` | ${new Date(dep.dob).toLocaleDateString()}` : ""}
-                            </p>
-                          </div>
-                        ))}
+                {employeeDetails.dependentDetails &&
+                  (employeeDetails.dependentDetails as any[]).length > 0 && (
+                    <>
+                      <div>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <UsersIcon className="size-3.5" /> Dependent Details
+                        </h3>
+                        <div className="space-y-3">
+                          {(employeeDetails.dependentDetails as any[]).map(
+                            (dep: any, i: number) => (
+                              <div key={dep.id || i} className="border rounded-sm p-3 bg-gray-50">
+                                <p className="font-medium text-sm">{dep.name}</p>
+                                <p className="text-xs text-gray-600 mt-0.5">
+                                  {dep.relationship}
+                                  {dep.dob ? ` | ${new Date(dep.dob).toLocaleDateString()}` : ""}
+                                </p>
+                              </div>
+                            ),
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <Separator />
-                  </>
-                )}
+                      <Separator />
+                    </>
+                  )}
 
                 {/* Files */}
                 {employeeDetails.files && (employeeDetails.files as any[]).length > 0 && (
@@ -410,12 +530,21 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
                     </h3>
                     <div className="space-y-2">
                       {(employeeDetails.files as any[]).map((file: any, i: number) => (
-                        <div key={file.id || i} className="flex items-center justify-between border rounded-sm p-3 bg-gray-50">
+                        <div
+                          key={file.id || i}
+                          className="flex items-center justify-between border rounded-sm p-3 bg-gray-50"
+                        >
                           <div className="flex items-center gap-3 min-w-0">
                             <FileIcon className="size-4 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium truncate">{file.name || file.fileName}</p>
-                              {file.size && <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>}
+                              <p className="text-sm font-medium truncate">
+                                {file.name || file.fileName}
+                              </p>
+                              {file.size && (
+                                <p className="text-xs text-muted-foreground">
+                                  {(file.size / 1024).toFixed(1)} KB
+                                </p>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
@@ -448,7 +577,15 @@ export function EmployeeReport({ employees }: EmployeeReportProps) {
   );
 }
 
-function FieldDisplay({ label, value, type }: { label: string; value?: string | null; type?: "date" | "badge" | "link" }) {
+function FieldDisplay({
+  label,
+  value,
+  type,
+}: {
+  label: string;
+  value?: string | null;
+  type?: "date" | "badge" | "link";
+}) {
   if (!value || value === "\u2014") return null;
 
   if (type === "badge") {
@@ -456,7 +593,9 @@ function FieldDisplay({ label, value, type }: { label: string; value?: string | 
     return (
       <div>
         <p className="text-xs text-muted-foreground">{label}</p>
-        <span className={`inline-flex items-center rounded-2xl px-2.5 py-0.5 text-xs font-medium mt-0.5 ring-1 ring-inset ${color}`}>
+        <span
+          className={`inline-flex items-center rounded-2xl px-2.5 py-0.5 text-xs font-medium mt-0.5 ring-1 ring-inset ${color}`}
+        >
           {value}
         </span>
       </div>
@@ -468,7 +607,11 @@ function FieldDisplay({ label, value, type }: { label: string; value?: string | 
       <div>
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className="text-sm font-medium mt-0.5">
-          {new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+          {new Date(value).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
         </p>
       </div>
     );
@@ -479,7 +622,12 @@ function FieldDisplay({ label, value, type }: { label: string; value?: string | 
     return (
       <div>
         <p className="text-xs text-muted-foreground">{label}</p>
-        <a href={href} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-600 hover:underline mt-0.5 block truncate">
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="text-sm font-medium text-blue-600 hover:underline mt-0.5 block truncate"
+        >
           {String(value)}
         </a>
       </div>

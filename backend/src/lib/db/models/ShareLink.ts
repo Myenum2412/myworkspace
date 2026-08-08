@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IShareLink extends Document {
   id: string;
@@ -34,7 +34,7 @@ const shareLinkSchema = new Schema<IShareLink>(
     allowDownload: { type: Boolean, default: true },
     isActive: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 shareLinkSchema.index({ fileId: 1, isActive: 1 });

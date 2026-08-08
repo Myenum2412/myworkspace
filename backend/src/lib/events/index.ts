@@ -19,12 +19,39 @@ export type DomainEventType =
   | "notification:sent";
 
 export interface DomainEventPayload {
-  "upload:started": { uploadId: string; orgId: string; userId: string; fileName: string; fileSize: number; mimeType: string };
-  "upload:chunk-received": { uploadId: string; orgId: string; chunkIndex: number; bytesReceived: number; totalBytes: number };
+  "upload:started": {
+    uploadId: string;
+    orgId: string;
+    userId: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+  };
+  "upload:chunk-received": {
+    uploadId: string;
+    orgId: string;
+    chunkIndex: number;
+    bytesReceived: number;
+    totalBytes: number;
+  };
   "upload:paused": { uploadId: string; orgId: string; userId: string; bytesReceived: number };
   "upload:resumed": { uploadId: string; orgId: string; userId: string; bytesReceived: number };
-  "upload:completed": { uploadId: string; fileId: string; orgId: string; userId: string; fileName: string; fileSize: number; storagePath: string };
-  "upload:failed": { uploadId: string; orgId: string; userId: string; error: string; retryCount: number };
+  "upload:completed": {
+    uploadId: string;
+    fileId: string;
+    orgId: string;
+    userId: string;
+    fileName: string;
+    fileSize: number;
+    storagePath: string;
+  };
+  "upload:failed": {
+    uploadId: string;
+    orgId: string;
+    userId: string;
+    error: string;
+    retryCount: number;
+  };
   "file:metadata-saved": { fileId: string; orgId: string; uploadId: string };
   "file:thumbnail-generated": { fileId: string; orgId: string; thumbnailPath: string };
   "file:access-granted": { fileId: string; orgId: string; userId: string; permission: string };
@@ -32,8 +59,21 @@ export interface DomainEventPayload {
   "file:deleted": { fileId: string; orgId: string; userId: string };
   "file:restored": { fileId: string; orgId: string; userId: string };
   "file:processing-completed": { fileId: string; orgId: string; processingType: string };
-  "permission:changed": { fileId: string; orgId: string; userId: string; role: string; permission: string; granted: boolean };
-  "notification:sent": { userId: string; orgId: string; type: string; title: string; message: string };
+  "permission:changed": {
+    fileId: string;
+    orgId: string;
+    userId: string;
+    role: string;
+    permission: string;
+    granted: boolean;
+  };
+  "notification:sent": {
+    userId: string;
+    orgId: string;
+    type: string;
+    title: string;
+    message: string;
+  };
 }
 
 type DomainEventCallback<T extends DomainEventType> = (payload: DomainEventPayload[T]) => void;

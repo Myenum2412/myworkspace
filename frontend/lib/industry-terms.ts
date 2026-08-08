@@ -204,7 +204,8 @@ const terms: Record<Industry, Record<TermKey, string>> = {
     "page.settings.title": "Settings",
     "page.settings.description": "Manage your account, billing, and team settings.",
     "page.settings.workspaceIndustry": "Workspace Industry",
-    "page.settings.workspaceIndustryDesc": "Select the industry for your workspace. This customizes the terminology used across the application.",
+    "page.settings.workspaceIndustryDesc":
+      "Select the industry for your workspace. This customizes the terminology used across the application.",
     "common.save": "Save",
     "common.cancel": "Cancel",
     "common.delete": "Delete",
@@ -330,7 +331,8 @@ const terms: Record<Industry, Record<TermKey, string>> = {
     "page.settings.title": "Settings",
     "page.settings.description": "Manage your account, billing, and clinical settings.",
     "page.settings.workspaceIndustry": "Workspace Industry",
-    "page.settings.workspaceIndustryDesc": "Select the industry for your workspace. This customizes the terminology used across the application.",
+    "page.settings.workspaceIndustryDesc":
+      "Select the industry for your workspace. This customizes the terminology used across the application.",
     "common.save": "Save",
     "common.cancel": "Cancel",
     "common.delete": "Delete",

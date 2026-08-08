@@ -1,11 +1,12 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useMemo, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useIndustry } from "@/components/industry-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -13,8 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ListTodoIcon, ChevronLeft, ChevronRight } from "@/lib/icons";
-import { useIndustry } from "@/components/industry-provider";
+import { ChevronLeft, ChevronRight, ListTodoIcon } from "@/lib/icons";
 
 export default function StaffUpcomingTasksPage() {
   const { t } = useIndustry();
@@ -24,18 +24,26 @@ export default function StaffUpcomingTasksPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") { router.push("/login"); }
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
   }, [status, router]);
 
   useEffect(() => {
     if (status !== "authenticated") return;
     let cancelled = false;
     fetch("/api/staffs/upcoming-tasks")
-      .then(r => r.json())
-      .then(d => { if (!cancelled) setTasks(d.tasks || []); })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled) setTasks(d.tasks || []);
+      })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [status]);
 
   const [page, setPage] = useState(0);
@@ -51,7 +59,12 @@ export default function StaffUpcomingTasksPage() {
     setPage(0);
   }, []);
 
-  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (status === "loading" || loading)
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </div>
+    );
   if (!session?.user) return null;
 
   return (
@@ -75,10 +88,16 @@ export default function StaffUpcomingTasksPage() {
                 <tr>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-12">#</th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Title</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Priority</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Priority
+                  </th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Assignee</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Due Date</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Assignee
+                  </th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Due Date
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -90,11 +109,22 @@ export default function StaffUpcomingTasksPage() {
                   </tr>
                 ) : (
                   paginated.map((task, index) => (
-                    <tr key={task._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
+                    <tr
+                      key={task._id}
+                      className="border-b last:border-0 hover:bg-slate-50 transition-colors"
+                    >
                       <td className="px-4 py-3 text-muted-foreground">{index + 1}</td>
                       <td className="px-4 py-3 font-medium">{task.title}</td>
                       <td className="px-4 py-3">
-                        <Badge variant={task.priority === "high" ? "destructive" : task.priority === "medium" ? "default" : "secondary"}>
+                        <Badge
+                          variant={
+                            task.priority === "high"
+                              ? "destructive"
+                              : task.priority === "medium"
+                                ? "default"
+                                : "secondary"
+                          }
+                        >
                           {task.priority}
                         </Badge>
                       </td>
@@ -103,7 +133,13 @@ export default function StaffUpcomingTasksPage() {
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{task.assignee || "—"}</td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                        {task.dueDate
+                          ? new Date(task.dueDate).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "—"}
                       </td>
                     </tr>
                   ))
@@ -119,7 +155,9 @@ export default function StaffUpcomingTasksPage() {
             </span>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Rows per page:
+                </span>
                 <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
                   <SelectTrigger className="h-8 w-[70px]">
                     <SelectValue />

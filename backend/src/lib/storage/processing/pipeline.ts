@@ -1,7 +1,13 @@
-import { logger } from "../../logger/index.js";
 import { domainEvents } from "../../events/index.js";
+import { logger } from "../../logger/index.js";
 
-export type ProcessingStage = "virus-scan" | "thumbnail" | "metadata" | "ocr" | "preview" | "ai-analysis";
+export type ProcessingStage =
+  | "virus-scan"
+  | "thumbnail"
+  | "metadata"
+  | "ocr"
+  | "preview"
+  | "ai-analysis";
 
 export interface FileProcessingJob {
   fileId: string;
@@ -21,7 +27,11 @@ export class FileProcessingPipeline {
         await this.runStage(stage, job);
       } catch (err) {
         logger.error({ err, fileId: job.fileId, stage }, `Processing stage ${stage} failed`);
-        domainEvents.emit("file:processing-failed" as any, { fileId: job.fileId, stage, error: String(err) });
+        domainEvents.emit("file:processing-failed" as any, {
+          fileId: job.fileId,
+          stage,
+          error: String(err),
+        });
       }
     }
 
@@ -63,7 +73,10 @@ export class FileProcessingPipeline {
   }
 
   private async extractMetadata(job: FileProcessingJob): Promise<void> {
-    logger.info({ fileId: job.fileId, mimeType: job.mimeType, size: job.size }, "Metadata extracted");
+    logger.info(
+      { fileId: job.fileId, mimeType: job.mimeType, size: job.size },
+      "Metadata extracted",
+    );
   }
 
   private async performOCR(job: FileProcessingJob): Promise<void> {

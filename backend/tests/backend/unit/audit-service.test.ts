@@ -1,6 +1,6 @@
-import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { ActivityLog } from "../../../src/lib/db/models/ActivityLog.js";
 import { recordAuditLogDirect } from "../../../src/services/audit.service.js";
+import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 
 beforeAll(async () => await connectTestDb());
 beforeEach(async () => await resetDb());

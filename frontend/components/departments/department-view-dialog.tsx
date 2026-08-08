@@ -1,16 +1,16 @@
-"use client"
+"use client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Building2, Users, CircleDollarSign, Briefcase, User } from "@/lib/icons";
+import { Briefcase, Building2, CircleDollarSign, User, Users } from "@/lib/icons";
 
 type Department = {
   name: string;
@@ -28,21 +28,41 @@ type DepartmentViewDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
-function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: string }>; label: string; value?: string | number | null }) {
+function Field({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon?: React.FC<{ className?: string }>;
+  label: string;
+  value?: string | number | null;
+}) {
   return (
     <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
       {Icon && <Icon className="size-4 text-muted-foreground shrink-0 mt-0.5" />}
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          {label}
+        </p>
         <p className="text-sm font-medium mt-0.5">{value ?? "\u2014"}</p>
       </div>
     </div>
   );
 }
 
-export function DepartmentViewDialog({ department, open, onOpenChange }: DepartmentViewDialogProps) {
+export function DepartmentViewDialog({
+  department,
+  open,
+  onOpenChange,
+}: DepartmentViewDialogProps) {
   if (!department) return null;
 
   return (
@@ -73,14 +93,18 @@ export function DepartmentViewDialog({ department, open, onOpenChange }: Departm
               <AvatarFallback className="text-xs">{getInitials(department.head)}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Department Head</p>
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                Department Head
+              </p>
               <p className="text-sm font-medium">{department.head}</p>
             </div>
           </div>
         </div>
 
         <DialogFooter className="shrink-0 border-t px-6 py-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

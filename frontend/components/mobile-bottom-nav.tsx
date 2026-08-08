@@ -3,22 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useIndustry } from "@/components/industry-provider";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ROLES, isAdminRole } from "@/lib/rbac";
 import {
-  LayoutDashboardIcon,
-  ListChecksIcon,
+  Building2Icon,
   ClockIcon,
   FolderIcon,
-  UsersIcon,
-  Building2Icon,
+  LayoutDashboardIcon,
+  ListChecksIcon,
   ListTodoIcon,
+  type LucideIcon,
   ReceiptIcon,
   Settings2Icon,
-  type LucideIcon,
+  UsersIcon,
 } from "@/lib/icons";
+import { isAdminRole, ROLES } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
-import { useIndustry } from "@/components/industry-provider";
 
 interface NavItem {
   href: string;
@@ -58,7 +58,7 @@ export function MobileBottomNav({ context }: { context?: string }) {
   const isMobile = useIsMobile();
   const { data: session } = useSession();
   const { t } = useIndustry();
-  const role = (session?.user as Record<string, unknown>)?.role as string || "";
+  const role = ((session?.user as Record<string, unknown>)?.role as string) || "";
 
   let navItems: NavItem[] = [];
   if (context === "origin") navItems = orgNav;
@@ -77,16 +77,16 @@ export function MobileBottomNav({ context }: { context?: string }) {
   if (!isMobile) return null;
 
   const labelMap: Record<string, string> = {
-    "Dashboard": t("nav.dashboard"),
-    "Tasks": t("nav.tasks"),
-    "Time": t("nav.time"),
-    "Team": t("nav.team"),
-    "Invoices": t("nav.invoices"),
-    "Home": t("nav.dashboard"),
-    "Bills": t("nav.invoices"),
-    "Members": t("nav.members"),
-    "Org": t("nav.organization"),
-    "Settings": t("nav.settings"),
+    Dashboard: t("nav.dashboard"),
+    Tasks: t("nav.tasks"),
+    Time: t("nav.time"),
+    Team: t("nav.team"),
+    Invoices: t("nav.invoices"),
+    Home: t("nav.dashboard"),
+    Bills: t("nav.invoices"),
+    Members: t("nav.members"),
+    Org: t("nav.organization"),
+    Settings: t("nav.settings"),
   };
 
   return (
@@ -107,11 +107,13 @@ export function MobileBottomNav({ context }: { context?: string }) {
                 "touch-target",
                 isActive
                   ? "text-primary font-semibold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
+                  : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent",
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon className={cn("size-5 shrink-0 transition-transform", isActive && "scale-110")} />
+              <Icon
+                className={cn("size-5 shrink-0 transition-transform", isActive && "scale-110")}
+              />
               <span className="text-[10px] leading-tight font-medium truncate max-w-full">
                 {labelMap[item.label] || item.label}
               </span>

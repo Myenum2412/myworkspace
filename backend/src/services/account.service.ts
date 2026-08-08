@@ -1,21 +1,21 @@
 import { hash } from "bcryptjs";
 import { v4 as uuid } from "uuid";
-import { User } from "../lib/db/models/User.js";
+import { env } from "../config/env.js";
 import { ClientUser } from "../lib/db/models/ClientUser.js";
+import { getNextSequence } from "../lib/db/models/Counter.js";
+import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import { RefreshToken } from "../lib/db/models/RefreshToken.js";
 import { Session } from "../lib/db/models/Session.js";
-import { getNextSequence } from "../lib/db/models/Counter.js";
+import { User } from "../lib/db/models/User.js";
+import { logger } from "../lib/logger/index.js";
+import { sendEmployeeOnboarded } from "../lib/mail/index.js";
+import { socketIOManager } from "../lib/socketio/index.js";
+import { optionalString, requireEmail } from "../lib/validate.js";
+import { invalidateUserAuthCache } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { recordAuditLog } from "./audit.service.js";
-import { socketIOManager } from "../lib/socketio/index.js";
-import { invalidateUserAuthCache } from "../middleware/auth.js";
-import { requireEmail, optionalString } from "../lib/validate.js";
 import { validatePasswordStrength } from "./validation.service.js";
-import { Organization } from "../lib/db/models/Organization.js";
-import { env } from "../config/env.js";
-import { sendEmployeeOnboarded } from "../lib/mail/index.js";
-import { logger } from "../lib/logger/index.js";
 
 /**
  * Account Service
@@ -39,9 +39,23 @@ import { logger } from "../lib/logger/index.js";
  * "members" (company owner, signup-only) and system roles.
  */
 const CREATABLE_ROLES = new Set([
-  "staffs", "team_staff", "hr", "manager", "team_leader", "finance", "contractors", "guest",
+  "staffs",
+  "team_staff",
+  "hr",
+  "manager",
+  "team_leader",
+  "finance",
+  "contractors",
+  "guest",
 ]);
-const PROTECTED_ROLES = new Set(["org_admin", "members", "clients", "api_token", "service_account", "automation_bot"]);
+const PROTECTED_ROLES = new Set([
+  "org_admin",
+  "members",
+  "clients",
+  "api_token",
+  "service_account",
+  "automation_bot",
+]);
 
 export interface AccountActor {
   userId: string;
@@ -93,15 +107,29 @@ function generateTempPassword(length = 12): string {
   for (let i = 4; i < length; i++) {
     pwd += all[Math.floor(Math.random() * all.length)];
   }
-  return pwd.split("").sort(() => Math.random() - 0.5).join("");
+  return pwd
+    .split("")
+    .sort(() => Math.random() - 0.5)
+    .join("");
 }
 
 /**
  * Create a Staff account inside the actor's own organization.
  * The orgId is taken exclusively from the authenticated session.
  */
-export async function createStaffAccount(actor: AccountActor, data: CreateStaffInput): Promise<{
-  user: { id: string; userNumber: number; name: string; email: string; role: string; orgId: string; isActive: boolean };
+export async function createStaffAccount(
+  actor: AccountActor,
+  data: CreateStaffInput,
+): Promise<{
+  user: {
+    id: string;
+    userNumber: number;
+    name: string;
+    email: string;
+    role: string;
+    orgId: string;
+    isActive: boolean;
+  };
   tempPassword: string;
   emailStatus: "sent" | "failed" | "skipped";
   emailError?: string;
@@ -163,10 +191,28 @@ export async function createStaffAccount(actor: AccountActor, data: CreateStaffI
   };
 
   for (const field of [
-    "department", "phone", "designation", "joiningDate", "displayId",
-    "firstName", "lastName", "location", "shift", "employmentType",
-    "sourceOfHire", "alternateEmail", "address", "city", "state", "country",
-    "zipCode", "linkedin", "github", "twitter", "website", "company",
+    "department",
+    "phone",
+    "designation",
+    "joiningDate",
+    "displayId",
+    "firstName",
+    "lastName",
+    "location",
+    "shift",
+    "employmentType",
+    "sourceOfHire",
+    "alternateEmail",
+    "address",
+    "city",
+    "state",
+    "country",
+    "zipCode",
+    "linkedin",
+    "github",
+    "twitter",
+    "website",
+    "company",
   ]) {
     if (data[field] !== undefined && data[field] !== null) {
       allowedFields[field] = data[field];
@@ -174,13 +220,15 @@ export async function createStaffAccount(actor: AccountActor, data: CreateStaffI
   }
 
   await User.create([allowedFields]);
-  await OrgMember.create([{
-    orgId: actor.orgId,
-    userId,
-    role,
-    createdBy: actor.userId,
-    joinedAt: new Date(),
-  }]);
+  await OrgMember.create([
+    {
+      orgId: actor.orgId,
+      userId,
+      role,
+      createdBy: actor.userId,
+      joinedAt: new Date(),
+    },
+  ]);
 
   await recordAuditLog({
     orgId: actor.orgId,
@@ -239,7 +287,7 @@ export async function listStaffAccounts(actor: AccountActor): Promise<any[]> {
   if (userIds.length > 0) {
     users = await User.find({ id: { $in: userIds } })
       .select(
-        "id userNumber name email role status isActive department phone image createdAt createdBy orgId"
+        "id userNumber name email role status isActive department phone image createdAt createdBy orgId",
       )
       .lean();
   }
@@ -276,7 +324,9 @@ export async function getStaffAccount(actor: AccountActor, userId: string): Prom
   if (!member) throw new AppError(404, "User not found in this organization");
 
   const user = await User.findOne({ id: userId, orgId: actor.orgId })
-    .select("id userNumber name email role status isActive department phone image createdAt createdBy orgId")
+    .select(
+      "id userNumber name email role status isActive department phone image createdAt createdBy orgId",
+    )
     .lean();
   if (!user) throw new AppError(404, "User not found in this organization");
 
@@ -305,18 +355,16 @@ export async function getStaffAccount(actor: AccountActor, userId: string): Prom
  *  - disconnect WebSocket / Socket.IO connections
  *  - bust in-memory auth caches
  */
-export async function revokeUserAccess(userId: string, orgId: string, reason = "account_terminated"): Promise<void> {
+export async function revokeUserAccess(
+  userId: string,
+  orgId: string,
+  reason = "account_terminated",
+): Promise<void> {
   const now = new Date();
 
   await Promise.all([
-    User.updateOne(
-      { id: userId },
-      { $inc: { tokenVersion: 1 }, $set: { status: "offline" } },
-    ),
-    ClientUser.updateOne(
-      { id: userId },
-      { $inc: { tokenVersion: 1 } },
-    ),
+    User.updateOne({ id: userId }, { $inc: { tokenVersion: 1 }, $set: { status: "offline" } }),
+    ClientUser.updateOne({ id: userId }, { $inc: { tokenVersion: 1 } }),
     RefreshToken.updateMany(
       { userId, revokedAt: { $exists: false } },
       { $set: { revokedAt: now } },
@@ -334,7 +382,11 @@ export async function revokeUserAccess(userId: string, orgId: string, reason = "
 }
 
 /** Deactivate (or reactivate) a staff account. Deactivation revokes all access. */
-export async function setStaffAccountStatus(actor: AccountActor, targetUserId: string, active: boolean): Promise<any> {
+export async function setStaffAccountStatus(
+  actor: AccountActor,
+  targetUserId: string,
+  active: boolean,
+): Promise<any> {
   assertActor(actor);
 
   const member = await OrgMember.findOne({ orgId: actor.orgId, userId: targetUserId }).lean();
@@ -384,7 +436,10 @@ export async function setStaffAccountStatus(actor: AccountActor, targetUserId: s
 }
 
 /** Permanently remove an account and revoke every credential. */
-export async function terminateStaffAccount(actor: AccountActor, targetUserId: string): Promise<void> {
+export async function terminateStaffAccount(
+  actor: AccountActor,
+  targetUserId: string,
+): Promise<void> {
   assertActor(actor);
 
   const member = await OrgMember.findOne({ orgId: actor.orgId, userId: targetUserId }).lean();
@@ -409,7 +464,9 @@ export async function terminateStaffAccount(actor: AccountActor, targetUserId: s
 }
 
 export async function getStaffByEmail(orgId: string, email: string): Promise<any | null> {
-  const user = await User.findOne({ orgId, email }).select("id name email role isActive status").lean();
+  const user = await User.findOne({ orgId, email })
+    .select("id name email role isActive status")
+    .lean();
   if (!user) return null;
   const member = await OrgMember.findOne({ orgId, userId: user.id }).select("role").lean();
   return { ...user, memberRole: member?.role };

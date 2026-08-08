@@ -28,17 +28,10 @@ export function LegendProgress({
   return (
     <Progress.Root max={item.maxValue} value={item.value}>
       <Progress.Track
-        className={cn(
-          "w-full overflow-hidden rounded-sm bg-legend-track",
-          height,
-          trackClassName
-        )}
+        className={cn("w-full overflow-hidden rounded-sm bg-legend-track", height, trackClassName)}
       >
         <Progress.Indicator
-          className={cn(
-            "h-full rounded-sm transition-all duration-500",
-            indicatorClassName
-          )}
+          className={cn("h-full rounded-sm transition-all duration-500", indicatorClassName)}
           style={{ backgroundColor: item.color }}
         />
       </Progress.Track>

@@ -1,10 +1,10 @@
-"use client"
+"use client";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Building2, Users, EyeIcon } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Building2, EyeIcon, Users } from "@/lib/icons";
 import { DepartmentViewDialog } from "./department-view-dialog";
 
 type Department = {
@@ -23,9 +23,19 @@ type DepartmentsClientProps = {
   totalOpen: number;
 };
 
-const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
-export function DepartmentsClient({ departments, totalMembers, totalOpen }: DepartmentsClientProps) {
+export function DepartmentsClient({
+  departments,
+  totalMembers,
+  totalOpen,
+}: DepartmentsClientProps) {
   const [viewDept, setViewDept] = useState<Department | null>(null);
 
   return (
@@ -34,7 +44,9 @@ export function DepartmentsClient({ departments, totalMembers, totalOpen }: Depa
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Departments</h1>
-            <p className="text-sm text-muted-foreground mt-1">{departments.length} departments &middot; {totalMembers} members</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {departments.length} departments &middot; {totalMembers} members
+            </p>
           </div>
           <Badge variant="secondary" className="text-sm px-3 py-1">
             {totalOpen} open positions
@@ -69,11 +81,21 @@ export function DepartmentsClient({ departments, totalMembers, totalOpen }: Depa
                   <div className="flex items-center gap-2">
                     <Avatar className="size-6">
                       <AvatarImage src={dept.headAvatar} alt={dept.head} />
-                      <AvatarFallback className="text-[10px]">{getInitials(dept.head)}</AvatarFallback>
+                      <AvatarFallback className="text-[10px]">
+                        {getInitials(dept.head)}
+                      </AvatarFallback>
                     </Avatar>
-                    <span className="text-muted-foreground">Head: <span className="font-medium text-foreground">{dept.head}</span></span>
+                    <span className="text-muted-foreground">
+                      Head: <span className="font-medium text-foreground">{dept.head}</span>
+                    </span>
                   </div>
-                  <Button variant="ghost" size="icon-sm" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setViewDept(dept)} title="View">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => setViewDept(dept)}
+                    title="View"
+                  >
                     <EyeIcon className="size-4" />
                   </Button>
                 </div>
@@ -86,7 +108,9 @@ export function DepartmentsClient({ departments, totalMembers, totalOpen }: Depa
       <DepartmentViewDialog
         department={viewDept}
         open={!!viewDept}
-        onOpenChange={(open) => { if (!open) setViewDept(null); }}
+        onOpenChange={(open) => {
+          if (!open) setViewDept(null);
+        }}
       />
     </>
   );

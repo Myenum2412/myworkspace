@@ -6,7 +6,7 @@ async function run() {
     await client.connect();
     const db = client.db();
     
-    let orgId = "4fcf95d1-9f17-4a0f-95b9-d625c2f562d2"; // Myenum Am's Org
+    const orgId = "4fcf95d1-9f17-4a0f-95b9-d625c2f562d2"; // Myenum Am's Org
     let dbOrg = await db.collection('organizations').findOne({ id: orgId });
     let orgDocId = null;
     

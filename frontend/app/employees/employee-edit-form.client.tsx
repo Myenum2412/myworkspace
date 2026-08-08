@@ -1,41 +1,55 @@
-"use client"
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+"use client";
+import { useEffect, useState } from "react";
 import {
-  Field,
-  FieldLabel,
-} from "@/components/ui/field"
-import { Checkbox } from "@/components/ui/checkbox"
-import { AlertCircleIcon, SaveIcon, Loader2Icon, UserIcon, BriefcaseIcon, PhoneIcon, HistoryIcon, CheckCircle2Icon, PencilIcon } from "@/lib/icons"
-import { employeeService } from "@/lib/services/employee-service"
-import { getDropdownOptions } from "@/lib/dropdown-options"
-
-import {
-  ProfileImageUpload,
   BasicInfoSection,
-  WorkInfoSection,
   ContactDetailsSection,
   DynamicRowSection,
-  SelectWithAdd,
   type FirstSlideEmployeeForm,
+  ProfileImageUpload,
   type Row,
-} from "@/app/employees/employee-form-sections"
-import type { Employee } from "./columns"
+  SelectWithAdd,
+  WorkInfoSection,
+} from "@/app/employees/employee-form-sections";
+import { Button } from "@/components/ui/button";
+import { CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { getDropdownOptions } from "@/lib/dropdown-options";
+import {
+  AlertCircleIcon,
+  BriefcaseIcon,
+  CheckCircle2Icon,
+  HistoryIcon,
+  Loader2Icon,
+  PencilIcon,
+  PhoneIcon,
+  SaveIcon,
+  UserIcon,
+} from "@/lib/icons";
+import { employeeService } from "@/lib/services/employee-service";
+import type { Employee } from "./columns";
 
 function generateId(): string {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID()
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
 function toRow(arr: any[] | undefined, defaults: Record<string, any>): Row[] {
-  if (!arr || arr.length === 0) return [{ id: generateId(), ...defaults }]
-  return arr.map((item) => ({ id: generateId(), ...item }))
+  if (!arr || arr.length === 0) return [{ id: generateId(), ...defaults }];
+  return arr.map((item) => ({ id: generateId(), ...item }));
 }
 
-function Section({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) {
+function Section({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: any;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <fieldset className="border p-4 space-y-4">
       <legend className="text-sm font-semibold px-2 flex items-center gap-2">
@@ -44,30 +58,37 @@ function Section({ icon: Icon, title, children }: { icon: any; title: string; ch
       </legend>
       {children}
     </fieldset>
-  )
+  );
 }
 
 interface EmployeeEditFormProps {
-  employee: Employee
-  onSave: (updated: Employee) => void
-  onCancel: () => void
-  isViewMode?: boolean
-  onSwitchToEdit?: () => void
+  employee: Employee;
+  onSave: (updated: Employee) => void;
+  onCancel: () => void;
+  isViewMode?: boolean;
+  onSwitchToEdit?: () => void;
 }
 
-export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwitchToEdit }: EmployeeEditFormProps) {
-  const [formError, setFormError] = useState("")
-  const [formSuccess, setFormSuccess] = useState("")
-  const [submitting, setSubmitting] = useState(false)
-  const [dropdownOptions, setDropdownOptions] = useState<Record<string, string[]>>({})
+export function EmployeeEditForm({
+  employee,
+  onSave,
+  onCancel,
+  isViewMode,
+  onSwitchToEdit,
+}: EmployeeEditFormProps) {
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [dropdownOptions, setDropdownOptions] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     setDropdownOptions(getDropdownOptions());
-  }, [])
+  }, []);
 
-  const nameParts = employee.name ? employee.name.trim().split(" ") : []
-  const defaultFirstName = employee.firstName || nameParts[0] || ""
-  const defaultLastName = employee.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "")
+  const nameParts = employee.name ? employee.name.trim().split(" ") : [];
+  const defaultFirstName = employee.firstName || nameParts[0] || "";
+  const defaultLastName =
+    employee.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "");
 
   const [formData, setFormData] = useState<FirstSlideEmployeeForm>({
     displayId: employee.displayId || "",
@@ -100,48 +121,61 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
     github: employee.github || "",
     twitter: employee.twitter || "",
     portfolio: employee.website || "",
-  })
+  });
 
   const [workExperience, setWorkExperience] = useState<Row[]>(
-    toRow(employee.workExperience, { company: "", title: "", roles: "", from: "", to: "", description: "", relevant: false })
-  )
+    toRow(employee.workExperience, {
+      company: "",
+      title: "",
+      roles: "",
+      from: "",
+      to: "",
+      description: "",
+      relevant: false,
+    }),
+  );
   const [educationDetails, setEducationDetails] = useState<Row[]>(
-    toRow(employee.educationDetails, { institute: "", degree: "", specialization: "", completionDate: "" })
-  )
+    toRow(employee.educationDetails, {
+      institute: "",
+      degree: "",
+      specialization: "",
+      completionDate: "",
+    }),
+  );
   const [dependentDetails, setDependentDetails] = useState<Row[]>(
-    toRow(employee.dependentDetails, { name: "", relationship: "", dob: "" })
-  )
+    toRow(employee.dependentDetails, { name: "", relationship: "", dob: "" }),
+  );
 
   const updateField = (field: keyof FirstSlideEmployeeForm, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    setFormError("")
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormError("");
+  };
 
   const addRow = (setter: React.Dispatch<React.SetStateAction<Row[]>>) => {
-    setter((prev) => [...prev, { id: generateId() }])
-  }
+    setter((prev) => [...prev, { id: generateId() }]);
+  };
 
   const removeRow = (setter: React.Dispatch<React.SetStateAction<Row[]>>, id: string) => {
-    setter((prev) => prev.filter((row) => row.id !== id))
-  }
+    setter((prev) => prev.filter((row) => row.id !== id));
+  };
 
   const updateRow = (
     setter: React.Dispatch<React.SetStateAction<Row[]>>,
     id: string,
     field: string,
-    value: string | boolean
+    value: string | boolean,
   ) => {
-    setter((prev) => prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)))
-  }
+    setter((prev) => prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
+  };
 
   const handleSave = async () => {
     if (!formData.firstName.trim() || !formData.email.trim()) {
-      setFormError("First name and email address are required.")
-      return
+      setFormError("First name and email address are required.");
+      return;
     }
-    setFormError("")
-    setFormSuccess("")
-    setSubmitting(true)
+    setFormError("");
+    setFormSuccess("");
+    setSubmitting(true);
 
     try {
       const payload: Record<string, unknown> = {
@@ -174,9 +208,9 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
         github: formData.github || null,
         twitter: formData.twitter || null,
         website: formData.portfolio || null,
-        workExperience: workExperience.filter(w => w.company || w.title),
-        educationDetails: educationDetails.filter(e => e.institute || e.degree),
-        dependentDetails: dependentDetails.filter(d => d.name),
+        workExperience: workExperience.filter((w) => w.company || w.title),
+        educationDetails: educationDetails.filter((e) => e.institute || e.degree),
+        dependentDetails: dependentDetails.filter((d) => d.name),
         files: [],
       };
       if (formData.password) {
@@ -194,9 +228,14 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
           ...employee,
           ...d,
           id: d.id || employee.id,
-          name: d.name || [formData.firstName, formData.lastName].filter(Boolean).join(" ") || employee.name,
-          workExperience: d.workExperience || workExperience.filter((w: any) => w.company || w.title),
-          educationDetails: d.educationDetails || educationDetails.filter((e: any) => e.institute || e.degree),
+          name:
+            d.name ||
+            [formData.firstName, formData.lastName].filter(Boolean).join(" ") ||
+            employee.name,
+          workExperience:
+            d.workExperience || workExperience.filter((w: any) => w.company || w.title),
+          educationDetails:
+            d.educationDetails || educationDetails.filter((e: any) => e.institute || e.degree),
           dependentDetails: d.dependentDetails || dependentDetails.filter((dep: any) => dep.name),
         } as Employee;
       } else {
@@ -238,15 +277,18 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
         } as Employee;
       }
 
-      setFormSuccess("Employee updated successfully.")
-      onSave(updatedEmployee)
+      setFormSuccess("Employee updated successfully.");
+      onSave(updatedEmployee);
     } catch (err: any) {
-      const msg = err?.message === "Validation failed" ? "Please fill in all required fields correctly." : (err?.message || "Failed to update employee. Please try again.")
-      setFormError(msg)
+      const msg =
+        err?.message === "Validation failed"
+          ? "Please fill in all required fields correctly."
+          : err?.message || "Failed to update employee. Please try again.";
+      setFormError(msg);
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
     <>
@@ -263,218 +305,257 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
         </div>
       )}
 
-      <div className={`flex-1 overflow-y-auto px-4 sm:px-6 py-3 space-y-5 ${
-        isViewMode ? "[&_input:disabled]:bg-white [&_input:disabled]:text-black [&_input:disabled]:opacity-100 [&_select:disabled]:bg-white [&_select:disabled]:text-black [&_select:disabled]:opacity-100 [&_textarea:disabled]:bg-white [&_textarea:disabled]:text-black [&_textarea:disabled]:opacity-100" : ""
-      }`}>
-        <fieldset disabled={isViewMode} className="space-y-5 border-0 p-0 m-0 min-w-0 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
-        {/* Profile */}
-        <Section icon={UserIcon} title="Profile">
-          <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-center sm:items-start">
-            <div className="shrink-0">
-              <ProfileImageUpload
-                avatar={formData.avatar}
-                onAvatarChange={(url: string) => updateField("avatar", url)}
-              />
+      <div
+        className={`flex-1 overflow-y-auto px-4 sm:px-6 py-3 space-y-5 ${
+          isViewMode
+            ? "[&_input:disabled]:bg-white [&_input:disabled]:text-black [&_input:disabled]:opacity-100 [&_select:disabled]:bg-white [&_select:disabled]:text-black [&_select:disabled]:opacity-100 [&_textarea:disabled]:bg-white [&_textarea:disabled]:text-black [&_textarea:disabled]:opacity-100"
+            : ""
+        }`}
+      >
+        <fieldset
+          disabled={isViewMode}
+          className="space-y-5 border-0 p-0 m-0 min-w-0 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white"
+        >
+          {/* Profile */}
+          <Section icon={UserIcon} title="Profile">
+            <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-center sm:items-start">
+              <div className="shrink-0">
+                <ProfileImageUpload
+                  avatar={formData.avatar}
+                  onAvatarChange={(url: string) => updateField("avatar", url)}
+                />
+              </div>
+              <div className="flex-1 w-full">
+                <BasicInfoSection
+                  formData={formData}
+                  onChange={updateField}
+                  options={dropdownOptions}
+                />
+              </div>
             </div>
-            <div className="flex-1 w-full">
-              <BasicInfoSection formData={formData} onChange={updateField} options={dropdownOptions} />
+          </Section>
+
+          <Separator />
+
+          {/* Work Info */}
+          <Section icon={BriefcaseIcon} title="Work Info">
+            <WorkInfoSection formData={formData} onChange={updateField} options={dropdownOptions} />
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field>
+                <FieldLabel>Date of Exit</FieldLabel>
+                <Input type="date" placeholder="" />
+              </Field>
             </div>
-          </div>
-        </Section>
+          </Section>
 
-        <Separator />
+          <Separator />
 
-        {/* Work Info */}
-        <Section icon={BriefcaseIcon} title="Work Info">
-          <WorkInfoSection formData={formData} onChange={updateField} options={dropdownOptions} />
-          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field>
-              <FieldLabel>Date of Exit</FieldLabel>
-              <Input type="date" placeholder="" />
-            </Field>
-          </div>
-        </Section>
+          {/* Contact */}
+          <Section icon={PhoneIcon} title="Contact">
+            <ContactDetailsSection
+              phone={formData.phone}
+              secondaryPhone={formData.secondaryPhone}
+              address={formData.address}
+              city={formData.city}
+              state={formData.state}
+              postalCode={formData.postalCode}
+              country={formData.country}
+              onPhoneChange={(v) => updateField("phone", v)}
+              onSecondaryPhoneChange={(v) => updateField("secondaryPhone", v)}
+              onAddressChange={(v) => updateField("address", v)}
+              onCityChange={(v) => updateField("city", v)}
+              onStateChange={(v) => updateField("state", v)}
+              onPostalCodeChange={(v) => updateField("postalCode", v)}
+              onCountryChange={(v) => updateField("country", v)}
+              options={dropdownOptions}
+            />
+          </Section>
 
-        <Separator />
+          <Separator />
 
-        {/* Contact */}
-        <Section icon={PhoneIcon} title="Contact">
-          <ContactDetailsSection
-                phone={formData.phone}
-                secondaryPhone={formData.secondaryPhone}
-                address={formData.address}
-                city={formData.city}
-                state={formData.state}
-                postalCode={formData.postalCode}
-                country={formData.country}
-                onPhoneChange={(v) => updateField("phone", v)}
-                onSecondaryPhoneChange={(v) => updateField("secondaryPhone", v)}
-                onAddressChange={(v) => updateField("address", v)}
-                onCityChange={(v) => updateField("city", v)}
-                onStateChange={(v) => updateField("state", v)}
-                onPostalCodeChange={(v) => updateField("postalCode", v)}
-                onCountryChange={(v) => updateField("country", v)}
-                options={dropdownOptions}
-              />
-        </Section>
-
-        <Separator />
-
-        {/* History */}
-        <Section icon={HistoryIcon} title="History">
-          <div className="space-y-6">
-            <DynamicRowSection
-              title="Work Experience"
-              rows={workExperience}
-              defaultOpen={isViewMode}
-              readOnly={isViewMode}
-              onAdd={() => addRow(setWorkExperience)}
-              onRemove={(id: string) => removeRow(setWorkExperience, id)}
-              renderRow={(row: Row) => (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field>
-                    <FieldLabel>Company name</FieldLabel>
-                    <Input
-                      value={row.company || ""}
-                      onChange={(e) => updateRow(setWorkExperience, row.id, "company", e.target.value)}
-                      placeholder=""
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>Job Title</FieldLabel>
-                    <Input
-                      value={row.title || ""}
-                      onChange={(e) => updateRow(setWorkExperience, row.id, "title", e.target.value)}
-                      placeholder=""
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>Roles</FieldLabel>
-                    <Input
-                      value={row.roles || ""}
-                      onChange={(e) => updateRow(setWorkExperience, row.id, "roles", e.target.value)}
-                      placeholder=""
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>From Date</FieldLabel>
-                    <Input
-                      type="date"
-                      value={row.from || ""}
-                      onChange={(e) => updateRow(setWorkExperience, row.id, "from", e.target.value)}
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>To Date</FieldLabel>
-                    <Input
-                      type="date"
-                      value={row.to || ""}
-                      onChange={(e) => updateRow(setWorkExperience, row.id, "to", e.target.value)}
-                    />
-                  </Field>
-                  <Field className="sm:col-span-2">
-                    <FieldLabel>Job Description</FieldLabel>
-                    <textarea
-                      className="min-h-[60px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
-                      placeholder=""
-                      value={row.description || ""}
-                      onChange={(e) => updateRow(setWorkExperience, row.id, "description", e.target.value)}
-                    />
-                  </Field>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id={`relevant-${row.id}`}
-                      checked={!!row.relevant}
-                      onCheckedChange={(checked) => updateRow(setWorkExperience, row.id, "relevant", !!checked)}
-                    />
-                    <label htmlFor={`relevant-${row.id}`} className="text-sm font-medium">Relevant</label>
+          {/* History */}
+          <Section icon={HistoryIcon} title="History">
+            <div className="space-y-6">
+              <DynamicRowSection
+                title="Work Experience"
+                rows={workExperience}
+                defaultOpen={isViewMode}
+                readOnly={isViewMode}
+                onAdd={() => addRow(setWorkExperience)}
+                onRemove={(id: string) => removeRow(setWorkExperience, id)}
+                renderRow={(row: Row) => (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Field>
+                      <FieldLabel>Company name</FieldLabel>
+                      <Input
+                        value={row.company || ""}
+                        onChange={(e) =>
+                          updateRow(setWorkExperience, row.id, "company", e.target.value)
+                        }
+                        placeholder=""
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Job Title</FieldLabel>
+                      <Input
+                        value={row.title || ""}
+                        onChange={(e) =>
+                          updateRow(setWorkExperience, row.id, "title", e.target.value)
+                        }
+                        placeholder=""
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Roles</FieldLabel>
+                      <Input
+                        value={row.roles || ""}
+                        onChange={(e) =>
+                          updateRow(setWorkExperience, row.id, "roles", e.target.value)
+                        }
+                        placeholder=""
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>From Date</FieldLabel>
+                      <Input
+                        type="date"
+                        value={row.from || ""}
+                        onChange={(e) =>
+                          updateRow(setWorkExperience, row.id, "from", e.target.value)
+                        }
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>To Date</FieldLabel>
+                      <Input
+                        type="date"
+                        value={row.to || ""}
+                        onChange={(e) => updateRow(setWorkExperience, row.id, "to", e.target.value)}
+                      />
+                    </Field>
+                    <Field className="sm:col-span-2">
+                      <FieldLabel>Job Description</FieldLabel>
+                      <textarea
+                        className="min-h-[60px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring"
+                        placeholder=""
+                        value={row.description || ""}
+                        onChange={(e) =>
+                          updateRow(setWorkExperience, row.id, "description", e.target.value)
+                        }
+                      />
+                    </Field>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id={`relevant-${row.id}`}
+                        checked={!!row.relevant}
+                        onCheckedChange={(checked) =>
+                          updateRow(setWorkExperience, row.id, "relevant", !!checked)
+                        }
+                      />
+                      <label htmlFor={`relevant-${row.id}`} className="text-sm font-medium">
+                        Relevant
+                      </label>
+                    </div>
                   </div>
-                </div>
-              )}
-            />
+                )}
+              />
 
-            <DynamicRowSection
-              title="Education Details"
-              rows={educationDetails}
-              defaultOpen={isViewMode}
-              readOnly={isViewMode}
-              onAdd={() => addRow(setEducationDetails)}
-              onRemove={(id: string) => removeRow(setEducationDetails, id)}
-              renderRow={(row: Row) => (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field>
-                    <FieldLabel>Institute Name</FieldLabel>
-                    <Input
-                      value={row.institute || ""}
-                      onChange={(e) => updateRow(setEducationDetails, row.id, "institute", e.target.value)}
-                      placeholder=""
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>Degree/Diploma</FieldLabel>
-                    <Input
-                      value={row.degree || ""}
-                      onChange={(e) => updateRow(setEducationDetails, row.id, "degree", e.target.value)}
-                      placeholder=""
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>Specialization</FieldLabel>
-                    <Input
-                      value={row.specialization || ""}
-                      onChange={(e) => updateRow(setEducationDetails, row.id, "specialization", e.target.value)}
-                      placeholder=""
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>Date of Completion</FieldLabel>
-                    <Input
-                      type="date"
-                      value={row.completionDate || ""}
-                      onChange={(e) => updateRow(setEducationDetails, row.id, "completionDate", e.target.value)}
-                    />
-                  </Field>
-                </div>
-              )}
-            />
+              <DynamicRowSection
+                title="Education Details"
+                rows={educationDetails}
+                defaultOpen={isViewMode}
+                readOnly={isViewMode}
+                onAdd={() => addRow(setEducationDetails)}
+                onRemove={(id: string) => removeRow(setEducationDetails, id)}
+                renderRow={(row: Row) => (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Field>
+                      <FieldLabel>Institute Name</FieldLabel>
+                      <Input
+                        value={row.institute || ""}
+                        onChange={(e) =>
+                          updateRow(setEducationDetails, row.id, "institute", e.target.value)
+                        }
+                        placeholder=""
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Degree/Diploma</FieldLabel>
+                      <Input
+                        value={row.degree || ""}
+                        onChange={(e) =>
+                          updateRow(setEducationDetails, row.id, "degree", e.target.value)
+                        }
+                        placeholder=""
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Specialization</FieldLabel>
+                      <Input
+                        value={row.specialization || ""}
+                        onChange={(e) =>
+                          updateRow(setEducationDetails, row.id, "specialization", e.target.value)
+                        }
+                        placeholder=""
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Date of Completion</FieldLabel>
+                      <Input
+                        type="date"
+                        value={row.completionDate || ""}
+                        onChange={(e) =>
+                          updateRow(setEducationDetails, row.id, "completionDate", e.target.value)
+                        }
+                      />
+                    </Field>
+                  </div>
+                )}
+              />
 
-            <DynamicRowSection
-              title="Dependent Details"
-              rows={dependentDetails}
-              defaultOpen={isViewMode}
-              readOnly={isViewMode}
-              onAdd={() => addRow(setDependentDetails)}
-              onRemove={(id: string) => removeRow(setDependentDetails, id)}
-              renderRow={(row: Row) => (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field>
-                    <FieldLabel>Name</FieldLabel>
-                    <Input
-                      value={row.name || ""}
-                      onChange={(e) => updateRow(setDependentDetails, row.id, "name", e.target.value)}
-                      placeholder=""
+              <DynamicRowSection
+                title="Dependent Details"
+                rows={dependentDetails}
+                defaultOpen={isViewMode}
+                readOnly={isViewMode}
+                onAdd={() => addRow(setDependentDetails)}
+                onRemove={(id: string) => removeRow(setDependentDetails, id)}
+                renderRow={(row: Row) => (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Field>
+                      <FieldLabel>Name</FieldLabel>
+                      <Input
+                        value={row.name || ""}
+                        onChange={(e) =>
+                          updateRow(setDependentDetails, row.id, "name", e.target.value)
+                        }
+                        placeholder=""
+                      />
+                    </Field>
+                    <SelectWithAdd
+                      label="Relationship"
+                      options={["Spouse", "Child", "Parent"]}
+                      value={row.relationship || ""}
+                      readOnly={isViewMode}
+                      onChange={(value: string) =>
+                        updateRow(setDependentDetails, row.id, "relationship", value)
+                      }
                     />
-                  </Field>
-                  <SelectWithAdd
-                    label="Relationship"
-                    options={["Spouse", "Child", "Parent"]}
-                    value={row.relationship || ""}
-                    readOnly={isViewMode}
-                    onChange={(value: string) => updateRow(setDependentDetails, row.id, "relationship", value)}
-                  />
-                  <Field>
-                    <FieldLabel>Date of Birth</FieldLabel>
-                    <Input
-                      type="date"
-                      value={row.dob || ""}
-                      onChange={(e) => updateRow(setDependentDetails, row.id, "dob", e.target.value)}
-                    />
-                  </Field>
-                </div>
-              )}
-            />
-          </div>
-        </Section>
+                    <Field>
+                      <FieldLabel>Date of Birth</FieldLabel>
+                      <Input
+                        type="date"
+                        value={row.dob || ""}
+                        onChange={(e) =>
+                          updateRow(setDependentDetails, row.id, "dob", e.target.value)
+                        }
+                      />
+                    </Field>
+                  </div>
+                )}
+              />
+            </div>
+          </Section>
         </fieldset>
       </div>
 
@@ -486,15 +567,31 @@ export function EmployeeEditForm({ employee, onSave, onCancel, isViewMode, onSwi
           </Button>
         ) : (
           <>
-            <Button variant="outline" onClick={onCancel} disabled={submitting} className="w-32 h-10">
+            <Button
+              variant="outline"
+              onClick={onCancel}
+              disabled={submitting}
+              className="w-32 h-10"
+            >
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={submitting || !formData.firstName.trim() || !formData.email.trim()} className="w-32 h-10">
-              {submitting ? <Loader2Icon className="size-4 animate-spin" /> : <><SaveIcon className="size-3.5 mr-1.5" />Save Changes</>}
+            <Button
+              onClick={handleSave}
+              disabled={submitting || !formData.firstName.trim() || !formData.email.trim()}
+              className="w-32 h-10"
+            >
+              {submitting ? (
+                <Loader2Icon className="size-4 animate-spin" />
+              ) : (
+                <>
+                  <SaveIcon className="size-3.5 mr-1.5" />
+                  Save Changes
+                </>
+              )}
             </Button>
           </>
         )}
       </div>
     </>
-  )
+  );
 }

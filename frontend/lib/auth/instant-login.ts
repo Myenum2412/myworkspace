@@ -1,12 +1,12 @@
 "use server";
 
-import { signIn, auth } from "./config";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import type { BootstrapData } from "@/lib/api/bootstrap";
-import { ROLES } from "@/lib/rbac";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
+import { ROLES } from "@/lib/rbac";
+import { auth, signIn } from "./config";
 
 function getRedirectPath(role?: string): string {
   const r = role?.toLowerCase() || "";
@@ -31,7 +31,10 @@ const AUTH_ERRORS: Record<string, string> = {
   AccessDenied: "Access denied. You don't have permission to access this resource.",
 };
 
-export async function instantLoginAction(email: string, password: string): Promise<{
+export async function instantLoginAction(
+  email: string,
+  password: string,
+): Promise<{
   success: boolean;
   error?: string;
   redirectTo?: string;
@@ -49,12 +52,21 @@ export async function instantLoginAction(email: string, password: string): Promi
     });
 
     if (!signInResult || signInResult.error) {
-      return { success: false, error: AUTH_ERRORS[signInResult?.error || ""] || signInResult?.error || "Invalid email or password. Please try again." };
+      return {
+        success: false,
+        error:
+          AUTH_ERRORS[signInResult?.error || ""] ||
+          signInResult?.error ||
+          "Invalid email or password. Please try again.",
+      };
     }
 
     const user = signInResult as unknown as { ok: boolean; url?: string; error?: string };
     if (!user.ok) {
-      return { success: false, error: AUTH_ERRORS[user.error || ""] || user.error || "Authentication failed" };
+      return {
+        success: false,
+        error: AUTH_ERRORS[user.error || ""] || user.error || "Authentication failed",
+      };
     }
 
     const session = await auth();
@@ -67,8 +79,16 @@ export async function instantLoginAction(email: string, password: string): Promi
     const role = session.user.role || "staffs";
     const orgId = session.user.orgId || "";
     const [userDoc, orgDoc] = await Promise.all([
-      db.collection(collections.users).findOne({ id: userId }).catch(() => null),
-      orgId ? db.collection(collections.organizations).findOne({ id: orgId }).catch(() => null) : Promise.resolve(null),
+      db
+        .collection(collections.users)
+        .findOne({ id: userId })
+        .catch(() => null),
+      orgId
+        ? db
+            .collection(collections.organizations)
+            .findOne({ id: orgId })
+            .catch(() => null)
+        : Promise.resolve(null),
     ]);
 
     const org = orgDoc as Record<string, unknown> | null;

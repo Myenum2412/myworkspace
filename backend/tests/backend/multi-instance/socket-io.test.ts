@@ -1,16 +1,23 @@
 import http from "http";
-import { Server as IOServer } from "socket.io";
-import { io as ioClient } from "socket.io-client";
 import jwt from "jsonwebtoken";
 import type { AddressInfo } from "net";
+import { Server as IOServer } from "socket.io";
+import { io as ioClient } from "socket.io-client";
 
 const JWT_SECRET = process.env.JWT_SECRET || "test-secret";
 
 function createToken(userId: string, orgId: string): string {
-  return jwt.sign({ userId, email: "t@e.com", role: "members", orgId }, JWT_SECRET, { expiresIn: "10m" });
+  return jwt.sign({ userId, email: "t@e.com", role: "members", orgId }, JWT_SECRET, {
+    expiresIn: "10m",
+  });
 }
 
-async function startInstance(): Promise<{ httpServer: http.Server; io: IOServer; port: number; url: string }> {
+async function startInstance(): Promise<{
+  httpServer: http.Server;
+  io: IOServer;
+  port: number;
+  url: string;
+}> {
   const httpServer = http.createServer();
   const io = new IOServer(httpServer, { path: "/api/socketio", cors: { origin: "*" } });
 
@@ -22,7 +29,9 @@ async function startInstance(): Promise<{ httpServer: http.Server; io: IOServer;
       (socket as any).userId = decoded.userId;
       (socket as any).orgId = decoded.orgId;
       next();
-    } catch { next(new Error("Invalid token")); }
+    } catch {
+      next(new Error("Invalid token"));
+    }
   });
 
   io.on("connection", (socket) => {
@@ -58,10 +67,16 @@ describe("Multi-instance Socket.IO", () => {
   it("each instance independently handles its own clients", async () => {
     const token = createToken("indep-user", "indep-org");
     const clientA = ioClient(instanceA.url, {
-      path: "/api/socketio", auth: { token }, transports: ["websocket"], forceNew: true,
+      path: "/api/socketio",
+      auth: { token },
+      transports: ["websocket"],
+      forceNew: true,
     });
     const clientB = ioClient(instanceB.url, {
-      path: "/api/socketio", auth: { token }, transports: ["websocket"], forceNew: true,
+      path: "/api/socketio",
+      auth: { token },
+      transports: ["websocket"],
+      forceNew: true,
     });
 
     await Promise.all([
@@ -79,7 +94,10 @@ describe("Multi-instance Socket.IO", () => {
   it("events on instance A do not reach instance B clients (without Redis adapter)", async () => {
     const token = createToken("isolated-user", "isolated-org");
     const clientB = ioClient(instanceB.url, {
-      path: "/api/socketio", auth: { token }, transports: ["websocket"], forceNew: true,
+      path: "/api/socketio",
+      auth: { token },
+      transports: ["websocket"],
+      forceNew: true,
     });
 
     await new Promise<void>((resolve) => clientB.on("connect", () => resolve()));
@@ -109,10 +127,16 @@ describe("Multi-instance Socket.IO", () => {
     const token = createToken("gap-user", "gap-org");
 
     const clientA = ioClient(instanceA.url, {
-      path: "/api/socketio", auth: { token }, transports: ["websocket"], forceNew: true,
+      path: "/api/socketio",
+      auth: { token },
+      transports: ["websocket"],
+      forceNew: true,
     });
     const clientB = ioClient(instanceB.url, {
-      path: "/api/socketio", auth: { token }, transports: ["websocket"], forceNew: true,
+      path: "/api/socketio",
+      auth: { token },
+      transports: ["websocket"],
+      forceNew: true,
     });
 
     await Promise.all([
@@ -133,7 +157,10 @@ describe("Multi-instance Socket.IO", () => {
     const token = createToken("storage-test", "storage-org");
 
     const clientA = ioClient(instanceA.url, {
-      path: "/api/socketio", auth: { token }, transports: ["websocket"], forceNew: true,
+      path: "/api/socketio",
+      auth: { token },
+      transports: ["websocket"],
+      forceNew: true,
     });
 
     await new Promise<void>((resolve) => clientA.on("connect", () => resolve()));

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
+import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { ensureUserOrg } from "@/lib/org";
-import { v4 as uuid } from "uuid";
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -38,11 +38,14 @@ export async function GET(req: Request) {
   }
 
   try {
-    const folders = await db.collection("folders").find(filter, { sort: { clientId: 1, name: 1 } }).toArray();
+    const folders = await db
+      .collection("folders")
+      .find(filter, { sort: { clientId: 1, name: 1 } })
+      .toArray();
     return NextResponse.json({ data: folders });
   } catch (err) {
     console.error("[API /api/folders] GET error:", err);
-      return NextResponse.json({ error: "Could not load folders" }, { status: 500 });
+    return NextResponse.json({ error: "Could not load folders" }, { status: 500 });
   }
 }
 
@@ -51,9 +54,12 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { orgId, parentId, name, clientId } = await req.json();
-  if (!orgId || !name) return NextResponse.json({ error: "orgId and name are required" }, { status: 400 });
+  if (!orgId || !name)
+    return NextResponse.json({ error: "orgId and name are required" }, { status: 400 });
 
-  const parent = parentId ? await db.collection("folders").findOne({ id: parentId, deletedAt: null }) : null;
+  const parent = parentId
+    ? await db.collection("folders").findOne({ id: parentId, deletedAt: null })
+    : null;
   const path = parent ? `${parent.path}/${name}` : `/${name}`;
 
   const existing = await db.collection("folders").findOne({ orgId, path, deletedAt: null });
@@ -61,13 +67,25 @@ export async function POST(req: Request) {
 
   const id = uuid();
   await db.collection("folders").insertOne({
-    id, orgId, parentId: parentId || null, name, path, clientId: clientId || null,
-    createdBy: session.user.id, deletedAt: null, createdAt: new Date(), updatedAt: new Date(),
+    id,
+    orgId,
+    parentId: parentId || null,
+    name,
+    path,
+    clientId: clientId || null,
+    createdBy: session.user.id,
+    deletedAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   await db.collection(collections.activityLogs).insertOne({
-    id: uuid(), orgId, userId: session.user.id, action: "folder.created",
-    entityType: "folder", entityId: id,
+    id: uuid(),
+    orgId,
+    userId: session.user.id,
+    action: "folder.created",
+    entityType: "folder",
+    entityId: id,
     description: `Folder "${name}" created`,
   });
 

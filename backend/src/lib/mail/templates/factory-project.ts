@@ -1,4 +1,4 @@
-import { EmailData } from "./types.js";
+import type { EmailData } from "./types.js";
 
 function ts(): string {
   return new Date().toLocaleString();
@@ -10,7 +10,7 @@ export const buildProjectCreated = (
   createdBy: string,
   startDate: string,
   endDate: string,
-  projectUrl: string
+  projectUrl: string,
 ): EmailData => ({
   subject: `New Project: ${projectName}`,
   previewText: `A new project "${projectName}" has been created`,
@@ -39,7 +39,7 @@ export const buildProjectUpdated = (
   projectName: string,
   updatedBy: string,
   changes: string,
-  projectUrl: string
+  projectUrl: string,
 ): EmailData => ({
   subject: `Project Updated: ${projectName}`,
   previewText: `"${projectName}" has been updated`,
@@ -62,7 +62,7 @@ export const buildProjectMilestoneReached = (
   milestoneName: string,
   achievedBy: string,
   progressPercent: number,
-  projectUrl: string
+  projectUrl: string,
 ): EmailData => ({
   subject: `Milestone Reached: ${milestoneName} - ${projectName}`,
   previewText: `"${milestoneName}" milestone achieved in ${projectName}`,
@@ -88,7 +88,7 @@ export const buildProjectDeadlineExtended = (
   oldDeadline: string,
   newDeadline: string,
   reason: string,
-  projectUrl: string
+  projectUrl: string,
 ): EmailData => ({
   subject: `Deadline Extended: ${projectName}`,
   previewText: `The deadline for ${projectName} has been extended to ${newDeadline}`,
@@ -113,7 +113,7 @@ export const buildProjectCompleted = (
   projectName: string,
   completedBy: string,
   totalTasks: number,
-  projectUrl: string
+  projectUrl: string,
 ): EmailData => ({
   subject: `Project Completed: ${projectName}`,
   previewText: `"${projectName}" has been marked as complete`,
@@ -144,7 +144,7 @@ export const buildProjectMemberAdded = (
   addedBy: string,
   memberName: string,
   memberRole: string,
-  projectUrl: string
+  projectUrl: string,
 ): EmailData => ({
   subject: `New Team Member: ${memberName} joined ${projectName}`,
   previewText: `${memberName} has been added to ${projectName}`,
@@ -167,7 +167,7 @@ export const buildProjectMemberRemoved = (
   projectName: string,
   removedBy: string,
   memberName: string,
-  projectUrl: string
+  projectUrl: string,
 ): EmailData => ({
   subject: `Team Member Removed: ${memberName} left ${projectName}`,
   previewText: `${memberName} has been removed from ${projectName}`,
@@ -190,7 +190,7 @@ export const buildProjectStatusChanged = (
   changedBy: string,
   oldStatus: string,
   newStatus: string,
-  projectUrl: string
+  projectUrl: string,
 ): EmailData => ({
   subject: `Project Status Changed: ${projectName}`,
   previewText: `"${projectName}" status changed from ${oldStatus} to ${newStatus}`,
@@ -218,7 +218,7 @@ export const buildProjectWeeklySummary = (
   tasksAdded: number,
   tasksOverdue: number,
   upcomingDeadlines: string,
-  projectUrl: string
+  projectUrl: string,
 ): EmailData => ({
   subject: `Weekly Project Summary - ${projectName}`,
   previewText: `${tasksCompleted} tasks completed, ${tasksOverdue} overdue in ${projectName}`,
@@ -236,9 +236,10 @@ export const buildProjectWeeklySummary = (
     { label: "Overdue Tasks", value: String(tasksOverdue) },
     { label: "Upcoming Deadlines", value: upcomingDeadlines },
   ],
-  warning: tasksOverdue > 0
-    ? `You have ${tasksOverdue} overdue task${tasksOverdue > 1 ? 's' : ''}. Please prioritize these in the coming week.`
-    : undefined,
+  warning:
+    tasksOverdue > 0
+      ? `You have ${tasksOverdue} overdue task${tasksOverdue > 1 ? "s" : ""}. Please prioritize these in the coming week.`
+      : undefined,
   button: { text: "View Project", url: projectUrl },
   supportEmail: "support@workspace.com",
 });

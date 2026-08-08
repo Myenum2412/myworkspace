@@ -1,18 +1,8 @@
 "use client";
 
-import {
-  type QueuedRequest,
-  dequeue,
-  getAll,
-  updateItem,
-} from "./queue";
+import { dequeue, getAll, type QueuedRequest, updateItem } from "./queue";
 
-export type SyncStatus =
-  | "idle"
-  | "syncing"
-  | "success"
-  | "failed"
-  | "partial";
+export type SyncStatus = "idle" | "syncing" | "success" | "failed" | "partial";
 
 export interface SyncEvent {
   status: SyncStatus;
@@ -61,7 +51,9 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-async function processItem(item: QueuedRequest): Promise<"success" | "permanent" | "transient" | "conflict"> {
+async function processItem(
+  item: QueuedRequest,
+): Promise<"success" | "permanent" | "transient" | "conflict"> {
   try {
     const headers: Record<string, string> = {
       ...item.headers,
@@ -89,7 +81,9 @@ async function processItem(item: QueuedRequest): Promise<"success" | "permanent"
   }
 }
 
-async function processItemWithConflictResolution(item: QueuedRequest): Promise<"success" | "permanent" | "transient"> {
+async function processItemWithConflictResolution(
+  item: QueuedRequest,
+): Promise<"success" | "permanent" | "transient"> {
   const result = await processItem(item);
 
   if (result === "conflict") {
@@ -157,30 +151,24 @@ export async function processQueue(): Promise<void> {
             syncedCount++;
             backoffMs = 1000;
           } else if (result === "permanent") {
-            console.error(
-              `[offline-sync] Permanent failure — dropping item ${item.id}`,
-              {
-                endpoint: item.endpoint,
-                method: item.method,
-                createdAt: new Date(item.createdAt).toISOString(),
-                body: item.body,
-              },
-            );
+            console.error(`[offline-sync] Permanent failure — dropping item ${item.id}`, {
+              endpoint: item.endpoint,
+              method: item.method,
+              createdAt: new Date(item.createdAt).toISOString(),
+              body: item.body,
+            });
             await dequeue(item.id!);
             failedCount++;
             backoffMs = 1000;
           } else {
             item.retryCount += 1;
             if (item.retryCount >= item.maxRetries) {
-              console.error(
-                `[offline-sync] Max retries exhausted — dropping item ${item.id}`,
-                {
-                  endpoint: item.endpoint,
-                  method: item.method,
-                  retryCount: item.retryCount,
-                  body: item.body,
-                },
-              );
+              console.error(`[offline-sync] Max retries exhausted — dropping item ${item.id}`, {
+                endpoint: item.endpoint,
+                method: item.method,
+                retryCount: item.retryCount,
+                body: item.body,
+              });
               await dequeue(item.id!);
               failedCount++;
               backoffMs = 1000;
@@ -207,7 +195,13 @@ export async function processQueue(): Promise<void> {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     const remaining = await getAll();
-    emit({ status: "failed", remaining: remaining.length, lastError: msg, syncedCount, failedCount });
+    emit({
+      status: "failed",
+      remaining: remaining.length,
+      lastError: msg,
+      syncedCount,
+      failedCount,
+    });
   } finally {
     isSyncing = false;
   }

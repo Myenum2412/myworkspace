@@ -1,13 +1,13 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
-import { deleteFile } from "@/lib/storage";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { ROLES } from "@/lib/rbac";
+import { deleteFile } from "@/lib/storage";
 
 async function requireOrgId(): Promise<string> {
   const session = await auth();
@@ -20,7 +20,11 @@ async function requireOrgId(): Promise<string> {
     await db.collection(collections.organizations).insertOne({
       id: newOrgId,
       name: `${userName}'s Organization`,
-      slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
+      slug:
+        userName
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
       plan: "free",
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -39,7 +43,11 @@ async function requireOrgId(): Promise<string> {
 
 export async function deleteFileAction(fileId: string) {
   let orgId: string;
-  try { orgId = await requireOrgId(); } catch { return { error: "Unauthorized" }; }
+  try {
+    orgId = await requireOrgId();
+  } catch {
+    return { error: "Unauthorized" };
+  }
 
   const session = await auth();
   const file = await db.collection(collections.fileAttachments).findOne({ id: fileId });
@@ -61,16 +69,19 @@ export async function deleteFileAction(fileId: string) {
     description: `File "${file.originalName}" deleted`,
   });
 
-
   revalidatePath("/shared");
-  revalidateTag('dashboard', 'max');
+  revalidateTag("dashboard", "max");
 
   return { success: true };
 }
 
 export async function shareFileAction(fileId: string, sharedWithUserId: string | null) {
   let orgId: string;
-  try { orgId = await requireOrgId(); } catch { return { error: "Unauthorized" }; }
+  try {
+    orgId = await requireOrgId();
+  } catch {
+    return { error: "Unauthorized" };
+  }
 
   const session = await auth();
   if (!session?.user?.id) return { error: "Unauthorized" };
@@ -92,7 +103,7 @@ export async function shareFileAction(fileId: string, sharedWithUserId: string |
     await db.collection(collections.activityLogs).insertOne({
       id: uuid(),
       orgId,
-    userId: session.user.id,
+      userId: session.user.id,
       action: "file.shared",
       entityType: "file",
       entityId: fileId,
@@ -100,9 +111,8 @@ export async function shareFileAction(fileId: string, sharedWithUserId: string |
     });
   }
 
-
   revalidatePath("/shared");
-  revalidateTag('dashboard', 'max');
+  revalidateTag("dashboard", "max");
 
   return { success: true };
 }
@@ -113,9 +123,8 @@ export async function unshareFileAction(shareId: string) {
 
   await db.collection(collections.fileShares).deleteOne({ id: shareId });
 
-
   revalidatePath("/shared");
-  revalidateTag('dashboard', 'max');
+  revalidateTag("dashboard", "max");
 
   return { success: true };
 }

@@ -1,34 +1,19 @@
 "use client";
 
 import {
-  type ChartConfig,
-  ChartContainer,
-  getColorsCount,
-  LoadingIndicator,
-} from "@/components/evilcharts/ui/chart";
-import {
-  ChartTooltip,
-  ChartTooltipContent,
-  type TooltipRoundness,
-  type TooltipVariant,
-} from "@/components/evilcharts/ui/tooltip";
-import { ChartLegend, ChartLegendContent, type ChartLegendVariant } from "@/components/evilcharts/ui/legend";
-import { ChartBackground, type BackgroundVariant } from "@/components/evilcharts/ui/background";
-import { ChartDot, type DotVariant } from "@/components/evilcharts/ui/dot";
-import {
   Children,
+  type ComponentProps,
   createContext,
+  type FC,
   isValidElement,
+  type ReactElement,
+  type ReactNode,
   use,
   useCallback,
   useEffect,
   useId,
   useMemo,
   useState,
-  type ComponentProps,
-  type FC,
-  type ReactElement,
-  type ReactNode,
 } from "react";
 import {
   PolarAngleAxis as RechartsPolarAngleAxis,
@@ -37,6 +22,25 @@ import {
   Radar as RechartsRadar,
   RadarChart as RechartsRadarChart,
 } from "recharts";
+import { type BackgroundVariant, ChartBackground } from "@/components/evilcharts/ui/background";
+import {
+  type ChartConfig,
+  ChartContainer,
+  getColorsCount,
+  LoadingIndicator,
+} from "@/components/evilcharts/ui/chart";
+import { ChartDot, type DotVariant } from "@/components/evilcharts/ui/dot";
+import {
+  ChartLegend,
+  ChartLegendContent,
+  type ChartLegendVariant,
+} from "@/components/evilcharts/ui/legend";
+import {
+  ChartTooltip,
+  ChartTooltipContent,
+  type TooltipRoundness,
+  type TooltipVariant,
+} from "@/components/evilcharts/ui/tooltip";
 
 // Constants
 const STROKE_WIDTH = 1;
@@ -317,9 +321,7 @@ export function PolarRadiusAxis({
 
   if (isLoading) return null;
 
-  return (
-    <RechartsPolarRadiusAxis tick={tick} tickLine={tickLine} axisLine={axisLine} {...props} />
-  );
+  return <RechartsPolarRadiusAxis tick={tick} tickLine={tickLine} axisLine={axisLine} {...props} />;
 }
 
 type TooltipProps = {
@@ -499,7 +501,9 @@ const StrokeGradient = ({ id, dataKey, config }: StyleProps) => {
 const FillGradient = ({ id, dataKey, config }: StyleProps) => {
   const colorsCount = getColorsCount(config[dataKey] ?? {});
   const opacities =
-    colorsCount === 1 ? [0.8, 0.3] : Array.from({ length: colorsCount }, (_, i) => (i === 0 ? 0.8 : 0.3));
+    colorsCount === 1
+      ? [0.8, 0.3]
+      : Array.from({ length: colorsCount }, (_, i) => (i === 0 ? 0.8 : 0.3));
 
   return (
     <radialGradient id={`${id}-radar-fill-${dataKey}`} cx="50%" cy="50%" r="50%">

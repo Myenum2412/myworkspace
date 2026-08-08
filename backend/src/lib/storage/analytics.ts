@@ -34,7 +34,10 @@ export class StorageAnalytics {
     };
   }
 
-  async getBandwidthUsage(orgId: string, days = 30): Promise<{ date: string; bytesDownloaded: number }[]> {
+  async getBandwidthUsage(
+    orgId: string,
+    days = 30,
+  ): Promise<{ date: string; bytesDownloaded: number }[]> {
     return [];
   }
 }

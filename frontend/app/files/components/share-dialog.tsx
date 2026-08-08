@@ -1,23 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { formatSize } from "@/lib/file-system/types";
 import { getFileIcon } from "@/components/files/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -25,16 +21,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  LinkIcon,
-  CopyIcon,
-  CheckIcon,
-  UserPlusIcon,
-  GlobeIcon,
-  LockIcon,
-  ClockIcon,
-} from "@/lib/icons";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as api from "@/lib/file-system/api";
+import { useFileSystemStore } from "@/lib/file-system/store";
+import { formatSize } from "@/lib/file-system/types";
+import {
+  CheckIcon,
+  ClockIcon,
+  CopyIcon,
+  GlobeIcon,
+  LinkIcon,
+  LockIcon,
+  UserPlusIcon,
+} from "@/lib/icons";
 
 export function ShareDialog() {
   const { shareFile: file, setShareFile, orgId } = useFileSystemStore();
@@ -97,7 +97,12 @@ export function ShareDialog() {
   }
 
   return (
-    <Dialog open={!!file} onOpenChange={(o) => { if (!o) setShareFile(null); }}>
+    <Dialog
+      open={!!file}
+      onOpenChange={(o) => {
+        if (!o) setShareFile(null);
+      }}
+    >
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-3">
@@ -111,8 +116,12 @@ export function ShareDialog() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="link"><LinkIcon className="size-3.5 mr-1.5" /> Share Link</TabsTrigger>
-            <TabsTrigger value="internal"><UserPlusIcon className="size-3.5 mr-1.5" /> Share with People</TabsTrigger>
+            <TabsTrigger value="link">
+              <LinkIcon className="size-3.5 mr-1.5" /> Share Link
+            </TabsTrigger>
+            <TabsTrigger value="internal">
+              <UserPlusIcon className="size-3.5 mr-1.5" /> Share with People
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="link" className="space-y-4 pt-4">
@@ -145,7 +154,11 @@ export function ShareDialog() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Expires at (optional)</Label>
-                <Input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
+                <Input
+                  type="date"
+                  value={expiresAt}
+                  onChange={(e) => setExpiresAt(e.target.value)}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Max downloads (optional)</Label>
@@ -202,7 +215,9 @@ export function ShareDialog() {
         </Tabs>
 
         <DialogFooter className="border-t pt-4">
-          <Button variant="outline" onClick={() => setShareFile(null)}>Close</Button>
+          <Button variant="outline" onClick={() => setShareFile(null)}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -211,7 +226,15 @@ export function ShareDialog() {
 
 function DownloadIcon(props: { className?: string }) {
   return (
-    <svg className={props.className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={props.className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />

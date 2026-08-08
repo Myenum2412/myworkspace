@@ -1,8 +1,12 @@
-import { getPayloadConfigFromPayload, getColorsCount, useChart } from "@/components/evilcharts/ui/chart";
-import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
-import * as RechartsPrimitive from "recharts";
-import { cn } from "@/lib/utils";
 import * as React from "react";
+import * as RechartsPrimitive from "recharts";
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
+import {
+  getColorsCount,
+  getPayloadConfigFromPayload,
+  useChart,
+} from "@/components/evilcharts/ui/chart";
+import { cn } from "@/lib/utils";
 
 type TooltipRoundness = "sm" | "md" | "lg" | "xl";
 type TooltipVariant = "default" | "frosted-glass";
@@ -189,5 +193,5 @@ const ChartTooltip = ({
   <RechartsPrimitive.Tooltip animationDuration={animationDuration} {...props} />
 );
 
-export { ChartTooltip, ChartTooltipContent };
 export type { TooltipRoundness, TooltipVariant };
+export { ChartTooltip, ChartTooltipContent };

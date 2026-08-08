@@ -1,28 +1,37 @@
-import { Router, Response } from "express";
-import { hash, compare } from "bcryptjs";
-import { v4 as uuid } from "uuid";
+import { compare, hash } from "bcryptjs";
 import crypto from "crypto";
-import { User } from "../lib/db/models/User.js";
+import { type Response, Router } from "express";
+import jwt from "jsonwebtoken";
+import { v4 as uuid } from "uuid";
+import { signRefreshToken, signToken, verifyRefreshToken } from "../config/auth.js";
+import { env } from "../config/env.js";
+import { mongoose } from "../lib/db/index.js";
 import { ClientUser } from "../lib/db/models/ClientUser.js";
-import { PendingSignup } from "../lib/db/models/PendingSignup.js";
+import { getNextSequence } from "../lib/db/models/Counter.js";
 import { Organization } from "../lib/db/models/Organization.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
-import { Session } from "../lib/db/models/Session.js";
+import { PendingSignup } from "../lib/db/models/PendingSignup.js";
 import { RefreshToken } from "../lib/db/models/RefreshToken.js";
-import { getNextSequence } from "../lib/db/models/Counter.js";
-import { signToken, signRefreshToken, verifyRefreshToken } from "../config/auth.js";
-import { getUserOrgId } from "../lib/org-utils.js";
-import { env } from "../config/env.js";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, sendOrganizationInviteEmail, sendClientWelcomeEmail, sendEmployeeOnboarded, sendSignupOtpEmail, sendPasswordDeliveredEmail } from "../lib/mail/index.js";
-import { mongoose } from "../lib/db/index.js";
-import jwt from "jsonwebtoken";
-import { JwtPayload } from "../types/index.js";
-import { requireString, optionalString } from "../lib/validate.js";
-import { validatePasswordStrength } from "../services/validation.service.js";
-import { recordAuditLog } from "../services/audit.service.js";
+import { Session } from "../lib/db/models/Session.js";
+import { User } from "../lib/db/models/User.js";
+import {
+  sendClientWelcomeEmail,
+  sendEmployeeOnboarded,
+  sendOrganizationInviteEmail,
+  sendPasswordDeliveredEmail,
+  sendPasswordResetEmail,
+  sendSignupOtpEmail,
+  sendVerificationEmail,
+  sendWelcomeEmail,
+} from "../lib/mail/index.js";
 import { notifyAuth } from "../lib/notifications/notification-wiring.js";
+import { getUserOrgId } from "../lib/org-utils.js";
+import { optionalString, requireString } from "../lib/validate.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
+import { recordAuditLog } from "../services/audit.service.js";
+import { validatePasswordStrength } from "../services/validation.service.js";
+import type { JwtPayload } from "../types/index.js";
 
 const router = Router();
 const MAX_FAILED_ATTEMPTS = 5;
@@ -36,12 +45,18 @@ router.get("/socket-token", authenticate, (req: AuthRequest, res: Response) => {
     orgId: req.user!.orgId,
     permissions: req.user!.permissions,
   } as JwtPayload;
-  const token = jwt.sign({ ...purpose, purpose: "socket" }, env.JWT_SECRET, { expiresIn: "60s" } as jwt.SignOptions);
+  const token = jwt.sign({ ...purpose, purpose: "socket" }, env.JWT_SECRET, {
+    expiresIn: "60s",
+  } as jwt.SignOptions);
   res.json({ success: true, token });
 });
 
 async function generateUniqueSlug(base: string): Promise<string> {
-  const slugBase = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "org";
+  const slugBase =
+    base
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "org";
   let slug = slugBase;
   let counter = 0;
   while (await Organization.exists({ slug })) {
@@ -59,10 +74,13 @@ async function getUserPrimaryOrgId(userId: string): Promise<string | null> {
 router.post("/login", async (req: AuthRequest, res: Response) => {
   const email = requireString(req.body.email || "", "email", { min: 1, max: 254 }).toLowerCase();
   const password = requireString(req.body.password || "", "password", { min: 1, max: 1000 });
-  const deviceFingerprint = optionalString(req.body.deviceFingerprint, "deviceFingerprint", { max: 256 });
+  const deviceFingerprint = optionalString(req.body.deviceFingerprint, "deviceFingerprint", {
+    max: 256,
+  });
 
-  const user = await User.findOne({ email })
-    .select("id email password name role permissions status isActive lockedUntil failedLoginAttempts orgId emailVerified image userNumber lastLogin tokenVersion");
+  const user = await User.findOne({ email }).select(
+    "id email password name role permissions status isActive lockedUntil failedLoginAttempts orgId emailVerified image userNumber lastLogin tokenVersion",
+  );
   if (!user) {
     throw new AppError(401, "Invalid email or password");
   }
@@ -76,7 +94,7 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
   }
 
   const ipAddress = req.ip || req.socket.remoteAddress || "unknown";
-  const resolvedOrgId = user.orgId || await getUserPrimaryOrgId(user.id) || "";
+  const resolvedOrgId = user.orgId || (await getUserPrimaryOrgId(user.id)) || "";
 
   let valid = false;
   if (user.password) {
@@ -86,10 +104,14 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
     if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
       user.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
-      notifyAuth.accountLocked(user._id.toString(), resolvedOrgId, "Too many failed login attempts").catch(() => {});
+      notifyAuth
+        .accountLocked(user._id.toString(), resolvedOrgId, "Too many failed login attempts")
+        .catch(() => {});
     }
     await user.save();
-    notifyAuth.failedLogin(user._id.toString(), resolvedOrgId, user.failedLoginAttempts, ipAddress).catch(() => {});
+    notifyAuth
+      .failedLogin(user._id.toString(), resolvedOrgId, user.failedLoginAttempts, ipAddress)
+      .catch(() => {});
     throw new AppError(401, "Invalid email or password");
   }
 
@@ -112,7 +134,9 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
     metadata: JSON.stringify({ ipAddress, userAgent }),
   });
 
-  notifyAuth.newDeviceLogin(user._id.toString(), resolvedOrgId, userAgent || "Unknown device", ipAddress).catch(() => {});
+  notifyAuth
+    .newDeviceLogin(user._id.toString(), resolvedOrgId, userAgent || "Unknown device", ipAddress)
+    .catch(() => {});
 
   await Session.updateMany(
     { userId: user.id, logoutTime: { $exists: false } },
@@ -124,17 +148,24 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
 
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const session = await Session.create({
-    userId: user.id, orgId: resolvedOrgId,
-    loginTime: new Date(), currentStatus: "online",
+    userId: user.id,
+    orgId: resolvedOrgId,
+    loginTime: new Date(),
+    currentStatus: "online",
     statusTransitions: [{ status: "online", timestamp: new Date() }],
-    totalBreakDuration: 0, expiresAt,
+    totalBreakDuration: 0,
+    expiresAt,
     deviceFingerprint: deviceFingerprint || undefined,
-    ipAddress, userAgent,
+    ipAddress,
+    userAgent,
   });
 
   await recordAuditLog({
-    orgId: resolvedOrgId, userId: user.id, createdBy: user.id,
-    action: "session.start", entityType: "session",
+    orgId: resolvedOrgId,
+    userId: user.id,
+    createdBy: user.id,
+    action: "session.start",
+    entityType: "session",
     entityId: session._id.toString(),
     description: `Session started for ${user.name}`,
   });
@@ -149,16 +180,21 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
 
   await RefreshToken.create({
     token: crypto.createHash("sha256").update(refreshTokenStr).digest("hex"),
-    userId: user.id, orgId: resolvedOrgId,
+    userId: user.id,
+    orgId: resolvedOrgId,
     family: refreshFamily,
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     deviceFingerprint: deviceFingerprint || undefined,
-    ipAddress, userAgent,
+    ipAddress,
+    userAgent,
   });
 
   const token = signToken({
-    userId: user.id, email: user.email, role: user.role,
-    permissions: user.permissions || [], orgId: resolvedOrgId,
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+    permissions: user.permissions || [],
+    orgId: resolvedOrgId,
     tokenVersion: user.tokenVersion || 0,
   });
 
@@ -169,10 +205,16 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
       refreshToken: refreshTokenStr,
       sessionId: session._id.toString(),
       user: {
-        id: user.id, userNumber: user.userNumber, name: user.name,
-        email: user.email, image: user.image, role: user.role,
-        permissions: user.permissions || [], status: "online",
-        orgId: resolvedOrgId, emailVerified: user.emailVerified || false,
+        id: user.id,
+        userNumber: user.userNumber,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        role: user.role,
+        permissions: user.permissions || [],
+        status: "online",
+        orgId: resolvedOrgId,
+        emailVerified: user.emailVerified || false,
       },
       orgId: resolvedOrgId,
     },
@@ -180,8 +222,13 @@ router.post("/login", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/refresh", async (req: AuthRequest, res: Response) => {
-  const refreshTokenStr = requireString(req.body.refreshToken || "", "refreshToken", { min: 1, max: 2000 });
-  const deviceFingerprint = optionalString(req.body.deviceFingerprint, "deviceFingerprint", { max: 256 });
+  const refreshTokenStr = requireString(req.body.refreshToken || "", "refreshToken", {
+    min: 1,
+    max: 2000,
+  });
+  const deviceFingerprint = optionalString(req.body.deviceFingerprint, "deviceFingerprint", {
+    max: 256,
+  });
 
   const { verifyRefreshTokenPipeline } = await import("../services/auth-pipeline.service.js");
   const result = await verifyRefreshTokenPipeline(
@@ -228,50 +275,68 @@ router.post("/signup", async (req: AuthRequest, res: Response) => {
   let org: any;
 
   try {
-    await session.withTransaction(async () => {
-      const userId = uuid();
-      const orgId = uuid();
-      const userNumber = await getNextSequence("userNumber");
+    await session.withTransaction(
+      async () => {
+        const userId = uuid();
+        const orgId = uuid();
+        const userNumber = await getNextSequence("userNumber");
 
-      const [createdUser] = await User.create([{
-        id: userId,
-        userNumber,
-        orgId,
-        name,
-        email,
-        password: hashedPassword,
-        status: "online",
-        role: "members",
-        emailVerified: false,
-        createdBy: userId,
-        emailVerificationToken: null,
-        emailVerificationExpires: null,
-      }], { session });
-      user = createdUser;
+        const [createdUser] = await User.create(
+          [
+            {
+              id: userId,
+              userNumber,
+              orgId,
+              name,
+              email,
+              password: hashedPassword,
+              status: "online",
+              role: "members",
+              emailVerified: false,
+              createdBy: userId,
+              emailVerificationToken: null,
+              emailVerificationExpires: null,
+            },
+          ],
+          { session },
+        );
+        user = createdUser;
 
-      const [createdOrg] = await Organization.create([{
-        id: orgId,
-        name: orgName,
-        slug,
-        plan: "enterprise",
-        trialEnd: null,
-        subscriptionStatus: "active",
-        ownerId: userId,
-        createdBy: userId,
-      }], { session });
-      org = createdOrg;
+        const [createdOrg] = await Organization.create(
+          [
+            {
+              id: orgId,
+              name: orgName,
+              slug,
+              plan: "enterprise",
+              trialEnd: null,
+              subscriptionStatus: "active",
+              ownerId: userId,
+              createdBy: userId,
+            },
+          ],
+          { session },
+        );
+        org = createdOrg;
 
-      await OrgMember.create([{
-        orgId,
-        userId,
-        role: "members",
-        createdBy: userId,
-      }], { session });
-    }, {
-      readPreference: "primary",
-      readConcern: { level: "local" },
-      writeConcern: { w: "majority" },
-    });
+        await OrgMember.create(
+          [
+            {
+              orgId,
+              userId,
+              role: "members",
+              createdBy: userId,
+            },
+          ],
+          { session },
+        );
+      },
+      {
+        readPreference: "primary",
+        readConcern: { level: "local" },
+        writeConcern: { w: "majority" },
+      },
+    );
   } finally {
     await session.endSession();
   }
@@ -339,7 +404,9 @@ router.post("/verify-email", async (req: AuthRequest, res: Response) => {
     email: email.toLowerCase().trim(),
     emailVerificationToken: token,
     emailVerificationExpires: { $gt: new Date() },
-  }).select("_id orgId").lean();
+  })
+    .select("_id orgId")
+    .lean();
 
   if (!user) {
     throw new AppError(400, "Invalid or expired verification token");
@@ -362,7 +429,9 @@ router.post("/verify-email", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/resend-verification", authenticate, async (req: AuthRequest, res: Response) => {
-  const user = await User.findOne({ id: req.user!.userId }).select("_id email name emailVerified").lean();
+  const user = await User.findOne({ id: req.user!.userId })
+    .select("_id email name emailVerified")
+    .lean();
   if (!user) throw new AppError(404, "User not found");
   if (user.emailVerified) {
     throw new AppError(400, "Email is already verified");
@@ -390,7 +459,10 @@ router.post("/resend-verification", authenticate, async (req: AuthRequest, res: 
 router.post("/logout-all", authenticate, async (req: AuthRequest, res: Response) => {
   const userId = req.user!.userId;
   await User.updateOne({ id: userId }, { $inc: { tokenVersion: 1 } });
-  await RefreshToken.updateMany({ userId, revokedAt: { $exists: false } }, { revokedAt: new Date() });
+  await RefreshToken.updateMany(
+    { userId, revokedAt: { $exists: false } },
+    { revokedAt: new Date() },
+  );
   await Session.updateMany(
     { userId, logoutTime: { $exists: false } },
     { $set: { logoutTime: new Date(), currentStatus: "offline" } },
@@ -407,10 +479,14 @@ router.post("/logout", authenticate, async (req: AuthRequest, res: Response) => 
     { revokedAt: new Date() },
   );
 
-  const activeSession = await Session.findOne({ userId, logoutTime: { $exists: false } }).sort({ loginTime: -1 }).select("_id currentStatus statusTransitions loginTime totalBreakDuration duration logoutTime");
+  const activeSession = await Session.findOne({ userId, logoutTime: { $exists: false } })
+    .sort({ loginTime: -1 })
+    .select("_id currentStatus statusTransitions loginTime totalBreakDuration duration logoutTime");
   if (activeSession) {
     if (activeSession.currentStatus === "break") {
-      const breakStart = [...activeSession.statusTransitions].reverse().find(t => t.status === "break");
+      const breakStart = [...activeSession.statusTransitions]
+        .reverse()
+        .find((t) => t.status === "break");
       if (breakStart) {
         activeSession.totalBreakDuration += Date.now() - breakStart.timestamp.getTime();
       }
@@ -418,7 +494,12 @@ router.post("/logout", authenticate, async (req: AuthRequest, res: Response) => 
     activeSession.statusTransitions.push({ status: "offline", timestamp: new Date() });
     activeSession.logoutTime = new Date();
     activeSession.currentStatus = "offline";
-    activeSession.duration = Math.max(0, activeSession.logoutTime.getTime() - activeSession.loginTime.getTime() - activeSession.totalBreakDuration);
+    activeSession.duration = Math.max(
+      0,
+      activeSession.logoutTime.getTime() -
+        activeSession.loginTime.getTime() -
+        activeSession.totalBreakDuration,
+    );
     await activeSession.save();
 
     await recordAuditLog({
@@ -430,7 +511,6 @@ router.post("/logout", authenticate, async (req: AuthRequest, res: Response) => 
       entityId: activeSession._id.toString(),
       description: `Session ended via logout. Active: ${Math.round((activeSession.duration || 0) / 60000)} min`,
     });
-
   }
 
   await User.findOneAndUpdate({ id: userId }, { status: "offline" });
@@ -445,7 +525,9 @@ router.post("/forgot-password", async (req: AuthRequest, res: Response) => {
   const recentResets = await User.findOne({
     email,
     resetTokenExpires: { $gt: new Date(Date.now() - 3600000) },
-  }).select("_id").lean();
+  })
+    .select("_id")
+    .lean();
 
   if (recentResets) {
     // Check how many tokens were generated recently (rate limit)
@@ -520,7 +602,9 @@ router.post("/reset-password", async (req: AuthRequest, res: Response) => {
     email,
     resetToken: tokenHash,
     resetTokenExpires: { $gt: new Date() },
-  }).select("_id").lean();
+  })
+    .select("_id")
+    .lean();
 
   if (!user) {
     // Audit log for failed reset attempt
@@ -574,7 +658,9 @@ router.post("/reset-password", async (req: AuthRequest, res: Response) => {
 
 router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
   const user = await User.findOne({ id: req.user!.userId })
-    .select("id userNumber name email image role permissions status isActive emailVerified createdAt orgId")
+    .select(
+      "id userNumber name email image role permissions status isActive emailVerified createdAt orgId",
+    )
     .lean();
   if (!user) throw new AppError(404, "User not found");
 
@@ -619,7 +705,7 @@ router.post("/send-signup-otp", async (req: AuthRequest, res: Response) => {
   await PendingSignup.updateOne(
     { email },
     { $set: { email, name, company, otp, otpExpires, createdAt: new Date() } },
-    { upsert: true }
+    { upsert: true },
   );
 
   sendSignupOtpEmail(email, name, otp).catch((err) => {
@@ -634,7 +720,9 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
   const email = requireString(req.body.email, "email", { min: 5, max: 254 }).toLowerCase();
   const otp = requireString(req.body.otp, "otp", { min: 6, max: 6 });
 
-  const pending = await PendingSignup.findOne({ email }).select("email otp otpExpires name company").lean();
+  const pending = await PendingSignup.findOne({ email })
+    .select("email otp otpExpires name company")
+    .lean();
   if (!pending) {
     throw new AppError(400, "No verification code found. Please request a new one.");
   }
@@ -664,44 +752,62 @@ router.post("/verify-signup-otp", async (req: AuthRequest, res: Response) => {
   let org: any;
 
   try {
-    await mongoSession.withTransaction(async () => {
-      const [createdUser] = await User.create([{
-        id: userId,
-        userNumber,
-        orgId,
-        name,
-        email,
-        password: hashedPassword,
-        status: "online",
-        role: "members",
-        emailVerified: true,
-        createdBy: userId,
-      }], { session: mongoSession });
-      user = createdUser;
+    await mongoSession.withTransaction(
+      async () => {
+        const [createdUser] = await User.create(
+          [
+            {
+              id: userId,
+              userNumber,
+              orgId,
+              name,
+              email,
+              password: hashedPassword,
+              status: "online",
+              role: "members",
+              emailVerified: true,
+              createdBy: userId,
+            },
+          ],
+          { session: mongoSession },
+        );
+        user = createdUser;
 
-      const [createdOrg] = await Organization.create([{
-        id: orgId,
-        name: orgName,
-        slug,
-        plan: "enterprise",
-        trialEnd: null,
-        subscriptionStatus: "active",
-        ownerId: userId,
-        createdBy: userId,
-      }], { session: mongoSession });
-      org = createdOrg;
+        const [createdOrg] = await Organization.create(
+          [
+            {
+              id: orgId,
+              name: orgName,
+              slug,
+              plan: "enterprise",
+              trialEnd: null,
+              subscriptionStatus: "active",
+              ownerId: userId,
+              createdBy: userId,
+            },
+          ],
+          { session: mongoSession },
+        );
+        org = createdOrg;
 
-      await OrgMember.create([{
-        orgId,
-        userId,
-        role: "members",
-        createdBy: userId,
-      }], { session: mongoSession });
-    }, {
-      readPreference: "primary",
-      readConcern: { level: "local" },
-      writeConcern: { w: "majority" },
-    });
+        await OrgMember.create(
+          [
+            {
+              orgId,
+              userId,
+              role: "members",
+              createdBy: userId,
+            },
+          ],
+          { session: mongoSession },
+        );
+      },
+      {
+        readPreference: "primary",
+        readConcern: { level: "local" },
+        writeConcern: { w: "majority" },
+      },
+    );
   } finally {
     await mongoSession.endSession();
   }
@@ -792,13 +898,22 @@ router.post("/send-verification-email", async (req: AuthRequest, res: Response) 
 // Send client welcome email endpoint
 router.post("/send-client-welcome-email", async (req: AuthRequest, res: Response) => {
   try {
-    const { email, clientName, username, tempPassword, loginUrl, staffInfo, documentsInfo } = req.body;
+    const { email, clientName, username, tempPassword, loginUrl, staffInfo, documentsInfo } =
+      req.body;
     if (!email || !clientName || !username || !tempPassword || !loginUrl) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
     const staffNames: string[] = Array.isArray(staffInfo) ? staffInfo : [];
     const documentNames: string[] = Array.isArray(documentsInfo) ? documentsInfo : [];
-    await sendClientWelcomeEmail(email, clientName, username, tempPassword, loginUrl, staffNames, documentNames);
+    await sendClientWelcomeEmail(
+      email,
+      clientName,
+      username,
+      tempPassword,
+      loginUrl,
+      staffNames,
+      documentNames,
+    );
     res.json({ success: true, message: "Client welcome email sent" });
   } catch (err) {
     console.error("[auth] send-client-welcome-email error:", err);
@@ -816,7 +931,12 @@ router.post("/send-employee-onboarded-email", async (req: AuthRequest, res: Resp
     res.json({ success: true, message: "Employee onboarded email sent", emailStatus: "sent" });
   } catch (err: any) {
     console.error("[auth] send-employee-onboarded-email error:", err);
-    res.status(500).json({ success: false, message: "Failed to send employee onboarded email", emailStatus: "failed", error: err?.message || "Unknown error" });
+    res.status(500).json({
+      success: false,
+      message: "Failed to send employee onboarded email",
+      emailStatus: "failed",
+      error: err?.message || "Unknown error",
+    });
   }
 });
 

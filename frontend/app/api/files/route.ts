@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 
 export async function GET(request: Request) {
@@ -52,30 +52,40 @@ export async function GET(request: Request) {
       filter.taskId = taskId;
     }
 
-    const files = await db.collection(collections.fileAttachments)
+    const files = await db
+      .collection(collections.fileAttachments)
       .find(filter)
       .sort({ createdAt: -1 })
       .toArray();
 
     const userIds = [...new Set(files.map((f: Record<string, unknown>) => f.uploaderId as string))];
-    const users = await db.collection(collections.users)
+    const users = await db
+      .collection(collections.users)
       .find({ id: { $in: userIds } })
       .project({ id: 1, name: 1, image: 1 })
       .toArray();
     const userMap = new Map(users.map((u: Record<string, unknown>) => [u.id, u]));
 
-    const projectIds = [...new Set(files.map((f: Record<string, unknown>) => (f.projectId || "") as string).filter(Boolean))];
-    const projects = projectIds.length > 0
-      ? await db.collection(collections.projects)
-          .find({ id: { $in: projectIds } })
-          .project({ id: 1, name: 1 })
-          .toArray()
-      : [];
+    const projectIds = [
+      ...new Set(
+        files.map((f: Record<string, unknown>) => (f.projectId || "") as string).filter(Boolean),
+      ),
+    ];
+    const projects =
+      projectIds.length > 0
+        ? await db
+            .collection(collections.projects)
+            .find({ id: { $in: projectIds } })
+            .project({ id: 1, name: 1 })
+            .toArray()
+        : [];
     const projectMap = new Map(projects.map((p: Record<string, unknown>) => [p.id, p]));
 
     const result = files.map((f: Record<string, unknown>) => {
       const u = userMap.get(f.uploaderId as string) as Record<string, unknown> | undefined;
-      const p = f.projectId ? projectMap.get(f.projectId as string) as Record<string, unknown> | undefined : undefined;
+      const p = f.projectId
+        ? (projectMap.get(f.projectId as string) as Record<string, unknown> | undefined)
+        : undefined;
       return {
         id: f.id,
         originalName: f.originalName || f.name,

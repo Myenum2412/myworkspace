@@ -116,12 +116,27 @@ export interface ProjectEditFormProps {
 }
 
 export const PROJECT_COLORS = [
-  "#93c5fd", "#fca5a5", "#86efac", "#fcd34d", "#c4b5fd",
-  "#f9a8d4", "#67e8f9", "#fdba74", "#6ee7b7", "#a5b4fc",
+  "#93c5fd",
+  "#fca5a5",
+  "#86efac",
+  "#fcd34d",
+  "#c4b5fd",
+  "#f9a8d4",
+  "#67e8f9",
+  "#fdba74",
+  "#6ee7b7",
+  "#a5b4fc",
 ];
 
 export const PROJECT_PRIORITIES = ["low", "medium", "high", "critical"] as const;
-export const PROJECT_CATEGORIES = ["development", "design", "marketing", "research", "operations", "other"] as const;
+export const PROJECT_CATEGORIES = [
+  "development",
+  "design",
+  "marketing",
+  "research",
+  "operations",
+  "other",
+] as const;
 
 export type BoardColumn = {
   id: string;

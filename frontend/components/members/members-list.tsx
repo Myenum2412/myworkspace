@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ROLES, isAdminRole } from "@/lib/rbac";
+import { Input } from "@/components/ui/input";
 import {
-  UsersIcon,
-  PlusIcon,
-  SearchIcon,
+  ArrowDownIcon,
   ArrowUpDownIcon,
   ArrowUpIcon,
-  ArrowDownIcon,
+  PlusIcon,
+  SearchIcon,
+  UsersIcon,
   XIcon,
 } from "@/lib/icons";
-import type { MemberData, SortField, SortDir } from "./member-types";
+import { isAdminRole, ROLES } from "@/lib/rbac";
 import { MemberTableRow } from "./member-table-row";
-import { useRouter } from "next/navigation";
+import type { MemberData, SortDir, SortField } from "./member-types";
 
 type MembersListProps = {
   members: MemberData[];
@@ -26,15 +26,17 @@ type MembersListProps = {
 
 function getSortIcon(field: SortField, sortField: SortField, sortDir: SortDir) {
   if (sortField !== field) return <ArrowUpDownIcon className="size-3.5 text-muted-foreground/40" />;
-  return sortDir === "asc"
-    ? <ArrowUpIcon className="size-3.5 text-foreground" />
-    : <ArrowDownIcon className="size-3.5 text-foreground" />;
+  return sortDir === "asc" ? (
+    <ArrowUpIcon className="size-3.5 text-foreground" />
+  ) : (
+    <ArrowDownIcon className="size-3.5 text-foreground" />
+  );
 }
 
 export function MembersList({ members, isSuperAdmin }: MembersListProps) {
   const router = useRouter();
   const { data: session } = useSession();
-  const currentRole = (session?.user as Record<string, unknown>)?.role as string || "";
+  const currentRole = ((session?.user as Record<string, unknown>)?.role as string) || "";
   const canManageMembers = isAdminRole(currentRole);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("name");
@@ -43,10 +45,13 @@ export function MembersList({ members, isSuperAdmin }: MembersListProps) {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const handleSort = useCallback((field: SortField) => {
-    setSortDir((prev) => (sortField === field ? (prev === "asc" ? "desc" : "asc") : "asc"));
-    setSortField(field);
-  }, [sortField]);
+  const handleSort = useCallback(
+    (field: SortField) => {
+      setSortDir((prev) => (sortField === field ? (prev === "asc" ? "desc" : "asc") : "asc"));
+      setSortField(field);
+    },
+    [sortField],
+  );
 
   const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
@@ -150,7 +155,10 @@ export function MembersList({ members, isSuperAdmin }: MembersListProps) {
         </div>
 
         {canManageMembers && (
-          <Button onClick={() => router.push("/orgmenu/members/invite")} className="gap-2 shrink-0 touch-target">
+          <Button
+            onClick={() => router.push("/orgmenu/members/invite")}
+            className="gap-2 shrink-0 touch-target"
+          >
             <PlusIcon className="size-4" />
             Invite Member
           </Button>
@@ -183,25 +191,42 @@ export function MembersList({ members, isSuperAdmin }: MembersListProps) {
             <thead className="sticky top-0 z-10">
               <tr>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-10">
-                  <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} aria-label="Select all" className="border-white" />
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Select all"
+                    className="border-white"
+                  />
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <button onClick={() => handleSort("name")} className="inline-flex items-center gap-1.5 text-white-800 transition-colors">
+                  <button
+                    onClick={() => handleSort("name")}
+                    className="inline-flex items-center gap-1.5 text-white-800 transition-colors"
+                  >
                     Member {getSortIcon("name", sortField, sortDir)}
                   </button>
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <button onClick={() => handleSort("email")} className="inline-flex items-center gap-1.5 text-white-800 transition-colors">
+                  <button
+                    onClick={() => handleSort("email")}
+                    className="inline-flex items-center gap-1.5 text-white-800 transition-colors"
+                  >
                     Email {getSortIcon("email", sortField, sortDir)}
                   </button>
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <button onClick={() => handleSort("role")} className="inline-flex items-center gap-1.5 text-white-800 transition-colors">
+                  <button
+                    onClick={() => handleSort("role")}
+                    className="inline-flex items-center gap-1.5 text-white-800 transition-colors"
+                  >
                     Role {getSortIcon("role", sortField, sortDir)}
                   </button>
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <button onClick={() => handleSort("provider")} className="inline-flex items-center gap-1.5 text-white-800 transition-colors">
+                  <button
+                    onClick={() => handleSort("provider")}
+                    className="inline-flex items-center gap-1.5 text-white-800 transition-colors"
+                  >
                     Provider {getSortIcon("provider", sortField, sortDir)}
                   </button>
                 </th>
@@ -209,18 +234,27 @@ export function MembersList({ members, isSuperAdmin }: MembersListProps) {
                   <span className="text-gray-800">Verified</span>
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <button onClick={() => handleSort("createdAt")} className="inline-flex items-center gap-1.5 text-white-800 transition-colors">
+                  <button
+                    onClick={() => handleSort("createdAt")}
+                    className="inline-flex items-center gap-1.5 text-white-800 transition-colors"
+                  >
                     Joined {getSortIcon("createdAt", sortField, sortDir)}
                   </button>
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                  <button onClick={() => handleSort("status")} className="inline-flex items-center gap-1.5 text-white-800 transition-colors">
+                  <button
+                    onClick={() => handleSort("status")}
+                    className="inline-flex items-center gap-1.5 text-white-800 transition-colors"
+                  >
                     Status {getSortIcon("status", sortField, sortDir)}
                   </button>
                 </th>
                 {isSuperAdmin && (
                   <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
-                    <button onClick={() => handleSort("orgName")} className="inline-flex items-center gap-1.5 text-white-800 transition-colors">
+                    <button
+                      onClick={() => handleSort("orgName")}
+                      className="inline-flex items-center gap-1.5 text-white-800 transition-colors"
+                    >
                       Organization {getSortIcon("orgName", sortField, sortDir)}
                     </button>
                   </th>
@@ -272,13 +306,24 @@ export function MembersList({ members, isSuperAdmin }: MembersListProps) {
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t bg-white">
             <span className="text-sm text-muted-foreground">
-              {page * rowsPerPage + 1}–{Math.min((page + 1) * rowsPerPage, filtered.length)} of {filtered.length}
+              {page * rowsPerPage + 1}–{Math.min((page + 1) * rowsPerPage, filtered.length)} of{" "}
+              {filtered.length}
             </span>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 0}
+                onClick={() => setPage(page - 1)}
+              >
                 Previous
               </Button>
-              <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages - 1}
+                onClick={() => setPage(page + 1)}
+              >
                 Next
               </Button>
             </div>

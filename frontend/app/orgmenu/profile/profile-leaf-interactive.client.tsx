@@ -1,40 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import nextDynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { PhoneInput } from "@/components/ui/phone-input";
-import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { LocationSelect, PincodeInput } from "@/components/ui/location-fields";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { Separator } from "@/components/ui/separator";
 import {
-  MailIcon,
-  CalendarIcon,
-  ShieldIcon,
   Building2Icon,
+  CalendarIcon,
   CameraIcon,
-  XIcon,
-  Loader2Icon,
-  UserIcon,
-  PencilIcon,
   CheckIcon,
-  PhoneIcon,
-  MapPinIcon,
-  LinkIcon,
   GlobeIcon,
+  LinkIcon,
+  Loader2Icon,
+  MailIcon,
+  MapPinIcon,
+  PencilIcon,
+  PhoneIcon,
+  ShieldIcon,
+  UserIcon,
+  XIcon,
 } from "@/lib/icons";
 
-import nextDynamic from "next/dynamic";
 const BannerUpload = nextDynamic(
   () => import("@/components/ui/file-upload-1").then((m) => m.BannerUpload),
-  { ssr: false }
+  { ssr: false },
 );
 const ProfileImageUpload = nextDynamic(
   () => import("@/components/ui/profile-image-upload").then((m) => m.ProfileImageUpload),
-  { ssr: false }
+  { ssr: false },
 );
 
 type ProfileData = {
@@ -91,7 +91,11 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
   const [editState, setEditState] = useState(initialData?.user?.state || "");
   const [editCountry, setEditCountry] = useState(initialData?.user?.country || "");
   const [editZipCode, setEditZipCode] = useState(initialData?.user?.zipCode || "");
-  const [pincodeResult, setPincodeResult] = useState<{cities: string[]; states: string[]; countries: string[]} | null>(null);
+  const [pincodeResult, setPincodeResult] = useState<{
+    cities: string[];
+    states: string[];
+    countries: string[];
+  } | null>(null);
   const [editLinkedin, setEditLinkedin] = useState(initialData?.user?.linkedin || "");
   const [editGithub, setEditGithub] = useState(initialData?.user?.github || "");
   const [editTwitter, setEditTwitter] = useState(initialData?.user?.twitter || "");
@@ -140,36 +144,49 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
       });
       if (!res.ok) {
         let errMsg = `Request failed (${res.status})`;
-        try { const err = await res.json(); errMsg = err.error || errMsg; } catch {}
+        try {
+          const err = await res.json();
+          errMsg = err.error || errMsg;
+        } catch {}
         setSaveError(errMsg);
         return;
       }
-      setData((prev) => prev ? {
-        ...prev,
-        user: prev.user ? {
-          ...prev.user,
-          name: editName,
-          phone: editPhone,
-          department: editDepartment,
-          company: editCompany,
-          address: editAddress,
-          city: editCity,
-          state: editState,
-          country: editCountry,
-          zipCode: editZipCode,
-          linkedin: editLinkedin,
-          github: editGithub,
-          twitter: editTwitter,
-          website: editWebsite,
-        } : prev.user,
-      } : prev);
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              user: prev.user
+                ? {
+                    ...prev.user,
+                    name: editName,
+                    phone: editPhone,
+                    department: editDepartment,
+                    company: editCompany,
+                    address: editAddress,
+                    city: editCity,
+                    state: editState,
+                    country: editCountry,
+                    zipCode: editZipCode,
+                    linkedin: editLinkedin,
+                    github: editGithub,
+                    twitter: editTwitter,
+                    website: editWebsite,
+                  }
+                : prev.user,
+            }
+          : prev,
+      );
       setSaveSuccess("Profile updated successfully");
       setEditing(false);
       setTimeout(() => setSaveSuccess(""), 4000);
     } catch (e) {
-      setSaveError(e instanceof TypeError && e.message === "Failed to fetch"
-        ? "Cannot connect to server. Please check your connection and try again."
-        : (e instanceof Error ? e.message : "Network error"));
+      setSaveError(
+        e instanceof TypeError && e.message === "Failed to fetch"
+          ? "Cannot connect to server. Please check your connection and try again."
+          : e instanceof Error
+            ? e.message
+            : "Network error",
+      );
     } finally {
       setSaving(false);
     }
@@ -278,7 +295,9 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
         <div className="relative group">
           <Avatar className="size-24 ring-4 ring-background shadow-xl">
             <AvatarImage src={displayAvatar} alt={displayName} />
-            <AvatarFallback className="text-2xl">{displayName.charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarFallback className="text-2xl">
+              {displayName.charAt(0).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <button
             onClick={() => setShowImageEditor(true)}
@@ -307,10 +326,14 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
 
       <div className="flex flex-col gap-2 w-full px-6 pt-4">
         {saveError && (
-          <div className="rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">{saveError}</div>
+          <div className="rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            {saveError}
+          </div>
         )}
         {saveSuccess && (
-          <div className="rounded-sm bg-green-500/10 px-3 py-2 text-xs text-green-600">{saveSuccess}</div>
+          <div className="rounded-sm bg-green-500/10 px-3 py-2 text-xs text-green-600">
+            {saveSuccess}
+          </div>
         )}
         <div className="flex justify-end">
           {editing ? (
@@ -319,7 +342,11 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 Cancel
               </Button>
               <Button size="sm" onClick={handleSave} disabled={saving}>
-                {saving ? <Loader2Icon className="animate-spin" /> : <CheckIcon className="size-4" />}
+                {saving ? (
+                  <Loader2Icon className="animate-spin" />
+                ) : (
+                  <CheckIcon className="size-4" />
+                )}
                 Save
               </Button>
             </div>
@@ -451,12 +478,19 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Address</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Address
+              </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <p className="text-xs text-muted-foreground mb-1">Street</p>
                   {editing ? (
-                    <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="" className="text-sm" />
+                    <Input
+                      value={editAddress}
+                      onChange={(e) => setEditAddress(e.target.value)}
+                      placeholder=""
+                      className="text-sm"
+                    />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.address || "—"}</p>
                   )}
@@ -464,7 +498,13 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">City</p>
                   {editing ? (
-                    <LocationSelect options={pincodeResult?.cities || []} value={editCity} onChange={setEditCity} placeholder="" className="text-sm" />
+                    <LocationSelect
+                      options={pincodeResult?.cities || []}
+                      value={editCity}
+                      onChange={setEditCity}
+                      placeholder=""
+                      className="text-sm"
+                    />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.city || "—"}</p>
                   )}
@@ -472,7 +512,13 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">State</p>
                   {editing ? (
-                    <LocationSelect options={pincodeResult?.states || []} value={editState} onChange={setEditState} placeholder="" className="text-sm" />
+                    <LocationSelect
+                      options={pincodeResult?.states || []}
+                      value={editState}
+                      onChange={setEditState}
+                      placeholder=""
+                      className="text-sm"
+                    />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.state || "—"}</p>
                   )}
@@ -480,7 +526,13 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Country</p>
                   {editing ? (
-                    <LocationSelect options={pincodeResult?.countries || []} value={editCountry} onChange={setEditCountry} placeholder="" className="text-sm" />
+                    <LocationSelect
+                      options={pincodeResult?.countries || []}
+                      value={editCountry}
+                      onChange={setEditCountry}
+                      placeholder=""
+                      className="text-sm"
+                    />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.country || "—"}</p>
                   )}
@@ -488,7 +540,12 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Zip Code</p>
                   {editing ? (
-                    <PincodeInput value={editZipCode} onChange={setEditZipCode} onResult={setPincodeResult} className="text-sm" />
+                    <PincodeInput
+                      value={editZipCode}
+                      onChange={setEditZipCode}
+                      onResult={setPincodeResult}
+                      className="text-sm"
+                    />
                   ) : (
                     <p className="text-sm font-medium">{dbUser?.zipCode || "—"}</p>
                   )}
@@ -497,7 +554,9 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
             </div>
             <Separator />
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Social Links</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Social Links
+              </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
@@ -566,8 +625,14 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
       </div>
 
       {showBannerEditor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBannerEditor(false)}>
-          <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setShowBannerEditor(false)}
+        >
+          <div
+            className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold">Update banner</h2>
               <button
@@ -602,11 +667,7 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
                   <span className="bg-background px-2 text-muted-foreground">or</span>
                 </span>
               </div>
-              <BannerUpload
-                key={fileKey}
-                onFile={handleBannerFile}
-                disabled={uploading}
-              />
+              <BannerUpload key={fileKey} onFile={handleBannerFile} disabled={uploading} />
               {bannerUrl && (
                 <>
                   <div className="relative">
@@ -632,8 +693,14 @@ export default function ProfileLeafInteractive({ data: initialData }: ProfileCli
       )}
 
       {showImageEditor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImageEditor(false)}>
-          <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setShowImageEditor(false)}
+        >
+          <div
+            className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold">Update profile photo</h2>
               <button

@@ -1,25 +1,25 @@
-"use client"
-import { useState, useEffect } from "react";
+"use client";
+import { useEffect, useState } from "react";
+import {
+  type ClientValues,
+  EditClientFormFields,
+  EMPTY_VALUES,
+  payloadFromValues,
+  valuesFromClient,
+} from "@/app/clients/client-form-fields";
+import type { Client } from "@/app/clients/columns";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, AlertCircle, X } from "@/lib/icons";
 import { apiFetch } from "@/lib/api";
-import {
-  EditClientFormFields,
-  valuesFromClient,
-  EMPTY_VALUES,
-  payloadFromValues,
-  type ClientValues,
-} from "@/app/clients/client-form-fields";
-import type { Client } from "@/app/clients/columns";
+import { AlertCircle, Loader2, X } from "@/lib/icons";
 
 type ClientEditDialogProps = {
   client: Client | null;
@@ -29,7 +29,13 @@ type ClientEditDialogProps = {
   members: string[];
 };
 
-export function ClientEditDialog({ client, open, onOpenChange, onClientUpdated, members }: ClientEditDialogProps) {
+export function ClientEditDialog({
+  client,
+  open,
+  onOpenChange,
+  onClientUpdated,
+  members,
+}: ClientEditDialogProps) {
   const [editValues, setEditValues] = useState<ClientValues>(EMPTY_VALUES);
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
   const [editSaving, setEditSaving] = useState(false);
@@ -72,7 +78,11 @@ export function ClientEditDialog({ client, open, onOpenChange, onClientUpdated, 
       handleCloseEdit(false);
     } else {
       if (result.fields) setEditErrors(result.fields);
-      setEditApiError(result.fields && Object.keys(result.fields).length > 0 ? "Please correct the errors below" : (result.error || "Failed to update client"));
+      setEditApiError(
+        result.fields && Object.keys(result.fields).length > 0
+          ? "Please correct the errors below"
+          : result.error || "Failed to update client",
+      );
     }
     setEditSaving(false);
   }
@@ -82,7 +92,9 @@ export function ClientEditDialog({ client, open, onOpenChange, onClientUpdated, 
       <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 shrink-0 w-full">
           <DialogTitle>Edit Client{client ? ` — ${client.name}` : ""}</DialogTitle>
-          <DialogDescription>Update the details below. Changes are saved immediately.</DialogDescription>
+          <DialogDescription>
+            Update the details below. Changes are saved immediately.
+          </DialogDescription>
         </DialogHeader>
 
         {editApiError && (
@@ -94,12 +106,17 @@ export function ClientEditDialog({ client, open, onOpenChange, onClientUpdated, 
                 {Object.keys(editErrors).length > 0 && (
                   <ul className="mt-1 text-xs text-red-600 list-disc list-inside">
                     {Object.entries(editErrors).map(([key, msg]) => (
-                      <li key={key}>{key}: {msg}</li>
+                      <li key={key}>
+                        {key}: {msg}
+                      </li>
                     ))}
                   </ul>
                 )}
               </div>
-              <button onClick={() => setEditApiError("")} className="shrink-0 text-destructive hover:text-destructive">
+              <button
+                onClick={() => setEditApiError("")}
+                className="shrink-0 text-destructive hover:text-destructive"
+              >
                 <X className="size-4" />
               </button>
             </div>
@@ -108,14 +125,27 @@ export function ClientEditDialog({ client, open, onOpenChange, onClientUpdated, 
 
         <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
           <ScrollArea className="h-full">
-            <EditClientFormFields v={editValues} set={setEdit} errors={editErrors} members={members} />
+            <EditClientFormFields
+              v={editValues}
+              set={setEdit}
+              errors={editErrors}
+              members={members}
+            />
           </ScrollArea>
         </div>
 
         <DialogFooter className="flex items-center justify-between px-6 py-4 border-t shrink-0">
-          <Button variant="outline" onClick={() => handleCloseEdit(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => handleCloseEdit(false)}>
+            Cancel
+          </Button>
           <Button disabled={editSaving} onClick={handleEditSubmit}>
-            {editSaving ? <><Loader2 className="mr-2 animate-spin" /> Saving...</> : "Save Changes"}
+            {editSaving ? (
+              <>
+                <Loader2 className="mr-2 animate-spin" /> Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

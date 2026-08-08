@@ -1,11 +1,10 @@
 import { cache } from "react";
 
-export const getCachedData = cache(async <T>(
-  key: string,
-  fetcher: () => Promise<T>
-): Promise<T> => {
-  return fetcher();
-});
+export const getCachedData = cache(
+  async <T>(key: string, fetcher: () => Promise<T>): Promise<T> => {
+    return fetcher();
+  },
+);
 
 export function withCacheTag(tag: string) {
   return { next: { tags: [tag] } } as const;

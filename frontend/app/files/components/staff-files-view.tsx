@@ -1,12 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { UserIcon, FileIcon, Loader2Icon, SearchIcon, ArrowLeftIcon, FolderIcon, DownloadIcon, FolderOpenIcon } from "@/lib/icons";
-import { Input } from "@/components/ui/input";
+import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useFileSystemStore } from "@/lib/file-system/store";
 import { formatSize } from "@/lib/file-system/types";
+import {
+  ArrowLeftIcon,
+  DownloadIcon,
+  FileIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  Loader2Icon,
+  SearchIcon,
+  UserIcon,
+} from "@/lib/icons";
 
 type StaffRecord = {
   id: string;
@@ -36,7 +45,8 @@ function getFileIcon(mimeType: string): string {
   if (mimeType.startsWith("video/")) return "🎬";
   if (mimeType.startsWith("audio/")) return "🎵";
   if (mimeType.includes("pdf")) return "📄";
-  if (mimeType.includes("spreadsheet") || mimeType.includes("excel") || mimeType.includes("sheet")) return "📊";
+  if (mimeType.includes("spreadsheet") || mimeType.includes("excel") || mimeType.includes("sheet"))
+    return "📊";
   if (mimeType.includes("word") || mimeType.includes("document")) return "📝";
   if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar")) return "📦";
   return "📁";
@@ -55,11 +65,17 @@ export function StaffFilesView() {
   const setBreadcrumbs = useFileSystemStore((s) => s.setBreadcrumbs);
   const { orgId } = useFileSystemStore();
 
-  const openFolder = useCallback((folder: FolderRecord) => {
-    setBreadcrumbs([{ id: null, name: "My Files" }, { id: folder.id, name: folder.name }]);
-    setCurrentFolder(folder.id);
-    setCurrentNav("files");
-  }, [setBreadcrumbs, setCurrentFolder, setCurrentNav]);
+  const openFolder = useCallback(
+    (folder: FolderRecord) => {
+      setBreadcrumbs([
+        { id: null, name: "My Files" },
+        { id: folder.id, name: folder.name },
+      ]);
+      setCurrentFolder(folder.id);
+      setCurrentNav("files");
+    },
+    [setBreadcrumbs, setCurrentFolder, setCurrentNav],
+  );
 
   useEffect(() => {
     if (!orgId) return;
@@ -68,13 +84,16 @@ export function StaffFilesView() {
       .then((r) => r.json())
       .then((d) => {
         const arr: Record<string, unknown>[] = d.data || d.employees || [];
-        setStaff(arr.map((s: any) => ({
-          id: s.id || s._id,
-          name: s.name || s.fullName || `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.email,
-          email: s.email || "",
-          role: s.role || s.jobTitle || "Employee",
-          department: s.department || s.departmentName || "",
-        })));
+        setStaff(
+          arr.map((s: any) => ({
+            id: s.id || s._id,
+            name:
+              s.name || s.fullName || `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.email,
+            email: s.email || "",
+            role: s.role || s.jobTitle || "Employee",
+            department: s.department || s.departmentName || "",
+          })),
+        );
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -84,8 +103,14 @@ export function StaffFilesView() {
     if (!selectedStaff || !orgId) return;
     setFilesLoading(true);
     Promise.all([
-      fetch(`/api/files?orgId=${encodeURIComponent(orgId)}&uploaderId=${encodeURIComponent(selectedStaff.id)}`, { credentials: "include" }).then(r => r.json()),
-      fetch(`/api/folders?orgId=${encodeURIComponent(orgId)}&createdBy=${encodeURIComponent(selectedStaff.id)}`, { credentials: "include" }).then(r => r.json()),
+      fetch(
+        `/api/files?orgId=${encodeURIComponent(orgId)}&uploaderId=${encodeURIComponent(selectedStaff.id)}`,
+        { credentials: "include" },
+      ).then((r) => r.json()),
+      fetch(
+        `/api/folders?orgId=${encodeURIComponent(orgId)}&createdBy=${encodeURIComponent(selectedStaff.id)}`,
+        { credentials: "include" },
+      ).then((r) => r.json()),
     ])
       .then(([filesRes, foldersRes]) => {
         setStaffFiles(filesRes.data || []);
@@ -95,15 +120,24 @@ export function StaffFilesView() {
       .finally(() => setFilesLoading(false));
   }, [selectedStaff, orgId]);
 
-  const filtered = staff.filter((s) =>
-    !search.trim() || s.name.toLowerCase().includes(search.toLowerCase()) || s.email.toLowerCase().includes(search.toLowerCase()) || s.department.toLowerCase().includes(search.toLowerCase())
+  const filtered = staff.filter(
+    (s) =>
+      !search.trim() ||
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.email.toLowerCase().includes(search.toLowerCase()) ||
+      s.department.toLowerCase().includes(search.toLowerCase()),
   );
 
   if (selectedStaff) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => setSelectedStaff(null)} className="gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedStaff(null)}
+            className="gap-1.5"
+          >
             <ArrowLeftIcon className="size-4" />
             Back
           </Button>
@@ -114,7 +148,9 @@ export function StaffFilesView() {
             </div>
             <div>
               <h2 className="text-sm font-semibold">{selectedStaff.name}</h2>
-              <p className="text-xs text-muted-foreground">{selectedStaff.department || selectedStaff.role}</p>
+              <p className="text-xs text-muted-foreground">
+                {selectedStaff.department || selectedStaff.role}
+              </p>
             </div>
           </div>
         </div>
@@ -156,7 +192,9 @@ export function StaffFilesView() {
                 <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
                   <FileIcon className="size-12 text-muted-foreground/20" />
                   <p className="text-sm font-medium">No files or folders</p>
-                  <p className="text-xs">This staff member hasn&apos;t created any files or folders yet</p>
+                  <p className="text-xs">
+                    This staff member hasn&apos;t created any files or folders yet
+                  </p>
                 </div>
               ) : staffFiles.length === 0 ? null : (
                 <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -191,7 +229,11 @@ export function StaffFilesView() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   if (staff.length === 0) {
@@ -208,12 +250,21 @@ export function StaffFilesView() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2"><UserIcon className="size-4" /> Staff Files</h2>
-          <p className="text-sm text-muted-foreground">{staff.length} staff member{staff.length !== 1 ? "s" : ""}</p>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <UserIcon className="size-4" /> Staff Files
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {staff.length} staff member{staff.length !== 1 ? "s" : ""}
+          </p>
         </div>
         <div className="relative w-64">
           <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-          <Input placeholder="Search staff..." className="pl-8 h-9 text-sm bg-white" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input
+            placeholder="Search staff..."
+            className="pl-8 h-9 text-sm bg-white"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
       </div>
 
@@ -229,9 +280,13 @@ export function StaffFilesView() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{s.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{s.department || s.role || s.email}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {s.department || s.role || s.email}
+              </p>
             </div>
-            <Badge variant="secondary" className="text-[10px] shrink-0">{s.role}</Badge>
+            <Badge variant="secondary" className="text-[10px] shrink-0">
+              {s.role}
+            </Badge>
           </button>
         ))}
       </div>

@@ -5,15 +5,21 @@ export async function notifyTaskAssigned(
   assigneeId: string,
   assignedByName: string,
   orgId: string,
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
 ) {
   return createNotification({
-    userId: assigneeId, orgId, createdBy: assigneeId,
-    type: "task_assigned", category: "tasks", priority: "high",
+    userId: assigneeId,
+    orgId,
+    createdBy: assigneeId,
+    type: "task_assigned",
+    category: "tasks",
+    priority: "high",
     title: "Task Assigned",
     message: `${assignedByName} assigned you to "${task.title}"`,
     link: `/alltasks?id=${task.id}`,
-    actions: [{ label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true }],
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true },
+    ],
     metadata: { taskId: task.id, ...metadata },
   });
 }
@@ -23,15 +29,20 @@ export async function notifyTaskUpdated(
   userId: string,
   updatedByName: string,
   orgId: string,
-  changes?: string
+  changes?: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "task_updated", category: "tasks",
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "task_updated",
+    category: "tasks",
     title: "Task Updated",
     message: `${updatedByName} updated "${task.title}"${changes ? `: ${changes}` : ""}`,
     link: `/alltasks?id=${task.id}`,
-    actions: [{ label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true }],
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true },
+    ],
     metadata: { taskId: task.id },
   });
 }
@@ -40,12 +51,15 @@ export async function notifyNewEmployee(
   employee: { id: string; name: string; email: string },
   orgId: string,
   createdBy: string,
-  adminIds: string[]
+  adminIds: string[],
 ) {
   for (const adminId of adminIds) {
     await createNotification({
-      userId: adminId, orgId, createdBy,
-      type: "employee_onboarded", category: "hr",
+      userId: adminId,
+      orgId,
+      createdBy,
+      type: "employee_onboarded",
+      category: "hr",
       title: "New Employee Added",
       message: `${employee.name} (${employee.email}) has been added to the organization.`,
       link: "/employees",
@@ -58,15 +72,25 @@ export async function notifyMessage(
   fromName: string,
   messagePreview: string,
   orgId: string,
-  conversationId: string
+  conversationId: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "chat_message", category: "messages",
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "chat_message",
+    category: "messages",
     title: `Message from ${fromName}`,
     message: messagePreview,
     link: `/messages?conversation=${conversationId}`,
-    actions: [{ label: "Reply", action: "reply", url: `/messages?conversation=${conversationId}`, primary: true }],
+    actions: [
+      {
+        label: "Reply",
+        action: "reply",
+        url: `/messages?conversation=${conversationId}`,
+        primary: true,
+      },
+    ],
     metadata: { conversationId },
   });
 }
@@ -76,11 +100,15 @@ export async function notifyMention(
   mentionedByName: string,
   context: string,
   orgId: string,
-  link?: string
+  link?: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "mention", category: "messages", priority: "high",
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "mention",
+    category: "messages",
+    priority: "high",
     title: `You were mentioned by ${mentionedByName}`,
     message: context,
     link,
@@ -92,15 +120,20 @@ export async function notifyProjectUpdate(
   projectName: string,
   update: string,
   orgId: string,
-  projectId: string
+  projectId: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "project_updated", category: "projects",
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "project_updated",
+    category: "projects",
     title: `Project Update: ${projectName}`,
     message: update,
     link: `/projects?id=${projectId}`,
-    actions: [{ label: "View Project", action: "view", url: `/projects?id=${projectId}`, primary: true }],
+    actions: [
+      { label: "View Project", action: "view", url: `/projects?id=${projectId}`, primary: true },
+    ],
     metadata: { projectId },
   });
 }
@@ -112,8 +145,12 @@ export async function notifyTeamTaskSubmitted(
   orgId: string,
 ) {
   return createNotification({
-    userId: headUserId, orgId, createdBy: headUserId,
-    type: "task_submitted", category: "tasks", priority: "high",
+    userId: headUserId,
+    orgId,
+    createdBy: headUserId,
+    type: "task_submitted",
+    category: "tasks",
+    priority: "high",
     title: "Verification Requested",
     message: `${submittedByName} submitted "${task.title}" for verification`,
     link: `/alltasks?id=${task.id}`,
@@ -133,12 +170,17 @@ export async function notifyTeamTaskApproved(
   orgId: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "task_approved", category: "tasks",
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "task_approved",
+    category: "tasks",
     title: "Task Approved",
     message: `${approvedByName} approved "${task.title}"`,
     link: `/alltasks?id=${task.id}`,
-    actions: [{ label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true }],
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true },
+    ],
     metadata: { taskId: task.id },
   });
 }
@@ -151,12 +193,18 @@ export async function notifyTeamTaskRejected(
   reason: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "task_rejected", category: "tasks", priority: "high",
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "task_rejected",
+    category: "tasks",
+    priority: "high",
     title: "Task Rejected",
     message: `${rejectedByName} rejected "${task.title}": ${reason}`,
     link: `/alltasks?id=${task.id}`,
-    actions: [{ label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true }],
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true },
+    ],
     metadata: { taskId: task.id, rejectionReason: reason },
   });
 }
@@ -168,12 +216,17 @@ export async function notifyCommonTaskPublished(
   orgId: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "task_published", category: "tasks",
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "task_published",
+    category: "tasks",
     title: "New Common Task",
     message: `${publishedByName} published "${task.title}"`,
     link: `/alltasks?id=${task.id}`,
-    actions: [{ label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true }],
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true },
+    ],
     metadata: { taskId: task.id },
   });
 }
@@ -185,12 +238,18 @@ export async function notifyUpcomingTaskActivated(
   orgId: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "task_activated", category: "tasks", priority: "high",
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "task_activated",
+    category: "tasks",
+    priority: "high",
     title: "Task Activated",
     message: `${activatedByName} activated "${task.title}"`,
     link: `/alltasks?id=${task.id}`,
-    actions: [{ label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true }],
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true },
+    ],
     metadata: { taskId: task.id },
   });
 }
@@ -199,19 +258,25 @@ export async function notifyTaskDueSoon(
   task: { id: string; title: string; dueDate: Date },
   assigneeId: string,
   orgId: string,
-  daysRemaining: number
+  daysRemaining: number,
 ) {
-  const message = daysRemaining <= 0
-    ? `"${task.title}" is overdue (was due ${task.dueDate.toLocaleDateString()})`
-    : `"${task.title}" is due in ${daysRemaining} day${daysRemaining > 1 ? "s" : ""} (${task.dueDate.toLocaleDateString()})`;
+  const message =
+    daysRemaining <= 0
+      ? `"${task.title}" is overdue (was due ${task.dueDate.toLocaleDateString()})`
+      : `"${task.title}" is due in ${daysRemaining} day${daysRemaining > 1 ? "s" : ""} (${task.dueDate.toLocaleDateString()})`;
   return createNotification({
-    userId: assigneeId, orgId, createdBy: assigneeId,
+    userId: assigneeId,
+    orgId,
+    createdBy: assigneeId,
     type: daysRemaining <= 0 ? "task_overdue" : "task_due_today",
-    category: "tasks", priority: "high",
+    category: "tasks",
+    priority: "high",
     title: daysRemaining <= 0 ? "Task Overdue" : "Task Due Soon",
     message,
     link: `/alltasks?id=${task.id}`,
-    actions: [{ label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true }],
+    actions: [
+      { label: "View Task", action: "view", url: `/alltasks?id=${task.id}`, primary: true },
+    ],
     metadata: { taskId: task.id, dueDate: task.dueDate.toISOString(), daysRemaining },
   });
 }
@@ -220,11 +285,15 @@ export async function notifyBillingReminder(
   userId: string,
   orgId: string,
   message: string,
-  link?: string
+  link?: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "billing_reminder", category: "billing", priority: "high",
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "billing_reminder",
+    category: "billing",
+    priority: "high",
     title: "Billing Reminder",
     message,
     link: link || "/billing",
@@ -238,11 +307,15 @@ export async function notifyApprovalRequest(
   createdBy: string,
   itemName: string,
   itemType: string,
-  link?: string
+  link?: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy,
-    type: "approval_requested", category: "approvals", priority: "high",
+    userId,
+    orgId,
+    createdBy,
+    type: "approval_requested",
+    category: "approvals",
+    priority: "high",
     title: "Approval Request",
     message: `${createdBy} requests approval for ${itemType}: ${itemName}`,
     link: link || "/approvals",
@@ -259,11 +332,14 @@ export async function notifyAnnouncement(
   orgId: string,
   title: string,
   message: string,
-  link?: string
+  link?: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "announcement", category: "system",
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "announcement",
+    category: "system",
     title,
     message,
     link,
@@ -275,11 +351,14 @@ export async function notifyTeamUpdate(
   orgId: string,
   teamName: string,
   update: string,
-  link?: string
+  link?: string,
 ) {
   return createNotification({
-    userId, orgId, createdBy: userId,
-    type: "team_update", category: "team",
+    userId,
+    orgId,
+    createdBy: userId,
+    type: "team_update",
+    category: "team",
     title: `Team Update: ${teamName}`,
     message: update,
     link,

@@ -1,11 +1,11 @@
 "use client";
 
+import { buildProjectColumns } from "@/app/projects/columns";
+import { DataTable } from "@/components/data-table";
+import { useIndustry } from "@/components/industry-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2Icon } from "@/lib/icons";
-import { DataTable } from "@/components/data-table";
-import { buildProjectColumns } from "@/app/projects/columns";
 import type { ProjectListProps } from "./project-types";
-import { useIndustry } from "@/components/industry-provider";
 
 export default function ProjectList({
   projects,

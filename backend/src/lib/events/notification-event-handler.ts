@@ -1,8 +1,8 @@
-import { domainEvents, DomainEventType } from "./index.js";
-import { createNotification } from "../../services/notification.service.js";
-import { queueNotificationEmail } from "../../services/email-queue.service.js";
-import { logger } from "../logger/index.js";
 import { recordAuditLog } from "../../services/audit.service.js";
+import { queueNotificationEmail } from "../../services/email-queue.service.js";
+import { createNotification } from "../../services/notification.service.js";
+import { logger } from "../logger/index.js";
+import { DomainEventType, domainEvents } from "./index.js";
 
 export function registerNotificationEventHandlers(): void {
   domainEvents.on("notification:sent", async (payload) => {

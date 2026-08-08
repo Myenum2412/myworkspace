@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFileSystemStore } from "@/lib/file-system/store";
 
 type FavoriteItem = {
@@ -19,7 +19,9 @@ export function useFavorites() {
   const query = useQuery({
     queryKey: ["favorites", orgId],
     queryFn: async () => {
-      const res = await fetch(`/api/file-favorites/favorites?orgId=${orgId}`, { credentials: "include" });
+      const res = await fetch(`/api/file-favorites/favorites?orgId=${orgId}`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Could not load favorites");
       const json = await res.json();
       return (json.data || []) as FavoriteItem[];

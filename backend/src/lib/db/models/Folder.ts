@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IFolder extends Document {
   id: string;
@@ -36,7 +36,7 @@ const folderSchema = new Schema<IFolder>(
     updatedBy: { type: String },
     deletedAt: { type: Date, default: null },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 folderSchema.index({ orgId: 1, parentId: 1 });

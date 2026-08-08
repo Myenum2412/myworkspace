@@ -1,23 +1,35 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { NotificationsActiveIcon } from "@/lib/icons";
-import {
-  RiCheckLine, RiErrorWarningLine, RiFileTextLine,
-  RiGitMergeLine, RiMegaphoneLine, RiShieldCheckLine, RiUserAddLine,
-  RiFileLine, RiLockLine, RiGlobalLine,
-} from "@/lib/icons"
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import * as React from "react";
 
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import {
-  Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
-} from "@/components/ui/sheet"
-import { cn } from "@/lib/utils"
-import { useNotifications, type NotificationItem } from "@/hooks/use-notifications"
-import { useSession } from "next-auth/react"
-import Link from "next/link"
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { type NotificationItem, useNotifications } from "@/hooks/use-notifications";
+import {
+  NotificationsActiveIcon,
+  RiCheckLine,
+  RiErrorWarningLine,
+  RiFileLine,
+  RiFileTextLine,
+  RiGitMergeLine,
+  RiGlobalLine,
+  RiLockLine,
+  RiMegaphoneLine,
+  RiShieldCheckLine,
+  RiUserAddLine,
+} from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   auth: RiShieldCheckLine,
@@ -33,73 +45,80 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
   security: RiShieldCheckLine,
   system: RiShieldCheckLine,
   team: RiUserAddLine,
-}
+};
 
 const priorityColors: Record<string, string> = {
   critical: "bg-red-500",
   high: "bg-orange-500",
   medium: "bg-primary",
   low: "bg-slate-300",
-}
+};
 
 function timeAgo(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return "Just now"
-  if (mins < 60) return `${mins} Min Ago`
-  const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs} Hour${hrs > 1 ? "s" : ""} Ago`
-  const days = Math.floor(hrs / 24)
-  return `${days} Day${days > 1 ? "s" : ""} Ago`
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins} Min Ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} Hour${hrs > 1 ? "s" : ""} Ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days} Day${days > 1 ? "s" : ""} Ago`;
 }
 
 export function NotificationBell() {
-  const { data: session } = useSession()
-  const userId = session?.user?.id
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
   const {
-    notifications, unreadCount, markAsRead, markAllAsRead,
-    archiveNotification, deleteNotification, loading, loadMore, hasMore,
-  } = useNotifications(userId)
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    archiveNotification,
+    deleteNotification,
+    loading,
+    loadMore,
+    hasMore,
+  } = useNotifications(userId);
 
-  const scrollRef = React.useRef<HTMLDivElement>(null)
-  const viewportRef = React.useRef<HTMLElement | null>(null)
-  const loadingRef = React.useRef(loading)
-  loadingRef.current = loading
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const viewportRef = React.useRef<HTMLElement | null>(null);
+  const loadingRef = React.useRef(loading);
+  loadingRef.current = loading;
 
   const handleScroll = React.useCallback(() => {
-    const rootEl = scrollRef.current
-    if (!rootEl) return
+    const rootEl = scrollRef.current;
+    if (!rootEl) return;
     // The Sheet only renders its content when open; re-locate the viewport lazily.
     if (!viewportRef.current) {
-      viewportRef.current = rootEl.querySelector('[data-slot="scroll-area-viewport"]')
+      viewportRef.current = rootEl.querySelector('[data-slot="scroll-area-viewport"]');
     }
-    const el = viewportRef.current
-    if (!el) return
-    if (loadingRef.current) return
-    const threshold = 120
+    const el = viewportRef.current;
+    if (!el) return;
+    if (loadingRef.current) return;
+    const threshold = 120;
     if (el.scrollTop + el.clientHeight >= el.scrollHeight - threshold) {
-      loadMore()
+      loadMore();
     }
-  }, [loadMore])
+  }, [loadMore]);
 
   React.useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-    el.addEventListener("scroll", handleScroll, { passive: true })
-    return () => el.removeEventListener("scroll", handleScroll)
-  }, [handleScroll])
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
 
   const handleMarkAllRead = React.useCallback(() => {
-    markAllAsRead()
-  }, [markAllAsRead])
+    markAllAsRead();
+  }, [markAllAsRead]);
 
   const handleNotificationClick = React.useCallback(
     async (n: NotificationItem) => {
-      if (!n.read) await markAsRead(n.id)
-      if (n.link) window.location.href = n.link
+      if (!n.read) await markAsRead(n.id);
+      if (n.link) window.location.href = n.link;
     },
-    [markAsRead]
-  )
+    [markAsRead],
+  );
 
   return (
     <Sheet>
@@ -131,7 +150,10 @@ export function NotificationBell() {
 
         <Separator />
 
-        <ScrollArea ref={scrollRef} className="flex-1 [&_[data-slot=scroll-area-viewport]]:scroll-fade-y">
+        <ScrollArea
+          ref={scrollRef}
+          className="flex-1 [&_[data-slot=scroll-area-viewport]]:scroll-fade-y"
+        >
           {loading && notifications.length === 0 ? (
             <div className="flex items-center justify-center py-10">
               <div className="size-5 animate-spin rounded-sm border-2 border-muted border-t-primary" />
@@ -145,28 +167,28 @@ export function NotificationBell() {
           ) : (
             <ul className="flex flex-col">
               {notifications.map((item, index) => {
-                const Icon = categoryIcons[item.category] || NotificationsActiveIcon
+                const Icon = categoryIcons[item.category] || NotificationsActiveIcon;
                 return (
                   <li key={item.id}>
                     <button
                       onClick={() => handleNotificationClick(item)}
                       className={cn(
                         "text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/50 relative",
-                        !item.read && "bg-muted/30"
+                        !item.read && "bg-muted/30",
                       )}
                     >
                       {/* Priority indicator */}
                       <span
                         className={cn(
                           "absolute left-0 top-0 bottom-0 w-0.5",
-                          priorityColors[item.priority] || "bg-transparent"
+                          priorityColors[item.priority] || "bg-transparent",
                         )}
                       />
 
                       <span
                         className={cn(
                           "mt-0.5 flex size-8 shrink-0 items-center justify-center bg-muted text-muted-foreground",
-                          !item.read && "bg-primary/10 text-primary"
+                          !item.read && "bg-primary/10 text-primary",
                         )}
                       >
                         <Icon className="size-4" aria-hidden="true" />
@@ -177,7 +199,7 @@ export function NotificationBell() {
                           <span
                             className={cn(
                               "truncate text-xs font-medium",
-                              !item.read ? "text-foreground" : "text-muted-foreground"
+                              !item.read ? "text-foreground" : "text-muted-foreground",
                             )}
                           >
                             {item.title}
@@ -195,8 +217,11 @@ export function NotificationBell() {
                         {item.actions && item.actions.length > 0 && (
                           <div className="flex gap-1 mt-1" onClick={(e) => e.stopPropagation()}>
                             {item.actions.slice(0, 2).map((a) => (
-                              <span key={a.action}
-                                onClick={() => { if (a.url) window.location.href = a.url; }}
+                              <span
+                                key={a.action}
+                                onClick={() => {
+                                  if (a.url) window.location.href = a.url;
+                                }}
                                 className="text-[10px] text-primary font-medium hover:underline cursor-pointer"
                               >
                                 {a.label}
@@ -207,12 +232,15 @@ export function NotificationBell() {
                       </div>
 
                       {!item.read && (
-                        <span className="mt-1.5 size-1.5 shrink-0 bg-primary rounded-sm" aria-label="Unread" />
+                        <span
+                          className="mt-1.5 size-1.5 shrink-0 bg-primary rounded-sm"
+                          aria-label="Unread"
+                        />
                       )}
                     </button>
                     {index < notifications.length - 1 && <Separator />}
                   </li>
-                )
+                );
               })}
 
               {loading && hasMore && (
@@ -250,5 +278,5 @@ export function NotificationBell() {
         </div>
       </SheetContent>
     </Sheet>
-  )
+  );
 }

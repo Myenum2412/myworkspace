@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,7 +19,9 @@ function parseSetCookieToken(setCookies: string[]): string | null {
   return null;
 }
 
-async function ensureCsrf(cookieHeader: string): Promise<{ cookie: string; token: string | null; setCookies: string[] }> {
+async function ensureCsrf(
+  cookieHeader: string,
+): Promise<{ cookie: string; token: string | null; setCookies: string[] }> {
   let cookie = cookieHeader;
   let token = readCookie(cookie, CSRF_COOKIE);
   const setCookies: string[] = [];
@@ -68,7 +70,8 @@ export async function POST(req: NextRequest) {
     });
 
     for (const c of setCookies) out.headers.append("Set-Cookie", c);
-    const backendSet = typeof res.headers.getSetCookie === "function" ? res.headers.getSetCookie() : [];
+    const backendSet =
+      typeof res.headers.getSetCookie === "function" ? res.headers.getSetCookie() : [];
     for (const c of backendSet) out.headers.append("Set-Cookie", c);
 
     return out;

@@ -1,5 +1,5 @@
-import { withRetry } from "./retry";
 import { deduplicateRequest } from "./request-dedup";
+import { withRetry } from "./retry";
 
 export interface BootstrapUser {
   id: string;
@@ -66,23 +66,26 @@ const CACHE_TTL = 60_000;
 
 export async function fetchBootstrapData(force = false): Promise<BootstrapData> {
   const now = Date.now();
-  if (!force && cachedBootstrap && (now - lastFetchTime) < CACHE_TTL) {
+  if (!force && cachedBootstrap && now - lastFetchTime < CACHE_TTL) {
     return cachedBootstrap;
   }
 
   if (bootstrapPromise) return bootstrapPromise;
 
   bootstrapPromise = deduplicateRequest("bootstrap", async () => {
-    const data = await withRetry(async (signal) => {
-      const res = await fetch("/api/bootstrap", {
-        credentials: "include",
-        headers: { Accept: "application/json" },
-        signal,
-      });
-      if (!res.ok) throw new Error(`Bootstrap failed: ${res.status}`);
-      const json = await res.json();
-      return json.data as BootstrapData;
-    }, { maxRetries: 1, baseDelay: 300 });
+    const data = await withRetry(
+      async (signal) => {
+        const res = await fetch("/api/bootstrap", {
+          credentials: "include",
+          headers: { Accept: "application/json" },
+          signal,
+        });
+        if (!res.ok) throw new Error(`Bootstrap failed: ${res.status}`);
+        const json = await res.json();
+        return json.data as BootstrapData;
+      },
+      { maxRetries: 1, baseDelay: 300 },
+    );
 
     cachedBootstrap = data;
     lastFetchTime = Date.now();
@@ -98,7 +101,7 @@ export async function fetchBootstrapData(force = false): Promise<BootstrapData> 
 }
 
 export function getCachedBootstrap(): BootstrapData | null {
-  if (cachedBootstrap && (Date.now() - lastFetchTime) < CACHE_TTL) {
+  if (cachedBootstrap && Date.now() - lastFetchTime < CACHE_TTL) {
     return cachedBootstrap;
   }
   return null;

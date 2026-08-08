@@ -1,4 +1,8 @@
-import { evaluateCondition, buildConditionString, type RequestContext } from "../../../src/lib/casbin/condition-evaluator.js";
+import {
+  buildConditionString,
+  evaluateCondition,
+  type RequestContext,
+} from "../../../src/lib/casbin/condition-evaluator.js";
 
 describe("ABAC Condition Evaluator", () => {
   const baseContext: RequestContext = {

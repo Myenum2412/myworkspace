@@ -1,9 +1,20 @@
 "use client";
 
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import {
-  PencilIcon, InfoIcon, Trash2Icon, FileTextIcon, DownloadIcon,
-  CopyIcon, Share2Icon, LockIcon, UnlockIcon,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  CopyIcon,
+  DownloadIcon,
+  FileTextIcon,
+  InfoIcon,
+  LockIcon,
+  PencilIcon,
+  Share2Icon,
+  Trash2Icon,
+  UnlockIcon,
 } from "@/lib/icons";
 
 interface BaseProps {
@@ -32,26 +43,70 @@ export function FileContextMenu(props: FileContextMenuProps) {
   if (props.type === "file") {
     return (
       <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); props.onPreview?.(); }}>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onPreview?.();
+          }}
+        >
           <FileTextIcon className="mr-2 size-4" /> Preview
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); props.onDownload?.(); }}>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onDownload?.();
+          }}
+        >
           <DownloadIcon className="mr-2 size-4" /> Download
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); props.onRename?.(); }}>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onRename?.();
+          }}
+        >
           <PencilIcon className="mr-2 size-4" /> Rename
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); props.onDuplicate?.(); }}>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onDuplicate?.();
+          }}
+        >
           <CopyIcon className="mr-2 size-4" /> Duplicate
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); props.onShare?.(); }}>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onShare?.();
+          }}
+        >
           <Share2Icon className="mr-2 size-4" /> Share
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); props.onToggleLock?.(); }}>
-          {props.isLocked ? <><UnlockIcon className="mr-2 size-4" /> Unlock</> : <><LockIcon className="mr-2 size-4" /> Lock</>}
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onToggleLock?.();
+          }}
+        >
+          {props.isLocked ? (
+            <>
+              <UnlockIcon className="mr-2 size-4" /> Unlock
+            </>
+          ) : (
+            <>
+              <LockIcon className="mr-2 size-4" /> Lock
+            </>
+          )}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); props.onDelete?.(); }} className="text-destructive">
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onDelete?.();
+          }}
+          className="text-destructive"
+        >
           <Trash2Icon className="mr-2 size-4" /> Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -60,14 +115,30 @@ export function FileContextMenu(props: FileContextMenuProps) {
 
   return (
     <DropdownMenuContent align="end" className="w-36">
-      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); props.onRename?.(); }}>
+      <DropdownMenuItem
+        onClick={(e) => {
+          e.stopPropagation();
+          props.onRename?.();
+        }}
+      >
         <PencilIcon className="mr-2 size-4" /> Rename
       </DropdownMenuItem>
-      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); props.onProperties?.(); }}>
+      <DropdownMenuItem
+        onClick={(e) => {
+          e.stopPropagation();
+          props.onProperties?.();
+        }}
+      >
         <InfoIcon className="mr-2 size-4" /> Properties
       </DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); props.onDelete?.(); }} className="text-destructive">
+      <DropdownMenuItem
+        onClick={(e) => {
+          e.stopPropagation();
+          props.onDelete?.();
+        }}
+        className="text-destructive"
+      >
         <Trash2Icon className="mr-2 size-4" /> Delete
       </DropdownMenuItem>
     </DropdownMenuContent>

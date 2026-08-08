@@ -38,7 +38,9 @@ export interface TaskEnriched {
  * tables can render "Assigned To" and "Delegated By" immediately (the client
  * treats the SSR payload as fresh and does not refetch on mount).
  */
-export async function enrichTasks<T extends Record<string, any>>(raw: T[]): Promise<TaskEnriched[]> {
+export async function enrichTasks<T extends Record<string, any>>(
+  raw: T[],
+): Promise<TaskEnriched[]> {
   if (!raw.length) return [];
 
   const userIds = new Set<string>();
@@ -50,9 +52,21 @@ export async function enrichTasks<T extends Record<string, any>>(raw: T[]): Prom
   }
 
   const [users, teams] = await Promise.all([
-    userIds.size ? db.collection(collections.users).find({ id: { $in: [...userIds] } }).toArray() : Promise.resolve([]),
+    userIds.size
+      ? db
+          .collection(collections.users)
+          .find({ id: { $in: [...userIds] } })
+          .toArray()
+      : Promise.resolve([]),
     teamIds.size
-      ? db.collection(collections.teams).find({ _id: { $in: [...teamIds].filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id)) } }).toArray()
+      ? db
+          .collection(collections.teams)
+          .find({
+            _id: {
+              $in: [...teamIds].filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id)),
+            },
+          })
+          .toArray()
       : Promise.resolve([]),
   ]);
 

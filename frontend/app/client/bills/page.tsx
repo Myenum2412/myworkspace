@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Loader2Icon, AlertCircleIcon } from "@/lib/icons";
-import { DataTable } from "@/components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
+import { useEffect, useState } from "react";
+import { DataTable } from "@/components/data-table";
 import { useIndustry } from "@/components/industry-provider";
+import { AlertCircleIcon, Loader2Icon } from "@/lib/icons";
 
 type Invoice = {
   id: string;
@@ -53,7 +53,7 @@ const columns: ColumnDef<Invoice>[] = [
       const inv = row.original;
       return (
         <span className="block text-right text-sm font-semibold tabular-nums">
-          {(inv.currency === "INR" ? "\u20B9" : "$")}
+          {inv.currency === "INR" ? "\u20B9" : "$"}
           {((inv.amountDue || 0) / 100).toFixed(2)}
         </span>
       );
@@ -65,9 +65,18 @@ const columns: ColumnDef<Invoice>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
-      const label = status === "paid" ? "Paid" : status === "open" ? "Pending" : status === "void" ? "Void" : status;
+      const label =
+        status === "paid"
+          ? "Paid"
+          : status === "open"
+            ? "Pending"
+            : status === "void"
+              ? "Void"
+              : status;
       return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusStyles[status] || "bg-gray-100 text-gray-700"}`}>
+        <span
+          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusStyles[status] || "bg-gray-100 text-gray-700"}`}
+        >
           {label}
         </span>
       );
@@ -97,8 +106,12 @@ export default function ClientBillsPage() {
           setError(res.error || "Failed to load billing data");
         }
       })
-      .catch((err) => { if (err.name !== "AbortError") setError("Network error"); })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+      .catch((err) => {
+        if (err.name !== "AbortError") setError("Network error");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
 
     return () => controller.abort();
   }, []);

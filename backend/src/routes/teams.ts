@@ -1,14 +1,14 @@
-import { Router, Response } from "express";
-import { PipelineStage } from "mongoose";
+import { type Response, Router } from "express";
+import type { PipelineStage } from "mongoose";
 import { Team } from "../lib/db/models/Team.js";
 import { TeamMember } from "../lib/db/models/TeamMember.js";
 import { User } from "../lib/db/models/User.js";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
-import { isAdminRole } from "../lib/rbac/index.js";
 import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
+import { isAdminRole } from "../lib/rbac/index.js";
+import { optionalString, requireString } from "../lib/validate.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
-import { requireString, optionalString } from "../lib/validate.js";
+import { AppError } from "../middleware/error.js";
 import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
@@ -16,130 +16,131 @@ const router = Router();
 router.use(authenticate);
 
 // List all teams in the user's org with member counts, pagination, filtering, and sorting
-router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tags: ["teams"] }), async (req: AuthRequest, res: Response) => {
-  const orgId = await requireOrgMembershipFromRequest(req);
+router.get(
+  "/",
+  cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tags: ["teams"] }),
+  async (req: AuthRequest, res: Response) => {
+    const orgId = await requireOrgMembershipFromRequest(req);
 
-  // Pagination params
-  const page = Math.max(1, parseInt(req.query.page as string) || 1);
-  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
-  const skip = (page - 1) * limit;
+    // Pagination params
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const skip = (page - 1) * limit;
 
-  // Name search filter
-  const nameSearch = (req.query.name as string)?.trim();
+    // Name search filter
+    const nameSearch = (req.query.name as string)?.trim();
 
-  // Sorting params
-  const allowedSortFields: Record<string, string> = {
-    name: "name",
-    createdAt: "createdAt",
-    memberCount: "memberCount",
-  };
-  const sortBy = allowedSortFields[req.query.sortBy as string] || "createdAt";
-  const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+    // Sorting params
+    const allowedSortFields: Record<string, string> = {
+      name: "name",
+      createdAt: "createdAt",
+      memberCount: "memberCount",
+    };
+    const sortBy = allowedSortFields[req.query.sortBy as string] || "createdAt";
+    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
 
-  // Build match stage for the aggregation
-  const teamMatch: Record<string, unknown> = { orgId };
-  if (nameSearch) {
-    teamMatch.name = { $regex: nameSearch, $options: "i" };
-  }
+    // Build match stage for the aggregation
+    const teamMatch: Record<string, unknown> = { orgId };
+    if (nameSearch) {
+      teamMatch.name = { $regex: nameSearch, $options: "i" };
+    }
 
-  // Aggregation pipeline: get teams with member counts and lead user info in one query
-  const pipeline: PipelineStage[] = [
-    { $match: teamMatch },
-    {
-      $addFields: {
-        _teamIdStr: { $toString: "$_id" },
-      },
-    },
-    {
-      $lookup: {
-        from: "teammembers",
-        let: { teamIdStr: "$_teamIdStr" },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $eq: ["$teamId", "$$teamIdStr"],
-              },
-            },
-          },
-        ],
-        as: "members",
-      },
-    },
-    {
-      $lookup: {
-        from: "users",
-        let: {
-          leadIds: {
-            $filter: {
-              input: "$members",
-              as: "m",
-              cond: { $eq: ["$$m.role", "team_lead"] },
-            },
-          },
+    // Aggregation pipeline: get teams with member counts and lead user info in one query
+    const pipeline: PipelineStage[] = [
+      { $match: teamMatch },
+      {
+        $addFields: {
+          _teamIdStr: { $toString: "$_id" },
         },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $in: ["$id", "$$leadIds.userId"],
+      },
+      {
+        $lookup: {
+          from: "teammembers",
+          let: { teamIdStr: "$_teamIdStr" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$teamId", "$$teamIdStr"],
+                },
+              },
+            },
+          ],
+          as: "members",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: {
+            leadIds: {
+              $filter: {
+                input: "$members",
+                as: "m",
+                cond: { $eq: ["$$m.role", "team_lead"] },
               },
             },
           },
-          { $project: { name: 1, email: 1, image: 1 } },
-        ],
-        as: "leadUsers",
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: ["$id", "$$leadIds.userId"],
+                },
+              },
+            },
+            { $project: { name: 1, email: 1, image: 1 } },
+          ],
+          as: "leadUsers",
+        },
       },
-    },
-    {
-      $addFields: {
-        memberCount: { $size: "$members" },
-        leadUser: { $arrayElemAt: ["$leadUsers", 0] },
+      {
+        $addFields: {
+          memberCount: { $size: "$members" },
+          leadUser: { $arrayElemAt: ["$leadUsers", 0] },
+        },
       },
-    },
-    { $project: { _teamIdStr: 0, members: 0, leadUsers: 0 } },
-    // Sorting
-    { $sort: { [sortBy]: sortOrder } },
-    // Pagination
-    { $skip: skip },
-    { $limit: limit },
-  ];
+      { $project: { _teamIdStr: 0, members: 0, leadUsers: 0 } },
+      // Sorting
+      { $sort: { [sortBy]: sortOrder } },
+      // Pagination
+      { $skip: skip },
+      { $limit: limit },
+    ];
 
-  // Count total matching teams for pagination metadata
-  const countPipeline: PipelineStage[] = [
-    { $match: teamMatch },
-    { $count: "total" },
-  ];
+    // Count total matching teams for pagination metadata
+    const countPipeline: PipelineStage[] = [{ $match: teamMatch }, { $count: "total" }];
 
-  const [teams, countResult] = await Promise.all([
-    Team.aggregate(pipeline),
-    Team.aggregate(countPipeline),
-  ]);
+    const [teams, countResult] = await Promise.all([
+      Team.aggregate(pipeline),
+      Team.aggregate(countPipeline),
+    ]);
 
-  const total = countResult.length > 0 ? countResult[0].total : 0;
-  const totalPages = Math.ceil(total / limit);
+    const total = countResult.length > 0 ? countResult[0].total : 0;
+    const totalPages = Math.ceil(total / limit);
 
-  const result = teams.map((t) => ({
-    id: t._id.toString(),
-    name: t.name,
-    description: t.description || "",
-    memberCount: t.memberCount || 0,
-    leadName: t.leadUser?.name || "",
-    leadAvatar: t.leadUser?.image || "",
-    createdAt: t.createdAt,
-  }));
+    const result = teams.map((t) => ({
+      id: t._id.toString(),
+      name: t.name,
+      description: t.description || "",
+      memberCount: t.memberCount || 0,
+      leadName: t.leadUser?.name || "",
+      leadAvatar: t.leadUser?.image || "",
+      createdAt: t.createdAt,
+    }));
 
-  res.json({
-    success: true,
-    data: result,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages,
-    },
-  });
-});
+    res.json({
+      success: true,
+      data: result,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    });
+  },
+);
 
 // Get single team with full member details using aggregation
 router.get("/:id", async (req: AuthRequest, res: Response) => {
@@ -246,8 +247,12 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
   const teamData = result[0];
 
   const members = (teamData.members as Record<string, unknown>[]).map((m) => ({
-    id: (m.id as { toString: () => string }).toString ? (m.id as { toString: () => string }).toString() : m.id,
-    userId: (m.userId as { toString: () => string }).toString ? (m.userId as { toString: () => string }).toString() : m.userId,
+    id: (m.id as { toString: () => string }).toString
+      ? (m.id as { toString: () => string }).toString()
+      : m.id,
+    userId: (m.userId as { toString: () => string }).toString
+      ? (m.userId as { toString: () => string }).toString()
+      : m.userId,
     name: (m.name as string) || "Unknown",
     email: (m.email as string) || "",
     avatar: (m.image as string) || "",
@@ -284,7 +289,14 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     createdBy: req.user!.userId,
   });
 
-  processEvent({ type: "team_announcement", category: "messages", userId: req.user!.userId, orgId, createdBy: req.user!.userId, title: "Team created" }).catch(() => {});
+  processEvent({
+    type: "team_announcement",
+    category: "messages",
+    userId: req.user!.userId,
+    orgId,
+    createdBy: req.user!.userId,
+    title: "Team created",
+  }).catch(() => {});
   res.status(201).json({ success: true, data: { id: team._id.toString(), name: team.name } });
 });
 
@@ -303,7 +315,14 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (Object.keys(updates).length > 0) updates.updatedBy = req.user!.userId;
 
   await Team.findByIdAndUpdate(req.params.id, updates);
-  processEvent({ type: "team_update", category: "messages", userId: req.user!.userId, orgId: team.orgId.toString(), createdBy: req.user!.userId, title: "Team updated" }).catch(() => {});
+  processEvent({
+    type: "team_update",
+    category: "messages",
+    userId: req.user!.userId,
+    orgId: team.orgId.toString(),
+    createdBy: req.user!.userId,
+    title: "Team updated",
+  }).catch(() => {});
   res.json({ success: true });
 });
 
@@ -338,7 +357,9 @@ router.post("/:id/members", async (req: AuthRequest, res: Response) => {
   await requireOrgMembership(userId, team.orgId.toString());
 
   // Check not already in team
-  const existing = await TeamMember.findOne({ teamId: team._id.toString(), userId }).select("_id").lean();
+  const existing = await TeamMember.findOne({ teamId: team._id.toString(), userId })
+    .select("_id")
+    .lean();
   if (existing) throw new AppError(400, "User is already a member of this team");
 
   const teamMember = await TeamMember.create({
@@ -349,7 +370,14 @@ router.post("/:id/members", async (req: AuthRequest, res: Response) => {
     createdBy: req.user!.userId,
   });
 
-  processEvent({ type: "department_access_changed", category: "permissions", userId: req.user!.userId, orgId: team.orgId.toString(), createdBy: req.user!.userId, title: "Team member added" }).catch(() => {});
+  processEvent({
+    type: "department_access_changed",
+    category: "permissions",
+    userId: req.user!.userId,
+    orgId: team.orgId.toString(),
+    createdBy: req.user!.userId,
+    title: "Team member added",
+  }).catch(() => {});
   res.status(201).json({ success: true, data: { id: teamMember._id.toString() } });
 });
 
@@ -362,7 +390,14 @@ router.delete("/:teamId/members/:userId", async (req: AuthRequest, res: Response
   await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
   await TeamMember.deleteOne({ teamId: team._id.toString(), userId: req.params.userId });
-  processEvent({ type: "permission_revoked", category: "permissions", userId: req.user!.userId, orgId: team.orgId.toString(), createdBy: req.user!.userId, title: "Team member removed" }).catch(() => {});
+  processEvent({
+    type: "permission_revoked",
+    category: "permissions",
+    userId: req.user!.userId,
+    orgId: team.orgId.toString(),
+    createdBy: req.user!.userId,
+    title: "Team member removed",
+  }).catch(() => {});
   res.json({ success: true });
 });
 
@@ -375,15 +410,26 @@ router.patch("/:teamId/members/:userId/role", async (req: AuthRequest, res: Resp
   await requireOrgMembershipFromRequest(req, team.orgId.toString());
 
   const { role } = req.body;
-  if (!role || !["team_lead", "team_staff"].includes(role)) throw new AppError(400, "Valid role required (team_lead or team_staff)");
+  if (!role || !["team_lead", "team_staff"].includes(role))
+    throw new AppError(400, "Valid role required (team_lead or team_staff)");
 
   if (role === "team_lead") {
     // Demote any existing team lead to team_staff
-    await TeamMember.updateMany({ teamId: team._id.toString(), role: "team_lead" }, { role: "team_staff" });
+    await TeamMember.updateMany(
+      { teamId: team._id.toString(), role: "team_lead" },
+      { role: "team_staff" },
+    );
   }
 
   await TeamMember.updateOne({ teamId: team._id.toString(), userId: req.params.userId }, { role });
-  processEvent({ type: "role_changed", category: "permissions", userId: req.user!.userId, orgId: team.orgId.toString(), createdBy: req.user!.userId, title: "Team role changed" }).catch(() => {});
+  processEvent({
+    type: "role_changed",
+    category: "permissions",
+    userId: req.user!.userId,
+    orgId: team.orgId.toString(),
+    createdBy: req.user!.userId,
+    title: "Team role changed",
+  }).catch(() => {});
   res.json({ success: true });
 });
 

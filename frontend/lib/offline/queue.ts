@@ -1,4 +1,4 @@
-import { openDB, type IDBPDatabase } from "idb";
+import { type IDBPDatabase, openDB } from "idb";
 
 const DB_NAME = "offline-queue-db";
 const DB_VERSION = 2;
@@ -127,7 +127,10 @@ export async function findByIdempotencyKey(key: string): Promise<QueuedRequest |
   return (result as QueuedRequest) || null;
 }
 
-export async function findByResource(documentId: string, endpoint: string): Promise<QueuedRequest | null> {
+export async function findByResource(
+  documentId: string,
+  endpoint: string,
+): Promise<QueuedRequest | null> {
   const db = await getDb();
   const all = await db.getAll(STORE_NAME);
   return all.find((r) => r.documentId === documentId && r.endpoint === endpoint) || null;

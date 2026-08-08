@@ -14,7 +14,8 @@ export function TeamStatsCard({ icon, label, value, valueClassName }: TeamStatsC
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-          {icon}{label}
+          {icon}
+          {label}
         </CardTitle>
       </CardHeader>
       <CardContent>

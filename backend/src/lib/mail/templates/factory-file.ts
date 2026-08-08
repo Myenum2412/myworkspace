@@ -1,4 +1,4 @@
-import { EmailData } from "./types.js";
+import type { EmailData } from "./types.js";
 
 function ts(): string {
   return new Date().toLocaleString();
@@ -11,7 +11,7 @@ export const buildFileUploaded = (
   projectName: string,
   fileSize: string,
   fileType: string,
-  fileUrl: string
+  fileUrl: string,
 ): EmailData => ({
   subject: `File Uploaded: ${fileName}`,
   previewText: `${uploadedBy} uploaded "${fileName}" to ${projectName}`,
@@ -36,7 +36,7 @@ export const buildFileDownloaded = (
   downloadedBy: string,
   projectName: string,
   ipAddress: string,
-  fileUrl: string
+  fileUrl: string,
 ): EmailData => ({
   subject: `File Downloaded: ${fileName}`,
   previewText: `${downloadedBy} downloaded "${fileName}"`,
@@ -62,7 +62,7 @@ export const buildFileShared = (
   projectName: string,
   sharedWith: string,
   permission: string,
-  fileUrl: string
+  fileUrl: string,
 ): EmailData => ({
   subject: `File Shared: ${fileName}`,
   previewText: `${sharedBy} shared "${fileName}" with you`,
@@ -87,7 +87,7 @@ export const buildFileVersionUpdated = (
   projectName: string,
   versionNumber: string,
   changeSummary: string,
-  fileUrl: string
+  fileUrl: string,
 ): EmailData => ({
   subject: `File Version Updated: ${fileName} (v${versionNumber})`,
   previewText: `${updatedBy} uploaded version ${versionNumber} of "${fileName}"`,
@@ -114,7 +114,7 @@ export const buildFileAccessChanged = (
   projectName: string,
   oldPermission: string,
   newPermission: string,
-  fileUrl: string
+  fileUrl: string,
 ): EmailData => ({
   subject: `File Access Updated: ${fileName}`,
   previewText: `Access permissions for "${fileName}" have been changed`,
@@ -140,7 +140,7 @@ export const buildFileDeleted = (
   deletedBy: string,
   projectName: string,
   permanentlyDeleted: boolean,
-  fileUrl: string
+  fileUrl: string,
 ): EmailData => ({
   subject: `File Removed: ${fileName}`,
   previewText: `"${fileName}" has been removed from ${projectName}`,
@@ -154,9 +154,12 @@ export const buildFileDeleted = (
     { label: "Removed By", value: deletedBy },
     { label: "Type", value: permanentlyDeleted ? "Permanently Deleted" : "Moved to Trash" },
   ],
-  ...(!permanentlyDeleted ? {
-    warning: "This file has been moved to the trash and can be restored within 30 days." as const,
-  } : {}),
+  ...(!permanentlyDeleted
+    ? {
+        warning:
+          "This file has been moved to the trash and can be restored within 30 days." as const,
+      }
+    : {}),
   button: { text: "View Trash", url: fileUrl },
   supportEmail: "support@workspace.com",
 });
@@ -167,7 +170,7 @@ export const buildFileRenamed = (
   newFileName: string,
   renamedBy: string,
   projectName: string,
-  fileUrl: string
+  fileUrl: string,
 ): EmailData => ({
   subject: `File Renamed: ${oldFileName}`,
   previewText: `"${oldFileName}" has been renamed to "${newFileName}"`,
@@ -192,7 +195,7 @@ export const buildFolderShared = (
   projectName: string,
   sharedWith: string,
   permission: string,
-  folderUrl: string
+  folderUrl: string,
 ): EmailData => ({
   subject: `Folder Shared: ${folderName}`,
   previewText: `${sharedBy} shared the folder "${folderName}" with you`,
@@ -215,7 +218,7 @@ export const buildFileRestored = (
   fileName: string,
   restoredBy: string,
   projectName: string,
-  fileUrl: string
+  fileUrl: string,
 ): EmailData => ({
   subject: `File Restored: ${fileName}`,
   previewText: `"${fileName}" has been restored to ${projectName}`,
@@ -238,7 +241,7 @@ export const buildStorageQuotaWarning = (
   usedStorage: string,
   totalStorage: string,
   usagePercent: number,
-  manageUrl: string
+  manageUrl: string,
 ): EmailData => ({
   subject: `Storage Quota Warning - ${workspaceName}`,
   previewText: `Your ${workspaceName} storage is at ${usagePercent}% capacity`,
@@ -255,9 +258,10 @@ export const buildStorageQuotaWarning = (
     { label: "Total Storage", value: totalStorage },
     { label: "Usage", value: `${usagePercent}%` },
   ],
-  warning: usagePercent >= 95
-    ? "Your workspace is almost out of storage. Please delete unnecessary files or upgrade your plan."
-    : `You have used ${usagePercent}% of your storage capacity. Consider cleaning up old files.`,
+  warning:
+    usagePercent >= 95
+      ? "Your workspace is almost out of storage. Please delete unnecessary files or upgrade your plan."
+      : `You have used ${usagePercent}% of your storage capacity. Consider cleaning up old files.`,
   button: { text: "Manage Storage", url: manageUrl },
   supportEmail: "support@workspace.com",
 });

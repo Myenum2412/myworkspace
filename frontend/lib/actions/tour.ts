@@ -13,10 +13,9 @@ export async function completeTourAction() {
   const userId = session.user.id;
 
   try {
-    await db.collection(collections.users).updateOne(
-      { id: userId },
-      { $set: { tourCompleted: true, updatedAt: new Date() } }
-    );
+    await db
+      .collection(collections.users)
+      .updateOne({ id: userId }, { $set: { tourCompleted: true, updatedAt: new Date() } });
 
     await unstable_update({});
 
@@ -39,10 +38,9 @@ export async function resetTourAction(userId: string) {
   }
 
   try {
-    await db.collection(collections.users).updateOne(
-      { id: userId },
-      { $set: { tourCompleted: false, updatedAt: new Date() } }
-    );
+    await db
+      .collection(collections.users)
+      .updateOne({ id: userId }, { $set: { tourCompleted: false, updatedAt: new Date() } });
     return { success: true };
   } catch (err) {
     console.error("[TOUR] Failed to reset tour status:", err);

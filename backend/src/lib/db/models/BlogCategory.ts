@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IBlogCategory extends Document {
   id: string;
@@ -22,7 +22,7 @@ const blogCategorySchema = new Schema<IBlogCategory>(
     postCount: { type: Number, default: 0 },
     createdBy: { type: String, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 blogCategorySchema.index({ orgId: 1, slug: 1 }, { unique: true });

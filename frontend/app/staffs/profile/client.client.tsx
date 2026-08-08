@@ -1,18 +1,19 @@
 "use client";
 
+import nextDynamic from "next/dynamic";
 import { useState } from "react";
 import { toast } from "sonner";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { AchievementBadge } from "@/components/ui/achievement-badge";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { PhoneInput } from "@/components/ui/phone-input";
-import { PincodeInput, LocationSelect } from "@/components/ui/location-fields";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LocationSelect, PincodeInput } from "@/components/ui/location-fields";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
   Select,
   SelectContent,
@@ -20,44 +21,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { SearchableSelect } from "@/components/ui/searchable-select";
-import { INDUSTRIES } from "@/lib/industries";
 import {
-  MailIcon,
-  CalendarIcon,
-  ShieldIcon,
-  Building2Icon,
-  CircleIcon,
-  CameraIcon,
-  XIcon,
-  Loader2Icon,
-  UserIcon,
-  PencilIcon,
-  CheckIcon,
-  PhoneIcon,
   AlertCircleIcon,
-  CheckCircleIcon,
+  BarChart3Icon,
   BriefcaseIcon,
-  HistoryIcon,
+  Building2Icon,
+  CalendarIcon,
+  CameraIcon,
+  CheckCircleIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  CircleIcon,
+  FileTextIcon,
   GraduationCapIcon,
   HeartIcon,
-  FileTextIcon,
-  UploadIcon,
+  HistoryIcon,
+  Loader2Icon,
+  MailIcon,
+  PencilIcon,
+  PhoneIcon,
+  ShieldIcon,
   Trophy,
-  BarChart3Icon,
-  ChevronDownIcon,
+  UploadIcon,
+  UserIcon,
+  XIcon,
 } from "@/lib/icons";
+import { INDUSTRIES } from "@/lib/industries";
 
-import nextDynamic from "next/dynamic";
 const BannerUpload = nextDynamic(
   () => import("@/components/ui/file-upload-1").then((m) => m.BannerUpload),
-  { ssr: false }
+  { ssr: false },
 );
 const ProfileImageUpload = nextDynamic(
   () => import("@/components/ui/profile-image-upload").then((m) => m.ProfileImageUpload),
-  { ssr: false }
+  { ssr: false },
 );
 
 const planLabels: Record<string, string> = {
@@ -204,7 +203,11 @@ export default function ProfileClient({ data }: Props) {
   const [editState, setEditState] = useState(dbUser?.state || "");
   const [editCountry, setEditCountry] = useState(dbUser?.country || "");
   const [editZipCode, setEditZipCode] = useState(dbUser?.zipCode || "");
-  const [pincodeResult, setPincodeResult] = useState<{cities: string[]; states: string[]; countries: string[]} | null>(null);
+  const [pincodeResult, setPincodeResult] = useState<{
+    cities: string[];
+    states: string[];
+    countries: string[];
+  } | null>(null);
   const [editLinkedin, setEditLinkedin] = useState(dbUser?.linkedin || "");
   const [editGithub, setEditGithub] = useState(dbUser?.github || "");
   const [editTwitter, setEditTwitter] = useState(dbUser?.twitter || "");
@@ -219,20 +222,24 @@ export default function ProfileClient({ data }: Props) {
   const [editShift, setEditShift] = useState(dbUser?.shift || "");
   const [editSourceOfHire, setEditSourceOfHire] = useState(dbUser?.sourceOfHire || "");
   const [editJoiningDate, setEditJoiningDate] = useState(dbUser?.joiningDate || "");
-  const [editCurrentExperience, setEditCurrentExperience] = useState(dbUser?.currentExperience || "");
+  const [editCurrentExperience, setEditCurrentExperience] = useState(
+    dbUser?.currentExperience || "",
+  );
   const [editTotalExperience, setEditTotalExperience] = useState(dbUser?.totalExperience || "");
   const [editSecondaryPhone, setEditSecondaryPhone] = useState(dbUser?.secondaryPhone || "");
   const [editUserLocation, setEditUserLocation] = useState(dbUser?.location || "");
   const [editWorkExperience, setEditWorkExperience] = useState<ExperienceRow[]>(
-    (dbUser?.workExperience && dbUser.workExperience.length > 0) ? dbUser.workExperience : []
+    dbUser?.workExperience && dbUser.workExperience.length > 0 ? dbUser.workExperience : [],
   );
   const [editEducationDetails, setEditEducationDetails] = useState<EducationRow[]>(
-    (dbUser?.educationDetails && dbUser.educationDetails.length > 0) ? dbUser.educationDetails : []
+    dbUser?.educationDetails && dbUser.educationDetails.length > 0 ? dbUser.educationDetails : [],
   );
   const [editDependentDetails, setEditDependentDetails] = useState<DependentRow[]>(
-    (dbUser?.dependentDetails && dbUser.dependentDetails.length > 0) ? dbUser.dependentDetails : []
+    dbUser?.dependentDetails && dbUser.dependentDetails.length > 0 ? dbUser.dependentDetails : [],
   );
-  const [editOfferLetter, setEditOfferLetter] = useState<{ name: string; data: string } | null>(null);
+  const [editOfferLetter, setEditOfferLetter] = useState<{ name: string; data: string } | null>(
+    null,
+  );
   const [offerLetterUploading, setOfferLetterUploading] = useState(false);
 
   // Org fields — initialized from server-provided data
@@ -252,13 +259,21 @@ export default function ProfileClient({ data }: Props) {
   const [editOrgCity, setEditOrgCity] = useState(org?.city || "");
   const [editOrgState, setEditOrgState] = useState(org?.state || "");
   const [editPincode, setEditPincode] = useState(org?.pincode || "");
-  const [orgPincodeResult, setOrgPincodeResult] = useState<{cities: string[]; states: string[]; countries: string[]} | null>(null);
+  const [orgPincodeResult, setOrgPincodeResult] = useState<{
+    cities: string[];
+    states: string[];
+    countries: string[];
+  } | null>(null);
   const [editOrgCountry, setEditOrgCountry] = useState(org?.country || "India");
   const [editAuthorizedPerson, setEditAuthorizedPerson] = useState(org?.authorizedPersonName || "");
   const [editDesignation, setEditDesignation] = useState(org?.designation || "");
   const [editAuthorizedEmail, setEditAuthorizedEmail] = useState(org?.authorizedPersonEmail || "");
-  const [editAuthorizedMobile, setEditAuthorizedMobile] = useState(org?.authorizedPersonMobile || "");
-  const [editNumEmployees, setEditNumEmployees] = useState(org?.numberOfEmployees?.toString() || "");
+  const [editAuthorizedMobile, setEditAuthorizedMobile] = useState(
+    org?.authorizedPersonMobile || "",
+  );
+  const [editNumEmployees, setEditNumEmployees] = useState(
+    org?.numberOfEmployees?.toString() || "",
+  );
   const [editCompanyDesc, setEditCompanyDesc] = useState(org?.companyDescription || "");
 
   const [showCompanyDetails, setShowCompanyDetails] = useState(false);
@@ -283,19 +298,38 @@ export default function ProfileClient({ data }: Props) {
   };
 
   const updateEduRow = (id: string, field: string, value: string) => {
-    setEditEducationDetails((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+    setEditEducationDetails((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)),
+    );
   };
 
   const updateDepRow = (id: string, field: string, value: string) => {
-    setEditDependentDetails((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+    setEditDependentDetails((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)),
+    );
   };
 
   const addRow = (type: "work" | "education" | "dependent") => {
     const id = generateId();
     if (type === "work") {
-      setEditWorkExperience((prev) => [...prev, { id, company: "", title: "", roles: "", from: "", to: "", description: "", relevant: false }]);
+      setEditWorkExperience((prev) => [
+        ...prev,
+        {
+          id,
+          company: "",
+          title: "",
+          roles: "",
+          from: "",
+          to: "",
+          description: "",
+          relevant: false,
+        },
+      ]);
     } else if (type === "education") {
-      setEditEducationDetails((prev) => [...prev, { id, institute: "", degree: "", specialization: "", completionDate: "" }]);
+      setEditEducationDetails((prev) => [
+        ...prev,
+        { id, institute: "", degree: "", specialization: "", completionDate: "" },
+      ]);
     } else {
       setEditDependentDetails((prev) => [...prev, { id, name: "", relationship: "", dob: "" }]);
     }
@@ -339,8 +373,10 @@ export default function ProfileClient({ data }: Props) {
     if (!editName.trim()) errors.push("Name is required");
     if (!editEmail.trim()) errors.push("Email is required");
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editEmail)) errors.push("Invalid email format");
-    if (editCompanyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editCompanyEmail)) errors.push("Invalid company email format");
-    if (editNumEmployees && isNaN(Number(editNumEmployees))) errors.push("Number of employees must be a number");
+    if (editCompanyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editCompanyEmail))
+      errors.push("Invalid company email format");
+    if (editNumEmployees && isNaN(Number(editNumEmployees)))
+      errors.push("Number of employees must be a number");
     if (errors.length > 0) {
       setSaveError(errors.join("; "));
       return;
@@ -413,7 +449,10 @@ export default function ProfileClient({ data }: Props) {
 
       if (!res.ok) {
         let errMsg = `Request failed (${res.status})`;
-        try { const err = await res.json(); errMsg = err.error || errMsg; } catch {}
+        try {
+          const err = await res.json();
+          errMsg = err.error || errMsg;
+        } catch {}
         toast.error(errMsg);
         setSaveError(errMsg);
         return;
@@ -426,13 +465,20 @@ export default function ProfileClient({ data }: Props) {
       // Clear success message after 4s
       setTimeout(() => setSaveSuccess(""), 4000);
     } catch (e) {
-      const errMsg = e instanceof TypeError && e.message === "Failed to fetch"
-        ? "Cannot connect to server. Please check your connection and try again."
-        : (e instanceof Error ? e.message : "Network error");
+      const errMsg =
+        e instanceof TypeError && e.message === "Failed to fetch"
+          ? "Cannot connect to server. Please check your connection and try again."
+          : e instanceof Error
+            ? e.message
+            : "Network error";
       toast.error(errMsg);
-      setSaveError(e instanceof TypeError && e.message === "Failed to fetch"
-        ? "Cannot connect to server. Please check your connection and try again."
-        : (e instanceof Error ? e.message : "Network error"));
+      setSaveError(
+        e instanceof TypeError && e.message === "Failed to fetch"
+          ? "Cannot connect to server. Please check your connection and try again."
+          : e instanceof Error
+            ? e.message
+            : "Network error",
+      );
     } finally {
       setSaving(false);
     }
@@ -468,9 +514,15 @@ export default function ProfileClient({ data }: Props) {
     setEditTotalExperience(dbUser?.totalExperience || "");
     setEditSecondaryPhone(dbUser?.secondaryPhone || "");
     setEditUserLocation(dbUser?.location || "");
-    setEditWorkExperience((dbUser?.workExperience && dbUser.workExperience.length > 0) ? dbUser.workExperience : []);
-    setEditEducationDetails((dbUser?.educationDetails && dbUser.educationDetails.length > 0) ? dbUser.educationDetails : []);
-    setEditDependentDetails((dbUser?.dependentDetails && dbUser.dependentDetails.length > 0) ? dbUser.dependentDetails : []);
+    setEditWorkExperience(
+      dbUser?.workExperience && dbUser.workExperience.length > 0 ? dbUser.workExperience : [],
+    );
+    setEditEducationDetails(
+      dbUser?.educationDetails && dbUser.educationDetails.length > 0 ? dbUser.educationDetails : [],
+    );
+    setEditDependentDetails(
+      dbUser?.dependentDetails && dbUser.dependentDetails.length > 0 ? dbUser.dependentDetails : [],
+    );
     setEditOfferLetter(null);
     setEditCompanyName(org?.name || "");
     setEditDomain(org?.domain || "");
@@ -599,1267 +651,1737 @@ export default function ProfileClient({ data }: Props) {
   }
 
   return (
-                                <>
-                                <div className="flex flex-1 flex-col">
-          <div
-            className="relative h-[200px] bg-gradient-to-b from-primary/90 via-primary/40 to-background bg-cover bg-center"
-            style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
-          >
+    <>
+      <div className="flex flex-1 flex-col">
+        <div
+          className="relative h-[200px] bg-gradient-to-b from-primary/90 via-primary/40 to-background bg-cover bg-center"
+          style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
+        ></div>
+
+        <div className="flex flex-col items-center -mt-12 px-6">
+          <div className="relative group">
+            <Avatar className="size-24 ring-4 ring-background shadow-xl">
+              <AvatarImage src={dbUser?.image || ""} alt={dbUser?.name || ""} />
+              <AvatarFallback className="text-2xl">
+                {dbUser?.name?.charAt(0)?.toUpperCase() || "?"}
+              </AvatarFallback>
+            </Avatar>
+            <button
+              onClick={() => setShowImageEditor(true)}
+              className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-sm bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+              aria-label="Edit profile photo"
+            >
+              <CameraIcon className="size-4" />
+            </button>
           </div>
 
-          <div className="flex flex-col items-center -mt-12 px-6">
-            <div className="relative group">
-              <Avatar className="size-24 ring-4 ring-background shadow-xl">
-                <AvatarImage src={dbUser?.image || ""} alt={dbUser?.name || ""} />
-                <AvatarFallback className="text-2xl">{dbUser?.name?.charAt(0)?.toUpperCase() || "?"}</AvatarFallback>
-              </Avatar>
-              <button
-                onClick={() => setShowImageEditor(true)}
-                className="absolute -bottom-1 -right-1 flex items-center justify-center size-8 rounded-sm bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
-                aria-label="Edit profile photo"
-              >
-                <CameraIcon className="size-4" />
-              </button>
-            </div>
-
-            <h1 className="mt-3 text-2xl font-bold">{dbUser?.name || "User"}</h1>
-            <div className="flex items-center gap-2 mt-1 text-muted-foreground">
-              <span className="flex items-center gap-1.5 text-sm">
-                <span className={`inline-block size-2 rounded-full ${statusColors[dbUser?.status || "offline"]}`} />
-                {dbUser?.status ? dbUser.status.charAt(0).toUpperCase() + dbUser.status.slice(1) : "Offline"}
-              </span>
-              <span aria-hidden>&middot;</span>
-              <Badge variant={roleBadge[dbUser?.role || "staffs"]}>
-                {dbUser?.role ? dbUser.role.charAt(0).toUpperCase() + dbUser.role.slice(1) : "Member"}
-              </Badge>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 w-full px-6 pt-4 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
-            {saveError && (
-              <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                <AlertCircleIcon className="size-3.5 shrink-0" />
-                {saveError}
-              </div>
-            )}
-            {saveSuccess && (
-              <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                <CheckCircleIcon className="size-3.5 shrink-0" />
-                {saveSuccess}
-              </div>
-            )}
-            <div className="flex justify-end">
-              {editing ? (
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving} className="w-32 h-10">
-                    Cancel
-                  </Button>
-                  <Button size="sm" onClick={handleSave} disabled={saving} className="w-32 h-10">
-                    {saving ? <Loader2Icon className="animate-spin" /> : <CheckIcon className="size-4" />}
-                    Save
-                  </Button>
-                </div>
-              ) : (
-                <Button size="sm" variant="outline" onClick={() => { setSaveError(""); setSaveSuccess(""); setEditing(true); }}>
-                  <PencilIcon className="" />
-                  Edit
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="grid gap-6 p-6 w-full [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
-            {/* ─── User Details Card ─── */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <UserIcon className="size-5" />
-                  User Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Email (read-only — unique identifier) */}
-                <div className="flex items-center gap-3">
-                  <MailIcon className="size-4 text-muted-foreground shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="text-sm font-medium">{dbUser?.email || "—"}</p>
-                  </div>
-                </div>
-                <Separator />
-
-                {/* Name */}
-                <div className="flex items-center gap-3">
-                  <UserIcon className="size-4 text-muted-foreground shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground">Name {editing && <span className="text-d">*</span>}</p>
-                    {editing ? (
-                      <Input
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        placeholder=""
-                        className="h-8 text-sm mt-1"
-                        required
-                      />
-                    ) : (
-                      <p className="text-sm font-medium">{dbUser?.name || "—"}</p>
-                    )}
-                  </div>
-                </div>
-                <Separator />
-
-                {/* Phone */}
-                <div className="flex items-center gap-3">
-                  <PhoneIcon className="size-4 text-muted-foreground shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    {editing ? (
-                      <PhoneInput
-                        value={editPhone}
-                        onChange={setEditPhone}
-                        placeholder=""
-                        className="h-8 text-sm mt-1"
-                      />
-                    ) : (
-                      <p className="text-sm font-medium">{dbUser?.phone || "—"}</p>
-                    )}
-                  </div>
-                </div>
-                <Separator />
-
-                {/* Department */}
-                <div className="flex items-center gap-3">
-                  <Building2Icon className="size-4 text-muted-foreground shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground">Department</p>
-                    {editing ? (
-                      <Input
-                        value={editDepartment}
-                        onChange={(e) => setEditDepartment(e.target.value)}
-                        placeholder=""
-                        className="h-8 text-sm mt-1"
-                      />
-                    ) : (
-                      <p className="text-sm font-medium">{dbUser?.department || "—"}</p>
-                    )}
-                  </div>
-                </div>
-                <Separator />
-
-                {/* Company (user-level) */}
-                <div className="flex items-center gap-3">
-                  <Building2Icon className="size-4 text-muted-foreground shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground">Company</p>
-                    {editing ? (
-                      <Input
-                        value={editCompany}
-                        onChange={(e) => setEditCompany(e.target.value)}
-                        placeholder=""
-                        className="h-8 text-sm mt-1"
-                      />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setShowCompanyDetails((v) => !v)}
-                        className="flex items-center gap-1 text-sm font-medium hover:underline underline-offset-2 cursor-pointer"
-                      >
-                        {dbUser?.company || "—"}
-                        <ChevronDownIcon className={`size-3.5 text-muted-foreground transition-transform ${showCompanyDetails ? "rotate-180" : ""}`} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-                {showCompanyDetails && !editing && (
-                  <div className="rounded-sm border bg-muted/30 p-4 space-y-3">
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Company Name</p>
-                        <p className="text-sm font-medium">{org?.name || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Business Type</p>
-                        <p className="text-sm font-medium">{org?.businessType || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Industry</p>
-                        <p className="text-sm font-medium">{org?.industry || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Company Email</p>
-                        <p className="text-sm font-medium">{org?.companyEmail || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Mobile</p>
-                        <p className="text-sm font-medium">{org?.mobileNumber || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Website</p>
-                        <p className="text-sm font-medium">{org?.website || "—"}</p>
-                      </div>
-                      <div className="sm:col-span-2">
-                        <p className="text-xs text-muted-foreground">Address</p>
-                        <p className="text-sm font-medium">
-                          {[org?.addressLine1, org?.addressLine2, org?.city, org?.state, org?.pincode, org?.country].filter(Boolean).join(", ") || "—"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <Separator />
-
-                {/* Role + Status (read-only) */}
-                <div className="flex items-center gap-3">
-                  <ShieldIcon className="size-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Role</p>
-                    <p className="text-sm font-medium capitalize">{dbUser?.role || "Member"}</p>
-                  </div>
-                </div>
-                <Separator />
-                <div className="flex items-center gap-3">
-                  <CircleIcon className="size-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Status</p>
-                    <p className="text-sm font-medium capitalize">{dbUser?.status || "Offline"}</p>
-                  </div>
-                </div>
-                <Separator />
-                <div className="flex items-center gap-3">
-                  <CalendarIcon className="size-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Member since</p>
-                    <p className="text-sm font-medium">
-                      {dbUser?.createdAt
-                        ? new Date(dbUser.createdAt).toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })
-                        : "—"}
-                    </p>
-                  </div>
-                </div>
-                <Separator />
-
-                {/* Address fields */}
-                <div className="space-y-3 pt-1">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Address</p>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Street</p>
-                      {editing ? (
-                        <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="" className="text-sm" />
-                      ) : (
-                        <p className="text-sm font-medium">{dbUser?.address || "—"}</p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">City</p>
-                      {editing ? (
-                        <LocationSelect options={pincodeResult?.cities || []} value={editCity} onChange={setEditCity} placeholder="" className="text-sm" />
-                      ) : (
-                        <p className="text-sm font-medium">{dbUser?.city || "—"}</p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">State</p>
-                      {editing ? (
-                        <LocationSelect options={pincodeResult?.states || []} value={editState} onChange={setEditState} placeholder="" className="text-sm" />
-                      ) : (
-                        <p className="text-sm font-medium">{dbUser?.state || "—"}</p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Country</p>
-                      {editing ? (
-                        <LocationSelect options={pincodeResult?.countries || []} value={editCountry} onChange={setEditCountry} placeholder="" className="text-sm" />
-                      ) : (
-                        <p className="text-sm font-medium">{dbUser?.country || "—"}</p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Zip / Postal Code</p>
-                      {editing ? (
-                        <PincodeInput value={editZipCode} onChange={setEditZipCode} onResult={setPincodeResult} className="text-sm" />
-                      ) : (
-                        <p className="text-sm font-medium">{dbUser?.zipCode || "—"}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <Separator />
-
-                {/* Social Links */}
-                <div className="space-y-3 pt-1">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Social Links</p>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">LinkedIn</p>
-                      {editing ? (
-                        <Input
-                          value={editLinkedin}
-                          onChange={(e) => setEditLinkedin(e.target.value)}
-                          placeholder=""
-                          className="text-sm"
-                        />
-                      ) : (
-                        <p className="text-sm font-medium truncate">{dbUser?.linkedin || "—"}</p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">GitHub</p>
-                      {editing ? (
-                        <Input
-                          value={editGithub}
-                          onChange={(e) => setEditGithub(e.target.value)}
-                          placeholder=""
-                          className="text-sm"
-                        />
-                      ) : (
-                        <p className="text-sm font-medium truncate">{dbUser?.github || "—"}</p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Twitter</p>
-                      {editing ? (
-                        <Input
-                          value={editTwitter}
-                          onChange={(e) => setEditTwitter(e.target.value)}
-                          placeholder=""
-                          className="text-sm"
-                        />
-                      ) : (
-                        <p className="text-sm font-medium truncate">{dbUser?.twitter || "—"}</p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Website</p>
-                      {editing ? (
-                        <Input
-                          value={editWebsite}
-                          onChange={(e) => setEditWebsite(e.target.value)}
-                          placeholder=""
-                          className="text-sm"
-                        />
-                      ) : (
-                        <p className="text-sm font-medium truncate">{dbUser?.website || "—"}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* ─── Company Details Card ─── */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Building2Icon className="size-5" />
-                  Company Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {editing ? (
-                  <div className="space-y-6">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Company Name <span className="text-destructive">*</span></Label>
-                        <Input value={editCompanyName} onChange={(e) => setEditCompanyName(e.target.value)} className="text-sm" placeholder="" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Business Type <span className="text-destructive">*</span></Label>
-                        <Select value={editBusinessType} onValueChange={setEditBusinessType}>
-                          <SelectTrigger className="text-sm">
-                            <SelectValue placeholder="" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Proprietorship">Proprietorship</SelectItem>
-                            <SelectItem value="Partnership">Partnership</SelectItem>
-                            <SelectItem value="LLP">LLP</SelectItem>
-                            <SelectItem value="Private Limited">Private Limited</SelectItem>
-                            <SelectItem value="Public Limited">Public Limited</SelectItem>
-                            <SelectItem value="OPC">OPC</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <SearchableSelect
-                          id="edit-industry"
-                          label="Industry"
-                          required
-                          options={INDUSTRIES}
-                          value={editIndustry}
-                          onValueChange={setEditIndustry}
-                          placeholder=""
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">GST Number</Label>
-                        <Input value={editGstNumber} onChange={(e) => setEditGstNumber(e.target.value)} placeholder="" className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">PAN Number</Label>
-                        <Input value={editPanNumber} onChange={(e) => setEditPanNumber(e.target.value)} placeholder="" className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">CIN Number</Label>
-                        <Input value={editCinNumber} onChange={(e) => setEditCinNumber(e.target.value)} placeholder="" className="text-sm" />
-                      </div>
-                    </div>
-
-                    <Separator />
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Contact Information</p>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Company Email <span className="text-destructive">*</span></Label>
-                        <Input value={editCompanyEmail} onChange={(e) => setEditCompanyEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Mobile Number <span className="text-destructive">*</span></Label>
-                        <PhoneInput value={editMobileNumber} onChange={setEditMobileNumber} placeholder="" className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Alternate Mobile Number</Label>
-                        <PhoneInput value={editAltMobile} onChange={setEditAltMobile} placeholder="" className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Website</Label>
-                        <Input value={editOrgWebsite} onChange={(e) => setEditOrgWebsite(e.target.value)} placeholder="" className="text-sm" />
-                      </div>
-                    </div>
-
-                    <Separator />
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Address</p>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="sm:col-span-2 space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Address Line 1 <span className="text-destructive">*</span></Label>
-                        <Input value={editAddressLine1} onChange={(e) => setEditAddressLine1(e.target.value)} placeholder="" className="text-sm" />
-                      </div>
-                      <div className="sm:col-span-2 space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Address Line 2</Label>
-                        <Input value={editAddressLine2} onChange={(e) => setEditAddressLine2(e.target.value)} placeholder="" className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">City <span className="text-destructive">*</span></Label>
-                        <LocationSelect options={orgPincodeResult?.cities || []} value={editOrgCity} onChange={setEditOrgCity} placeholder="" className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">State <span className="text-destructive">*</span></Label>
-                        <LocationSelect options={orgPincodeResult?.states || []} value={editOrgState} onChange={setEditOrgState} placeholder="" className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Pincode <span className="text-destructive">*</span></Label>
-                        <PincodeInput value={editPincode} onChange={setEditPincode} onResult={setOrgPincodeResult} className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Country</Label>
-                        <LocationSelect options={orgPincodeResult?.countries || []} value={editOrgCountry} onChange={setEditOrgCountry} placeholder="" className="text-sm" />
-                      </div>
-                    </div>
-
-                    <Separator />
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Authorized Person</p>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Authorized Person Name <span className="text-destructive">*</span></Label>
-                        <Input value={editAuthorizedPerson} onChange={(e) => setEditAuthorizedPerson(e.target.value)} placeholder="" className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Designation <span className="text-destructive">*</span></Label>
-                        <Input value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)} placeholder="" className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Authorized Person Email <span className="text-destructive">*</span></Label>
-                        <Input value={editAuthorizedEmail} onChange={(e) => setEditAuthorizedEmail(e.target.value)} type="email" placeholder="" className="text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Authorized Person Mobile <span className="text-destructive">*</span></Label>
-                        <PhoneInput value={editAuthorizedMobile} onChange={setEditAuthorizedMobile} placeholder="" className="text-sm" />
-                      </div>
-                    </div>
-
-                    <Separator />
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Additional Information</p>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-muted-foreground">Number of Employees</Label>
-                        <Input value={editNumEmployees} onChange={(e) => setEditNumEmployees(e.target.value)} type="number" min="0" placeholder="" className="text-sm" />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">Company Description</Label>
-                      <Textarea value={editCompanyDesc} onChange={(e) => setEditCompanyDesc(e.target.value)} placeholder="" className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-5">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Company Name</p>
-                        <p className="text-sm font-medium">{org?.name || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Business Type</p>
-                        <p className="text-sm font-medium">{org?.businessType || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Industry</p>
-                        <p className="text-sm font-medium">{org?.industry || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">GST / PAN / CIN</p>
-                        <p className="text-sm font-medium">{[org?.gstNumber, org?.panNumber, org?.cinNumber].filter(Boolean).join(" / ") || "—"}</p>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Company Email</p>
-                        <p className="text-sm font-medium">{org?.companyEmail || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Mobile</p>
-                        <p className="text-sm font-medium">{org?.mobileNumber || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Alternate Mobile</p>
-                        <p className="text-sm font-medium">{org?.alternateMobileNumber || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Website</p>
-                        <p className="text-sm font-medium">{org?.website || "—"}</p>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="sm:col-span-2">
-                        <p className="text-xs text-muted-foreground">Address</p>
-                        <p className="text-sm font-medium">
-                          {[org?.addressLine1, org?.addressLine2, org?.city, org?.state, org?.pincode, org?.country].filter(Boolean).join(", ") || "—"}
-                        </p>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Authorized Person</p>
-                        <p className="text-sm font-medium">{org?.authorizedPersonName || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Designation</p>
-                        <p className="text-sm font-medium">{org?.designation || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Authorized Email</p>
-                        <p className="text-sm font-medium">{org?.authorizedPersonEmail || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Authorized Mobile</p>
-                        <p className="text-sm font-medium">{org?.authorizedPersonMobile || "—"}</p>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Employees</p>
-                        <p className="text-sm font-medium">{org?.numberOfEmployees || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Plan</p>
-                        <p className="text-sm font-medium">{planLabels[org?.plan || "free"] || org?.plan}</p>
-                      </div>
-                      <div className="sm:col-span-2">
-                        <p className="text-xs text-muted-foreground">Description</p>
-                        <p className="text-sm font-medium">{org?.companyDescription || "—"}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* ─── Employee Details Card ─── */}
-            <Card className="xl:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <BriefcaseIcon className="size-5" />
-                  Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {editing ? (
-                  <div className="space-y-6">
-                    {/* Work Info */}
-                    <fieldset className="border p-4 space-y-4">
-                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                        <BriefcaseIcon className="size-3.5" />
-                        Work Info
-                      </legend>
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Employee ID</Label>
-                          <Input value={editDisplayId} onChange={(e) => setEditDisplayId(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Designation</Label>
-                          <Input value={editEmpDesignation} onChange={(e) => setEditEmpDesignation(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Employment Type</Label>
-                          <Input value={editEmploymentType} onChange={(e) => setEditEmploymentType(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Branch</Label>
-                          <Input value={editBranchName} onChange={(e) => setEditBranchName(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Location</Label>
-                          <Input value={editUserLocation} onChange={(e) => setEditUserLocation(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Shift</Label>
-                          <Input value={editShift} onChange={(e) => setEditShift(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Source of Hire</Label>
-                          <Input value={editSourceOfHire} onChange={(e) => setEditSourceOfHire(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Joining Date</Label>
-                          <Input type="date" value={editJoiningDate} onChange={(e) => setEditJoiningDate(e.target.value)} className="text-sm" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Current Experience</Label>
-                          <Input value={editCurrentExperience} onChange={(e) => setEditCurrentExperience(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Total Experience</Label>
-                          <Input value={editTotalExperience} onChange={(e) => setEditTotalExperience(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                      </div>
-                    </fieldset>
-
-                    <Separator />
-
-                    {/* Personal Info */}
-                    <fieldset className="border p-4 space-y-4">
-                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                        <UserIcon className="size-3.5" />
-                        Personal Info
-                      </legend>
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">First Name</Label>
-                          <Input value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Last Name</Label>
-                          <Input value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Nickname</Label>
-                          <Input value={editNickname} onChange={(e) => setEditNickname(e.target.value)} className="text-sm" placeholder="" />
-                        </div>
-                      </div>
-                    </fieldset>
-
-                    <Separator />
-
-                    {/* Contact */}
-                    <fieldset className="border p-4 space-y-4">
-                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                        <PhoneIcon className="size-3.5" />
-                        Contact
-                      </legend>
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-muted-foreground">Alternate Phone</Label>
-                          <PhoneInput value={editSecondaryPhone} onChange={setEditSecondaryPhone} className="text-sm" placeholder="" />
-                        </div>
-                      </div>
-                    </fieldset>
-
-                    <Separator />
-
-                    {/* History - Work Experience */}
-                    <fieldset className="border p-4 space-y-4">
-                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                        <HistoryIcon className="size-3.5" />
-                        Work Experience
-                      </legend>
-                      <div className="space-y-4">
-                        {editWorkExperience.map((row) => (
-                          <div key={row.id} className="rounded-sm border p-4">
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">Company name</Label>
-                                <Input value={row.company || ""} onChange={(e) => updateWorkRow(row.id!, "company", e.target.value)} className="text-sm" placeholder="" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">Job Title</Label>
-                                <Input value={row.title || ""} onChange={(e) => updateWorkRow(row.id!, "title", e.target.value)} className="text-sm" placeholder="" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">Roles</Label>
-                                <Input value={row.roles || ""} onChange={(e) => updateWorkRow(row.id!, "roles", e.target.value)} className="text-sm" placeholder="" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">From Date</Label>
-                                <Input type="date" value={row.from || ""} onChange={(e) => updateWorkRow(row.id!, "from", e.target.value)} className="text-sm" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">To Date</Label>
-                                <Input type="date" value={row.to || ""} onChange={(e) => updateWorkRow(row.id!, "to", e.target.value)} className="text-sm" />
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Checkbox id={`work-relevant-${row.id}`} checked={!!row.relevant} onCheckedChange={(c) => updateWorkRow(row.id!, "relevant", !!c)} />
-                                <label htmlFor={`work-relevant-${row.id}`} className="text-sm font-medium">Relevant</label>
-                              </div>
-                              <div className="sm:col-span-2 space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">Job Description</Label>
-                                <textarea className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" value={row.description || ""} onChange={(e) => updateWorkRow(row.id!, "description", e.target.value)} placeholder="" />
-                              </div>
-                            </div>
-                            <Button type="button" variant="ghost" size="sm" className="mt-2 text-destructive" onClick={() => removeRow("work", row.id!)}>
-                              Remove
-                            </Button>
-                          </div>
-                        ))}
-                        <Button type="button" variant="outline" size="sm" onClick={() => addRow("work")}>
-                          + Add Work Experience
-                        </Button>
-                      </div>
-                    </fieldset>
-
-                    <Separator />
-
-                    {/* History - Education */}
-                    <fieldset className="border p-4 space-y-4">
-                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                        <GraduationCapIcon className="size-3.5" />
-                        Education
-                      </legend>
-                      <div className="space-y-4">
-                        {editEducationDetails.map((row) => (
-                          <div key={row.id} className="rounded-sm border p-4">
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">Institute Name</Label>
-                                <Input value={row.institute || ""} onChange={(e) => updateEduRow(row.id!, "institute", e.target.value)} className="text-sm" placeholder="" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">Degree/Diploma</Label>
-                                <Input value={row.degree || ""} onChange={(e) => updateEduRow(row.id!, "degree", e.target.value)} className="text-sm" placeholder="" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">Specialization</Label>
-                                <Input value={row.specialization || ""} onChange={(e) => updateEduRow(row.id!, "specialization", e.target.value)} className="text-sm" placeholder="" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">Date of Completion</Label>
-                                <Input type="date" value={row.completionDate || ""} onChange={(e) => updateEduRow(row.id!, "completionDate", e.target.value)} className="text-sm" />
-                              </div>
-                            </div>
-                            <Button type="button" variant="ghost" size="sm" className="mt-2 text-destructive" onClick={() => removeRow("education", row.id!)}>
-                              Remove
-                            </Button>
-                          </div>
-                        ))}
-                        <Button type="button" variant="outline" size="sm" onClick={() => addRow("education")}>
-                          + Add Education
-                        </Button>
-                      </div>
-                    </fieldset>
-
-                    <Separator />
-
-                    {/* History - Dependents */}
-                    <fieldset className="border p-4 space-y-4">
-                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                        <HeartIcon className="size-3.5" />
-                        Dependents
-                      </legend>
-                      <div className="space-y-4">
-                        {editDependentDetails.map((row) => (
-                          <div key={row.id} className="rounded-sm border p-4">
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">Name</Label>
-                                <Input value={row.name || ""} onChange={(e) => updateDepRow(row.id!, "name", e.target.value)} className="text-sm" placeholder="" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">Relationship</Label>
-                                <Input value={row.relationship || ""} onChange={(e) => updateDepRow(row.id!, "relationship", e.target.value)} className="text-sm" placeholder="" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs text-muted-foreground">Date of Birth</Label>
-                                <Input type="date" value={row.dob || ""} onChange={(e) => updateDepRow(row.id!, "dob", e.target.value)} className="text-sm" />
-                              </div>
-                            </div>
-                            <Button type="button" variant="ghost" size="sm" className="mt-2 text-destructive" onClick={() => removeRow("dependent", row.id!)}>
-                              Remove
-                            </Button>
-                          </div>
-                        ))}
-                        <Button type="button" variant="outline" size="sm" onClick={() => addRow("dependent")}>
-                          + Add Dependent
-                        </Button>
-                      </div>
-                    </fieldset>
-
-                    <Separator />
-
-                    {/* Offer Letter */}
-                    <fieldset className="border p-4 space-y-4">
-                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                        <FileTextIcon className="size-3.5" />
-                        Documents
-                      </legend>
-                      {editOfferLetter ? (
-                        <div className="flex items-center gap-3 rounded-sm border p-3 bg-muted/20">
-                          <FileTextIcon className="size-5 text-muted-foreground shrink-0" />
-                          <span className="text-sm truncate flex-1">{editOfferLetter.name}</span>
-                          <button type="button" onClick={() => setEditOfferLetter(null)} className="text-destructive hover:text-destructive/80">
-                            <XIcon className="size-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <label className="flex items-center gap-3 rounded-sm border border-dashed p-4 cursor-pointer hover:bg-muted/20 transition-colors">
-                          <UploadIcon className="size-5 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            {offerLetterUploading ? "Uploading..." : "Upload offer letter (PDF, max 10MB)"}
-                          </span>
-                          <input type="file" accept=".pdf,image/*" className="hidden" onChange={handleOfferLetterUpload} disabled={offerLetterUploading} />
-                        </label>
-                      )}
-                    </fieldset>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {/* Work Info */}
-                    <fieldset className="border p-4 space-y-4">
-                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                        <BriefcaseIcon className="size-3.5" />
-                        Work Info
-                      </legend>
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <div>
-                          <p className="text-xs text-muted-foreground">Employee ID</p>
-                          <p className="text-sm font-medium">{dbUser?.displayId || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Designation</p>
-                          <p className="text-sm font-medium">{dbUser?.designation || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Employment Type</p>
-                          <p className="text-sm font-medium">{dbUser?.employmentType || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Branch</p>
-                          <p className="text-sm font-medium">{dbUser?.branchName || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Location</p>
-                          <p className="text-sm font-medium">{dbUser?.location || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Shift</p>
-                          <p className="text-sm font-medium">{dbUser?.shift || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Source of Hire</p>
-                          <p className="text-sm font-medium">{dbUser?.sourceOfHire || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Joining Date</p>
-                          <p className="text-sm font-medium">
-                            {dbUser?.joiningDate
-                              ? new Date(dbUser.joiningDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
-                              : "—"}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Current Experience</p>
-                          <p className="text-sm font-medium">{dbUser?.currentExperience || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Total Experience</p>
-                          <p className="text-sm font-medium">{dbUser?.totalExperience || "—"}</p>
-                        </div>
-                      </div>
-                    </fieldset>
-
-                    <Separator />
-
-                    {/* Personal Info */}
-                    <fieldset className="border p-4 space-y-4">
-                      <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                        <UserIcon className="size-3.5" />
-                        Personal Info
-                      </legend>
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <div>
-                          <p className="text-xs text-muted-foreground">First Name</p>
-                          <p className="text-sm font-medium">{dbUser?.firstName || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Last Name</p>
-                          <p className="text-sm font-medium">{dbUser?.lastName || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Nickname</p>
-                          <p className="text-sm font-medium">{dbUser?.nickname || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Alternate Phone</p>
-                          <p className="text-sm font-medium">{dbUser?.secondaryPhone || "—"}</p>
-                        </div>
-                      </div>
-                    </fieldset>
-
-                    {/* Work Experience History */}
-                    {dbUser?.workExperience && dbUser.workExperience.length > 0 && (
-                      <>
-                        <Separator />
-                        <fieldset className="border p-4 space-y-4">
-                          <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                            <HistoryIcon className="size-3.5" />
-                            Work Experience
-                          </legend>
-                          <div className="space-y-4">
-                            {dbUser.workExperience.map((exp, i) => (
-                              <div key={exp.id || i} className="rounded-sm border p-4">
-                                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Company</p>
-                                    <p className="text-sm font-medium">{exp.company || "—"}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Job Title</p>
-                                    <p className="text-sm font-medium">{exp.title || "—"}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Roles</p>
-                                    <p className="text-sm font-medium">{exp.roles || "—"}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Period</p>
-                                    <p className="text-sm font-medium">
-                                      {exp.from ? new Date(exp.from).toLocaleDateString("en-GB", { month: "short", year: "numeric" }) : "—"}
-                                      {" — "}
-                                      {exp.to ? new Date(exp.to).toLocaleDateString("en-GB", { month: "short", year: "numeric" }) : "Present"}
-                                    </p>
-                                  </div>
-                                  {exp.description && (
-                                    <div className="sm:col-span-2 lg:col-span-3">
-                                      <p className="text-xs text-muted-foreground">Description</p>
-                                      <p className="text-sm">{exp.description}</p>
-                                    </div>
-                                  )}
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Relevant</p>
-                                    <p className="text-sm font-medium">{exp.relevant ? "Yes" : "No"}</p>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </fieldset>
-                      </>
-                    )}
-
-                    {/* Education */}
-                    {dbUser?.educationDetails && dbUser.educationDetails.length > 0 && (
-                      <>
-                        <Separator />
-                        <fieldset className="border p-4 space-y-4">
-                          <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                            <GraduationCapIcon className="size-3.5" />
-                            Education
-                          </legend>
-                          <div className="space-y-4">
-                            {dbUser.educationDetails.map((edu, i) => (
-                              <div key={edu.id || i} className="rounded-sm border p-4">
-                                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Institute</p>
-                                    <p className="text-sm font-medium">{edu.institute || "—"}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Degree / Diploma</p>
-                                    <p className="text-sm font-medium">{edu.degree || "—"}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Specialization</p>
-                                    <p className="text-sm font-medium">{edu.specialization || "—"}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Completion Date</p>
-                                    <p className="text-sm font-medium">
-                                      {edu.completionDate
-                                        ? new Date(edu.completionDate).toLocaleDateString("en-GB", { month: "long", year: "numeric" })
-                                        : "—"}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </fieldset>
-                      </>
-                    )}
-
-                    {/* Dependents */}
-                    {dbUser?.dependentDetails && dbUser.dependentDetails.length > 0 && (
-                      <>
-                        <Separator />
-                        <fieldset className="border p-4 space-y-4">
-                          <legend className="text-sm font-semibold px-2 flex items-center gap-2">
-                            <HeartIcon className="size-3.5" />
-                            Dependents
-                          </legend>
-                          <div className="space-y-4">
-                            {dbUser.dependentDetails.map((dep, i) => (
-                              <div key={dep.id || i} className="rounded-sm border p-4">
-                                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Name</p>
-                                    <p className="text-sm font-medium">{dep.name || "—"}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Relationship</p>
-                                    <p className="text-sm font-medium">{dep.relationship || "—"}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Date of Birth</p>
-                                    <p className="text-sm font-medium">
-                                      {dep.dob
-                                        ? new Date(dep.dob).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
-                                        : "—"}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </fieldset>
-                      </>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <h1 className="mt-3 text-2xl font-bold">{dbUser?.name || "User"}</h1>
+          <div className="flex items-center gap-2 mt-1 text-muted-foreground">
+            <span className="flex items-center gap-1.5 text-sm">
+              <span
+                className={`inline-block size-2 rounded-full ${statusColors[dbUser?.status || "offline"]}`}
+              />
+              {dbUser?.status
+                ? dbUser.status.charAt(0).toUpperCase() + dbUser.status.slice(1)
+                : "Offline"}
+            </span>
+            <span aria-hidden>&middot;</span>
+            <Badge variant={roleBadge[dbUser?.role || "staffs"]}>
+              {dbUser?.role ? dbUser.role.charAt(0).toUpperCase() + dbUser.role.slice(1) : "Member"}
+            </Badge>
           </div>
         </div>
 
-        {/* Achievements & Performance */}
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Trophy className="size-4" />
-                Achievements
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <AchievementBadge
-                  achievement={{
-                    id: "1",
-                    name: "Team Player",
-                    trigger: "metric",
-                    achievedAt: dbUser?.joiningDate || null,
-                    progress: 100,
-                    rarity: 65,
-                  }}
-                  badgeSize="sm"
-                />
-                <AchievementBadge
-                  achievement={{
-                    id: "2",
-                    name: "Veteran",
-                    trigger: "metric",
-                    achievedAt: dbUser && dbUser.totalExperience && parseInt(dbUser.totalExperience) >= 5
-                      ? dbUser.joiningDate : null,
-                    progress: dbUser && dbUser.totalExperience
-                      ? Math.min(100, (parseInt(dbUser.totalExperience) / 10) * 100) : 0,
-                    rarity: dbUser && dbUser.totalExperience && parseInt(dbUser.totalExperience) >= 5 ? 30 : undefined,
-                  }}
-                  badgeSize="sm"
-                />
-                <AchievementBadge
-                  achievement={{
-                    id: "3",
-                    name: "Innovator",
-                    trigger: "api",
-                    achievedAt: null,
-                    progress: 0,
-                  }}
-                  badgeSize="sm"
-                />
+        <div className="flex flex-col gap-2 w-full px-6 pt-4 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+          {saveError && (
+            <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <AlertCircleIcon className="size-3.5 shrink-0" />
+              {saveError}
+            </div>
+          )}
+          {saveSuccess && (
+            <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <CheckCircleIcon className="size-3.5 shrink-0" />
+              {saveSuccess}
+            </div>
+          )}
+          <div className="flex justify-end">
+            {editing ? (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={saving}
+                  className="w-32 h-10"
+                >
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleSave} disabled={saving} className="w-32 h-10">
+                  {saving ? (
+                    <Loader2Icon className="animate-spin" />
+                  ) : (
+                    <CheckIcon className="size-4" />
+                  )}
+                  Save
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setSaveError("");
+                  setSaveSuccess("");
+                  setEditing(true);
+                }}
+              >
+                <PencilIcon className="" />
+                Edit
+              </Button>
+            )}
+          </div>
+        </div>
 
+        <div className="grid gap-6 p-6 w-full [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+          {/* ─── User Details Card ─── */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <BarChart3Icon className="size-4" />
-                Performance Report
+              <CardTitle className="text-lg flex items-center gap-2">
+                <UserIcon className="size-5" />
+                User Details
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-sm border p-3 text-center">
-                  <p className="text-2xl font-bold text-primary">
-                    {dbUser?.totalExperience || "0"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">Years Exp.</p>
-                </div>
-                <div className="rounded-sm border p-3 text-center">
-                  <p className="text-2xl font-bold text-green-600">
-                    {dbUser?.workExperience?.length || 0}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">Positions</p>
-                </div>
-                <div className="rounded-sm border p-3 text-center">
-                  <p className="text-2xl font-bold text-blue-600">
-                    {dbUser?.educationDetails?.length || 0}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">Degrees</p>
-                </div>
-                <div className="rounded-sm border p-3 text-center">
-                  <p className="text-2xl font-bold text-amber-600">
-                    {dbUser?.joiningDate
-                      ? Math.floor((Date.now() - new Date(dbUser.joiningDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
-                      : 0}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">Tenure (yrs)</p>
+              {/* Email (read-only — unique identifier) */}
+              <div className="flex items-center gap-3">
+                <MailIcon className="size-4 text-muted-foreground shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="text-sm font-medium">{dbUser?.email || "—"}</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="w-full text-xs" asChild>
-                <a href="/staffs/performance">View Full Report</a>
-              </Button>
+              <Separator />
+
+              {/* Name */}
+              <div className="flex items-center gap-3">
+                <UserIcon className="size-4 text-muted-foreground shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">
+                    Name {editing && <span className="text-d">*</span>}
+                  </p>
+                  {editing ? (
+                    <Input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder=""
+                      className="h-8 text-sm mt-1"
+                      required
+                    />
+                  ) : (
+                    <p className="text-sm font-medium">{dbUser?.name || "—"}</p>
+                  )}
+                </div>
+              </div>
+              <Separator />
+
+              {/* Phone */}
+              <div className="flex items-center gap-3">
+                <PhoneIcon className="size-4 text-muted-foreground shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  {editing ? (
+                    <PhoneInput
+                      value={editPhone}
+                      onChange={setEditPhone}
+                      placeholder=""
+                      className="h-8 text-sm mt-1"
+                    />
+                  ) : (
+                    <p className="text-sm font-medium">{dbUser?.phone || "—"}</p>
+                  )}
+                </div>
+              </div>
+              <Separator />
+
+              {/* Department */}
+              <div className="flex items-center gap-3">
+                <Building2Icon className="size-4 text-muted-foreground shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">Department</p>
+                  {editing ? (
+                    <Input
+                      value={editDepartment}
+                      onChange={(e) => setEditDepartment(e.target.value)}
+                      placeholder=""
+                      className="h-8 text-sm mt-1"
+                    />
+                  ) : (
+                    <p className="text-sm font-medium">{dbUser?.department || "—"}</p>
+                  )}
+                </div>
+              </div>
+              <Separator />
+
+              {/* Company (user-level) */}
+              <div className="flex items-center gap-3">
+                <Building2Icon className="size-4 text-muted-foreground shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">Company</p>
+                  {editing ? (
+                    <Input
+                      value={editCompany}
+                      onChange={(e) => setEditCompany(e.target.value)}
+                      placeholder=""
+                      className="h-8 text-sm mt-1"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowCompanyDetails((v) => !v)}
+                      className="flex items-center gap-1 text-sm font-medium hover:underline underline-offset-2 cursor-pointer"
+                    >
+                      {dbUser?.company || "—"}
+                      <ChevronDownIcon
+                        className={`size-3.5 text-muted-foreground transition-transform ${showCompanyDetails ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  )}
+                </div>
+              </div>
+              {showCompanyDetails && !editing && (
+                <div className="rounded-sm border bg-muted/30 p-4 space-y-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Company Name</p>
+                      <p className="text-sm font-medium">{org?.name || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Business Type</p>
+                      <p className="text-sm font-medium">{org?.businessType || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Industry</p>
+                      <p className="text-sm font-medium">{org?.industry || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Company Email</p>
+                      <p className="text-sm font-medium">{org?.companyEmail || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Mobile</p>
+                      <p className="text-sm font-medium">{org?.mobileNumber || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Website</p>
+                      <p className="text-sm font-medium">{org?.website || "—"}</p>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <p className="text-xs text-muted-foreground">Address</p>
+                      <p className="text-sm font-medium">
+                        {[
+                          org?.addressLine1,
+                          org?.addressLine2,
+                          org?.city,
+                          org?.state,
+                          org?.pincode,
+                          org?.country,
+                        ]
+                          .filter(Boolean)
+                          .join(", ") || "—"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <Separator />
+
+              {/* Role + Status (read-only) */}
+              <div className="flex items-center gap-3">
+                <ShieldIcon className="size-4 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Role</p>
+                  <p className="text-sm font-medium capitalize">{dbUser?.role || "Member"}</p>
+                </div>
+              </div>
+              <Separator />
+              <div className="flex items-center gap-3">
+                <CircleIcon className="size-4 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-sm font-medium capitalize">{dbUser?.status || "Offline"}</p>
+                </div>
+              </div>
+              <Separator />
+              <div className="flex items-center gap-3">
+                <CalendarIcon className="size-4 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Member since</p>
+                  <p className="text-sm font-medium">
+                    {dbUser?.createdAt
+                      ? new Date(dbUser.createdAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })
+                      : "—"}
+                  </p>
+                </div>
+              </div>
+              <Separator />
+
+              {/* Address fields */}
+              <div className="space-y-3 pt-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Address
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Street</p>
+                    {editing ? (
+                      <Input
+                        value={editAddress}
+                        onChange={(e) => setEditAddress(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium">{dbUser?.address || "—"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">City</p>
+                    {editing ? (
+                      <LocationSelect
+                        options={pincodeResult?.cities || []}
+                        value={editCity}
+                        onChange={setEditCity}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium">{dbUser?.city || "—"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">State</p>
+                    {editing ? (
+                      <LocationSelect
+                        options={pincodeResult?.states || []}
+                        value={editState}
+                        onChange={setEditState}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium">{dbUser?.state || "—"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Country</p>
+                    {editing ? (
+                      <LocationSelect
+                        options={pincodeResult?.countries || []}
+                        value={editCountry}
+                        onChange={setEditCountry}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium">{dbUser?.country || "—"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Zip / Postal Code</p>
+                    {editing ? (
+                      <PincodeInput
+                        value={editZipCode}
+                        onChange={setEditZipCode}
+                        onResult={setPincodeResult}
+                        className="text-sm"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium">{dbUser?.zipCode || "—"}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <Separator />
+
+              {/* Social Links */}
+              <div className="space-y-3 pt-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Social Links
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">LinkedIn</p>
+                    {editing ? (
+                      <Input
+                        value={editLinkedin}
+                        onChange={(e) => setEditLinkedin(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium truncate">{dbUser?.linkedin || "—"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">GitHub</p>
+                    {editing ? (
+                      <Input
+                        value={editGithub}
+                        onChange={(e) => setEditGithub(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium truncate">{dbUser?.github || "—"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Twitter</p>
+                    {editing ? (
+                      <Input
+                        value={editTwitter}
+                        onChange={(e) => setEditTwitter(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium truncate">{dbUser?.twitter || "—"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Website</p>
+                    {editing ? (
+                      <Input
+                        value={editWebsite}
+                        onChange={(e) => setEditWebsite(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium truncate">{dbUser?.website || "—"}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* ─── Company Details Card ─── */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Building2Icon className="size-5" />
+                Company Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {editing ? (
+                <div className="space-y-6">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Company Name <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        value={editCompanyName}
+                        onChange={(e) => setEditCompanyName(e.target.value)}
+                        className="text-sm"
+                        placeholder=""
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Business Type <span className="text-destructive">*</span>
+                      </Label>
+                      <Select value={editBusinessType} onValueChange={setEditBusinessType}>
+                        <SelectTrigger className="text-sm">
+                          <SelectValue placeholder="" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Proprietorship">Proprietorship</SelectItem>
+                          <SelectItem value="Partnership">Partnership</SelectItem>
+                          <SelectItem value="LLP">LLP</SelectItem>
+                          <SelectItem value="Private Limited">Private Limited</SelectItem>
+                          <SelectItem value="Public Limited">Public Limited</SelectItem>
+                          <SelectItem value="OPC">OPC</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <SearchableSelect
+                        id="edit-industry"
+                        label="Industry"
+                        required
+                        options={INDUSTRIES}
+                        value={editIndustry}
+                        onValueChange={setEditIndustry}
+                        placeholder=""
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">GST Number</Label>
+                      <Input
+                        value={editGstNumber}
+                        onChange={(e) => setEditGstNumber(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">PAN Number</Label>
+                      <Input
+                        value={editPanNumber}
+                        onChange={(e) => setEditPanNumber(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">CIN Number</Label>
+                      <Input
+                        value={editCinNumber}
+                        onChange={(e) => setEditCinNumber(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Contact Information
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Company Email <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        value={editCompanyEmail}
+                        onChange={(e) => setEditCompanyEmail(e.target.value)}
+                        type="email"
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Mobile Number <span className="text-destructive">*</span>
+                      </Label>
+                      <PhoneInput
+                        value={editMobileNumber}
+                        onChange={setEditMobileNumber}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Alternate Mobile Number
+                      </Label>
+                      <PhoneInput
+                        value={editAltMobile}
+                        onChange={setEditAltMobile}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Website</Label>
+                      <Input
+                        value={editOrgWebsite}
+                        onChange={(e) => setEditOrgWebsite(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Address
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="sm:col-span-2 space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Address Line 1 <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        value={editAddressLine1}
+                        onChange={(e) => setEditAddressLine1(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="sm:col-span-2 space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Address Line 2</Label>
+                      <Input
+                        value={editAddressLine2}
+                        onChange={(e) => setEditAddressLine2(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        City <span className="text-destructive">*</span>
+                      </Label>
+                      <LocationSelect
+                        options={orgPincodeResult?.cities || []}
+                        value={editOrgCity}
+                        onChange={setEditOrgCity}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        State <span className="text-destructive">*</span>
+                      </Label>
+                      <LocationSelect
+                        options={orgPincodeResult?.states || []}
+                        value={editOrgState}
+                        onChange={setEditOrgState}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Pincode <span className="text-destructive">*</span>
+                      </Label>
+                      <PincodeInput
+                        value={editPincode}
+                        onChange={setEditPincode}
+                        onResult={setOrgPincodeResult}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Country</Label>
+                      <LocationSelect
+                        options={orgPincodeResult?.countries || []}
+                        value={editOrgCountry}
+                        onChange={setEditOrgCountry}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Authorized Person
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Authorized Person Name <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        value={editAuthorizedPerson}
+                        onChange={(e) => setEditAuthorizedPerson(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Designation <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        value={editDesignation}
+                        onChange={(e) => setEditDesignation(e.target.value)}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Authorized Person Email <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        value={editAuthorizedEmail}
+                        onChange={(e) => setEditAuthorizedEmail(e.target.value)}
+                        type="email"
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Authorized Person Mobile <span className="text-destructive">*</span>
+                      </Label>
+                      <PhoneInput
+                        value={editAuthorizedMobile}
+                        onChange={setEditAuthorizedMobile}
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Additional Information
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Number of Employees</Label>
+                      <Input
+                        value={editNumEmployees}
+                        onChange={(e) => setEditNumEmployees(e.target.value)}
+                        type="number"
+                        min="0"
+                        placeholder=""
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Company Description</Label>
+                    <Textarea
+                      value={editCompanyDesc}
+                      onChange={(e) => setEditCompanyDesc(e.target.value)}
+                      placeholder=""
+                      className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Company Name</p>
+                      <p className="text-sm font-medium">{org?.name || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Business Type</p>
+                      <p className="text-sm font-medium">{org?.businessType || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Industry</p>
+                      <p className="text-sm font-medium">{org?.industry || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">GST / PAN / CIN</p>
+                      <p className="text-sm font-medium">
+                        {[org?.gstNumber, org?.panNumber, org?.cinNumber]
+                          .filter(Boolean)
+                          .join(" / ") || "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Company Email</p>
+                      <p className="text-sm font-medium">{org?.companyEmail || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Mobile</p>
+                      <p className="text-sm font-medium">{org?.mobileNumber || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Alternate Mobile</p>
+                      <p className="text-sm font-medium">{org?.alternateMobileNumber || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Website</p>
+                      <p className="text-sm font-medium">{org?.website || "—"}</p>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="sm:col-span-2">
+                      <p className="text-xs text-muted-foreground">Address</p>
+                      <p className="text-sm font-medium">
+                        {[
+                          org?.addressLine1,
+                          org?.addressLine2,
+                          org?.city,
+                          org?.state,
+                          org?.pincode,
+                          org?.country,
+                        ]
+                          .filter(Boolean)
+                          .join(", ") || "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Authorized Person</p>
+                      <p className="text-sm font-medium">{org?.authorizedPersonName || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Designation</p>
+                      <p className="text-sm font-medium">{org?.designation || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Authorized Email</p>
+                      <p className="text-sm font-medium">{org?.authorizedPersonEmail || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Authorized Mobile</p>
+                      <p className="text-sm font-medium">{org?.authorizedPersonMobile || "—"}</p>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Employees</p>
+                      <p className="text-sm font-medium">{org?.numberOfEmployees || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Plan</p>
+                      <p className="text-sm font-medium">
+                        {planLabels[org?.plan || "free"] || org?.plan}
+                      </p>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <p className="text-xs text-muted-foreground">Description</p>
+                      <p className="text-sm font-medium">{org?.companyDescription || "—"}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* ─── Employee Details Card ─── */}
+          <Card className="xl:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BriefcaseIcon className="size-5" />
+                Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {editing ? (
+                <div className="space-y-6">
+                  {/* Work Info */}
+                  <fieldset className="border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                      <BriefcaseIcon className="size-3.5" />
+                      Work Info
+                    </legend>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Employee ID</Label>
+                        <Input
+                          value={editDisplayId}
+                          onChange={(e) => setEditDisplayId(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Designation</Label>
+                        <Input
+                          value={editEmpDesignation}
+                          onChange={(e) => setEditEmpDesignation(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Employment Type</Label>
+                        <Input
+                          value={editEmploymentType}
+                          onChange={(e) => setEditEmploymentType(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Branch</Label>
+                        <Input
+                          value={editBranchName}
+                          onChange={(e) => setEditBranchName(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Location</Label>
+                        <Input
+                          value={editUserLocation}
+                          onChange={(e) => setEditUserLocation(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Shift</Label>
+                        <Input
+                          value={editShift}
+                          onChange={(e) => setEditShift(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Source of Hire</Label>
+                        <Input
+                          value={editSourceOfHire}
+                          onChange={(e) => setEditSourceOfHire(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Joining Date</Label>
+                        <Input
+                          type="date"
+                          value={editJoiningDate}
+                          onChange={(e) => setEditJoiningDate(e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Current Experience</Label>
+                        <Input
+                          value={editCurrentExperience}
+                          onChange={(e) => setEditCurrentExperience(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Total Experience</Label>
+                        <Input
+                          value={editTotalExperience}
+                          onChange={(e) => setEditTotalExperience(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <Separator />
+
+                  {/* Personal Info */}
+                  <fieldset className="border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                      <UserIcon className="size-3.5" />
+                      Personal Info
+                    </legend>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">First Name</Label>
+                        <Input
+                          value={editFirstName}
+                          onChange={(e) => setEditFirstName(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Last Name</Label>
+                        <Input
+                          value={editLastName}
+                          onChange={(e) => setEditLastName(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Nickname</Label>
+                        <Input
+                          value={editNickname}
+                          onChange={(e) => setEditNickname(e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <Separator />
+
+                  {/* Contact */}
+                  <fieldset className="border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                      <PhoneIcon className="size-3.5" />
+                      Contact
+                    </legend>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Alternate Phone</Label>
+                        <PhoneInput
+                          value={editSecondaryPhone}
+                          onChange={setEditSecondaryPhone}
+                          className="text-sm"
+                          placeholder=""
+                        />
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <Separator />
+
+                  {/* History - Work Experience */}
+                  <fieldset className="border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                      <HistoryIcon className="size-3.5" />
+                      Work Experience
+                    </legend>
+                    <div className="space-y-4">
+                      {editWorkExperience.map((row) => (
+                        <div key={row.id} className="rounded-sm border p-4">
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">Company name</Label>
+                              <Input
+                                value={row.company || ""}
+                                onChange={(e) => updateWorkRow(row.id!, "company", e.target.value)}
+                                className="text-sm"
+                                placeholder=""
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">Job Title</Label>
+                              <Input
+                                value={row.title || ""}
+                                onChange={(e) => updateWorkRow(row.id!, "title", e.target.value)}
+                                className="text-sm"
+                                placeholder=""
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">Roles</Label>
+                              <Input
+                                value={row.roles || ""}
+                                onChange={(e) => updateWorkRow(row.id!, "roles", e.target.value)}
+                                className="text-sm"
+                                placeholder=""
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">From Date</Label>
+                              <Input
+                                type="date"
+                                value={row.from || ""}
+                                onChange={(e) => updateWorkRow(row.id!, "from", e.target.value)}
+                                className="text-sm"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">To Date</Label>
+                              <Input
+                                type="date"
+                                value={row.to || ""}
+                                onChange={(e) => updateWorkRow(row.id!, "to", e.target.value)}
+                                className="text-sm"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                id={`work-relevant-${row.id}`}
+                                checked={!!row.relevant}
+                                onCheckedChange={(c) => updateWorkRow(row.id!, "relevant", !!c)}
+                              />
+                              <label
+                                htmlFor={`work-relevant-${row.id}`}
+                                className="text-sm font-medium"
+                              >
+                                Relevant
+                              </label>
+                            </div>
+                            <div className="sm:col-span-2 space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">
+                                Job Description
+                              </Label>
+                              <textarea
+                                className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                value={row.description || ""}
+                                onChange={(e) =>
+                                  updateWorkRow(row.id!, "description", e.target.value)
+                                }
+                                placeholder=""
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="mt-2 text-destructive"
+                            onClick={() => removeRow("work", row.id!)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addRow("work")}
+                      >
+                        + Add Work Experience
+                      </Button>
+                    </div>
+                  </fieldset>
+
+                  <Separator />
+
+                  {/* History - Education */}
+                  <fieldset className="border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                      <GraduationCapIcon className="size-3.5" />
+                      Education
+                    </legend>
+                    <div className="space-y-4">
+                      {editEducationDetails.map((row) => (
+                        <div key={row.id} className="rounded-sm border p-4">
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">
+                                Institute Name
+                              </Label>
+                              <Input
+                                value={row.institute || ""}
+                                onChange={(e) => updateEduRow(row.id!, "institute", e.target.value)}
+                                className="text-sm"
+                                placeholder=""
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">
+                                Degree/Diploma
+                              </Label>
+                              <Input
+                                value={row.degree || ""}
+                                onChange={(e) => updateEduRow(row.id!, "degree", e.target.value)}
+                                className="text-sm"
+                                placeholder=""
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">
+                                Specialization
+                              </Label>
+                              <Input
+                                value={row.specialization || ""}
+                                onChange={(e) =>
+                                  updateEduRow(row.id!, "specialization", e.target.value)
+                                }
+                                className="text-sm"
+                                placeholder=""
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">
+                                Date of Completion
+                              </Label>
+                              <Input
+                                type="date"
+                                value={row.completionDate || ""}
+                                onChange={(e) =>
+                                  updateEduRow(row.id!, "completionDate", e.target.value)
+                                }
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="mt-2 text-destructive"
+                            onClick={() => removeRow("education", row.id!)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addRow("education")}
+                      >
+                        + Add Education
+                      </Button>
+                    </div>
+                  </fieldset>
+
+                  <Separator />
+
+                  {/* History - Dependents */}
+                  <fieldset className="border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                      <HeartIcon className="size-3.5" />
+                      Dependents
+                    </legend>
+                    <div className="space-y-4">
+                      {editDependentDetails.map((row) => (
+                        <div key={row.id} className="rounded-sm border p-4">
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">Name</Label>
+                              <Input
+                                value={row.name || ""}
+                                onChange={(e) => updateDepRow(row.id!, "name", e.target.value)}
+                                className="text-sm"
+                                placeholder=""
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">Relationship</Label>
+                              <Input
+                                value={row.relationship || ""}
+                                onChange={(e) =>
+                                  updateDepRow(row.id!, "relationship", e.target.value)
+                                }
+                                className="text-sm"
+                                placeholder=""
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground">Date of Birth</Label>
+                              <Input
+                                type="date"
+                                value={row.dob || ""}
+                                onChange={(e) => updateDepRow(row.id!, "dob", e.target.value)}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="mt-2 text-destructive"
+                            onClick={() => removeRow("dependent", row.id!)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addRow("dependent")}
+                      >
+                        + Add Dependent
+                      </Button>
+                    </div>
+                  </fieldset>
+
+                  <Separator />
+
+                  {/* Offer Letter */}
+                  <fieldset className="border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                      <FileTextIcon className="size-3.5" />
+                      Documents
+                    </legend>
+                    {editOfferLetter ? (
+                      <div className="flex items-center gap-3 rounded-sm border p-3 bg-muted/20">
+                        <FileTextIcon className="size-5 text-muted-foreground shrink-0" />
+                        <span className="text-sm truncate flex-1">{editOfferLetter.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditOfferLetter(null)}
+                          className="text-destructive hover:text-destructive/80"
+                        >
+                          <XIcon className="size-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex items-center gap-3 rounded-sm border border-dashed p-4 cursor-pointer hover:bg-muted/20 transition-colors">
+                        <UploadIcon className="size-5 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {offerLetterUploading
+                            ? "Uploading..."
+                            : "Upload offer letter (PDF, max 10MB)"}
+                        </span>
+                        <input
+                          type="file"
+                          accept=".pdf,image/*"
+                          className="hidden"
+                          onChange={handleOfferLetterUpload}
+                          disabled={offerLetterUploading}
+                        />
+                      </label>
+                    )}
+                  </fieldset>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Work Info */}
+                  <fieldset className="border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                      <BriefcaseIcon className="size-3.5" />
+                      Work Info
+                    </legend>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Employee ID</p>
+                        <p className="text-sm font-medium">{dbUser?.displayId || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Designation</p>
+                        <p className="text-sm font-medium">{dbUser?.designation || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Employment Type</p>
+                        <p className="text-sm font-medium">{dbUser?.employmentType || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Branch</p>
+                        <p className="text-sm font-medium">{dbUser?.branchName || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Location</p>
+                        <p className="text-sm font-medium">{dbUser?.location || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Shift</p>
+                        <p className="text-sm font-medium">{dbUser?.shift || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Source of Hire</p>
+                        <p className="text-sm font-medium">{dbUser?.sourceOfHire || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Joining Date</p>
+                        <p className="text-sm font-medium">
+                          {dbUser?.joiningDate
+                            ? new Date(dbUser.joiningDate).toLocaleDateString("en-GB", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              })
+                            : "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Current Experience</p>
+                        <p className="text-sm font-medium">{dbUser?.currentExperience || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Total Experience</p>
+                        <p className="text-sm font-medium">{dbUser?.totalExperience || "—"}</p>
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <Separator />
+
+                  {/* Personal Info */}
+                  <fieldset className="border p-4 space-y-4">
+                    <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                      <UserIcon className="size-3.5" />
+                      Personal Info
+                    </legend>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground">First Name</p>
+                        <p className="text-sm font-medium">{dbUser?.firstName || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Last Name</p>
+                        <p className="text-sm font-medium">{dbUser?.lastName || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Nickname</p>
+                        <p className="text-sm font-medium">{dbUser?.nickname || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Alternate Phone</p>
+                        <p className="text-sm font-medium">{dbUser?.secondaryPhone || "—"}</p>
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  {/* Work Experience History */}
+                  {dbUser?.workExperience && dbUser.workExperience.length > 0 && (
+                    <>
+                      <Separator />
+                      <fieldset className="border p-4 space-y-4">
+                        <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                          <HistoryIcon className="size-3.5" />
+                          Work Experience
+                        </legend>
+                        <div className="space-y-4">
+                          {dbUser.workExperience.map((exp, i) => (
+                            <div key={exp.id || i} className="rounded-sm border p-4">
+                              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Company</p>
+                                  <p className="text-sm font-medium">{exp.company || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Job Title</p>
+                                  <p className="text-sm font-medium">{exp.title || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Roles</p>
+                                  <p className="text-sm font-medium">{exp.roles || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Period</p>
+                                  <p className="text-sm font-medium">
+                                    {exp.from
+                                      ? new Date(exp.from).toLocaleDateString("en-GB", {
+                                          month: "short",
+                                          year: "numeric",
+                                        })
+                                      : "—"}
+                                    {" — "}
+                                    {exp.to
+                                      ? new Date(exp.to).toLocaleDateString("en-GB", {
+                                          month: "short",
+                                          year: "numeric",
+                                        })
+                                      : "Present"}
+                                  </p>
+                                </div>
+                                {exp.description && (
+                                  <div className="sm:col-span-2 lg:col-span-3">
+                                    <p className="text-xs text-muted-foreground">Description</p>
+                                    <p className="text-sm">{exp.description}</p>
+                                  </div>
+                                )}
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Relevant</p>
+                                  <p className="text-sm font-medium">
+                                    {exp.relevant ? "Yes" : "No"}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </fieldset>
+                    </>
+                  )}
+
+                  {/* Education */}
+                  {dbUser?.educationDetails && dbUser.educationDetails.length > 0 && (
+                    <>
+                      <Separator />
+                      <fieldset className="border p-4 space-y-4">
+                        <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                          <GraduationCapIcon className="size-3.5" />
+                          Education
+                        </legend>
+                        <div className="space-y-4">
+                          {dbUser.educationDetails.map((edu, i) => (
+                            <div key={edu.id || i} className="rounded-sm border p-4">
+                              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Institute</p>
+                                  <p className="text-sm font-medium">{edu.institute || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Degree / Diploma</p>
+                                  <p className="text-sm font-medium">{edu.degree || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Specialization</p>
+                                  <p className="text-sm font-medium">{edu.specialization || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Completion Date</p>
+                                  <p className="text-sm font-medium">
+                                    {edu.completionDate
+                                      ? new Date(edu.completionDate).toLocaleDateString("en-GB", {
+                                          month: "long",
+                                          year: "numeric",
+                                        })
+                                      : "—"}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </fieldset>
+                    </>
+                  )}
+
+                  {/* Dependents */}
+                  {dbUser?.dependentDetails && dbUser.dependentDetails.length > 0 && (
+                    <>
+                      <Separator />
+                      <fieldset className="border p-4 space-y-4">
+                        <legend className="text-sm font-semibold px-2 flex items-center gap-2">
+                          <HeartIcon className="size-3.5" />
+                          Dependents
+                        </legend>
+                        <div className="space-y-4">
+                          {dbUser.dependentDetails.map((dep, i) => (
+                            <div key={dep.id || i} className="rounded-sm border p-4">
+                              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Name</p>
+                                  <p className="text-sm font-medium">{dep.name || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Relationship</p>
+                                  <p className="text-sm font-medium">{dep.relationship || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Date of Birth</p>
+                                  <p className="text-sm font-medium">
+                                    {dep.dob
+                                      ? new Date(dep.dob).toLocaleDateString("en-GB", {
+                                          day: "numeric",
+                                          month: "long",
+                                          year: "numeric",
+                                        })
+                                      : "—"}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </fieldset>
+                    </>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
+      </div>
 
-        {/* Banner editor modal */}
-        {showBannerEditor && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBannerEditor(false)}>
-            <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-semibold">Update banner</h2>
-                <button
-                  onClick={() => setShowBannerEditor(false)}
-                  className="rounded-sm p-1 hover:bg-muted transition-colors"
+      {/* Achievements & Performance */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Trophy className="size-4" />
+              Achievements
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <AchievementBadge
+                achievement={{
+                  id: "1",
+                  name: "Team Player",
+                  trigger: "metric",
+                  achievedAt: dbUser?.joiningDate || null,
+                  progress: 100,
+                  rarity: 65,
+                }}
+                badgeSize="sm"
+              />
+              <AchievementBadge
+                achievement={{
+                  id: "2",
+                  name: "Veteran",
+                  trigger: "metric",
+                  achievedAt:
+                    dbUser && dbUser.totalExperience && parseInt(dbUser.totalExperience) >= 5
+                      ? dbUser.joiningDate
+                      : null,
+                  progress:
+                    dbUser && dbUser.totalExperience
+                      ? Math.min(100, (parseInt(dbUser.totalExperience) / 10) * 100)
+                      : 0,
+                  rarity:
+                    dbUser && dbUser.totalExperience && parseInt(dbUser.totalExperience) >= 5
+                      ? 30
+                      : undefined,
+                }}
+                badgeSize="sm"
+              />
+              <AchievementBadge
+                achievement={{
+                  id: "3",
+                  name: "Innovator",
+                  trigger: "api",
+                  achievedAt: null,
+                  progress: 0,
+                }}
+                badgeSize="sm"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BarChart3Icon className="size-4" />
+              Performance Report
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-sm border p-3 text-center">
+                <p className="text-2xl font-bold text-primary">{dbUser?.totalExperience || "0"}</p>
+                <p className="text-xs text-muted-foreground mt-1">Years Exp.</p>
+              </div>
+              <div className="rounded-sm border p-3 text-center">
+                <p className="text-2xl font-bold text-green-600">
+                  {dbUser?.workExperience?.length || 0}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Positions</p>
+              </div>
+              <div className="rounded-sm border p-3 text-center">
+                <p className="text-2xl font-bold text-blue-600">
+                  {dbUser?.educationDetails?.length || 0}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Degrees</p>
+              </div>
+              <div className="rounded-sm border p-3 text-center">
+                <p className="text-2xl font-bold text-amber-600">
+                  {dbUser?.joiningDate
+                    ? Math.floor(
+                        (Date.now() - new Date(dbUser.joiningDate).getTime()) /
+                          (365.25 * 24 * 60 * 60 * 1000),
+                      )
+                    : 0}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Tenure (yrs)</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" className="w-full text-xs" asChild>
+              <a href="/staffs/performance">View Full Report</a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Banner editor modal */}
+      {showBannerEditor && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setShowBannerEditor(false)}
+        >
+          <div
+            className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold">Update banner</h2>
+              <button
+                onClick={() => setShowBannerEditor(false)}
+                className="rounded-sm p-1 hover:bg-muted transition-colors"
+              >
+                <XIcon className="size-3.5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  placeholder=""
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  className="h-8 text-xs"
+                />
+                <Button
+                  size="sm"
+                  className="text-xs shrink-0"
+                  disabled={!urlInput}
+                  onClick={() => updateBanner(urlInput)}
                 >
-                  <XIcon className="size-3.5" />
-                </button>
+                  Set
+                </Button>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder=""
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    className="h-8 text-xs"
-                  />
-                  <Button
-                    size="sm"
-                    className="text-xs shrink-0"
-                    disabled={!urlInput}
-                    onClick={() => updateBanner(urlInput)}
-                  >
-                    Set
-                  </Button>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
                 </div>
+                <span className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">or</span>
+                </span>
+              </div>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+              <BannerUpload key={fileKey} onFile={handleBannerFile} disabled={uploading} />
+
+              {bannerUrl && (
+                <>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <span className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">or</span>
+                    </span>
                   </div>
-                  <span className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">or</span>
-                  </span>
-                </div>
-
-                <BannerUpload
-                  key={fileKey}
-                  onFile={handleBannerFile}
-                  disabled={uploading}
-                />
-
-                {bannerUrl && (
-                  <>
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <span className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">or</span>
-                      </span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      className="text-xs text-destructive hover:text-destructive"
-                      onClick={() => updateBanner("")}
-                    >
-                      Remove banner
-                    </Button>
-                  </>
-                )}
-              </div>
+                  <Button
+                    variant="ghost"
+                    className="text-xs text-destructive hover:text-destructive"
+                    onClick={() => updateBanner("")}
+                  >
+                    Remove banner
+                  </Button>
+                </>
+              )}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Profile image editor modal */}
-        {showImageEditor && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowImageEditor(false)}>
-            <div className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-semibold">Update profile photo</h2>
-                <button
-                  onClick={() => setShowImageEditor(false)}
-                  className="rounded-sm p-1 hover:bg-muted transition-colors"
-                >
-                  <XIcon className="size-3.5" />
-                </button>
-              </div>
+      {/* Profile image editor modal */}
+      {showImageEditor && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setShowImageEditor(false)}
+        >
+          <div
+            className="w-full max-w-xs rounded-sm bg-background p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold">Update profile photo</h2>
+              <button
+                onClick={() => setShowImageEditor(false)}
+                className="rounded-sm p-1 hover:bg-muted transition-colors"
+              >
+                <XIcon className="size-3.5" />
+              </button>
+            </div>
 
-              <div className="space-y-3">
-                <ProfileImageUpload
-                  key={imageFileKey}
-                  onFile={handleProfileImageFile}
-                  disabled={uploadingImage}
-                />
-                {profileImage && (
-                  <>
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <span className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">or</span>
-                      </span>
+            <div className="space-y-3">
+              <ProfileImageUpload
+                key={imageFileKey}
+                onFile={handleProfileImageFile}
+                disabled={uploadingImage}
+              />
+              {profileImage && (
+                <>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
                     </div>
-                    <Button
-                      variant="ghost"
-                      className="text-xs text-destructive hover:text-destructive"
-                      onClick={removeProfileImage}
-                    >
-                      Remove photo
-                    </Button>
-                  </>
-                )}
-              </div>
+                    <span className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">or</span>
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="text-xs text-destructive hover:text-destructive"
+                    onClick={removeProfileImage}
+                  >
+                    Remove photo
+                  </Button>
+                </>
+              )}
             </div>
           </div>
-        )}
-        </>
-      );
+        </div>
+      )}
+    </>
+  );
 }

@@ -1,7 +1,7 @@
 import NodeCache from "node-cache";
-import { getValkey, isValkeyConnected } from "./valkey.js";
 import { logger } from "./logger/index.js";
 import { metricsRegistry } from "./monitoring/index.js";
+import { getValkey, isValkeyConnected } from "./valkey.js";
 
 interface CacheTierConfig {
   l1Ttl: number;
@@ -103,16 +103,11 @@ export class DistributedCache {
     return undefined;
   }
 
-  async set<T>(
-    key: string,
-    value: T,
-    ttl?: number,
-    tenantId?: string,
-  ): Promise<void> {
+  async set<T>(key: string, value: T, ttl?: number, tenantId?: string): Promise<void> {
     const k = this.l1Key(key);
     const entry: CacheEntry<T> = {
       value,
-      expiresAt: Date.now() + ((ttl ?? this.config.l1Ttl) * 1000),
+      expiresAt: Date.now() + (ttl ?? this.config.l1Ttl) * 1000,
       version: Date.now(),
       tenantId,
     };
@@ -179,9 +174,9 @@ export class DistributedCache {
     if (isValkeyConnected()) {
       try {
         const valkey = getValkey();
-        const l2Keys = keys.map(k => this.l2Key(k.replace(this.config.prefix, "")));
+        const l2Keys = keys.map((k) => this.l2Key(k.replace(this.config.prefix, "")));
         if (l2Keys.length > 0) {
-          await valkey.del(...l2Keys.map(k => k));
+          await valkey.del(...l2Keys.map((k) => k));
         }
       } catch (err) {
         logger.warn({ err, pattern }, "Valkey L2 pattern delete failed");
@@ -202,7 +197,8 @@ export class DistributedCache {
   }
 
   getStats() {
-    const total = this.stats.hits.l1 + this.stats.hits.l2 + this.stats.hits.stale + this.stats.misses;
+    const total =
+      this.stats.hits.l1 + this.stats.hits.l2 + this.stats.hits.stale + this.stats.misses;
     return {
       l1Hits: this.stats.hits.l1,
       l2Hits: this.stats.hits.l2,
@@ -210,7 +206,8 @@ export class DistributedCache {
       misses: this.stats.misses,
       sets: this.stats.sets,
       invalidations: this.stats.invalidations,
-      hitRate: total > 0 ? (this.stats.hits.l1 + this.stats.hits.l2 + this.stats.hits.stale) / total : 0,
+      hitRate:
+        total > 0 ? (this.stats.hits.l1 + this.stats.hits.l2 + this.stats.hits.stale) / total : 0,
       size: this.l1.keys().length,
       staleSize: this.stale.keys().length,
     };

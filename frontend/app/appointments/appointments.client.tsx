@@ -1,22 +1,34 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { PlusIcon, ChevronLeftIcon, Loader2 } from "@/lib/icons";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  AppointmentCancelDialog,
+  AppointmentEditDialog,
+} from "@/components/appointments/appointment-actions";
 import { AppointmentForm } from "@/components/appointments/appointment-form";
 import { AppointmentList } from "@/components/appointments/appointment-list";
-import { AppointmentViewDialog } from "@/components/appointments/appointment-view-dialog";
-import { AppointmentEditDialog } from "@/components/appointments/appointment-actions";
-import { AppointmentCancelDialog } from "@/components/appointments/appointment-actions";
 import { AppointmentStatusDialog } from "@/components/appointments/appointment-status-actions";
+import type {
+  Appointment,
+  AppointmentPageView,
+  AppointmentStats,
+  Doctor,
+} from "@/components/appointments/appointment-types";
+import { AppointmentViewDialog } from "@/components/appointments/appointment-view-dialog";
+import { Button } from "@/components/ui/button";
+import { ChevronLeftIcon, Loader2, PlusIcon } from "@/lib/icons";
 import { getSocketIO } from "@/lib/socketio-client";
-import type { Appointment, AppointmentStats, Doctor, AppointmentPageView } from "@/components/appointments/appointment-types";
 
 export default function Appointments({ initialDoctors }: { initialDoctors: Doctor[] }) {
   const [doctors, setDoctors] = useState<Doctor[]>(initialDoctors);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [stats, setStats] = useState<AppointmentStats>({
-    total: 0, today: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0,
+    total: 0,
+    today: 0,
+    pending: 0,
+    confirmed: 0,
+    completed: 0,
+    cancelled: 0,
   });
   const [loading, setLoading] = useState(true);
   const [pageView, setPageView] = useState<AppointmentPageView>("list");
@@ -179,33 +191,39 @@ export default function Appointments({ initialDoctors }: { initialDoctors: Docto
         />
       </main>
 
-
-
       <AppointmentViewDialog
         appointment={viewingAppt}
         open={!!viewingAppt}
-        onOpenChange={(open) => { if (!open) setViewingAppt(null); }}
+        onOpenChange={(open) => {
+          if (!open) setViewingAppt(null);
+        }}
       />
 
       <AppointmentEditDialog
         appointment={editingAppt}
         doctors={doctors}
         open={!!editingAppt}
-        onOpenChange={(open) => { if (!open) setEditingAppt(null); }}
+        onOpenChange={(open) => {
+          if (!open) setEditingAppt(null);
+        }}
         onUpdated={handleUpdated}
       />
 
       <AppointmentCancelDialog
         appointment={cancellingAppt}
         open={!!cancellingAppt}
-        onOpenChange={(open) => { if (!open) setCancellingAppt(null); }}
+        onOpenChange={(open) => {
+          if (!open) setCancellingAppt(null);
+        }}
         onStatusChanged={handleStatusChanged}
       />
 
       <AppointmentStatusDialog
         appointment={statusAppt}
         open={!!statusAppt}
-        onOpenChange={(open) => { if (!open) setStatusAppt(null); }}
+        onOpenChange={(open) => {
+          if (!open) setStatusAppt(null);
+        }}
         onStatusChanged={handleStatusChanged}
       />
     </>

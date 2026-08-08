@@ -35,7 +35,7 @@ export async function removeOfflineRequest(id: number) {
 
 export async function syncOfflineRequests() {
   if (typeof window === "undefined" || !navigator.onLine) return;
-  
+
   const requests = await getOfflineRequests();
   if (requests.length === 0) return;
 

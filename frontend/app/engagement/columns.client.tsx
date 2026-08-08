@@ -1,6 +1,6 @@
-"use client"
+"use client";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2, Eye } from "@/lib/icons";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+import { Eye, MoreHorizontal, Pencil, Trash2 } from "@/lib/icons";
 
 export type Engagement = {
   id: string;
@@ -23,12 +23,12 @@ export type Engagement = {
 };
 
 const statusColorMap: Record<string, string> = {
-  "New": "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  "Contacted": "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-  "Qualified": "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  "Proposal": "bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  "Won": "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  "Lost": "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  New: "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  Contacted: "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+  Qualified: "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+  Proposal: "bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+  Won: "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  Lost: "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 };
 
 export const columns: ColumnDef<Engagement>[] = [
@@ -64,7 +64,9 @@ export const columns: ColumnDef<Engagement>[] = [
     cell: ({ row }) => {
       const status = row.getValue<string>("status");
       return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColorMap[status] || "bg-gray-100 text-gray-700"}`}>
+        <span
+          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColorMap[status] || "bg-gray-100 text-gray-700"}`}
+        >
           {status || "—"}
         </span>
       );

@@ -3,11 +3,11 @@
  * Checks all security components are properly configured.
  */
 
-import { logger } from "../logger/index.js";
-import { getEffectivePermissions, ROLES } from "../rbac/index.js";
-import { permissionCache } from "../permission-cache.js";
 import { getCurrentVersion, getPolicyStats } from "../casbin/policy-manager.js";
+import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
+import { permissionCache } from "../permission-cache.js";
+import { getEffectivePermissions, ROLES } from "../rbac/index.js";
 
 export interface ReadinessCheck {
   name: string;
@@ -58,9 +58,9 @@ export async function runReadinessChecks(): Promise<ReadinessReport> {
   checks.push(checkAuditLogging());
 
   // Calculate summary
-  const passed = checks.filter(c => c.status === "pass").length;
-  const failed = checks.filter(c => c.status === "fail").length;
-  const warnings = checks.filter(c => c.status === "warn").length;
+  const passed = checks.filter((c) => c.status === "pass").length;
+  const failed = checks.filter((c) => c.status === "fail").length;
+  const warnings = checks.filter((c) => c.status === "warn").length;
 
   const overall = failed > 0 ? "not_ready" : warnings > 0 ? "warning" : "ready";
 
@@ -71,24 +71,23 @@ export async function runReadinessChecks(): Promise<ReadinessReport> {
     summary: { passed, failed, warnings },
   };
 
-  logger.info({
-    overall,
-    passed,
-    failed,
-    warnings,
-  }, "Production readiness check completed");
+  logger.info(
+    {
+      overall,
+      passed,
+      failed,
+      warnings,
+    },
+    "Production readiness check completed",
+  );
 
   return report;
 }
 
 function checkEnvironmentVariables(): ReadinessCheck {
-  const required = [
-    "JWT_SECRET",
-    "JWT_REFRESH_SECRET",
-    "MONGODB_URI",
-  ];
+  const required = ["JWT_SECRET", "JWT_REFRESH_SECRET", "MONGODB_URI"];
 
-  const missing = required.filter(env => !process.env[env]);
+  const missing = required.filter((env) => !process.env[env]);
 
   if (missing.length > 0) {
     return {
@@ -202,15 +201,9 @@ function checkPermissionCache(): ReadinessCheck {
 }
 
 function checkRBACRoles(): ReadinessCheck {
-  const requiredRoles = [
-    ROLES.ORG_ADMIN,
-    ROLES.MEMBERS,
-    ROLES.STAFFS,
-    ROLES.HR,
-    ROLES.CLIENTS,
-  ];
+  const requiredRoles = [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.STAFFS, ROLES.HR, ROLES.CLIENTS];
 
-  const missingRoles = requiredRoles.filter(role => {
+  const missingRoles = requiredRoles.filter((role) => {
     const perms = getEffectivePermissions(role);
     return perms.length === 0;
   });
@@ -270,7 +263,9 @@ export function formatReadinessReport(report: ReadinessReport): string {
   lines.push(`Timestamp: ${report.timestamp}`);
   lines.push(`Overall: ${report.overall.toUpperCase()}`);
   lines.push("");
-  lines.push(`Summary: ${report.summary.passed} passed, ${report.summary.failed} failed, ${report.summary.warnings} warnings`);
+  lines.push(
+    `Summary: ${report.summary.passed} passed, ${report.summary.failed} failed, ${report.summary.warnings} warnings`,
+  );
   lines.push("");
   lines.push("-".repeat(60));
 

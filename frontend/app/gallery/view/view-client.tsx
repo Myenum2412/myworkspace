@@ -4,14 +4,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  DownloadIcon,
-  HeartIcon,
-  SearchIcon,
-  XIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ClockIcon,
+  DownloadIcon,
+  HeartIcon,
+  SearchIcon,
   UserIcon,
+  XIcon,
 } from "@/lib/icons";
 
 interface GalleryImage {
@@ -99,8 +99,12 @@ export function GalleryViewClient({
           <div>
             <h1 className="text-2xl font-bold">{galleryName}</h1>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1"><UserIcon className="size-3" /> {personName}</span>
-              <span className="flex items-center gap-1"><ClockIcon className="size-3" /> Session expires in {expiresInMinutes}m</span>
+              <span className="flex items-center gap-1">
+                <UserIcon className="size-3" /> {personName}
+              </span>
+              <span className="flex items-center gap-1">
+                <ClockIcon className="size-3" /> Session expires in {expiresInMinutes}m
+              </span>
               <span>{filtered.length} photos</span>
             </div>
           </div>
@@ -135,13 +139,21 @@ export function GalleryViewClient({
                     <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         className="size-7 rounded-sm bg-white/80 flex items-center justify-center hover:bg-white"
-                        onClick={(e) => { e.stopPropagation(); toggleFavorite(img.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(img.id);
+                        }}
                       >
-                        <HeartIcon className={`size-3 ${favorites.has(img.id) ? "fill-red-500 text-red-500" : "text-gray-700"}`} />
+                        <HeartIcon
+                          className={`size-3 ${favorites.has(img.id) ? "fill-red-500 text-red-500" : "text-gray-700"}`}
+                        />
                       </button>
                       <button
                         className="size-7 rounded-sm bg-white/80 flex items-center justify-center hover:bg-white"
-                        onClick={(e) => { e.stopPropagation(); downloadImage(img.url, img.filename); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          downloadImage(img.url, img.filename);
+                        }}
                       >
                         <DownloadIcon className="size-3 text-gray-700" />
                       </button>
@@ -153,13 +165,23 @@ export function GalleryViewClient({
 
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(Math.max(0, page - 1))}
+                  disabled={page === 0}
+                >
                   <ChevronLeftIcon className="" />
                 </Button>
                 <span className="text-sm text-muted-foreground">
                   Page {page + 1} of {totalPages}
                 </span>
-                <Button variant="outline" size="sm" onClick={() => setPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+                  disabled={page >= totalPages - 1}
+                >
                   <ChevronRightIcon className="" />
                 </Button>
               </div>
@@ -169,15 +191,38 @@ export function GalleryViewClient({
       </div>
 
       {lightbox && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onClick={closeLightbox}>
-          <button className="absolute top-4 right-4 text-white/80 hover:text-white" onClick={closeLightbox}>
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          onClick={closeLightbox}
+        >
+          <button
+            className="absolute top-4 right-4 text-white/80 hover:text-white"
+            onClick={closeLightbox}
+          >
             <XIcon className="size-8" />
           </button>
-          <button className="absolute left-4 text-white/80 hover:text-white" onClick={(e) => { e.stopPropagation(); prevImage(); }}>
+          <button
+            className="absolute left-4 text-white/80 hover:text-white"
+            onClick={(e) => {
+              e.stopPropagation();
+              prevImage();
+            }}
+          >
             <ChevronLeftIcon className="size-8" />
           </button>
-          <img src={lightbox} alt="" className="max-h-[90vh] max-w-[90vw] object-contain" onClick={(e) => e.stopPropagation()} />
-          <button className="absolute right-4 text-white/80 hover:text-white" onClick={(e) => { e.stopPropagation(); nextImage(); }}>
+          <img
+            src={lightbox}
+            alt=""
+            className="max-h-[90vh] max-w-[90vw] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            className="absolute right-4 text-white/80 hover:text-white"
+            onClick={(e) => {
+              e.stopPropagation();
+              nextImage();
+            }}
+          >
             <ChevronRightIcon className="size-8" />
           </button>
           <div className="absolute bottom-4 text-white/60 text-sm">

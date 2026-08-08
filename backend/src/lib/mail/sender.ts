@@ -1,6 +1,6 @@
+import nodemailer from "nodemailer";
 import { Resend } from "resend";
 import { env } from "../../config/env.js";
-import nodemailer from "nodemailer";
 import { logger } from "../logger/index.js";
 
 let resend: Resend | null = null;

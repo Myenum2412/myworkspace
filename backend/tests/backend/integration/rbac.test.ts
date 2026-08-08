@@ -1,5 +1,5 @@
-import request from "supertest";
 import type { Server } from "http";
+import request from "supertest";
 import app from "../../../src/app.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin } from "../../__helpers__/users.js";

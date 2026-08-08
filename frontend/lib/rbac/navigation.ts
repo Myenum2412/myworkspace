@@ -22,22 +22,67 @@ export interface NavItem {
 const NAV_ACCESS_CONTROL: Record<string, string[]> = {
   // ── Dashboard ──
   "/dashboard": [
-    ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER,
-    ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE,
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
   ],
   "/dashboard/reports": [
-    ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER,
-    ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE,
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
   ],
 
   // ── Task Management ──
   "/overview": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
-  "/tasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF],
-  "/mytasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF],
+  "/tasks": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+  ],
+  "/mytasks": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+  ],
   "/teamtasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
   "/alltasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
-  "/upcomingtasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF],
-  "/createtask": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE, ROLES.CONTRACTORS, ROLES.CLIENTS, ROLES.GUEST],
+  "/upcomingtasks": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+  ],
+  "/createtask": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+    ROLES.CONTRACTORS,
+    ROLES.CLIENTS,
+    ROLES.GUEST,
+  ],
 
   // ── Employee Management ──
   "/employees": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR],
@@ -45,19 +90,50 @@ const NAV_ACCESS_CONTROL: Record<string, string[]> = {
   "/departments": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
 
   // ── Project Management ──
-  "/projects": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
+  "/projects": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
   "/addprojects": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
   "/createproject": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
 
   // ── Team Management ──
-  "/teams": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF],
+  "/teams": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+  ],
 
   // ── Approvals ──
   "/approvals": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
 
   // ── Time Management ──
-  "/time-tracker": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
-  "/my-time": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
+  "/time-tracker": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
+  "/my-time": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
   "/team-time": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
   "/time-reports": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
 
@@ -65,12 +141,39 @@ const NAV_ACCESS_CONTROL: Record<string, string[]> = {
   "/attendance": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR],
 
   // ── File Management ──
-  "/files": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE],
-  "/upload": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
+  "/files": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+  ],
+  "/upload": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
 
   // ── Client Management ──
   "/clients": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
-  "/client": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE, ROLES.CLIENTS],
+  "/client": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+    ROLES.CLIENTS,
+  ],
 
   // ── Billing ──
   "/billing": [ROLES.ORG_ADMIN, ROLES.MEMBERS],
@@ -79,10 +182,25 @@ const NAV_ACCESS_CONTROL: Record<string, string[]> = {
   "/reports": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR, ROLES.FINANCE],
 
   // ── Communication ──
-  "/chat": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
+  "/chat": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
   "/notifications": [
-    ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER,
-    ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE, ROLES.CLIENTS,
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+    ROLES.CLIENTS,
   ],
 
   // ── Settings ──
@@ -91,17 +209,61 @@ const NAV_ACCESS_CONTROL: Record<string, string[]> = {
   "/stocks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.FINANCE],
 
   // ── Staff Management ──
-  "/staffs": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE, ROLES.CLIENTS],
-  "/staffs/reworks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
+  "/staffs": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+    ROLES.CLIENTS,
+  ],
+  "/staffs/reworks": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
 
   // ── Appointments ──
-  "/appointments": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
+  "/appointments": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
 
   // ── Reworks ──
-  "/reworks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE],
+  "/reworks": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+  ],
 
   // ── Submissions ──
-  "/submissions": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE],
+  "/submissions": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+  ],
 
   // ── Platform Admin ──
   "/platform": [ROLES.ORG_ADMIN],
@@ -140,7 +302,7 @@ export function canAccessPath(role: string, path: string): boolean {
  * Filter navigation items based on user role.
  */
 export function filterNavByRole(items: NavItem[], role: string): NavItem[] {
-  return items.filter(item => {
+  return items.filter((item) => {
     // Check required roles
     if (item.requiredRoles && item.requiredRoles.length > 0) {
       if (!item.requiredRoles.includes(role)) {
@@ -155,7 +317,7 @@ export function filterNavByRole(items: NavItem[], role: string): NavItem[] {
 
     // Filter sub-items
     if (item.items && item.items.length > 0) {
-      item.items = item.items.filter(subItem => canAccessPath(role, subItem.url));
+      item.items = item.items.filter((subItem) => canAccessPath(role, subItem.url));
     }
 
     return true;

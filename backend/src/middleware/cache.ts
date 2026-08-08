@@ -1,4 +1,4 @@
-import { Response, NextFunction } from "express";
+import type { NextFunction, Response } from "express";
 import { cacheService } from "../lib/cache/cache-service.js";
 import type { AuthRequest } from "./auth.js";
 

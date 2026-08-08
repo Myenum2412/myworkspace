@@ -1,1 +1,1 @@
-export { CreateTaskPageInteractive } from "./page-interactive.client"
+export { CreateTaskPageInteractive } from "./page-interactive.client";

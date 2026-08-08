@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+import { type NextRequest, NextResponse } from "next/server";
+import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
-import { ObjectId } from "mongodb";
-import { v4 as uuid } from "uuid";
 import { ROLES } from "@/lib/rbac";
 
 export async function GET() {
@@ -28,14 +28,16 @@ export async function GET() {
     if (email) {
       user = await db.collection(collections.users).findOne({ email });
     }
-    
+
     if (!user) {
       user = await db.collection(collections.users).findOne({ id: userId });
     }
     if (!user) {
       try {
         if (ObjectId.isValid(userId)) {
-          user = await db.collection(collections.users).findOne({ _id: new ObjectId(userId) } as never);
+          user = await db
+            .collection(collections.users)
+            .findOne({ _id: new ObjectId(userId) } as never);
         }
       } catch {}
     }
@@ -73,7 +75,11 @@ export async function GET() {
         await db.collection(collections.organizations).insertOne({
           id: newOrgId,
           name: `${userName}'s Organization`,
-          slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${dbUserId.slice(0, 8)}`,
+          slug:
+            userName
+              .toLowerCase()
+              .replace(/\s+/g, "-")
+              .replace(/[^a-z0-9-]/g, "") || `org-${dbUserId.slice(0, 8)}`,
           plan: "free",
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -127,66 +133,68 @@ export async function GET() {
           joiningDate: user.joiningDate || "",
           createdAt: user.createdAt || new Date().toISOString(),
         },
-        org: org ? {
-          id: org.id || org._id,
-          name: org.name || "",
-          domain: org.domain || "",
-          businessType: org.businessType || "",
-          industry: org.industry || "",
-          gstNumber: org.gstNumber || "",
-          panNumber: org.panNumber || "",
-          cinNumber: org.cinNumber || "",
-          companyEmail: org.companyEmail || "",
-          mobileNumber: org.mobileNumber || "",
-          alternateMobileNumber: org.alternateMobileNumber || "",
-          website: org.website || "",
-          addressLine1: org.addressLine1 || "",
-          addressLine2: org.addressLine2 || "",
-          city: org.city || "",
-          state: org.state || "",
-          pincode: org.pincode || "",
-          country: org.country || "India",
-          logoUrl: org.logoUrl || "",
-          authorizedPersonName: org.authorizedPersonName || "",
-          designation: org.designation || "",
-          authorizedPersonEmail: org.authorizedPersonEmail || "",
-          authorizedPersonMobile: org.authorizedPersonMobile || "",
-          numberOfEmployees: org.numberOfEmployees || 0,
-          companyDescription: org.companyDescription || "",
-          plan: org.plan || "free",
-          createdAt: org.createdAt || new Date().toISOString(),
-          tradeName: org.tradeName || "",
-          yearEstablished: org.yearEstablished || "",
-          companySize: org.companySize || "",
-          registrationNumber: org.registrationNumber || "",
-          registrationAuthority: org.registrationAuthority || "",
-          taxIdentificationNumber: org.taxIdentificationNumber || "",
-          registrationDate: org.registrationDate || "",
-          businessStatus: org.businessStatus || "Active",
-          supportEmail: org.supportEmail || "",
-          supportPhone: org.supportPhone || "",
-          facebook: org.facebook || "",
-          instagram: org.instagram || "",
-          twitterHandle: org.twitterHandle || "",
-          youtube: org.youtube || "",
-          primaryBusinessActivity: org.primaryBusinessActivity || "",
-          secondaryBusinessActivity: org.secondaryBusinessActivity || "",
-          operatingCountries: org.operatingCountries || "",
-          timeZone: org.timeZone || "",
-          preferredCurrency: org.preferredCurrency || "",
-          emailVerified: org.emailVerified || false,
-          phoneVerified: org.phoneVerified || false,
-          websiteVerified: org.websiteVerified || false,
-          businessVerified: org.businessVerified || false,
-          addressVerified: org.addressVerified || false,
-          documentsVerified: org.documentsVerified || false,
-        } : null,
+        org: org
+          ? {
+              id: org.id || org._id,
+              name: org.name || "",
+              domain: org.domain || "",
+              businessType: org.businessType || "",
+              industry: org.industry || "",
+              gstNumber: org.gstNumber || "",
+              panNumber: org.panNumber || "",
+              cinNumber: org.cinNumber || "",
+              companyEmail: org.companyEmail || "",
+              mobileNumber: org.mobileNumber || "",
+              alternateMobileNumber: org.alternateMobileNumber || "",
+              website: org.website || "",
+              addressLine1: org.addressLine1 || "",
+              addressLine2: org.addressLine2 || "",
+              city: org.city || "",
+              state: org.state || "",
+              pincode: org.pincode || "",
+              country: org.country || "India",
+              logoUrl: org.logoUrl || "",
+              authorizedPersonName: org.authorizedPersonName || "",
+              designation: org.designation || "",
+              authorizedPersonEmail: org.authorizedPersonEmail || "",
+              authorizedPersonMobile: org.authorizedPersonMobile || "",
+              numberOfEmployees: org.numberOfEmployees || 0,
+              companyDescription: org.companyDescription || "",
+              plan: org.plan || "free",
+              createdAt: org.createdAt || new Date().toISOString(),
+              tradeName: org.tradeName || "",
+              yearEstablished: org.yearEstablished || "",
+              companySize: org.companySize || "",
+              registrationNumber: org.registrationNumber || "",
+              registrationAuthority: org.registrationAuthority || "",
+              taxIdentificationNumber: org.taxIdentificationNumber || "",
+              registrationDate: org.registrationDate || "",
+              businessStatus: org.businessStatus || "Active",
+              supportEmail: org.supportEmail || "",
+              supportPhone: org.supportPhone || "",
+              facebook: org.facebook || "",
+              instagram: org.instagram || "",
+              twitterHandle: org.twitterHandle || "",
+              youtube: org.youtube || "",
+              primaryBusinessActivity: org.primaryBusinessActivity || "",
+              secondaryBusinessActivity: org.secondaryBusinessActivity || "",
+              operatingCountries: org.operatingCountries || "",
+              timeZone: org.timeZone || "",
+              preferredCurrency: org.preferredCurrency || "",
+              emailVerified: org.emailVerified || false,
+              phoneVerified: org.phoneVerified || false,
+              websiteVerified: org.websiteVerified || false,
+              businessVerified: org.businessVerified || false,
+              addressVerified: org.addressVerified || false,
+              documentsVerified: org.documentsVerified || false,
+            }
+          : null,
         memberCount,
       },
     });
   } catch (e) {
     console.error("[profile GET] Failed:", e);
-      return NextResponse.json({ error: "Could not load profile" }, { status: 500 });
+    return NextResponse.json({ error: "Could not load profile" }, { status: 500 });
   }
 }
 
@@ -213,26 +221,79 @@ export async function PATCH(req: NextRequest) {
   }
 
   const {
-    name, email, phone, department, company,
-    address, city, state, country, zipCode,
-    linkedin, github, twitter, website,
-    companyName, companyDomain,
-    businessType, industry, gstNumber, panNumber, cinNumber,
-    companyEmail, mobileNumber, alternateMobileNumber, orgWebsite,
-    addressLine1, addressLine2, orgCity, orgState, pincode, orgCountry,
-    authorizedPersonName, designation, authorizedPersonEmail, authorizedPersonMobile,
-    numberOfEmployees, companyDescription,
-    tradeName, yearEstablished, companySize,
-    registrationNumber, registrationAuthority, taxIdentificationNumber,
-    registrationDate, businessStatus,
-    supportEmail, supportPhone,
-    facebook, instagram, twitterHandle, youtube,
-    primaryBusinessActivity, secondaryBusinessActivity,
-    operatingCountries, timeZone, preferredCurrency,
-    secondaryPhone, nickname, displayId, firstName, lastName,
-    location: userLocation, employmentType, branchName, shift,
-    sourceOfHire, joiningDate, currentExperience, totalExperience,
-    empDesignation, workExperience, educationDetails, dependentDetails,
+    name,
+    email,
+    phone,
+    department,
+    company,
+    address,
+    city,
+    state,
+    country,
+    zipCode,
+    linkedin,
+    github,
+    twitter,
+    website,
+    companyName,
+    companyDomain,
+    businessType,
+    industry,
+    gstNumber,
+    panNumber,
+    cinNumber,
+    companyEmail,
+    mobileNumber,
+    alternateMobileNumber,
+    orgWebsite,
+    addressLine1,
+    addressLine2,
+    orgCity,
+    orgState,
+    pincode,
+    orgCountry,
+    authorizedPersonName,
+    designation,
+    authorizedPersonEmail,
+    authorizedPersonMobile,
+    numberOfEmployees,
+    companyDescription,
+    tradeName,
+    yearEstablished,
+    companySize,
+    registrationNumber,
+    registrationAuthority,
+    taxIdentificationNumber,
+    registrationDate,
+    businessStatus,
+    supportEmail,
+    supportPhone,
+    facebook,
+    instagram,
+    twitterHandle,
+    youtube,
+    primaryBusinessActivity,
+    secondaryBusinessActivity,
+    operatingCountries,
+    timeZone,
+    preferredCurrency,
+    secondaryPhone,
+    nickname,
+    displayId,
+    firstName,
+    lastName,
+    location: userLocation,
+    employmentType,
+    branchName,
+    shift,
+    sourceOfHire,
+    joiningDate,
+    currentExperience,
+    totalExperience,
+    empDesignation,
+    workExperience,
+    educationDetails,
+    dependentDetails,
     offerLetter,
   } = body;
 
@@ -243,12 +304,17 @@ export async function PATCH(req: NextRequest) {
   if (email !== undefined && email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     validationErrors.push("Invalid email format");
   }
-  if (companyEmail !== undefined && companyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyEmail)) {
+  if (
+    companyEmail !== undefined &&
+    companyEmail &&
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyEmail)
+  ) {
     validationErrors.push("Invalid company email format");
   }
   if (numberOfEmployees !== undefined && numberOfEmployees !== "" && numberOfEmployees !== null) {
     const n = Number(numberOfEmployees);
-    if (isNaN(n) || n < 0) validationErrors.push("Number of employees must be a non-negative number");
+    if (isNaN(n) || n < 0)
+      validationErrors.push("Number of employees must be a non-negative number");
   }
   if (validationErrors.length > 0) {
     console.warn(`[profile PATCH] validation failed: ${validationErrors.join("; ")}`);
@@ -257,7 +323,40 @@ export async function PATCH(req: NextRequest) {
 
   try {
     // Update user fields
-    const userFields = { name, email, phone, department, company, address, city, state, country, zipCode, linkedin, github, twitter, website, secondaryPhone: secondaryPhone || "", nickname, displayId, firstName, lastName, location: userLocation || "", employmentType, branchName, shift, sourceOfHire, joiningDate, currentExperience, totalExperience, designation: empDesignation || "", workExperience, educationDetails, dependentDetails, offerLetter };
+    const userFields = {
+      name,
+      email,
+      phone,
+      department,
+      company,
+      address,
+      city,
+      state,
+      country,
+      zipCode,
+      linkedin,
+      github,
+      twitter,
+      website,
+      secondaryPhone: secondaryPhone || "",
+      nickname,
+      displayId,
+      firstName,
+      lastName,
+      location: userLocation || "",
+      employmentType,
+      branchName,
+      shift,
+      sourceOfHire,
+      joiningDate,
+      currentExperience,
+      totalExperience,
+      designation: empDesignation || "",
+      workExperience,
+      educationDetails,
+      dependentDetails,
+      offerLetter,
+    };
     const updates: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(userFields)) {
       if (val !== undefined) updates[key] = val;
@@ -265,8 +364,8 @@ export async function PATCH(req: NextRequest) {
     if (Object.keys(updates).length > 0) {
       updates.updatedAt = new Date();
       const sessionEmail = session.user.email;
-      let userQuery: { $or?: Record<string, unknown>[], email?: string } = {};
-      
+      let userQuery: { $or?: Record<string, unknown>[]; email?: string } = {};
+
       if (sessionEmail) {
         userQuery = { email: sessionEmail };
       } else {
@@ -277,9 +376,13 @@ export async function PATCH(req: NextRequest) {
           userQuery.$or!.push({ _id: userId });
         }
       }
-      
-      const userRes = await db.collection(collections.users).updateOne(userQuery as never, { $set: updates });
-      console.log(`[profile PATCH] user update matched=${userRes.matchedCount} modified=${userRes.modifiedCount}`);
+
+      const userRes = await db
+        .collection(collections.users)
+        .updateOne(userQuery as never, { $set: updates });
+      console.log(
+        `[profile PATCH] user update matched=${userRes.matchedCount} modified=${userRes.modifiedCount}`,
+      );
     }
 
     // Resolve orgId for update
@@ -301,7 +404,9 @@ export async function PATCH(req: NextRequest) {
       } else {
         try {
           if (ObjectId.isValid(orgId)) {
-            dbOrg = await db.collection(collections.organizations).findOne({ _id: new ObjectId(orgId) } as never);
+            dbOrg = await db
+              .collection(collections.organizations)
+              .findOne({ _id: new ObjectId(orgId) } as never);
           } else {
             dbOrg = await db.collection(collections.organizations).findOne({ _id: orgId } as never);
           }
@@ -314,29 +419,60 @@ export async function PATCH(req: NextRequest) {
         const orgFieldMap: Record<string, unknown> = {
           name: companyName,
           domain: companyDomain,
-          businessType, industry, gstNumber, panNumber, cinNumber,
-          companyEmail, mobileNumber, alternateMobileNumber,
+          businessType,
+          industry,
+          gstNumber,
+          panNumber,
+          cinNumber,
+          companyEmail,
+          mobileNumber,
+          alternateMobileNumber,
           website: orgWebsite,
-          addressLine1, addressLine2,
-          city: orgCity, state: orgState, pincode,
+          addressLine1,
+          addressLine2,
+          city: orgCity,
+          state: orgState,
+          pincode,
           country: orgCountry,
-          authorizedPersonName, designation, authorizedPersonEmail, authorizedPersonMobile,
-          numberOfEmployees: numberOfEmployees !== undefined && numberOfEmployees !== "" ? Number(numberOfEmployees) : undefined,
+          authorizedPersonName,
+          designation,
+          authorizedPersonEmail,
+          authorizedPersonMobile,
+          numberOfEmployees:
+            numberOfEmployees !== undefined && numberOfEmployees !== ""
+              ? Number(numberOfEmployees)
+              : undefined,
           companyDescription,
-          tradeName, yearEstablished, companySize,
-          registrationNumber, registrationAuthority, taxIdentificationNumber,
-          registrationDate, businessStatus,
-          supportEmail, supportPhone,
-          facebook, instagram, twitterHandle, youtube,
-          primaryBusinessActivity, secondaryBusinessActivity,
-          operatingCountries, timeZone, preferredCurrency,
+          tradeName,
+          yearEstablished,
+          companySize,
+          registrationNumber,
+          registrationAuthority,
+          taxIdentificationNumber,
+          registrationDate,
+          businessStatus,
+          supportEmail,
+          supportPhone,
+          facebook,
+          instagram,
+          twitterHandle,
+          youtube,
+          primaryBusinessActivity,
+          secondaryBusinessActivity,
+          operatingCountries,
+          timeZone,
+          preferredCurrency,
         };
         for (const [key, val] of Object.entries(orgFieldMap)) {
           if (val !== undefined) orgUpdates[key] = val;
         }
         if (Object.keys(orgUpdates).length > 1) {
-          const orgRes = await db.collection(collections.organizations).updateOne({ _id: orgDocId } as never, { $set: orgUpdates });
-          console.log(`[profile PATCH] org update matched=${orgRes.matchedCount} modified=${orgRes.modifiedCount}`);
+          const orgRes = await db
+            .collection(collections.organizations)
+            .updateOne({ _id: orgDocId } as never, { $set: orgUpdates });
+          console.log(
+            `[profile PATCH] org update matched=${orgRes.matchedCount} modified=${orgRes.modifiedCount}`,
+          );
         }
       } else {
         console.warn(`[profile PATCH] org doc not found for orgId=${orgId}`);
@@ -344,7 +480,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Fetch updated user
-    let userFetchQuery: { $or?: Record<string, unknown>[], email?: string } = {};
+    let userFetchQuery: { $or?: Record<string, unknown>[]; email?: string } = {};
     if (session.user.email && email === session.user.email) {
       userFetchQuery = { email: session.user.email };
     } else {
@@ -366,7 +502,11 @@ export async function PATCH(req: NextRequest) {
     if (orgId) {
       updatedOrg = await db.collection(collections.organizations).findOne({ id: orgId });
       if (!updatedOrg) {
-        try { updatedOrg = await db.collection(collections.organizations).findOne({ _id: new ObjectId(orgId) } as never); } catch {}
+        try {
+          updatedOrg = await db
+            .collection(collections.organizations)
+            .findOne({ _id: new ObjectId(orgId) } as never);
+        } catch {}
       }
       if (updatedOrg) {
         updatedMemberCount = await db.collection(collections.orgMembers).countDocuments({ orgId });
@@ -398,60 +538,62 @@ export async function PATCH(req: NextRequest) {
         bannerUrl: updatedUser.bannerUrl || "",
         createdAt: updatedUser.createdAt || new Date().toISOString(),
       },
-      org: updatedOrg ? {
-        id: updatedOrg.id || updatedOrg._id,
-        name: updatedOrg.name || "",
-        domain: updatedOrg.domain || "",
-        businessType: updatedOrg.businessType || "",
-        industry: updatedOrg.industry || "",
-        gstNumber: updatedOrg.gstNumber || "",
-        panNumber: updatedOrg.panNumber || "",
-        cinNumber: updatedOrg.cinNumber || "",
-        companyEmail: updatedOrg.companyEmail || "",
-        mobileNumber: updatedOrg.mobileNumber || "",
-        alternateMobileNumber: updatedOrg.alternateMobileNumber || "",
-        website: updatedOrg.website || "",
-        addressLine1: updatedOrg.addressLine1 || "",
-        addressLine2: updatedOrg.addressLine2 || "",
-        city: updatedOrg.city || "",
-        state: updatedOrg.state || "",
-        pincode: updatedOrg.pincode || "",
-        country: updatedOrg.country || "India",
-        logoUrl: updatedOrg.logoUrl || "",
-        authorizedPersonName: updatedOrg.authorizedPersonName || "",
-        designation: updatedOrg.designation || "",
-        authorizedPersonEmail: updatedOrg.authorizedPersonEmail || "",
-        authorizedPersonMobile: updatedOrg.authorizedPersonMobile || "",
-        numberOfEmployees: updatedOrg.numberOfEmployees || 0,
-        companyDescription: updatedOrg.companyDescription || "",
-        plan: updatedOrg.plan || "free",
-        createdAt: updatedOrg.createdAt || new Date().toISOString(),
-        tradeName: updatedOrg.tradeName || "",
-        yearEstablished: updatedOrg.yearEstablished || "",
-        companySize: updatedOrg.companySize || "",
-        registrationNumber: updatedOrg.registrationNumber || "",
-        registrationAuthority: updatedOrg.registrationAuthority || "",
-        taxIdentificationNumber: updatedOrg.taxIdentificationNumber || "",
-        registrationDate: updatedOrg.registrationDate || "",
-        businessStatus: updatedOrg.businessStatus || "Active",
-        supportEmail: updatedOrg.supportEmail || "",
-        supportPhone: updatedOrg.supportPhone || "",
-        facebook: updatedOrg.facebook || "",
-        instagram: updatedOrg.instagram || "",
-        twitterHandle: updatedOrg.twitterHandle || "",
-        youtube: updatedOrg.youtube || "",
-        primaryBusinessActivity: updatedOrg.primaryBusinessActivity || "",
-        secondaryBusinessActivity: updatedOrg.secondaryBusinessActivity || "",
-        operatingCountries: updatedOrg.operatingCountries || "",
-        timeZone: updatedOrg.timeZone || "",
-        preferredCurrency: updatedOrg.preferredCurrency || "",
-        emailVerified: updatedOrg.emailVerified || false,
-        phoneVerified: updatedOrg.phoneVerified || false,
-        websiteVerified: updatedOrg.websiteVerified || false,
-        businessVerified: updatedOrg.businessVerified || false,
-        addressVerified: updatedOrg.addressVerified || false,
-        documentsVerified: updatedOrg.documentsVerified || false,
-      } : null,
+      org: updatedOrg
+        ? {
+            id: updatedOrg.id || updatedOrg._id,
+            name: updatedOrg.name || "",
+            domain: updatedOrg.domain || "",
+            businessType: updatedOrg.businessType || "",
+            industry: updatedOrg.industry || "",
+            gstNumber: updatedOrg.gstNumber || "",
+            panNumber: updatedOrg.panNumber || "",
+            cinNumber: updatedOrg.cinNumber || "",
+            companyEmail: updatedOrg.companyEmail || "",
+            mobileNumber: updatedOrg.mobileNumber || "",
+            alternateMobileNumber: updatedOrg.alternateMobileNumber || "",
+            website: updatedOrg.website || "",
+            addressLine1: updatedOrg.addressLine1 || "",
+            addressLine2: updatedOrg.addressLine2 || "",
+            city: updatedOrg.city || "",
+            state: updatedOrg.state || "",
+            pincode: updatedOrg.pincode || "",
+            country: updatedOrg.country || "India",
+            logoUrl: updatedOrg.logoUrl || "",
+            authorizedPersonName: updatedOrg.authorizedPersonName || "",
+            designation: updatedOrg.designation || "",
+            authorizedPersonEmail: updatedOrg.authorizedPersonEmail || "",
+            authorizedPersonMobile: updatedOrg.authorizedPersonMobile || "",
+            numberOfEmployees: updatedOrg.numberOfEmployees || 0,
+            companyDescription: updatedOrg.companyDescription || "",
+            plan: updatedOrg.plan || "free",
+            createdAt: updatedOrg.createdAt || new Date().toISOString(),
+            tradeName: updatedOrg.tradeName || "",
+            yearEstablished: updatedOrg.yearEstablished || "",
+            companySize: updatedOrg.companySize || "",
+            registrationNumber: updatedOrg.registrationNumber || "",
+            registrationAuthority: updatedOrg.registrationAuthority || "",
+            taxIdentificationNumber: updatedOrg.taxIdentificationNumber || "",
+            registrationDate: updatedOrg.registrationDate || "",
+            businessStatus: updatedOrg.businessStatus || "Active",
+            supportEmail: updatedOrg.supportEmail || "",
+            supportPhone: updatedOrg.supportPhone || "",
+            facebook: updatedOrg.facebook || "",
+            instagram: updatedOrg.instagram || "",
+            twitterHandle: updatedOrg.twitterHandle || "",
+            youtube: updatedOrg.youtube || "",
+            primaryBusinessActivity: updatedOrg.primaryBusinessActivity || "",
+            secondaryBusinessActivity: updatedOrg.secondaryBusinessActivity || "",
+            operatingCountries: updatedOrg.operatingCountries || "",
+            timeZone: updatedOrg.timeZone || "",
+            preferredCurrency: updatedOrg.preferredCurrency || "",
+            emailVerified: updatedOrg.emailVerified || false,
+            phoneVerified: updatedOrg.phoneVerified || false,
+            websiteVerified: updatedOrg.websiteVerified || false,
+            businessVerified: updatedOrg.businessVerified || false,
+            addressVerified: updatedOrg.addressVerified || false,
+            documentsVerified: updatedOrg.documentsVerified || false,
+          }
+        : null,
       memberCount: updatedMemberCount,
     });
   } catch (e) {

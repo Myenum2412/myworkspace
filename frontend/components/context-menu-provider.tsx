@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import {
-  Users, FileText, UserPlus, ListTodo,
-} from "@/lib/icons";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { FileText, ListTodo, UserPlus, Users } from "@/lib/icons";
 
 const menuItems = [
   { label: "Create Client", icon: Users, href: "/clients" },
@@ -57,13 +55,16 @@ export function ContextMenuProvider() {
     }
   }, []);
 
-  const handleContextMenu = useCallback((e: MouseEvent) => {
-    if (e.defaultPrevented) return;
-    if (!isDashboard) return;
-    e.preventDefault();
-    setPos({ x: e.clientX, y: e.clientY });
-    setVisible(true);
-  }, [isDashboard]);
+  const handleContextMenu = useCallback(
+    (e: MouseEvent) => {
+      if (e.defaultPrevented) return;
+      if (!isDashboard) return;
+      e.preventDefault();
+      setPos({ x: e.clientX, y: e.clientY });
+      setVisible(true);
+    },
+    [isDashboard],
+  );
 
   const handleClick = useCallback(() => {
     setVisible(false);

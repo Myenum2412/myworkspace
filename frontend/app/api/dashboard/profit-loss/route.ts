@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const backendUrl = process.env.BACKEND_URL || "http://localhost:4000";
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     if (!res.ok) {
       return NextResponse.json(
         { success: false, error: `Backend returned ${res.status}` },
-        { status: res.status }
+        { status: res.status },
       );
     }
 
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { success: false, error: "Failed to connect to backend" },
-      { status: 502 }
+      { status: 502 },
     );
   }
 }

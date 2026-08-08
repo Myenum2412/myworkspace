@@ -1,6 +1,14 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
-export type FileCategory = "profile" | "report" | "general" | "document" | "image" | "video" | "audio" | "archive";
+export type FileCategory =
+  | "profile"
+  | "report"
+  | "general"
+  | "document"
+  | "image"
+  | "video"
+  | "audio"
+  | "archive";
 
 export interface IFileAttachment extends Document {
   id: string;
@@ -102,7 +110,7 @@ const fileAttachmentSchema = new Schema<IFileAttachment>(
     deletedAt: { type: Date, default: null },
     deletedBy: { type: String, default: null },
   },
-  { timestamps: true, collection: 'file_attachments' },
+  { timestamps: true, collection: "file_attachments" },
 );
 
 fileAttachmentSchema.index({ orgId: 1, folderId: 1, deletedAt: 1 });

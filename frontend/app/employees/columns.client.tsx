@@ -1,8 +1,7 @@
-"use client"
-import { ColumnDef } from "@tanstack/react-table";
+"use client";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontalIcon, PencilIcon, Trash2Icon, UserXIcon } from "@/lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { MoreHorizontalIcon, PencilIcon, Trash2Icon, UserXIcon } from "@/lib/icons";
 
 export type ExperienceRow = {
   id: string;
@@ -113,7 +113,12 @@ export function getColumns(
               <img src={emp.avatar} alt={emp.name} className="size-full object-cover" />
             ) : (
               <span className="text-xs font-medium text-muted-foreground">
-                {emp.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                {emp.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()}
               </span>
             )}
           </div>
@@ -125,7 +130,11 @@ export function getColumns(
     {
       accessorKey: "displayId",
       header: "ID",
-      cell: ({ row }) => <span className="font-mono text-muted-foreground text-xs">{row.getValue("displayId") || "—"}</span>,
+      cell: ({ row }) => (
+        <span className="font-mono text-muted-foreground text-xs">
+          {row.getValue("displayId") || "—"}
+        </span>
+      ),
     },
     {
       accessorKey: "name",
@@ -142,7 +151,11 @@ export function getColumns(
       header: "Department",
       cell: ({ row }) => {
         const val = row.getValue("department") as string;
-        return val ? <Badge variant="secondary">{val}</Badge> : <span className="text-muted-foreground">—</span>;
+        return val ? (
+          <Badge variant="secondary">{val}</Badge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
       },
     },
     {
@@ -158,7 +171,11 @@ export function getColumns(
       header: "Type",
       cell: ({ row }) => {
         const val = row.getValue("employmentType") as string;
-        return val ? <span className="text-sm">{val}</span> : <span className="text-muted-foreground">—</span>;
+        return val ? (
+          <span className="text-sm">{val}</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
       },
     },
     {
@@ -188,7 +205,9 @@ export function getColumns(
       cell: ({ row }) => {
         const status = (row.getValue("status") as string) || "offline";
         return (
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusColors[status] || statusColors.offline}`}>
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusColors[status] || statusColors.offline}`}
+          >
             {status.replace("_", " ")}
           </span>
         );

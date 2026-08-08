@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface ITask extends Document {
   orgId: string;
@@ -14,10 +14,21 @@ export interface ITask extends Document {
   type: "individual" | "team" | "common" | "upcoming";
 
   status:
-    | "assigned" | "pending" | "in_progress"
-    | "completed" | "closed" | "hold" | "cancelled"
-    | "rejected" | "reopened" | "submitted" | "approved"
-    | "published" | "accepted" | "scheduled" | "activated";
+    | "assigned"
+    | "pending"
+    | "in_progress"
+    | "completed"
+    | "closed"
+    | "hold"
+    | "cancelled"
+    | "rejected"
+    | "reopened"
+    | "submitted"
+    | "approved"
+    | "published"
+    | "accepted"
+    | "scheduled"
+    | "activated";
 
   priority: "low" | "medium" | "high" | "urgent";
 
@@ -83,10 +94,21 @@ const taskSchema = new Schema<ITask>(
     status: {
       type: String,
       enum: [
-        "assigned", "pending", "in_progress",
-        "completed", "closed", "hold", "cancelled",
-        "rejected", "reopened", "submitted", "approved",
-        "published", "accepted", "scheduled", "activated",
+        "assigned",
+        "pending",
+        "in_progress",
+        "completed",
+        "closed",
+        "hold",
+        "cancelled",
+        "rejected",
+        "reopened",
+        "submitted",
+        "approved",
+        "published",
+        "accepted",
+        "scheduled",
+        "activated",
       ],
       default: "assigned",
     },
@@ -130,7 +152,7 @@ const taskSchema = new Schema<ITask>(
     repeatEndDate: Date,
     lastRepeatGeneratedAt: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 taskSchema.index({ orgId: 1, type: 1 });
@@ -142,7 +164,7 @@ taskSchema.index({ orgId: 1, type: 1, status: 1, createdAt: -1 });
 taskSchema.index({ assigneeId: 1, createdAt: -1 });
 taskSchema.index({ creatorId: 1, createdAt: -1 });
 taskSchema.index({ teamId: 1, createdAt: -1 });
-taskSchema.index({ "selectedUserIds": 1 });
+taskSchema.index({ selectedUserIds: 1 });
 
 taskSchema.index({ title: "text", description: "text" });
 export const Task = model<ITask>("Task", taskSchema);

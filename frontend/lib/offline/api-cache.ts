@@ -1,4 +1,4 @@
-import { openDB, type IDBPDatabase } from "idb";
+import { type IDBPDatabase, openDB } from "idb";
 
 const DB_NAME = "myworkspace-api-cache";
 const DB_VERSION = 1;
@@ -27,7 +27,11 @@ function getDb(): Promise<IDBPDatabase> {
   return dbPromise;
 }
 
-export async function cacheApiResponse<T>(key: string, data: T, ttlMs = 7 * 24 * 60 * 60 * 1000): Promise<void> {
+export async function cacheApiResponse<T>(
+  key: string,
+  data: T,
+  ttlMs = 7 * 24 * 60 * 60 * 1000,
+): Promise<void> {
   const db = await getDb();
   const entry: CachedResponse = {
     key,
@@ -38,7 +42,9 @@ export async function cacheApiResponse<T>(key: string, data: T, ttlMs = 7 * 24 *
   await db.put(STORE_NAME, entry);
 }
 
-export async function getCachedApiResponse<T>(key: string): Promise<{ data: T; fresh: boolean } | null> {
+export async function getCachedApiResponse<T>(
+  key: string,
+): Promise<{ data: T; fresh: boolean } | null> {
   const db = await getDb();
   const entry = await db.get(STORE_NAME, key);
   if (!entry) return null;

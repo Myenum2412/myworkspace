@@ -1,28 +1,27 @@
-'use client';
+"use client";
 
-import { CheckCircle, FileText, Loader2, Upload, X } from '@/lib/icons';
-import type React from 'react';
-import { useRef, useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
+import type React from "react";
+import { useCallback, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { FolderIcon } from '@/lib/icons';
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { CheckCircle, FileText, FolderIcon, Loader2, Upload, X } from "@/lib/icons";
 
 interface UploadItem {
   id: string;
   name: string;
   size: number;
   progress: number;
-  status: 'pending' | 'uploading' | 'completed' | 'error';
+  status: "pending" | "uploading" | "completed" | "error";
   error?: string;
 }
 
@@ -52,7 +51,7 @@ export default function FileUpload06({
   projects,
   onUpload,
   maxSizeMB = 50,
-  acceptedFormats = 'image/png,image/jpeg,image/gif,application/pdf',
+  acceptedFormats = "image/png,image/jpeg,image/gif,application/pdf",
 }: FileUpload06Props) {
   const filePickerRef = useRef<HTMLInputElement>(null);
   const [uploads, setUploads] = useState<UploadItem[]>([]);
@@ -62,47 +61,52 @@ export default function FileUpload06({
     filePickerRef.current?.click();
   };
 
-  const addFiles = useCallback((fileList: FileList) => {
-    const newItems: UploadItem[] = Array.from(fileList).map((f) => ({
-      id: generateId(),
-      name: f.name,
-      size: f.size,
-      progress: 0,
-      status: 'pending' as const,
-    }));
-    setUploads((prev) => [...prev, ...newItems]);
+  const addFiles = useCallback(
+    (fileList: FileList) => {
+      const newItems: UploadItem[] = Array.from(fileList).map((f) => ({
+        id: generateId(),
+        name: f.name,
+        size: f.size,
+        progress: 0,
+        status: "pending" as const,
+      }));
+      setUploads((prev) => [...prev, ...newItems]);
 
-    Array.from(fileList).forEach((file, i) => {
-      const itemId = newItems[i].id;
-      setUploads((prev) =>
-        prev.map((u) => (u.id === itemId ? { ...u, status: 'uploading' as const } : u))
-      );
-      onUpload(file, selectedProject, (pct) => {
+      Array.from(fileList).forEach((file, i) => {
+        const itemId = newItems[i].id;
         setUploads((prev) =>
-          prev.map((u) => (u.id === itemId ? { ...u, progress: pct } : u))
+          prev.map((u) => (u.id === itemId ? { ...u, status: "uploading" as const } : u)),
         );
-      })
-        .then(() => {
-          setUploads((prev) =>
-            prev.map((u) => (u.id === itemId ? { ...u, status: 'completed' as const, progress: 100 } : u))
-          );
+        onUpload(file, selectedProject, (pct) => {
+          setUploads((prev) => prev.map((u) => (u.id === itemId ? { ...u, progress: pct } : u)));
         })
-        .catch((err) => {
-          setUploads((prev) =>
-            prev.map((u) =>
-              u.id === itemId ? { ...u, status: 'error' as const, error: err.message || 'Upload failed' } : u
-            )
-          );
-        });
-    });
-  }, [onUpload, selectedProject]);
+          .then(() => {
+            setUploads((prev) =>
+              prev.map((u) =>
+                u.id === itemId ? { ...u, status: "completed" as const, progress: 100 } : u,
+              ),
+            );
+          })
+          .catch((err) => {
+            setUploads((prev) =>
+              prev.map((u) =>
+                u.id === itemId
+                  ? { ...u, status: "error" as const, error: err.message || "Upload failed" }
+                  : u,
+              ),
+            );
+          });
+      });
+    },
+    [onUpload, selectedProject],
+  );
 
   const onFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files;
     if (selectedFiles && selectedFiles.length > 0) {
       addFiles(selectedFiles);
     }
-    if (filePickerRef.current) filePickerRef.current.value = '';
+    if (filePickerRef.current) filePickerRef.current.value = "";
   };
 
   const onDragOver = (event: React.DragEvent) => {
@@ -121,9 +125,9 @@ export default function FileUpload06({
     setUploads((prev) => prev.filter((file) => file.id !== id));
   };
 
-  const activeUploads = uploads.filter((f) => f.status === 'pending' || f.status === 'uploading');
-  const completedUploads = uploads.filter((f) => f.status === 'completed');
-  const failedUploads = uploads.filter((f) => f.status === 'error');
+  const activeUploads = uploads.filter((f) => f.status === "pending" || f.status === "uploading");
+  const completedUploads = uploads.filter((f) => f.status === "completed");
+  const failedUploads = uploads.filter((f) => f.status === "error");
 
   return (
     <div className="mx-auto flex w-full max-w-lg flex-col gap-y-6">
@@ -139,7 +143,9 @@ export default function FileUpload06({
             </SelectTrigger>
             <SelectContent>
               {projects.map((p) => (
-                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -156,14 +162,14 @@ export default function FileUpload06({
           <div className="flex items-center gap-x-2 text-muted-foreground">
             <Upload className="size-5" />
             <div>
-              Drop files here or{' '}
+              Drop files here or{" "}
               <Button
                 className="p-0 font-normal text-primary"
                 onClick={openFilePicker}
                 variant="link"
               >
                 browse files
-              </Button>{' '}
+              </Button>{" "}
               to add
             </div>
           </div>
@@ -213,10 +219,7 @@ export default function FileUpload06({
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <Progress
-                        className="mt-1 h-2 flex-1"
-                        value={file.progress}
-                      />
+                      <Progress className="mt-1 h-2 flex-1" value={file.progress} />
                     </div>
                   </div>
                 </div>
@@ -241,9 +244,7 @@ export default function FileUpload06({
                     <span className="select-none text-base/6 text-foreground sm:text-sm/6 truncate">
                       {file.name}
                     </span>
-                    {file.error && (
-                      <span className="text-xs text-destructive">{file.error}</span>
-                    )}
+                    {file.error && <span className="text-xs text-destructive">{file.error}</span>}
                   </div>
                   <Button
                     aria-label="Remove"

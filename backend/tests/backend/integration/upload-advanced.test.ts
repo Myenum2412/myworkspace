@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
-import { connectTestDb, resetDb } from "../../__helpers__/db.js";
-import { seedOrgWithAdmin } from "../../__helpers__/users.js";
-import { UploadSession } from "../../../src/lib/db/models/UploadSession.js";
 import { FileAttachment } from "../../../src/lib/db/models/FileAttachment.js";
 import { FileVersion } from "../../../src/lib/db/models/FileVersion.js";
+import { UploadSession } from "../../../src/lib/db/models/UploadSession.js";
 import { categorizeMime } from "../../../src/lib/uploads/enhanced-orchestrator.js";
+import { connectTestDb, resetDb } from "../../__helpers__/db.js";
+import { seedOrgWithAdmin } from "../../__helpers__/users.js";
 
 beforeAll(async () => {
   await connectTestDb();
@@ -45,7 +45,8 @@ describe("UploadSession Model", () => {
       uploaderId: a.userId,
       fileName: "test.txt",
       originalName: "test.txt",
-      mimeType: "text/plain", size: 100,
+      mimeType: "text/plain",
+      size: 100,
       status: "pending",
     });
 
@@ -57,27 +58,41 @@ describe("UploadSession Model", () => {
     const a = await seedOrgWithAdmin({ email: `us3-${Date.now()}@test.com` });
     const tusId = `dup-${Date.now()}`;
     await UploadSession.create({
-      tusId, uploadId: `up1-${Date.now()}`,
-      orgId: a.orgId, uploaderId: a.userId,
-      fileName: "a.txt", originalName: "a.txt",
-      mimeType: "text/plain", size: 100,
+      tusId,
+      uploadId: `up1-${Date.now()}`,
+      orgId: a.orgId,
+      uploaderId: a.userId,
+      fileName: "a.txt",
+      originalName: "a.txt",
+      mimeType: "text/plain",
+      size: 100,
     });
-    await expect(UploadSession.create({
-      tusId, uploadId: `up2-${Date.now()}`,
-      orgId: a.orgId, uploaderId: a.userId,
-      fileName: "b.txt", originalName: "b.txt",
-      mimeType: "text/plain", size: 200,
-    })).rejects.toThrow();
+    await expect(
+      UploadSession.create({
+        tusId,
+        uploadId: `up2-${Date.now()}`,
+        orgId: a.orgId,
+        uploaderId: a.userId,
+        fileName: "b.txt",
+        originalName: "b.txt",
+        mimeType: "text/plain",
+        size: 200,
+      }),
+    ).rejects.toThrow();
   });
 
   it("supports status transitions", async () => {
     const a = await seedOrgWithAdmin({ email: `us4-${Date.now()}@test.com` });
     const tusId = `trans-${Date.now()}`;
     await UploadSession.create({
-      tusId, uploadId: `up-${Date.now()}`,
-      orgId: a.orgId, uploaderId: a.userId,
-      fileName: "test.txt", originalName: "test.txt",
-      mimeType: "text/plain", size: 100,
+      tusId,
+      uploadId: `up-${Date.now()}`,
+      orgId: a.orgId,
+      uploaderId: a.userId,
+      fileName: "test.txt",
+      originalName: "test.txt",
+      mimeType: "text/plain",
+      size: 100,
       status: "pending",
     });
 
@@ -91,10 +106,14 @@ describe("UploadSession Model", () => {
     const a = await seedOrgWithAdmin({ email: `us5-${Date.now()}@test.com` });
     const tusId = `cancel-${Date.now()}`;
     await UploadSession.create({
-      tusId, uploadId: `up-${Date.now()}`,
-      orgId: a.orgId, uploaderId: a.userId,
-      fileName: "test.txt", originalName: "test.txt",
-      mimeType: "text/plain", size: 100,
+      tusId,
+      uploadId: `up-${Date.now()}`,
+      orgId: a.orgId,
+      uploaderId: a.userId,
+      fileName: "test.txt",
+      originalName: "test.txt",
+      mimeType: "text/plain",
+      size: 100,
       status: "pending",
     });
 
@@ -109,11 +128,16 @@ describe("FileAttachment Model", () => {
     const a = await seedOrgWithAdmin({ email: `fa-${Date.now()}@test.com` });
     const fileId = new mongoose.Types.ObjectId().toString();
     await FileAttachment.create({
-      id: fileId, orgId: a.orgId,
-      uploaderId: a.userId, createdBy: a.userId,
-      name: "test.txt", originalName: "test.txt",
-      mimeType: "text/plain", size: 100,
-      storagePath: "/test.txt", storageProvider: "local",
+      id: fileId,
+      orgId: a.orgId,
+      uploaderId: a.userId,
+      createdBy: a.userId,
+      name: "test.txt",
+      originalName: "test.txt",
+      mimeType: "text/plain",
+      size: 100,
+      storagePath: "/test.txt",
+      storageProvider: "local",
     });
 
     const file = await FileAttachment.findOne({ id: fileId }).lean();
@@ -125,11 +149,16 @@ describe("FileAttachment Model", () => {
     const b = await seedOrgWithAdmin({ email: `fa3-${Date.now()}@test.com` });
 
     await FileAttachment.create({
-      id: new mongoose.Types.ObjectId().toString(), orgId: a.orgId,
-      uploaderId: a.userId, createdBy: a.userId,
-      name: "secret.txt", originalName: "secret.txt",
-      mimeType: "text/plain", size: 100,
-      storagePath: "/s.txt", storageProvider: "local",
+      id: new mongoose.Types.ObjectId().toString(),
+      orgId: a.orgId,
+      uploaderId: a.userId,
+      createdBy: a.userId,
+      name: "secret.txt",
+      originalName: "secret.txt",
+      mimeType: "text/plain",
+      size: 100,
+      storagePath: "/s.txt",
+      storageProvider: "local",
     });
 
     const orgAFiles = await FileAttachment.countDocuments({ orgId: a.orgId });
@@ -142,11 +171,16 @@ describe("FileAttachment Model", () => {
     const a = await seedOrgWithAdmin({ email: `fa4-${Date.now()}@test.com` });
     const fileId = new mongoose.Types.ObjectId().toString();
     await FileAttachment.create({
-      id: fileId, orgId: a.orgId,
-      uploaderId: a.userId, createdBy: a.userId,
-      name: "del.txt", originalName: "del.txt",
-      mimeType: "text/plain", size: 100,
-      storagePath: "/del.txt", storageProvider: "local",
+      id: fileId,
+      orgId: a.orgId,
+      uploaderId: a.userId,
+      createdBy: a.userId,
+      name: "del.txt",
+      originalName: "del.txt",
+      mimeType: "text/plain",
+      size: 100,
+      storagePath: "/del.txt",
+      storageProvider: "local",
     });
 
     await FileAttachment.updateOne({ id: fileId }, { deletedAt: new Date() });
@@ -161,11 +195,16 @@ describe("FileAttachment Model", () => {
     const a = await seedOrgWithAdmin({ email: `fa5-${Date.now()}@test.com` });
     const fileId = new mongoose.Types.ObjectId().toString();
     await FileAttachment.create({
-      id: fileId, orgId: a.orgId,
-      uploaderId: a.userId, createdBy: a.userId,
-      name: "rst.txt", originalName: "rst.txt",
-      mimeType: "text/plain", size: 100,
-      storagePath: "/rst.txt", storageProvider: "local",
+      id: fileId,
+      orgId: a.orgId,
+      uploaderId: a.userId,
+      createdBy: a.userId,
+      name: "rst.txt",
+      originalName: "rst.txt",
+      mimeType: "text/plain",
+      size: 100,
+      storagePath: "/rst.txt",
+      storageProvider: "local",
       deletedAt: new Date(),
     });
 
@@ -178,11 +217,16 @@ describe("FileAttachment Model", () => {
     const a = await seedOrgWithAdmin({ email: `fa6-${Date.now()}@test.com` });
     const fileId = new mongoose.Types.ObjectId().toString();
     await FileAttachment.create({
-      id: fileId, orgId: a.orgId,
-      uploaderId: a.userId, createdBy: a.userId,
-      name: "meta.txt", originalName: "meta.txt",
-      mimeType: "text/plain", size: 100,
-      storagePath: "/meta.txt", storageProvider: "local",
+      id: fileId,
+      orgId: a.orgId,
+      uploaderId: a.userId,
+      createdBy: a.userId,
+      name: "meta.txt",
+      originalName: "meta.txt",
+      mimeType: "text/plain",
+      size: 100,
+      storagePath: "/meta.txt",
+      storageProvider: "local",
       description: "Important file",
       tags: ["urgent", "finance"],
     });
@@ -198,16 +242,26 @@ describe("FileVersion Model", () => {
     const a = await seedOrgWithAdmin({ email: `fv-${Date.now()}@test.com` });
     const fileId = new mongoose.Types.ObjectId().toString();
     await FileVersion.create({
-      fileId, orgId: a.orgId, versionNumber: 1,
-      storagePath: "/v1.txt", size: 100,
-      checksum: "abc", uploadedBy: a.userId,
-      mimeType: "text/plain", originalName: "v1.txt",
+      fileId,
+      orgId: a.orgId,
+      versionNumber: 1,
+      storagePath: "/v1.txt",
+      size: 100,
+      checksum: "abc",
+      uploadedBy: a.userId,
+      mimeType: "text/plain",
+      originalName: "v1.txt",
     });
     await FileVersion.create({
-      fileId, orgId: a.orgId, versionNumber: 2,
-      storagePath: "/v2.txt", size: 200,
-      checksum: "def", uploadedBy: a.userId,
-      mimeType: "text/plain", originalName: "v2.txt",
+      fileId,
+      orgId: a.orgId,
+      versionNumber: 2,
+      storagePath: "/v2.txt",
+      size: 200,
+      checksum: "def",
+      uploadedBy: a.userId,
+      mimeType: "text/plain",
+      originalName: "v2.txt",
     });
 
     const versions = await FileVersion.find({ fileId }).sort({ versionNumber: -1 }).lean();
@@ -236,7 +290,9 @@ describe("categorizeMime", () => {
   it("categorizes document files", () => {
     expect(categorizeMime("application/pdf")).toBe("document");
     expect(categorizeMime("application/msword")).toBe("document");
-    expect(categorizeMime("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).toBe("document");
+    expect(
+      categorizeMime("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+    ).toBe("document");
   });
 
   it("categorizes archive files", () => {
@@ -256,18 +312,24 @@ describe("File Pagination and Listing", () => {
     const a = await seedOrgWithAdmin({ email: `pg-${Date.now()}@test.com` });
     for (let i = 0; i < 25; i++) {
       await FileAttachment.create({
-        id: new mongoose.Types.ObjectId().toString(), orgId: a.orgId,
-        uploaderId: a.userId, createdBy: a.userId,
-        name: `f${i}.txt`, originalName: `f${i}.txt`,
-        mimeType: "text/plain", size: 100,
-        storagePath: `/f${i}.txt`, storageProvider: "local",
+        id: new mongoose.Types.ObjectId().toString(),
+        orgId: a.orgId,
+        uploaderId: a.userId,
+        createdBy: a.userId,
+        name: `f${i}.txt`,
+        originalName: `f${i}.txt`,
+        mimeType: "text/plain",
+        size: 100,
+        storagePath: `/f${i}.txt`,
+        storageProvider: "local",
       });
     }
 
     const total = await FileAttachment.countDocuments({ orgId: a.orgId, deletedAt: null });
     const page = await FileAttachment.find({ orgId: a.orgId, deletedAt: null })
       .sort({ createdAt: -1 })
-      .skip(0).limit(10)
+      .skip(0)
+      .limit(10)
       .lean();
 
     expect(total).toBe(25);
@@ -278,21 +340,36 @@ describe("File Pagination and Listing", () => {
     const a = await seedOrgWithAdmin({ email: `fl-${Date.now()}@test.com` });
     const folderId = new mongoose.Types.ObjectId().toString();
     await FileAttachment.create({
-      id: new mongoose.Types.ObjectId().toString(), orgId: a.orgId, folderId,
-      uploaderId: a.userId, createdBy: a.userId,
-      name: "in-folder.txt", originalName: "in-folder.txt",
-      mimeType: "text/plain", size: 100,
-      storagePath: "/f.txt", storageProvider: "local",
+      id: new mongoose.Types.ObjectId().toString(),
+      orgId: a.orgId,
+      folderId,
+      uploaderId: a.userId,
+      createdBy: a.userId,
+      name: "in-folder.txt",
+      originalName: "in-folder.txt",
+      mimeType: "text/plain",
+      size: 100,
+      storagePath: "/f.txt",
+      storageProvider: "local",
     });
     await FileAttachment.create({
-      id: new mongoose.Types.ObjectId().toString(), orgId: a.orgId,
-      uploaderId: a.userId, createdBy: a.userId,
-      name: "root.txt", originalName: "root.txt",
-      mimeType: "text/plain", size: 100,
-      storagePath: "/r.txt", storageProvider: "local",
+      id: new mongoose.Types.ObjectId().toString(),
+      orgId: a.orgId,
+      uploaderId: a.userId,
+      createdBy: a.userId,
+      name: "root.txt",
+      originalName: "root.txt",
+      mimeType: "text/plain",
+      size: 100,
+      storagePath: "/r.txt",
+      storageProvider: "local",
     });
 
-    const inFolder = await FileAttachment.countDocuments({ orgId: a.orgId, folderId, deletedAt: null });
+    const inFolder = await FileAttachment.countDocuments({
+      orgId: a.orgId,
+      folderId,
+      deletedAt: null,
+    });
     expect(inFolder).toBe(1);
   });
 
@@ -300,14 +377,24 @@ describe("File Pagination and Listing", () => {
     const a = await seedOrgWithAdmin({ email: `pj-${Date.now()}@test.com` });
     const projectId = new mongoose.Types.ObjectId().toString();
     await FileAttachment.create({
-      id: new mongoose.Types.ObjectId().toString(), orgId: a.orgId, projectId,
-      uploaderId: a.userId, createdBy: a.userId,
-      name: "project.txt", originalName: "project.txt",
-      mimeType: "text/plain", size: 100,
-      storagePath: "/p.txt", storageProvider: "local",
+      id: new mongoose.Types.ObjectId().toString(),
+      orgId: a.orgId,
+      projectId,
+      uploaderId: a.userId,
+      createdBy: a.userId,
+      name: "project.txt",
+      originalName: "project.txt",
+      mimeType: "text/plain",
+      size: 100,
+      storagePath: "/p.txt",
+      storageProvider: "local",
     });
 
-    const count = await FileAttachment.countDocuments({ orgId: a.orgId, projectId, deletedAt: null });
+    const count = await FileAttachment.countDocuments({
+      orgId: a.orgId,
+      projectId,
+      deletedAt: null,
+    });
     expect(count).toBe(1);
   });
 });

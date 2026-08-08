@@ -1,19 +1,28 @@
-import { Router, Response } from "express";
-import { authenticate, optionalAuth } from "../middleware/auth.js";
-import { AuthRequest } from "../types/index.js";
-import { AppError } from "../middleware/error.js";
-import { analyticsService, STANDARD_EVENTS, EVENT_CATEGORIES } from "../services/analytics/analytics.service.js";
-import { attributionService } from "../services/analytics/attribution.service.js";
+import { type Response, Router } from "express";
 import { logger } from "../lib/logger/index.js";
+import { authenticate, optionalAuth } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
+import {
+  analyticsService,
+  EVENT_CATEGORIES,
+  STANDARD_EVENTS,
+} from "../services/analytics/analytics.service.js";
+import { attributionService } from "../services/analytics/attribution.service.js";
+import type { AuthRequest } from "../types/index.js";
 
 const router = Router();
 
 router.post("/track", optionalAuth, async (req: AuthRequest, res: Response) => {
   try {
     const {
-      eventName, eventCategory, properties = {},
-      sessionId, pageUrl, referrer,
-      utm, attribution,
+      eventName,
+      eventCategory,
+      properties = {},
+      sessionId,
+      pageUrl,
+      referrer,
+      utm,
+      attribution,
     } = req.body;
 
     if (!eventName) {
@@ -28,7 +37,9 @@ router.post("/track", optionalAuth, async (req: AuthRequest, res: Response) => {
       anonymousId: req.cookies?.anonymous_id || req.body.anonymousId,
       sessionId,
       properties,
-      ipAddress: (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress,
+      ipAddress:
+        (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+        req.socket.remoteAddress,
       userAgent: req.headers["user-agent"],
       pageUrl,
       referrer,
@@ -43,7 +54,9 @@ router.post("/track", optionalAuth, async (req: AuthRequest, res: Response) => {
       pageUrl,
       referrer,
       utm,
-      ipAddress: (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress,
+      ipAddress:
+        (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+        req.socket.remoteAddress,
       userAgent: req.headers["user-agent"],
     });
 
@@ -82,7 +95,7 @@ router.post("/track/batch", optionalAuth, async (req: AuthRequest, res: Response
       } catch {
         results.failed++;
       }
-    })
+    }),
   );
 
   res.json({ success: true, data: results });

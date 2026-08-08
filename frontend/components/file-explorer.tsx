@@ -1,20 +1,18 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import {
-  Loader2Icon, CheckCircle2Icon, Trash2Icon,
-} from "@/lib/icons";
 import { UploadThingDropzone } from "@/components/elements/uploadthing-dropzone";
 import { FilePreviewDialog } from "@/components/file-preview-dialog";
 import { FileShareDialog } from "@/components/file-share-dialog";
-import { useFiles, useFileMutations } from "@/hooks/use-files";
-import { FileItem, FolderItem, ViewMode, formatSize } from "./files/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useFileMutations, useFiles } from "@/hooks/use-files";
+import { CheckCircle2Icon, Loader2Icon, Trash2Icon } from "@/lib/icons";
 import { FileBreadcrumb } from "./files/file-breadcrumb";
-import { FileToolbar } from "./files/file-toolbar";
 import { FileList } from "./files/file-list";
+import { FileToolbar } from "./files/file-toolbar";
+import { type FileItem, FolderItem, formatSize, type ViewMode } from "./files/types";
 
 interface FileExplorerProps {
   orgId: string;
@@ -25,14 +23,29 @@ interface FileExplorerProps {
   projectId?: string;
 }
 
-export function FileExplorer({ orgId, userId, clientId = null, moduleName, entityId, projectId }: FileExplorerProps) {
+export function FileExplorer({
+  orgId,
+  userId,
+  clientId = null,
+  moduleName,
+  entityId,
+  projectId,
+}: FileExplorerProps) {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([{ id: null, name: "Files" }]);
+  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([
+    { id: null, name: "Files" },
+  ]);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<string>("-createdAt");
 
-  const { files, folders, loading } = useFiles({ orgId, folderId: currentFolderId, clientId, search, sort: sortBy });
+  const { files, folders, loading } = useFiles({
+    orgId,
+    folderId: currentFolderId,
+    clientId,
+    search,
+    sort: sortBy,
+  });
   const fileMutations = useFileMutations(orgId);
 
   const [showUpload, setShowUpload] = useState(false);
@@ -48,7 +61,11 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
   const [newFolderName, setNewFolderName] = useState("");
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [confirmDelete, setConfirmDelete] = useState<{ id: string; type: "file" | "folder"; name: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{
+    id: string;
+    type: "file" | "folder";
+    name: string;
+  } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const [propertiesOpen, setPropertiesOpen] = useState(false);
@@ -67,24 +84,30 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
   const navigateToFolder = useCallback(async (folderId: string | null, folderName?: string) => {
     setCurrentFolderId(folderId);
     if (folderId && folderName) {
-      setBreadcrumbs(prev => [...prev, { id: folderId, name: folderName }]);
+      setBreadcrumbs((prev) => [...prev, { id: folderId, name: folderName }]);
     } else if (!folderId) {
       setBreadcrumbs([{ id: null, name: "Files" }]);
     }
     setSelectedIds(new Set());
   }, []);
 
-  const navigateToBreadcrumb = useCallback(async (index: number) => {
-    const target = breadcrumbs[index];
-    setCurrentFolderId(target.id);
-    setBreadcrumbs(breadcrumbs.slice(0, index + 1));
-    setSelectedIds(new Set());
-  }, [breadcrumbs]);
+  const navigateToBreadcrumb = useCallback(
+    async (index: number) => {
+      const target = breadcrumbs[index];
+      setCurrentFolderId(target.id);
+      setBreadcrumbs(breadcrumbs.slice(0, index + 1));
+      setSelectedIds(new Set());
+    },
+    [breadcrumbs],
+  );
 
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) return;
     try {
-      await fileMutations.createFolder.mutateAsync({ name: newFolderName.trim(), parentId: currentFolderId });
+      await fileMutations.createFolder.mutateAsync({
+        name: newFolderName.trim(),
+        parentId: currentFolderId,
+      });
       setNewFolderName("");
       setShowNewFolder(false);
     } catch {}
@@ -122,7 +145,10 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
     try {
       const [folderRes, filesRes] = await Promise.all([
         fetch(`/api/folders/${folderId}`, { credentials: "include" }),
-        fetch(`/api/files?orgId=${encodeURIComponent(orgId)}&folderId=${encodeURIComponent(folderId)}`, { credentials: "include" }),
+        fetch(
+          `/api/files?orgId=${encodeURIComponent(orgId)}&folderId=${encodeURIComponent(folderId)}`,
+          { credentials: "include" },
+        ),
       ]);
       const folderData = await folderRes.json();
       const filesData = await filesRes.json();
@@ -147,7 +173,8 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
   const duplicateFile = async (fileId: string) => {
     try {
       await fetch(`/api/files/${fileId}/duplicate`, {
-        method: "POST", credentials: "include",
+        method: "POST",
+        credentials: "include",
       });
       fileMutations.invalidateFiles();
     } catch {}
@@ -157,14 +184,15 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
     try {
       const action = locked ? "unlock" : "lock";
       await fetch(`/api/files/${fileId}/${action}`, {
-        method: "POST", credentials: "include",
+        method: "POST",
+        credentials: "include",
       });
       fileMutations.invalidateFiles();
     } catch {}
   };
 
   const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -180,7 +208,8 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
   const doBulkDelete = async () => {
     try {
       await fetch("/api/files/bulk-delete", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ fileIds: Array.from(selectedIds) }),
       });
@@ -266,7 +295,10 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
         onNewFolderNameChange={setNewFolderName}
         onToggleNewFolder={() => setShowNewFolder(!showNewFolder)}
         onCreateFolder={handleCreateFolder}
-        onCancelNewFolder={() => { setShowNewFolder(false); setNewFolderName(""); }}
+        onCancelNewFolder={() => {
+          setShowNewFolder(false);
+          setNewFolderName("");
+        }}
         onRefresh={fileMutations.invalidateFiles}
       />
 
@@ -281,10 +313,16 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
         onToggleSelect={toggleSelect}
         onSelectAll={selectAll}
         onNavigateToFolder={navigateToFolder}
-        onPreviewFile={(file) => { setPreviewFile(file); setPreviewOpen(true); }}
+        onPreviewFile={(file) => {
+          setPreviewFile(file);
+          setPreviewOpen(true);
+        }}
         onDownloadFile={handleDownload}
         onDuplicateFile={duplicateFile}
-        onShareFile={(file) => { setShareFile(file); setShareOpen(true); }}
+        onShareFile={(file) => {
+          setShareFile(file);
+          setShareOpen(true);
+        }}
         onToggleLock={toggleLock}
         onConfirmDelete={confirmDeleteItem}
         onFolderProperties={openFolderProperties}
@@ -300,24 +338,51 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
       />
 
       {renamingId && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setRenamingId(null)}>
-          <div className="bg-background rounded-sm p-4 w-80" onClick={e => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+          onClick={() => setRenamingId(null)}
+        >
+          <div className="bg-background rounded-sm p-4 w-80" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-sm font-medium mb-2">Rename</h3>
-            <Input value={renameValue} onChange={e => setRenameValue(e.target.value)} onKeyDown={e => {
-              if (e.key === "Enter") handleRename(renamingId, files.find((f: FileItem) => f.id === renamingId) ? "file" : "folder");
-              if (e.key === "Escape") setRenamingId(null);
-            }} autoFocus />
+            <Input
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter")
+                  handleRename(
+                    renamingId,
+                    files.find((f: FileItem) => f.id === renamingId) ? "file" : "folder",
+                  );
+                if (e.key === "Escape") setRenamingId(null);
+              }}
+              autoFocus
+            />
             <div className="flex justify-end gap-2 mt-3">
-              <Button variant="outline" size="sm" onClick={() => setRenamingId(null)}>Cancel</Button>
-              <Button size="sm" onClick={() => handleRename(renamingId, files.find((f: FileItem) => f.id === renamingId) ? "file" : "folder")}>Save</Button>
+              <Button variant="outline" size="sm" onClick={() => setRenamingId(null)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={() =>
+                  handleRename(
+                    renamingId,
+                    files.find((f: FileItem) => f.id === renamingId) ? "file" : "folder",
+                  )
+                }
+              >
+                Save
+              </Button>
             </div>
           </div>
         </div>
       )}
 
       {confirmDelete && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setConfirmDelete(null)}>
-          <div className="bg-background rounded-sm p-5 w-96" onClick={e => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+          onClick={() => setConfirmDelete(null)}
+        >
+          <div className="bg-background rounded-sm p-5 w-96" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-base font-semibold mb-2">Confirm Delete</h3>
             <p className="text-sm text-muted-foreground mb-2">
               Are you sure you want to delete <strong>{confirmDelete.name}</strong>?
@@ -328,8 +393,14 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
                 : "The file will be moved to trash."}
             </p>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => setConfirmDelete(null)}>Cancel</Button>
-              <Button size="sm" variant="destructive" onClick={() => handleDelete(confirmDelete.id, confirmDelete.type)}>
+              <Button variant="outline" size="sm" onClick={() => setConfirmDelete(null)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => handleDelete(confirmDelete.id, confirmDelete.type)}
+              >
                 <Trash2Icon className="mr-1" /> Delete
               </Button>
             </div>
@@ -349,10 +420,21 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
         open={previewOpen}
         onOpenChange={setPreviewOpen}
         orgId={orgId}
-        onDelete={(id: string) => { setPreviewOpen(false); const f = files.find((fi: FileItem) => fi.id === id); confirmDeleteItem(id, "file", f?.originalName || id); }}
-        onDuplicate={(id) => { setPreviewOpen(false); duplicateFile(id); }}
+        onDelete={(id: string) => {
+          setPreviewOpen(false);
+          const f = files.find((fi: FileItem) => fi.id === id);
+          confirmDeleteItem(id, "file", f?.originalName || id);
+        }}
+        onDuplicate={(id) => {
+          setPreviewOpen(false);
+          duplicateFile(id);
+        }}
         onLockToggle={(id, locked) => toggleLock(id, locked)}
-        onShare={(file) => { setPreviewOpen(false); setShareFile(file); setShareOpen(true); }}
+        onShare={(file) => {
+          setPreviewOpen(false);
+          setShareFile(file);
+          setShareOpen(true);
+        }}
       />
 
       {shareFile && (
@@ -366,8 +448,14 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
       )}
 
       {propertiesOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => { setPropertiesOpen(false); setPropertiesData(null); }}>
-          <div className="bg-background rounded-sm p-5 w-96" onClick={e => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+          onClick={() => {
+            setPropertiesOpen(false);
+            setPropertiesData(null);
+          }}
+        >
+          <div className="bg-background rounded-sm p-5 w-96" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-base font-semibold mb-4">Folder Properties</h3>
             {propertiesLoading ? (
               <div className="flex items-center justify-center py-8">
@@ -391,15 +479,28 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
                 )}
                 <div className="border-t pt-3">
                   <span className="text-muted-foreground text-xs">Contents</span>
-                  <p className="mt-1">{propertiesData.fileCount} file{propertiesData.fileCount !== 1 ? "s" : ""}</p>
-                  <p className="text-muted-foreground">{propertiesData.totalSize > 0 ? formatSize(propertiesData.totalSize) : "0 B"}</p>
+                  <p className="mt-1">
+                    {propertiesData.fileCount} file{propertiesData.fileCount !== 1 ? "s" : ""}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {propertiesData.totalSize > 0 ? formatSize(propertiesData.totalSize) : "0 B"}
+                  </p>
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground py-4">Failed to load folder properties.</p>
+              <p className="text-sm text-muted-foreground py-4">
+                Failed to load folder properties.
+              </p>
             )}
             <div className="flex justify-end mt-4">
-              <Button variant="outline" size="sm" onClick={() => { setPropertiesOpen(false); setPropertiesData(null); }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setPropertiesOpen(false);
+                  setPropertiesData(null);
+                }}
+              >
                 Close
               </Button>
             </div>
@@ -409,5 +510,3 @@ export function FileExplorer({ orgId, userId, clientId = null, moduleName, entit
     </div>
   );
 }
-
-

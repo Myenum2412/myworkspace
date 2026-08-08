@@ -1,12 +1,16 @@
-import { MongoClient } from "mongodb";
-import { readFileSync } from "fs";
 import bcrypt from "bcryptjs";
+import { readFileSync } from "fs";
+import { MongoClient } from "mongodb";
+
 const env = readFileSync("/var/www/myworkspace-backend/source/backend/.env", "utf8");
 const m = env.match(/^MONGODB_URI=['"]?(.+?)['"]?$/m);
 const uri = m ? m[1].trim() : null;
 const c = new MongoClient(uri);
 await c.connect();
-const user = await c.db("myworkspace").collection("users").findOne({ email: "developer@myenum.in" });
+const user = await c
+  .db("myworkspace")
+  .collection("users")
+  .findOne({ email: "developer@myenum.in" });
 console.log("Password hash:", user.password?.substring(0, 30) + "...");
 const valid = await bcrypt.compare("Test123!", user.password);
 console.log("Test123! valid:", valid);

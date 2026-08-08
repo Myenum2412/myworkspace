@@ -1,17 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { useFileMutations, useFolderTree } from "@/hooks/file-system/use-file-data";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,12 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useFileMutations, useFolderTree } from "@/hooks/file-system/use-file-data";
+import { useFileSystemStore } from "@/lib/file-system/store";
 import {
-  FolderPlusIcon,
-  FolderInputIcon,
+  ChevronRightIcon,
   CopyIcon,
   FolderIcon,
-  ChevronRightIcon,
+  FolderInputIcon,
+  FolderPlusIcon,
 } from "@/lib/icons";
 
 export function CreateFolderDialog() {
@@ -35,7 +35,12 @@ export function CreateFolderDialog() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  useEffect(() => { if (!isCreatingFolder) { setName(""); setDescription(""); } }, [isCreatingFolder]);
+  useEffect(() => {
+    if (!isCreatingFolder) {
+      setName("");
+      setDescription("");
+    }
+  }, [isCreatingFolder]);
 
   async function handleCreate() {
     if (!name.trim()) return;
@@ -45,7 +50,9 @@ export function CreateFolderDialog() {
         parentId: currentFolderId,
       });
       setIsCreatingFolder(false);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return (
@@ -64,7 +71,9 @@ export function CreateFolderDialog() {
               placeholder="e.g., Documents, Reports, Projects"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleCreate();
+              }}
               autoFocus
             />
           </div>
@@ -78,7 +87,9 @@ export function CreateFolderDialog() {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsCreatingFolder(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => setIsCreatingFolder(false)}>
+            Cancel
+          </Button>
           <Button onClick={handleCreate} disabled={!name.trim() || createFolderMutation.isPending}>
             {createFolderMutation.isPending ? "Creating..." : "Create"}
           </Button>
@@ -106,11 +117,18 @@ export function RenameDialog() {
         await renameFolderMutation.mutateAsync({ id: renameTarget.id, name: name.trim() });
       }
       setRenameTarget(null);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return (
-    <Dialog open={!!renameTarget} onOpenChange={(o) => { if (!o) setRenameTarget(null); }}>
+    <Dialog
+      open={!!renameTarget}
+      onOpenChange={(o) => {
+        if (!o) setRenameTarget(null);
+      }}
+    >
       <DialogContent className="">
         <DialogHeader>
           <DialogTitle>Rename</DialogTitle>
@@ -123,13 +141,19 @@ export function RenameDialog() {
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") handleRename(); }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleRename();
+            }}
             autoFocus
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setRenameTarget(null)}>Cancel</Button>
-          <Button onClick={handleRename} disabled={!name.trim()}>Rename</Button>
+          <Button variant="outline" onClick={() => setRenameTarget(null)}>
+            Cancel
+          </Button>
+          <Button onClick={handleRename} disabled={!name.trim()}>
+            Rename
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -146,7 +170,8 @@ export function MoveDialog() {
     if (!nodes) return [];
     return nodes.flatMap((node) => [
       <SelectItem key={node.id} value={node.id}>
-        {"\u00A0".repeat(depth * 2)}{node.name}
+        {"\u00A0".repeat(depth * 2)}
+        {node.name}
       </SelectItem>,
       ...(node.children ? renderTree(node.children, depth + 1) : []),
     ]);
@@ -157,16 +182,26 @@ export function MoveDialog() {
     try {
       const targetId = targetFolderId === "root" ? null : targetFolderId;
       if (moveTarget.type === "file") {
-        await moveFileMutation.mutateAsync({ ids: [moveTarget.id], targetFolderId: targetId || "" });
+        await moveFileMutation.mutateAsync({
+          ids: [moveTarget.id],
+          targetFolderId: targetId || "",
+        });
       } else {
         await moveFolderMutation.mutateAsync({ id: moveTarget.id, parentId: targetId });
       }
       setMoveTarget(null);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return (
-    <Dialog open={!!moveTarget} onOpenChange={(o) => { if (!o) setMoveTarget(null); }}>
+    <Dialog
+      open={!!moveTarget}
+      onOpenChange={(o) => {
+        if (!o) setMoveTarget(null);
+      }}
+    >
       <DialogContent className="">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -188,7 +223,9 @@ export function MoveDialog() {
           </Select>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setMoveTarget(null)}>Cancel</Button>
+          <Button variant="outline" onClick={() => setMoveTarget(null)}>
+            Cancel
+          </Button>
           <Button onClick={handleMove}>Move</Button>
         </DialogFooter>
       </DialogContent>

@@ -1,8 +1,8 @@
-"use client"
-import { FolderIcon } from "@/lib/icons";
-import { DataTable as SharedDataTable } from "@/components/data-table";
+"use client";
 import type { ColumnDef } from "@tanstack/react-table";
+import { DataTable as SharedDataTable } from "@/components/data-table";
 import { useIndustry } from "@/components/industry-provider";
+import { FolderIcon } from "@/lib/icons";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -11,7 +11,7 @@ interface DataTableProps<TData, TValue> {
 }
 
 function hexToRgba(hex: string, alpha: number) {
-  const c = hex.replace('#', '');
+  const c = hex.replace("#", "");
   const r = parseInt(c.substring(0, 2), 16);
   const g = parseInt(c.substring(2, 4), 16);
   const b = parseInt(c.substring(4, 6), 16);
@@ -34,11 +34,7 @@ function getProjectDueStatus(row: Record<string, unknown>): "overdue" | "due-soo
   return "normal";
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-  meta,
-}: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, meta }: DataTableProps<TData, TValue>) {
   const { t } = useIndustry();
   return (
     <SharedDataTable
@@ -53,7 +49,7 @@ export function DataTable<TData, TValue>({
         const r = row as Record<string, unknown>;
         const dueStatus = getProjectDueStatus(r);
         const projectColor = r.color as string | undefined;
-        let className = r.className as string || "";
+        let className = (r.className as string) || "";
         const style: Record<string, string> = {};
         if (dueStatus === "overdue") {
           className += " bg-red-50";

@@ -1,14 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import type { ObjectId } from "mongodb";
+import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -23,11 +20,22 @@ export async function GET(
       .sort({ createdAt: 1 })
       .toArray();
 
-    const userIds = [...new Set(comments.map((c: Record<string, unknown>) => c.senderId as string))];
-    const users = userIds.length > 0
-      ? await db.collection(collections.users).find({ id: { $in: userIds } }, { projection: { id: 1, name: 1, image: 1 } }).toArray()
-      : [];
-    const userMap = new Map((users as unknown as Record<string, unknown>[]).map((u) => [u.id as string, { name: u.name as string || "", image: u.image as string || "" }]));
+    const userIds = [
+      ...new Set(comments.map((c: Record<string, unknown>) => c.senderId as string)),
+    ];
+    const users =
+      userIds.length > 0
+        ? await db
+            .collection(collections.users)
+            .find({ id: { $in: userIds } }, { projection: { id: 1, name: 1, image: 1 } })
+            .toArray()
+        : [];
+    const userMap = new Map(
+      (users as unknown as Record<string, unknown>[]).map((u) => [
+        u.id as string,
+        { name: (u.name as string) || "", image: (u.image as string) || "" },
+      ]),
+    );
 
     const data = (comments as unknown as Record<string, unknown>[]).map((c) => {
       const sender = userMap.get(c.senderId as string);
@@ -46,14 +54,11 @@ export async function GET(
 
     return NextResponse.json({ data });
   } catch {
-      return NextResponse.json({ error: "Could not load comments" }, { status: 500 });
+    return NextResponse.json({ error: "Could not load comments" }, { status: 500 });
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -73,12 +78,14 @@ export async function POST(
       senderName: session.user.name || "",
       senderAvatar: session.user.image || "",
       content: (content || "").trim(),
-      attachments: Array.isArray(attachments) ? attachments.map((a) => ({
-        id: a.id,
-        name: a.name || a.originalName || "",
-        size: a.size || 0,
-        type: a.type || a.mimeType || "application/octet-stream",
-      })) : [],
+      attachments: Array.isArray(attachments)
+        ? attachments.map((a) => ({
+            id: a.id,
+            name: a.name || a.originalName || "",
+            size: a.size || 0,
+            type: a.type || a.mimeType || "application/octet-stream",
+          }))
+        : [],
       createdAt: new Date(),
       seenBy: [session.user.id],
     };
@@ -102,12 +109,15 @@ export async function POST(
       }
     } catch {}
 
-    return NextResponse.json({
-      data: {
-        id: result.insertedId.toString(),
-        ...doc,
+    return NextResponse.json(
+      {
+        data: {
+          id: result.insertedId.toString(),
+          ...doc,
+        },
       },
-    }, { status: 201 });
+      { status: 201 },
+    );
   } catch {
     return NextResponse.json({ error: "Failed to create comment" }, { status: 500 });
   }

@@ -1,19 +1,25 @@
 import { compare } from "bcryptjs";
 import crypto from "crypto";
 import { v4 as uuid } from "uuid";
-import { User } from "../lib/db/models/User.js";
+import { signRefreshToken, signToken } from "../config/auth.js";
 import { ClientUser } from "../lib/db/models/ClientUser.js";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
-import { Session } from "../lib/db/models/Session.js";
 import { RefreshToken } from "../lib/db/models/RefreshToken.js";
-import { signToken, signRefreshToken } from "../config/auth.js";
+import { Session } from "../lib/db/models/Session.js";
+import { User } from "../lib/db/models/User.js";
 import { AppError } from "../middleware/error.js";
 import { recordAuditLog } from "./audit.service.js";
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
 
-export type AuthMethod = "password" | "oauth" | "sso" | "api_key" | "recovery_code" | "impersonation";
+export type AuthMethod =
+  | "password"
+  | "oauth"
+  | "sso"
+  | "api_key"
+  | "recovery_code"
+  | "impersonation";
 
 export interface AuthPipelineOptions {
   email: string;
@@ -59,7 +65,7 @@ export async function executeAuthPipeline(opts: AuthPipelineOptions): Promise<Au
   }
 
   const resolvedOrgId = isStaffUser
-    ? (user as any).orgId || await getPrimaryOrgId((user as any).id) || ""
+    ? (user as any).orgId || (await getPrimaryOrgId((user as any).id)) || ""
     : (user as any).orgId || "";
 
   clearFailedAttempts(user);
@@ -82,11 +88,20 @@ export async function executeAuthPipeline(opts: AuthPipelineOptions): Promise<Au
   });
 
   await logAuditEvent("user.login", user, resolvedOrgId, {
-    ipAddress, userAgent, riskScore: 0, riskLevel: "low",
+    ipAddress,
+    userAgent,
+    riskScore: 0,
+    riskLevel: "low",
     metadata: { authMethod: opts.authMethod },
   });
 
-  const [jwtToken, refreshTokenStr, refreshFamily] = await issueTokens(user, resolvedOrgId, ipAddress, userAgent, opts.deviceFingerprint);
+  const [jwtToken, refreshTokenStr, refreshFamily] = await issueTokens(
+    user,
+    resolvedOrgId,
+    ipAddress,
+    userAgent,
+    opts.deviceFingerprint,
+  );
 
   return {
     success: true,
@@ -102,14 +117,18 @@ export async function executeAuthPipeline(opts: AuthPipelineOptions): Promise<Au
 }
 
 async function resolveUser(email: string): Promise<any> {
-  let user = await User.findOne({ email }).select(
-    "id userNumber email password name role permissions status isActive lockedUntil failedLoginAttempts orgId emailVerified image lastLogin tokenVersion createdBy"
-  ).lean();
+  let user = await User.findOne({ email })
+    .select(
+      "id userNumber email password name role permissions status isActive lockedUntil failedLoginAttempts orgId emailVerified image lastLogin tokenVersion createdBy",
+    )
+    .lean();
 
   if (!user) {
-    user = await ClientUser.findOne({ email }).select(
-      "id email password name isActive lockedUntil failedLoginAttempts lastLogin orgId clientId"
-    ).lean() as any;
+    user = (await ClientUser.findOne({ email })
+      .select(
+        "id email password name isActive lockedUntil failedLoginAttempts lastLogin orgId clientId",
+      )
+      .lean()) as any;
   }
 
   return user;
@@ -157,7 +176,13 @@ async function verifyPassword(user: any, password: string): Promise<void> {
   }
 }
 
-async function issueTokens(user: any, orgId: string, ipAddress: string, userAgent: string, deviceFingerprint?: string): Promise<[string, string, string]> {
+async function issueTokens(
+  user: any,
+  orgId: string,
+  ipAddress: string,
+  userAgent: string,
+  deviceFingerprint?: string,
+): Promise<[string, string, string]> {
   const refreshFamily = uuid();
   const refreshTokenStr = signRefreshToken({
     userId: user.id,
@@ -220,14 +245,17 @@ async function saveUserChange(user: any): Promise<void> {
     };
     await (ClientUser as any).updateOne({ id: user.id }, { $set: update });
   } else {
-    await (User as any).updateOne({ id: user.id }, {
-      $set: {
-        failedLoginAttempts: user.failedLoginAttempts,
-        lockedUntil: user.lockedUntil,
-        lastLogin: user.lastLogin,
-        status: user.status,
+    await (User as any).updateOne(
+      { id: user.id },
+      {
+        $set: {
+          failedLoginAttempts: user.failedLoginAttempts,
+          lockedUntil: user.lockedUntil,
+          lastLogin: user.lastLogin,
+          status: user.status,
+        },
       },
-    });
+    );
   }
 }
 
@@ -308,7 +336,7 @@ export async function verifyRefreshTokenPipeline(
   }
 
   const user = await User.findOne({ id: payload.userId }).select(
-    "id email name role permissions orgId tokenVersion isActive"
+    "id email name role permissions orgId tokenVersion isActive",
   );
 
   if (!user) throw new AppError(401, "User not found");
@@ -346,7 +374,8 @@ export async function verifyRefreshTokenPipeline(
   });
 
   const existingSession = await Session.findOne({ userId: user.id, isActive: true })
-    .sort({ lastActivityAt: -1 }).lean();
+    .sort({ lastActivityAt: -1 })
+    .lean();
 
   return {
     token: jwtToken,
@@ -355,6 +384,10 @@ export async function verifyRefreshTokenPipeline(
   };
 }
 
-export async function checkOrgMfaPolicy(_userId: string, _orgId: string, _role: string): Promise<{ mfaRequired: boolean; inGracePeriod: boolean; gracePeriodEndsAt: Date | null }> {
+export async function checkOrgMfaPolicy(
+  _userId: string,
+  _orgId: string,
+  _role: string,
+): Promise<{ mfaRequired: boolean; inGracePeriod: boolean; gracePeriodEndsAt: Date | null }> {
   return { mfaRequired: false, inGracePeriod: false, gracePeriodEndsAt: null };
 }

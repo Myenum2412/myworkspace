@@ -2,9 +2,10 @@
 
 import { useActionState } from "react";
 import { saveSettings } from "@/actions/settings";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -12,8 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Settings2Icon, PaletteIcon, CheckCircle2Icon, AlertCircleIcon } from "@/lib/icons";
+import { AlertCircleIcon, CheckCircle2Icon, PaletteIcon, Settings2Icon } from "@/lib/icons";
 
 interface SettingsFormInteractiveProps {
   initial: {
@@ -27,7 +27,10 @@ export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProp
   const [state, formAction, pending] = useActionState(saveSettings, null);
 
   return (
-    <form action={formAction} className="[&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+    <form
+      action={formAction}
+      className="[&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white"
+    >
       {state?.success && (
         <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-400 rounded-sm px-3 py-2 mb-4">
           <CheckCircle2Icon className="size-4" />

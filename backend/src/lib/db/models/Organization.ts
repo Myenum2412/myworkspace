@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 
 export interface IOrganization extends Document {
@@ -67,15 +67,22 @@ const organizationSchema = new Schema<IOrganization>(
     authorizedPersonMobile: String,
     numberOfEmployees: Number,
     companyDescription: String,
-    plan: { type: String, enum: ["free", "trial", "starter", "professional", "enterprise"], default: "free" },
+    plan: {
+      type: String,
+      enum: ["free", "trial", "starter", "professional", "enterprise"],
+      default: "free",
+    },
     ownerId: { type: String, required: true },
     createdBy: { type: String, required: true },
     updatedBy: { type: String },
-    subscriptionStatus: { type: String, enum: ["active", "past_due", "canceled", "trialing", "expired"] },
+    subscriptionStatus: {
+      type: String,
+      enum: ["active", "past_due", "canceled", "trialing", "expired"],
+    },
     currentPeriodEnd: Date,
     trialEnd: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Organization = model<IOrganization>("Organization", organizationSchema);

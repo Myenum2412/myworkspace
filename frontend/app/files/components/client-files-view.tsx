@@ -1,12 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { Building2Icon, FolderIcon, FileIcon, ChevronRightIcon, Loader2Icon, SearchIcon, ArrowLeftIcon, DownloadIcon, FolderOpenIcon } from "@/lib/icons";
-import { Input } from "@/components/ui/input";
+import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useFileSystemStore } from "@/lib/file-system/store";
 import { formatSize } from "@/lib/file-system/types";
+import {
+  ArrowLeftIcon,
+  Building2Icon,
+  ChevronRightIcon,
+  DownloadIcon,
+  FileIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  Loader2Icon,
+  SearchIcon,
+} from "@/lib/icons";
 
 type ClientRecord = {
   id: string;
@@ -44,11 +54,17 @@ export function ClientFilesView() {
   const setBreadcrumbs = useFileSystemStore((s) => s.setBreadcrumbs);
   const { orgId } = useFileSystemStore();
 
-  const openFolder = useCallback((folder: FolderRecord) => {
-    setBreadcrumbs([{ id: null, name: "My Files" }, { id: folder.id, name: folder.name }]);
-    setCurrentFolder(folder.id);
-    setCurrentNav("files");
-  }, [setBreadcrumbs, setCurrentFolder, setCurrentNav]);
+  const openFolder = useCallback(
+    (folder: FolderRecord) => {
+      setBreadcrumbs([
+        { id: null, name: "My Files" },
+        { id: folder.id, name: folder.name },
+      ]);
+      setCurrentFolder(folder.id);
+      setCurrentNav("files");
+    },
+    [setBreadcrumbs, setCurrentFolder, setCurrentNav],
+  );
 
   useEffect(() => {
     if (!orgId) return;
@@ -57,7 +73,15 @@ export function ClientFilesView() {
       .then((r) => r.json())
       .then((d) => {
         const arr: Record<string, unknown>[] = d.data || d.initialClients || d.clients || [];
-        setClients(arr.map((c: any) => ({ id: c.id, name: c.name, company: c.company || "", email: c.email || "", status: c.status || "Active" })));
+        setClients(
+          arr.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            company: c.company || "",
+            email: c.email || "",
+            status: c.status || "Active",
+          })),
+        );
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -67,8 +91,14 @@ export function ClientFilesView() {
     if (!selectedClient || !orgId) return;
     setFilesLoading(true);
     Promise.all([
-      fetch(`/api/files?orgId=${encodeURIComponent(orgId)}&clientId=${encodeURIComponent(selectedClient.id)}`, { credentials: "include" }).then(r => r.json()),
-      fetch(`/api/folders?orgId=${encodeURIComponent(orgId)}&clientId=${encodeURIComponent(selectedClient.id)}`, { credentials: "include" }).then(r => r.json()),
+      fetch(
+        `/api/files?orgId=${encodeURIComponent(orgId)}&clientId=${encodeURIComponent(selectedClient.id)}`,
+        { credentials: "include" },
+      ).then((r) => r.json()),
+      fetch(
+        `/api/folders?orgId=${encodeURIComponent(orgId)}&clientId=${encodeURIComponent(selectedClient.id)}`,
+        { credentials: "include" },
+      ).then((r) => r.json()),
     ])
       .then(([filesRes, foldersRes]) => {
         setClientFiles(filesRes.data || []);
@@ -78,15 +108,23 @@ export function ClientFilesView() {
       .finally(() => setFilesLoading(false));
   }, [selectedClient, orgId]);
 
-  const filtered = clients.filter((c) =>
-    !search.trim() || c.name.toLowerCase().includes(search.toLowerCase()) || c.company.toLowerCase().includes(search.toLowerCase())
+  const filtered = clients.filter(
+    (c) =>
+      !search.trim() ||
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.company.toLowerCase().includes(search.toLowerCase()),
   );
 
   if (selectedClient) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => setSelectedClient(null)} className="gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedClient(null)}
+            className="gap-1.5"
+          >
             <ArrowLeftIcon className="size-4" />
             Back
           </Button>
@@ -97,7 +135,9 @@ export function ClientFilesView() {
             </div>
             <div>
               <h2 className="text-sm font-semibold">{selectedClient.name}</h2>
-              <p className="text-xs text-muted-foreground">{selectedClient.company || selectedClient.email}</p>
+              <p className="text-xs text-muted-foreground">
+                {selectedClient.company || selectedClient.email}
+              </p>
             </div>
           </div>
         </div>
@@ -174,7 +214,11 @@ export function ClientFilesView() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   if (clients.length === 0) {
@@ -191,12 +235,21 @@ export function ClientFilesView() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2"><Building2Icon className="size-4" /> Client Files</h2>
-          <p className="text-sm text-muted-foreground">{clients.length} client{clients.length !== 1 ? "s" : ""}</p>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Building2Icon className="size-4" /> Client Files
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {clients.length} client{clients.length !== 1 ? "s" : ""}
+          </p>
         </div>
         <div className="relative w-64">
           <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-          <Input placeholder="Search clients..." className="pl-8 h-9 text-sm bg-white" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input
+            placeholder="Search clients..."
+            className="pl-8 h-9 text-sm bg-white"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
       </div>
 
@@ -214,7 +267,10 @@ export function ClientFilesView() {
               <p className="text-sm font-medium truncate">{c.name}</p>
               <p className="text-xs text-muted-foreground truncate">{c.company || c.email}</p>
             </div>
-            <Badge variant={c.status === "Active Client" ? "default" : "secondary"} className="text-[10px] shrink-0">
+            <Badge
+              variant={c.status === "Active Client" ? "default" : "secondary"}
+              className="text-[10px] shrink-0"
+            >
               {c.status || "Active"}
             </Badge>
           </button>

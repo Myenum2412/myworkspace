@@ -1,8 +1,8 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
-import { requireOrgMembership } from "../lib/org-utils.js";
+import { type Response, Router } from "express";
 import mongoose from "mongoose";
+import { requireOrgMembership } from "../lib/org-utils.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 
 const router = Router();
 router.use(authenticate);
@@ -46,7 +46,8 @@ const timesheetSchema = new mongoose.Schema<TimesheetDoc>({
 
 timesheetSchema.index({ orgId: 1, userId: 1, week: 1 }, { unique: true });
 
-const Timesheet = mongoose.models.Timesheet || mongoose.model<TimesheetDoc>("Timesheet", timesheetSchema);
+const Timesheet =
+  mongoose.models.Timesheet || mongoose.model<TimesheetDoc>("Timesheet", timesheetSchema);
 
 // GET - Fetch timesheet for a user and week
 router.get("/", async (req: AuthRequest, res: Response) => {
@@ -55,7 +56,9 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     const userId = (req.query.userId as string) || req.user!.userId;
     const week = (req.query.week as string) || new Date().toISOString().slice(0, 10);
 
-    const timesheet = await Timesheet.findOne({ orgId, userId, week }).lean() as (TimesheetDoc & { _id: any }) | null;
+    const timesheet = (await Timesheet.findOne({ orgId, userId, week }).lean()) as
+      | (TimesheetDoc & { _id: any })
+      | null;
 
     res.json({ success: true, data: timesheet?.rows || [] });
   } catch (err: any) {
@@ -89,7 +92,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
           createdAt: new Date(),
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
 
     res.json({ success: true });

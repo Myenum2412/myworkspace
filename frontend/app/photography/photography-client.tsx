@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { PlusIcon, QrCodeIcon, EyeIcon, Trash2Icon, CameraAltIcon } from "@/lib/icons";
+import { useState } from "react";
 import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { PageHeader } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CameraAltIcon, EyeIcon, PlusIcon, QrCodeIcon, Trash2Icon } from "@/lib/icons";
 
 interface Gallery {
   _id: string;
@@ -19,7 +19,13 @@ interface Gallery {
   tokenCount?: number;
 }
 
-export function PhotographyPageClient({ orgId, galleries: initialGalleries }: { orgId: string; galleries: Gallery[] }) {
+export function PhotographyPageClient({
+  orgId,
+  galleries: initialGalleries,
+}: {
+  orgId: string;
+  galleries: Gallery[];
+}) {
   const router = useRouter();
   const [galleries, setGalleries] = useState<Gallery[]>(initialGalleries);
   const [showCreate, setShowCreate] = useState(false);
@@ -93,7 +99,9 @@ export function PhotographyPageClient({ orgId, galleries: initialGalleries }: { 
                 <Button onClick={handleCreate} disabled={creating || !name.trim()}>
                   {creating ? "Creating..." : "Create"}
                 </Button>
-                <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setShowCreate(false)}>
+                  Cancel
+                </Button>
               </div>
             </div>
           </CardContent>
@@ -115,10 +123,20 @@ export function PhotographyPageClient({ orgId, galleries: initialGalleries }: { 
                 <span>{gallery.tokenCount ?? 0} tokens</span>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => router.push(`/photography/galleries/${gallery.id}`)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => router.push(`/photography/galleries/${gallery.id}`)}
+                >
                   <EyeIcon className="size-3 mr-1" /> Manage
                 </Button>
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => router.push(`/photography/galleries/${gallery.id}?tab=qr`)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => router.push(`/photography/galleries/${gallery.id}?tab=qr`)}
+                >
                   <QrCodeIcon className="size-3 mr-1" /> QR
                 </Button>
                 <DeleteConfirmDialog

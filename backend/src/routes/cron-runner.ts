@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { type Request, type Response, Router } from "express";
 import { logger } from "../lib/logger/index.js";
 
 const CRON_SECRET = process.env.CRON_SECRET || "JmJ+4jtfj0b9PE6dy01ZttLiFgsw3NK/qs2aTNKNDjU=";
@@ -51,7 +51,7 @@ router.get("/process-reminders", async (_req: Request, res: Response) => {
           { id: task.id, title: task.title, dueDate },
           assigneeId,
           task.orgId,
-          daysRemaining
+          daysRemaining,
         );
 
         if (daysRemaining <= 0) {
@@ -62,7 +62,7 @@ router.get("/process-reminders", async (_req: Request, res: Response) => {
             task.project?.toString() || "",
             dueDate.toISOString().split("T")[0],
             Math.abs(daysRemaining) + 1,
-            taskUrl
+            taskUrl,
           );
         } else {
           await sendTaskDueSoon(
@@ -72,7 +72,7 @@ router.get("/process-reminders", async (_req: Request, res: Response) => {
             task.project?.toString() || "",
             dueDate.toISOString().split("T")[0],
             daysRemaining,
-            taskUrl
+            taskUrl,
           );
         }
         sent++;
@@ -139,16 +139,24 @@ router.get("/morning-reminder", async (_req: Request, res: Response) => {
           createdBy: uid,
           type: "task_due_soon",
           title: `Good Morning! You have ${tasks.length} task${tasks.length > 1 ? "s" : ""} due today`,
-          message: tasks.map((t: any) => `• ${t.title}${t.dueDate ? ` (by ${new Date(t.dueDate).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })})` : ""}`).join("\n"),
+          message: tasks
+            .map(
+              (t: any) =>
+                `• ${t.title}${t.dueDate ? ` (by ${new Date(t.dueDate).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })})` : ""}`,
+            )
+            .join("\n"),
           priority: "medium",
           correlationId: `morning-reminder-${uid}-${todayStart.getTime()}`,
         });
 
         const { sendEmail } = await import("../lib/mail/sender.js");
         const { buildEmailHtml } = await import("../lib/mail/templates/builder.js");
-        const taskList = tasks.map((t: any) =>
-          `• ${t.title}${t.dueDate ? ` — Due: ${new Date(t.dueDate).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}` : ""}`
-        ).join("<br>");
+        const taskList = tasks
+          .map(
+            (t: any) =>
+              `• ${t.title}${t.dueDate ? ` — Due: ${new Date(t.dueDate).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}` : ""}`,
+          )
+          .join("<br>");
 
         await sendEmail(
           user.email,
@@ -161,7 +169,7 @@ router.get("/morning-reminder", async (_req: Request, res: Response) => {
             button: { text: "View All Tasks", url: taskUrl },
             outro: ["Have a productive day!"],
             supportEmail: "support@myenum.in",
-          })
+          }),
         );
 
         notified++;
@@ -228,7 +236,7 @@ router.get("/evening-reminder", async (_req: Request, res: Response) => {
 
         const taskUrl = `${env.APP_URL || "http://localhost:3000"}/alltasks`;
 
-        let notificationParts: string[] = [];
+        const notificationParts: string[] = [];
         if (overdue.length > 0) {
           notificationParts.push(`Overdue (${overdue.length}):`);
           notificationParts.push(...overdue.map((t: any) => `  • ${t.title}`));
@@ -252,7 +260,7 @@ router.get("/evening-reminder", async (_req: Request, res: Response) => {
         const { sendEmail } = await import("../lib/mail/sender.js");
         const { buildEmailHtml } = await import("../lib/mail/templates/builder.js");
 
-        let introLines: string[] = [];
+        const introLines: string[] = [];
         if (overdue.length > 0) {
           introLines.push(`<strong>⚠️ Overdue Tasks (${overdue.length}):</strong>`);
           introLines.push(overdue.map((t: any) => `• ${t.title} — Overdue`).join("<br>"));
@@ -273,7 +281,7 @@ router.get("/evening-reminder", async (_req: Request, res: Response) => {
             button: { text: "View All Tasks", url: taskUrl },
             outro: ["Have a restful evening!"],
             supportEmail: "support@myenum.in",
-          })
+          }),
         );
 
         notified++;
@@ -338,13 +346,17 @@ router.get("/generate-repeated-tasks", async (_req: Request, res: Response) => {
       } else if (template.repeatType === "weekly") {
         // Generate once per week (the week starts on repeatStartDate)
         if (repeatStart) {
-          const daysSinceStart = Math.floor((now.getTime() - repeatStart.getTime()) / (1000 * 60 * 60 * 24));
+          const daysSinceStart = Math.floor(
+            (now.getTime() - repeatStart.getTime()) / (1000 * 60 * 60 * 24),
+          );
           const currentWeekIndex = Math.floor(daysSinceStart / 7);
-          const weekStart = new Date(repeatStart.getTime() + currentWeekIndex * 7 * 24 * 60 * 60 * 1000);
+          const weekStart = new Date(
+            repeatStart.getTime() + currentWeekIndex * 7 * 24 * 60 * 60 * 1000,
+          );
 
           if (lastGenerated) {
             const lastGenWeekIndex = Math.floor(
-              (lastGenerated.getTime() - repeatStart.getTime()) / (1000 * 60 * 60 * 24) / 7
+              (lastGenerated.getTime() - repeatStart.getTime()) / (1000 * 60 * 60 * 24) / 7,
             );
             shouldGenerate = lastGenWeekIndex < currentWeekIndex;
           } else {
@@ -382,15 +394,15 @@ router.get("/generate-repeated-tasks", async (_req: Request, res: Response) => {
       await Task.create(newTask);
 
       // Update lastRepeatGeneratedAt on the template
-      await Task.updateOne(
-        { _id: template._id },
-        { $set: { lastRepeatGeneratedAt: now } }
-      );
+      await Task.updateOne({ _id: template._id }, { $set: { lastRepeatGeneratedAt: now } });
 
       created++;
     }
 
-    logger.info({ created, skipped, total: repeatTemplates.length }, "Repeated task instances generated");
+    logger.info(
+      { created, skipped, total: repeatTemplates.length },
+      "Repeated task instances generated",
+    );
 
     res.json({
       success: true,

@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
   CameraIcon,
-  UploadIcon,
+  CheckCircle2Icon,
   Loader2Icon,
   QrCodeIcon,
-  CheckCircle2Icon,
+  UploadIcon,
   XCircleIcon,
 } from "@/lib/icons";
 
@@ -37,7 +37,11 @@ export function GalleryAccessClient({
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [result, setResult] = useState<{ success: boolean; sessionToken?: string; message?: string } | null>(null);
+  const [result, setResult] = useState<{
+    success: boolean;
+    sessionToken?: string;
+    message?: string;
+  } | null>(null);
 
   function validateForm() {
     const errs: Record<string, string> = {};
@@ -175,7 +179,15 @@ export function GalleryAccessClient({
                 <XCircleIcon className="size-12 mx-auto mb-4 text-amber-500" />
                 <h2 className="text-lg font-semibold mb-1">No Match Found</h2>
                 <p className="text-sm text-muted-foreground">{result?.message}</p>
-                <Button className="mt-4" onClick={() => { setStep("form"); setResult(null); setSelfie(null); setSelfieFile(null); }}>
+                <Button
+                  className="mt-4"
+                  onClick={() => {
+                    setStep("form");
+                    setResult(null);
+                    setSelfie(null);
+                    setSelfieFile(null);
+                  }}
+                >
                   Try Again
                 </Button>
               </>
@@ -260,7 +272,11 @@ export function GalleryAccessClient({
                           <span className="bg-background px-2 text-muted-foreground">or</span>
                         </div>
                       </div>
-                      <Button variant="outline" className="" onClick={() => fileInputRef.current?.click()}>
+                      <Button
+                        variant="outline"
+                        className=""
+                        onClick={() => fileInputRef.current?.click()}
+                      >
                         <UploadIcon className="size-4 mr-1" /> Upload Photo
                       </Button>
                       <input
@@ -289,10 +305,16 @@ export function GalleryAccessClient({
                   </div>
                   <div className="flex gap-2">
                     <Button onClick={handleSubmit} className="flex-1" disabled={processing}>
-                      {processing ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <CheckCircle2Icon className="size-4 mr-1" />}
+                      {processing ? (
+                        <Loader2Icon className="size-4 animate-spin mr-1" />
+                      ) : (
+                        <CheckCircle2Icon className="size-4 mr-1" />
+                      )}
                       Submit & Verify
                     </Button>
-                    <Button variant="outline" onClick={retakeSelfie}>Retake</Button>
+                    <Button variant="outline" onClick={retakeSelfie}>
+                      Retake
+                    </Button>
                   </div>
                 </div>
               )}

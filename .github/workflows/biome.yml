@@ -1,0 +1,42 @@
+name: Biome (Format & Lint)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  lint-changed:
+    name: Biome — changed files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci --include=dev
+      - name: Check formatting, linting and import order only for changed files
+        run: npx biome check --since=main .
+
+  lint-full:
+    name: Biome — full codebase (debt trend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci --include=dev
+      - name: Full repo diagnostics (informational while legacy debt exists)
+        run: npx biome check .
+        continue-on-error: true

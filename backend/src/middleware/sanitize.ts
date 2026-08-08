@@ -9,7 +9,7 @@
  * output encoding in templates are the primary XSS defences.
  */
 
-import { Request, Response, NextFunction } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { logger } from "../lib/logger/index.js";
 
 // ─── Dangerous patterns ────────────────────────────────────────────────

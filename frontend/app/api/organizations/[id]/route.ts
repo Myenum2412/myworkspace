@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { apiUrl, apiFetch } from "@/lib/api";
+import { type NextRequest, NextResponse } from "next/server";
+import { apiFetch, apiUrl } from "@/lib/api";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

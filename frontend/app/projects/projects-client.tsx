@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import ProjectsInteractive from "./projects-interactive.client"
-import Clients from "@/app/clients/clients.client"
-import ContractorsPage from "@/app/contractors/contractors-page"
-import type { Project } from "@/components/projects/project-types"
-import type { Client } from "@/app/clients/columns"
+import Clients from "@/app/clients/clients.client";
+import type { Client } from "@/app/clients/columns";
+import ContractorsPage from "@/app/contractors/contractors-page";
 import { useIndustry } from "@/components/industry-provider";
+import type { Project } from "@/components/projects/project-types";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProjectsInteractive from "./projects-interactive.client";
 
 type Props = {
-  orgId?: string
-  initialProjects?: Project[]
-  initialClientList?: string[]
-  initialClients?: Client[]
-  user?: { name: string; email: string; avatar: string }
-}
+  orgId?: string;
+  initialProjects?: Project[];
+  initialClientList?: string[];
+  initialClients?: Client[];
+  user?: { name: string; email: string; avatar: string };
+};
 
 export default function ProjectsClient({
   orgId: initialOrgId,
@@ -59,24 +59,57 @@ export default function ProjectsClient({
 
   return (
     <div className="flex flex-col h-full">
-      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setSearchQuery(""); }} className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => {
+          setActiveTab(v);
+          setSearchQuery("");
+        }}
+        className="w-full"
+      >
         <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 max-h-10! *:flex-1">
-          <TabsTrigger value="projects" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">{t("page.projects.allProjects")}</TabsTrigger>
-          <TabsTrigger value="clients" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">{t("nav.clients")}</TabsTrigger>
-          <TabsTrigger value="contractors" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">{t("page.projects.contractors")}</TabsTrigger>
+          <TabsTrigger
+            value="projects"
+            className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
+          >
+            {t("page.projects.allProjects")}
+          </TabsTrigger>
+          <TabsTrigger
+            value="clients"
+            className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
+          >
+            {t("nav.clients")}
+          </TabsTrigger>
+          <TabsTrigger
+            value="contractors"
+            className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
+          >
+            {t("page.projects.contractors")}
+          </TabsTrigger>
         </TabsList>
       </Tabs>
       <div className="flex-1 overflow-auto">
         {activeTab === "projects" && (
-          <ProjectsInteractive orgId={orgId} initialProjects={projects} initialClientList={clientList} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+          <ProjectsInteractive
+            orgId={orgId}
+            initialProjects={projects}
+            initialClientList={clientList}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
         )}
         {activeTab === "clients" && (
-          <Clients initialClients={clients} user={user} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+          <Clients
+            initialClients={clients}
+            user={user}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
         )}
         {activeTab === "contractors" && (
           <ContractorsPage searchQuery={searchQuery} onSearchChange={setSearchQuery} />
         )}
       </div>
     </div>
-  )
+  );
 }

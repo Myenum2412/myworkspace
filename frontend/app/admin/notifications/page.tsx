@@ -1,35 +1,65 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tabs, TabsContent, TabsList, TabsTrigger,
-} from "@/components/ui/tabs";
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line,
-} from "recharts";
-import {
-  Loader2Icon, SendIcon, MailIcon, CheckCircle2Icon,
-  AlertCircleIcon, BarChart3Icon, TrendingUpIcon,
-  ActivityIcon, HeartPulseIcon, SearchIcon, FilterIcon, ClockIcon,
+  ActivityIcon,
+  AlertCircleIcon,
+  BarChart3Icon,
+  CheckCircle2Icon,
+  ClockIcon,
+  FilterIcon,
+  HeartPulseIcon,
+  Loader2Icon,
+  MailIcon,
+  SearchIcon,
+  SendIcon,
+  TrendingUpIcon,
 } from "@/lib/icons";
 
 const COLORS = {
-  critical: "#ef4444", high: "#f97316", medium: "#3b82f6", low: "#94a3b8",
+  critical: "#ef4444",
+  high: "#f97316",
+  medium: "#3b82f6",
+  low: "#94a3b8",
 };
 
 const STATUS_BADGE_VARIANTS: Record<string, string> = {
@@ -52,7 +82,9 @@ function StatusBadge({ status }: { status: string }) {
 function SkeletonCard() {
   return (
     <Card>
-      <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">&nbsp;</CardTitle></CardHeader>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium">&nbsp;</CardTitle>
+      </CardHeader>
       <CardContent>
         <div className="h-8 w-20 animate-pulse rounded-sm bg-muted" />
       </CardContent>
@@ -113,7 +145,10 @@ export default function AdminNotificationsPage() {
         const d = await res.json();
         setAnalytics(d.data);
       }
-    } catch {} finally { setLoading(false); }
+    } catch {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loadHealth = async () => {
@@ -123,7 +158,10 @@ export default function AdminNotificationsPage() {
         const d = await res.json();
         setHealth(d.data || d);
       }
-    } catch {} finally { setHealthLoading(false); }
+    } catch {
+    } finally {
+      setHealthLoading(false);
+    }
   };
 
   const loadTemplates = async () => {
@@ -133,7 +171,10 @@ export default function AdminNotificationsPage() {
         const d = await res.json();
         setTemplates(d.data || d.templates || []);
       }
-    } catch {} finally { setTemplatesLoading(false); }
+    } catch {
+    } finally {
+      setTemplatesLoading(false);
+    }
   };
 
   const loadLiveStats = async () => {
@@ -143,29 +184,40 @@ export default function AdminNotificationsPage() {
         const d = await res.json();
         setLiveStats(d.data || d);
       }
-    } catch {} finally { setLiveStatsLoading(false); }
+    } catch {
+    } finally {
+      setLiveStatsLoading(false);
+    }
   };
 
-  const loadEmailLogs = useCallback(async (page: number) => {
-    setEmailLogLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set("limit", String(ITEMS_PER_PAGE));
-      params.set("page", String(page));
-      if (emailLogSearch) params.set("search", emailLogSearch);
-      if (emailLogStatus !== "all") params.set("status", emailLogStatus);
-      if (emailLogFromDate) params.set("from", emailLogFromDate);
-      if (emailLogToDate) params.set("to", emailLogToDate);
+  const loadEmailLogs = useCallback(
+    async (page: number) => {
+      setEmailLogLoading(true);
+      try {
+        const params = new URLSearchParams();
+        params.set("limit", String(ITEMS_PER_PAGE));
+        params.set("page", String(page));
+        if (emailLogSearch) params.set("search", emailLogSearch);
+        if (emailLogStatus !== "all") params.set("status", emailLogStatus);
+        if (emailLogFromDate) params.set("from", emailLogFromDate);
+        if (emailLogToDate) params.set("to", emailLogToDate);
 
-      const res = await fetch(`/api/notifications/email-logs?${params.toString()}`, { credentials: "include" });
-      if (res.ok) {
-        const d = await res.json();
-        setEmailLogs(d.data?.logs || []);
-        setEmailLogTotal(d.data?.total || 0);
-        setEmailLogTotalPages(Math.max(1, Math.ceil((d.data?.total || 0) / ITEMS_PER_PAGE)));
+        const res = await fetch(`/api/notifications/email-logs?${params.toString()}`, {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const d = await res.json();
+          setEmailLogs(d.data?.logs || []);
+          setEmailLogTotal(d.data?.total || 0);
+          setEmailLogTotalPages(Math.max(1, Math.ceil((d.data?.total || 0) / ITEMS_PER_PAGE)));
+        }
+      } catch {
+      } finally {
+        setEmailLogLoading(false);
       }
-    } catch {} finally { setEmailLogLoading(false); }
-  }, [emailLogSearch, emailLogStatus, emailLogFromDate, emailLogToDate]);
+    },
+    [emailLogSearch, emailLogStatus, emailLogFromDate, emailLogToDate],
+  );
 
   useEffect(() => {
     setEmailLogPage(1);
@@ -181,7 +233,8 @@ export default function AdminNotificationsPage() {
     setBroadcasting(true);
     try {
       await fetch("/api/notifications/broadcast", {
-        method: "POST", credentials: "include",
+        method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: broadcastTitle,
@@ -191,7 +244,10 @@ export default function AdminNotificationsPage() {
       });
       setBroadcastTitle("");
       setBroadcastMessage("");
-    } catch {} finally { setBroadcasting(false); }
+    } catch {
+    } finally {
+      setBroadcasting(false);
+    }
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -202,27 +258,40 @@ export default function AdminNotificationsPage() {
   };
 
   const priorityData = analytics?.byPriority
-    ? Object.entries(analytics.byPriority).map(([k, v]) => ({ name: k, value: v, color: COLORS[k as keyof typeof COLORS] }))
+    ? Object.entries(analytics.byPriority).map(([k, v]) => ({
+        name: k,
+        value: v,
+        color: COLORS[k as keyof typeof COLORS],
+      }))
     : [];
 
   const categoryData = analytics?.byCategory
-    ? Object.entries(analytics.byCategory).map(([k, v]) => ({ name: k, value: v })).slice(0, 8)
+    ? Object.entries(analytics.byCategory)
+        .map(([k, v]) => ({ name: k, value: v }))
+        .slice(0, 8)
     : [];
 
-  const healthStatusColor = health?.overall === "healthy" ? "text-green-500"
-    : health?.overall === "degraded" ? "text-yellow-500"
-    : health?.overall === "unhealthy" ? "text-red-500"
-    : "text-muted-foreground";
+  const healthStatusColor =
+    health?.overall === "healthy"
+      ? "text-green-500"
+      : health?.overall === "degraded"
+        ? "text-yellow-500"
+        : health?.overall === "unhealthy"
+          ? "text-red-500"
+          : "text-muted-foreground";
 
-  const liveErrorRate = liveStats?.totalSent && liveStats?.totalSent > 0
-    ? ((liveStats.totalErrors / liveStats.totalSent) * 100).toFixed(1)
-    : "0.0";
+  const liveErrorRate =
+    liveStats?.totalSent && liveStats?.totalSent > 0
+      ? ((liveStats.totalErrors / liveStats.totalSent) * 100).toFixed(1)
+      : "0.0";
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold">Notification Administration</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage notification system and view analytics</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Manage notification system and view analytics
+        </p>
       </div>
 
       <Separator />
@@ -235,26 +304,47 @@ export default function AdminNotificationsPage() {
         <>
           <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Total Sent</CardTitle></CardHeader>
-              <CardContent><p className="text-2xl font-bold">{analytics?.totalSent || 0}</p></CardContent>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Total Sent</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{analytics?.totalSent || 0}</p>
+              </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Read</CardTitle></CardHeader>
-              <CardContent><p className="text-2xl font-bold">{analytics?.totalRead || 0}</p></CardContent>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Read</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{analytics?.totalRead || 0}</p>
+              </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Archived</CardTitle></CardHeader>
-              <CardContent><p className="text-2xl font-bold">{analytics?.totalArchived || 0}</p></CardContent>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Archived</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{analytics?.totalArchived || 0}</p>
+              </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Read Rate</CardTitle></CardHeader>
-              <CardContent><p className="text-2xl font-bold">{analytics?.readRate || 0}%</p></CardContent>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Read Rate</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{analytics?.readRate || 0}%</p>
+              </CardContent>
             </Card>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2 text-sm"><BarChart3Icon className="size-4" />Daily Notification Volume</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <BarChart3Icon className="size-4" />
+                  Daily Notification Volume
+                </CardTitle>
+              </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={analytics?.dailyCounts?.slice(-30) || []}>
@@ -269,11 +359,24 @@ export default function AdminNotificationsPage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2 text-sm"><TrendingUpIcon className="size-4" />Notifications by Priority</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <TrendingUpIcon className="size-4" />
+                  Notifications by Priority
+                </CardTitle>
+              </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
-                    <Pie data={priorityData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name }) => name}>
+                    <Pie
+                      data={priorityData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      dataKey="value"
+                      label={({ name }) => name}
+                    >
                       {priorityData.map((entry, i) => (
                         <Cell key={i} fill={entry.color} />
                       ))}
@@ -296,20 +399,28 @@ export default function AdminNotificationsPage() {
             <CardContent className="space-y-4">
               <div>
                 <Label>Title</Label>
-                <Input value={broadcastTitle} onChange={(e) => setBroadcastTitle(e.target.value)}
-                  placeholder="Notification title" />
+                <Input
+                  value={broadcastTitle}
+                  onChange={(e) => setBroadcastTitle(e.target.value)}
+                  placeholder="Notification title"
+                />
               </div>
               <div>
                 <Label>Message</Label>
-                <textarea value={broadcastMessage} onChange={(e) => setBroadcastMessage(e.target.value)}
+                <textarea
+                  value={broadcastMessage}
+                  onChange={(e) => setBroadcastMessage(e.target.value)}
                   placeholder="Notification message"
-                  className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring min-h-[100px]" />
+                  className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring min-h-[100px]"
+                />
               </div>
               <div className="flex items-center gap-4">
                 <div>
                   <Label>Priority</Label>
                   <Select value={broadcastPriority} onValueChange={setBroadcastPriority}>
-                    <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="critical">Critical</SelectItem>
                       <SelectItem value="high">High</SelectItem>
@@ -318,8 +429,16 @@ export default function AdminNotificationsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleBroadcast} disabled={broadcasting || !broadcastTitle || !broadcastMessage} className="mt-5 gap-1.5">
-                  {broadcasting ? <Loader2Icon className="size-4 animate-spin" /> : <SendIcon className="size-4" />}
+                <Button
+                  onClick={handleBroadcast}
+                  disabled={broadcasting || !broadcastTitle || !broadcastMessage}
+                  className="mt-5 gap-1.5"
+                >
+                  {broadcasting ? (
+                    <Loader2Icon className="size-4 animate-spin" />
+                  ) : (
+                    <SendIcon className="size-4" />
+                  )}
                   Send Broadcast
                 </Button>
               </div>
@@ -349,7 +468,9 @@ export default function AdminNotificationsPage() {
                         {health.overall || "unknown"}
                       </span>
                       <Badge variant="outline" className={healthStatusColor}>
-                        {health.overall === "healthy" ? "All Systems Operational" : "Issues Detected"}
+                        {health.overall === "healthy"
+                          ? "All Systems Operational"
+                          : "Issues Detected"}
                       </Badge>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -359,17 +480,23 @@ export default function AdminNotificationsPage() {
                         { label: "SMTP", key: "smtp", status: health.smtp },
                         { label: "VAPID", key: "vapid", status: health.vapid },
                       ].map((item) => (
-                        <div key={item.key} className="flex items-center justify-between rounded-sm border p-3">
+                        <div
+                          key={item.key}
+                          className="flex items-center justify-between rounded-sm border p-3"
+                        >
                           <span className="text-xs text-muted-foreground">{item.label}</span>
-                          <Badge variant="outline" className={`text-[10px] px-1.5 ${
-                            item.status === "healthy" || item.status === "ok"
-                              ? "bg-green-500/10 text-green-500 border-green-500/20"
-                              : item.status === "degraded"
-                                ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
-                                : item.status
-                                  ? "bg-red-500/10 text-red-500 border-red-500/20"
-                                  : "bg-muted text-muted-foreground"
-                          }`}>
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] px-1.5 ${
+                              item.status === "healthy" || item.status === "ok"
+                                ? "bg-green-500/10 text-green-500 border-green-500/20"
+                                : item.status === "degraded"
+                                  ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+                                  : item.status
+                                    ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                    : "bg-muted text-muted-foreground"
+                            }`}
+                          >
                             {item.status || "unknown"}
                           </Badge>
                         </div>
@@ -377,7 +504,9 @@ export default function AdminNotificationsPage() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground py-4 text-center">Unable to load health data</p>
+                  <p className="text-sm text-muted-foreground py-4 text-center">
+                    Unable to load health data
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -405,17 +534,23 @@ export default function AdminNotificationsPage() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Total Errors</p>
-                      <p className="text-2xl font-bold text-red-500">{liveStats.totalErrors ?? 0}</p>
+                      <p className="text-2xl font-bold text-red-500">
+                        {liveStats.totalErrors ?? 0}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1.5">Error Rate</p>
                       <div className="flex items-center gap-3">
                         <Progress value={parseFloat(liveErrorRate)} className="h-2 flex-1" />
-                        <span className={`text-sm font-semibold ${
-                          parseFloat(liveErrorRate) > 10 ? "text-red-500"
-                            : parseFloat(liveErrorRate) > 5 ? "text-yellow-500"
-                            : "text-green-500"
-                        }`}>
+                        <span
+                          className={`text-sm font-semibold ${
+                            parseFloat(liveErrorRate) > 10
+                              ? "text-red-500"
+                              : parseFloat(liveErrorRate) > 5
+                                ? "text-yellow-500"
+                                : "text-green-500"
+                          }`}
+                        >
                           {liveErrorRate}%
                         </span>
                       </div>
@@ -432,7 +567,9 @@ export default function AdminNotificationsPage() {
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground py-4 text-center">Unable to load live stats</p>
+                  <p className="text-sm text-muted-foreground py-4 text-center">
+                    Unable to load live stats
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -467,7 +604,9 @@ export default function AdminNotificationsPage() {
                         <TableCell className="font-mono text-xs">{tpl.type}</TableCell>
                         <TableCell className="text-sm">{tpl.subject}</TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className="text-[10px]">{tpl.category || "general"}</Badge>
+                          <Badge variant="secondary" className="text-[10px]">
+                            {tpl.category || "general"}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-right">
                           <Switch
@@ -546,12 +685,17 @@ export default function AdminNotificationsPage() {
                   ))}
                 </div>
               ) : emailLogs.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4 text-center">No email logs found</p>
+                <p className="text-sm text-muted-foreground py-4 text-center">
+                  No email logs found
+                </p>
               ) : (
                 <>
                   <div className="space-y-1">
                     {emailLogs.map((log: any) => (
-                      <div key={log._id} className="flex items-center justify-between py-2 border-b last:border-0">
+                      <div
+                        key={log._id}
+                        className="flex items-center justify-between py-2 border-b last:border-0"
+                      >
                         <div className="flex items-center gap-2 min-w-0 flex-1">
                           {log.status === "sent" || log.status === "delivered" ? (
                             <CheckCircle2Icon className="size-3.5 text-green-500 shrink-0" />
@@ -563,9 +707,13 @@ export default function AdminNotificationsPage() {
                           <span className="text-xs truncate">{log.subject || log.template}</span>
                         </div>
                         <div className="flex items-center gap-2 shrink-0 ml-2">
-                          <span className="text-[10px] text-muted-foreground hidden sm:inline">{log.to}</span>
+                          <span className="text-[10px] text-muted-foreground hidden sm:inline">
+                            {log.to}
+                          </span>
                           <StatusBadge status={log.status} />
-                          <span className="text-[10px] text-muted-foreground">{log.deliveryAttempts}x</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {log.deliveryAttempts}x
+                          </span>
                         </div>
                       </div>
                     ))}

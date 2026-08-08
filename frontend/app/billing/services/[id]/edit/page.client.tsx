@@ -1,14 +1,20 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { X, Loader2 } from "@/lib/icons";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Loader2, X } from "@/lib/icons";
 
 interface Service {
   id: string;
@@ -101,33 +107,52 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
       <div className="flex-1 overflow-auto">
         <div className="w-full max-w-2xl p-8">
           <div className="grid grid-cols-[150px_1fr] gap-y-6 items-start">
-
             <div className="pt-2">
               <Label className="text-xs text-muted-foreground">Service Name*</Label>
             </div>
             <div>
-              <Input value={name} onChange={(e) => setName(e.target.value)} className="w-full" placeholder="" />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full"
+                placeholder=""
+              />
             </div>
 
             <div className="pt-2">
               <Label className="text-xs text-muted-foreground">Description</Label>
             </div>
             <div>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full min-h-[80px] resize-y" placeholder="" />
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full min-h-[80px] resize-y"
+                placeholder=""
+              />
             </div>
 
             <div className="pt-2">
               <Label className="text-xs text-muted-foreground">Category</Label>
             </div>
             <div>
-              <Input value={category} onChange={(e) => setCategory(e.target.value)} className="w-full" placeholder="" />
+              <Input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full"
+                placeholder=""
+              />
             </div>
 
             <div className="pt-2">
               <Label className="text-xs text-muted-foreground">Rate*</Label>
             </div>
             <div>
-              <Input type="number" value={rate} onChange={(e) => setRate(parseFloat(e.target.value) || 0)} className="w-full" />
+              <Input
+                type="number"
+                value={rate}
+                onChange={(e) => setRate(parseFloat(e.target.value) || 0)}
+                className="w-full"
+              />
             </div>
 
             <div className="pt-2">
@@ -162,7 +187,6 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                 </SelectContent>
               </Select>
             </div>
-
           </div>
 
           <div className="flex items-center gap-3 mt-10">

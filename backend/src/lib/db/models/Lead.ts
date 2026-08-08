@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface ILead extends Document {
   id: string;
@@ -42,7 +42,7 @@ const leadSchema = new Schema<ILead>(
     notes: String,
     convertedAt: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 leadSchema.index({ orgId: 1, email: 1 }, { unique: true });

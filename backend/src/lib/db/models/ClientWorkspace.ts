@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export type ClientWorkspaceModule = "dashboard" | "files" | "projects" | "reports" | "settings";
 
@@ -44,7 +44,7 @@ const clientWorkspaceSchema = new Schema<IClientWorkspace>(
     createdBy: { type: String, required: true },
     updatedBy: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 clientWorkspaceSchema.index({ orgId: 1, clientId: 1 }, { unique: true });

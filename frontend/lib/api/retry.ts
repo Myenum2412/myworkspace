@@ -34,9 +34,10 @@ export async function withRetry<T>(
 
       if (attempt >= maxRetries) break;
 
-      const status = error && typeof error === "object" && "status" in error
-        ? (error as { status: number }).status
-        : null;
+      const status =
+        error && typeof error === "object" && "status" in error
+          ? (error as { status: number }).status
+          : null;
 
       if (status && status >= 400 && status < 500 && status !== 429) break;
 

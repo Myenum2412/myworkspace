@@ -1,13 +1,8 @@
 "use client";
 
+import type { Employee } from "@/app/employees/columns";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  MoreHorizontalIcon,
-  UsersIcon,
-  PencilIcon,
-  UserXIcon,
-} from "@/lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,8 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Employee } from "@/app/employees/columns";
-import { statusConfig, getInitials, getAvatarColor } from "./employee-types";
+import { MoreHorizontalIcon, PencilIcon, UsersIcon, UserXIcon } from "@/lib/icons";
+import { getAvatarColor, getInitials, statusConfig } from "./employee-types";
 
 type EmployeeTableRowProps = {
   employee: Employee;
@@ -27,7 +22,14 @@ type EmployeeTableRowProps = {
   onTerminate: (emp: Employee) => void;
 };
 
-export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onView, onEdit, onTerminate }: EmployeeTableRowProps) {
+export function EmployeeTableRow({
+  employee: emp,
+  selected,
+  onToggleSelect,
+  onView,
+  onEdit,
+  onTerminate,
+}: EmployeeTableRowProps) {
   const status = statusConfig[emp.status] || statusConfig.offline;
 
   return (
@@ -36,7 +38,12 @@ export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onVi
       onClick={() => onView(emp)}
     >
       <td className="px-4 py-3 w-10" onClick={(e) => e.stopPropagation()}>
-        <Checkbox checked={selected} onCheckedChange={() => onToggleSelect(emp.id)} aria-label={`Select ${emp.name}`} className="border-black" />
+        <Checkbox
+          checked={selected}
+          onCheckedChange={() => onToggleSelect(emp.id)}
+          aria-label={`Select ${emp.name}`}
+          className="border-black"
+        />
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
@@ -47,20 +54,18 @@ export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onVi
               className="size-8 rounded-sm object-cover ring-2 ring-background"
             />
           ) : (
-            <div className={`size-8 rounded-sm flex items-center justify-center text-xs font-semibold ${getAvatarColor(emp.name)}`}>
+            <div
+              className={`size-8 rounded-sm flex items-center justify-center text-xs font-semibold ${getAvatarColor(emp.name)}`}
+            >
               {getInitials(emp.name)}
             </div>
           )}
-          <span className="font-medium text-gray-900 whitespace-nowrap">
-            {emp.name}
-          </span>
+          <span className="font-medium text-gray-900 whitespace-nowrap">{emp.name}</span>
         </div>
       </td>
 
       <td className="px-4 py-3">
-        <span className="font-mono text-xs text-gray-500">
-          {emp.displayId || "—"}
-        </span>
+        <span className="font-mono text-xs text-gray-500">{emp.displayId || "—"}</span>
       </td>
 
       <td className="px-4 py-3">
@@ -78,23 +83,33 @@ export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onVi
       </td>
 
       <td className="px-4 py-3">
-        <span className="text-gray-800">{emp.designation || <span className="text-gray-300">—</span>}</span>
+        <span className="text-gray-800">
+          {emp.designation || <span className="text-gray-300">—</span>}
+        </span>
       </td>
 
       <td className="px-4 py-3">
-        <span className="text-gray-700 whitespace-nowrap">{emp.phone || <span className="text-gray-300">—</span>}</span>
+        <span className="text-gray-700 whitespace-nowrap">
+          {emp.phone || <span className="text-gray-300">—</span>}
+        </span>
       </td>
 
       <td className="px-4 py-3">
-        <span className="text-gray-700">{emp.employmentType || <span className="text-gray-300">—</span>}</span>
+        <span className="text-gray-700">
+          {emp.employmentType || <span className="text-gray-300">—</span>}
+        </span>
       </td>
 
       <td className="px-4 py-3">
-        <span className="text-gray-700">{emp.branchName || <span className="text-gray-300">—</span>}</span>
+        <span className="text-gray-700">
+          {emp.branchName || <span className="text-gray-300">—</span>}
+        </span>
       </td>
 
       <td className="px-4 py-3">
-        <span className="text-gray-700">{emp.location || <span className="text-gray-300">—</span>}</span>
+        <span className="text-gray-700">
+          {emp.location || <span className="text-gray-300">—</span>}
+        </span>
       </td>
 
       <td className="px-4 py-3">
@@ -106,13 +121,19 @@ export function EmployeeTableRow({ employee: emp, selected, onToggleSelect, onVi
       <td className="px-4 py-3">
         <span className="text-gray-500 text-xs">
           {emp.joiningDate
-            ? new Date(emp.joiningDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+            ? new Date(emp.joiningDate).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
             : "—"}
         </span>
       </td>
 
       <td className="px-4 py-3">
-        <span className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}
+        >
           <span className={`size-1.5 rounded-sm ${status.dot}`} />
           {status.label}
         </span>

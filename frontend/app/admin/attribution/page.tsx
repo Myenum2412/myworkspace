@@ -1,13 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { RefreshCw } from "@/lib/icons";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import Stats07 from "@/components/stats-07";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RefreshCw } from "@/lib/icons";
 
 interface AttributionReport {
-  channels: { channel: string; events: number; uniqueUsers: number; conversions: number; conversionRate: number }[];
-  campaigns: { campaign: string; impressions: number; clicks: number; conversions: number; conversionRate: number }[];
+  channels: {
+    channel: string;
+    events: number;
+    uniqueUsers: number;
+    conversions: number;
+    conversionRate: number;
+  }[];
+  campaigns: {
+    campaign: string;
+    impressions: number;
+    clicks: number;
+    conversions: number;
+    conversionRate: number;
+  }[];
   ltv: number;
   churnRate: number;
   activationRate: number;
@@ -26,7 +38,9 @@ export default function AdminAttributionPage() {
     else if (range === "90d") from.setDate(from.getDate() - 90);
 
     try {
-      const res = await fetch(`/api/admin/attribution/report?from=${from.toISOString()}`, { credentials: "include" });
+      const res = await fetch(`/api/admin/attribution/report?from=${from.toISOString()}`, {
+        credentials: "include",
+      });
       const json = await res.json();
       setData(json.data);
     } catch (err) {
@@ -36,14 +50,20 @@ export default function AdminAttributionPage() {
     }
   };
 
-  useEffect(() => { fetchData(dateRange); }, [dateRange]);
+  useEffect(() => {
+    fetchData(dateRange);
+  }, [dateRange]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Marketing Attribution</h1>
-          <p className="text-sm text-muted-foreground mt-1">Campaign performance, channel attribution, and conversion metrics</p>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+            Marketing Attribution
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Campaign performance, channel attribution, and conversion metrics
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <select
@@ -55,7 +75,10 @@ export default function AdminAttributionPage() {
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
           </select>
-          <button onClick={() => fetchData(dateRange)} className="p-2 text-muted-foreground hover:bg-muted rounded-lg">
+          <button
+            onClick={() => fetchData(dateRange)}
+            className="p-2 text-muted-foreground hover:bg-muted rounded-lg"
+          >
             <RefreshCw className="size-4" />
           </button>
         </div>
@@ -63,7 +86,9 @@ export default function AdminAttributionPage() {
 
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-muted rounded-xl animate-pulse" />)}
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-muted rounded-xl animate-pulse" />
+          ))}
         </div>
       ) : data ? (
         <>
@@ -71,7 +96,11 @@ export default function AdminAttributionPage() {
             items={[
               { name: "LTV", value: data.ltv, subtitle: "Lifetime value" },
               { name: "Churn Rate", value: data.churnRate, subtitle: "Churn rate %" },
-              { name: "Activation Rate", value: data.activationRate, subtitle: "Activation rate %" },
+              {
+                name: "Activation Rate",
+                value: data.activationRate,
+                subtitle: "Activation rate %",
+              },
               { name: "Channels", value: data.channels.length, subtitle: "Active channels" },
             ]}
           />
@@ -82,11 +111,13 @@ export default function AdminAttributionPage() {
                 <CardTitle>Channel Performance</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {data.channels.map(c => (
+                {data.channels.map((c) => (
                   <div key={c.channel} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-foreground capitalize">{c.channel}</span>
-                      <span className="text-muted-foreground">{c.conversions} conv / {c.conversionRate}%</span>
+                      <span className="text-muted-foreground">
+                        {c.conversions} conv / {c.conversionRate}%
+                      </span>
                     </div>
                     <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                       <div
@@ -105,8 +136,11 @@ export default function AdminAttributionPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {data.campaigns.length > 0 ? (
-                  data.campaigns.map(c => (
-                    <div key={c.campaign} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/50">
+                  data.campaigns.map((c) => (
+                    <div
+                      key={c.campaign}
+                      className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/50"
+                    >
                       <span className="text-foreground truncate max-w-[200px]">{c.campaign}</span>
                       <div className="flex items-center gap-3 text-muted-foreground">
                         <span>{c.impressions} imp</span>
@@ -115,7 +149,9 @@ export default function AdminAttributionPage() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground text-center py-8">No campaign data available</p>
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No campaign data available
+                  </p>
                 )}
               </CardContent>
             </Card>

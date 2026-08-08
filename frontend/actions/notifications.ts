@@ -1,8 +1,8 @@
 "use server";
 
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { auth } from "@/lib/auth/config";
 
 export async function getNotifications() {
   const session = await auth();
@@ -20,7 +20,5 @@ export async function getUnreadCount() {
   const session = await auth();
   if (!session?.user?.id) return 0;
 
-  return await db
-    .collection(collections.notifications)
-    .countDocuments({ userId: session.user.id });
+  return await db.collection(collections.notifications).countDocuments({ userId: session.user.id });
 }

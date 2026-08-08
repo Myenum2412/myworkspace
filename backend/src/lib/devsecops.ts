@@ -24,9 +24,7 @@ export class DevSecOpsValidator {
 
   private checkEnvironment(): ComplianceCheck[] {
     const checks: ComplianceCheck[] = [];
-    const required = [
-      "JWT_SECRET", "MONGODB_URI", "NODE_ENV",
-    ];
+    const required = ["JWT_SECRET", "MONGODB_URI", "NODE_ENV"];
     for (const envVar of required) {
       if (!process.env[envVar]) {
         checks.push({
@@ -128,7 +126,8 @@ export class DevSecOpsValidator {
                   category: "secrets",
                   status: "fail",
                   message: `Potential secret found in ${path.relative(process.cwd(), fullPath)}`,
-                  recommendation: "Use environment variables or a secrets manager instead of hardcoded secrets",
+                  recommendation:
+                    "Use environment variables or a secrets manager instead of hardcoded secrets",
                 });
                 break;
               }
@@ -200,8 +199,7 @@ export class DevSecOpsValidator {
     checks.push({
       name: "sec_helmet",
       category: "security",
-      status: fs.existsSync(path.resolve(process.cwd(), "src", "app.ts"))
-        ? "pass" : "warn",
+      status: fs.existsSync(path.resolve(process.cwd(), "src", "app.ts")) ? "pass" : "warn",
       message: fs.existsSync(path.resolve(process.cwd(), "src", "app.ts"))
         ? "helmet middleware configured for security headers"
         : "Cannot verify helmet middleware configuration",
@@ -211,9 +209,9 @@ export class DevSecOpsValidator {
 
   async generateReport(): Promise<string> {
     const checks = await this.runAllChecks();
-    const pass = checks.filter(c => c.status === "pass").length;
-    const fail = checks.filter(c => c.status === "fail").length;
-    const warn = checks.filter(c => c.status === "warn").length;
+    const pass = checks.filter((c) => c.status === "pass").length;
+    const fail = checks.filter((c) => c.status === "fail").length;
+    const warn = checks.filter((c) => c.status === "warn").length;
 
     let report = `# DevSecOps Compliance Report\n\n`;
     report += `**Generated**: ${new Date().toISOString()}\n`;

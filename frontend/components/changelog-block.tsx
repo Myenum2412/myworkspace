@@ -1,14 +1,14 @@
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
-type ChangeType = "Added" | "Improved" | "Fixed"
+type ChangeType = "Added" | "Improved" | "Fixed";
 
 type Release = {
-  version: string
-  date: string
-  summary: string
-  groups: { type: ChangeType; items: string[] }[]
-}
+  version: string;
+  date: string;
+  summary: string;
+  groups: { type: ChangeType; items: string[] }[];
+};
 
 const releases: Release[] = [
   {
@@ -104,7 +104,7 @@ const releases: Release[] = [
       },
     ],
   },
-]
+];
 
 export default function ChangelogBlock() {
   return (
@@ -129,9 +129,7 @@ export default function ChangelogBlock() {
                   <Badge variant="secondary" className="font-mono tabular-nums">
                     {release.version}
                   </Badge>
-                  <span className="text-xs text-muted-foreground tabular-nums">
-                    {release.date}
-                  </span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{release.date}</span>
                   <p className="mt-1 hidden text-sm text-muted-foreground md:block">
                     {release.summary}
                   </p>
@@ -160,5 +158,5 @@ export default function ChangelogBlock() {
         </div>
       </div>
     </section>
-  )
+  );
 }

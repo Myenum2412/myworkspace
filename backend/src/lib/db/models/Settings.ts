@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface ISettings extends Document {
   orgId: string;
@@ -62,7 +62,7 @@ const settingsSchema = new Schema<ISettings>(
       featureAnnouncements: { type: Boolean, default: false },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Settings = model<ISettings>("Settings", settingsSchema);

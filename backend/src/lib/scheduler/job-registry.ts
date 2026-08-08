@@ -1,7 +1,12 @@
-import { JobType, JobPayload } from "./types.js";
 import { logger } from "../logger/index.js";
+import type { JobPayload, JobType } from "./types.js";
 
-export type JobHandler = (payload: JobPayload, jobId: string, orgId: string, userId: string) => Promise<void>;
+export type JobHandler = (
+  payload: JobPayload,
+  jobId: string,
+  orgId: string,
+  userId: string,
+) => Promise<void>;
 
 const registry = new Map<JobType, JobHandler>();
 
@@ -34,7 +39,13 @@ function clear(): void {
   logger.debug("Job handler registry cleared");
 }
 
-async function execute(type: JobType, payload: JobPayload, jobId: string, orgId: string, userId: string): Promise<void> {
+async function execute(
+  type: JobType,
+  payload: JobPayload,
+  jobId: string,
+  orgId: string,
+  userId: string,
+): Promise<void> {
   const handler = registry.get(type);
   if (!handler) {
     throw new Error(`No handler registered for job type: ${type}`);
@@ -42,7 +53,7 @@ async function execute(type: JobType, payload: JobPayload, jobId: string, orgId:
   await handler(payload, jobId, orgId, userId);
 }
 
-import { JobType as JT } from "./types.js";
+import type { JobType as JT } from "./types.js";
 
 export interface SystemJobDefinition {
   name: string;

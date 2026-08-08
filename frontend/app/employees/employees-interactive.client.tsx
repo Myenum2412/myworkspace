@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  XIcon,
-  ChevronLeftIcon,
-} from "@/lib/icons";
-import type { Employee } from "./columns";
-import { AddEmployeeForm } from "./add-employee-form";
-import { EmployeeList } from "@/components/employees/employee-list";
+import { useCallback, useMemo, useState } from "react";
 import { EmployeeDetails } from "@/components/employees/employee-details";
-import type { UserInfo, SortField, SortDir, PageView } from "@/components/employees/employee-types";
+import { EmployeeList } from "@/components/employees/employee-list";
+import type { PageView, SortDir, SortField, UserInfo } from "@/components/employees/employee-types";
+import { Button } from "@/components/ui/button";
+import { ChevronLeftIcon, XIcon } from "@/lib/icons";
+import { AddEmployeeForm } from "./add-employee-form";
+import type { Employee } from "./columns";
 
 type EmployeesInteractiveProps = {
   employees: Employee[];
   user: UserInfo;
 };
 
-export default function EmployeesInteractive({ employees: initialEmployees, user }: EmployeesInteractiveProps) {
+export default function EmployeesInteractive({
+  employees: initialEmployees,
+  user,
+}: EmployeesInteractiveProps) {
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
   const [pageView, setPageView] = useState<PageView>("list");
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -34,10 +34,13 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
   const [terminatingEmployee, setTerminatingEmployee] = useState<Employee | null>(null);
   const [terminateReason, setTerminateReason] = useState("");
 
-  const handleSort = useCallback((field: SortField) => {
-    setSortDir((prev) => (sortField === field ? (prev === "asc" ? "desc" : "asc") : "asc"));
-    setSortField(field);
-  }, [sortField]);
+  const handleSort = useCallback(
+    (field: SortField) => {
+      setSortDir((prev) => (sortField === field ? (prev === "asc" ? "desc" : "asc") : "asc"));
+      setSortField(field);
+    },
+    [sortField],
+  );
 
   const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
@@ -71,7 +74,7 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
           (e.branchName || "").toLowerCase().includes(q) ||
           (e.location || "").toLowerCase().includes(q) ||
           (e.shift || "").toLowerCase().includes(q) ||
-          (e.displayId || "").toLowerCase().includes(q)
+          (e.displayId || "").toLowerCase().includes(q),
       );
     }
 
@@ -120,21 +123,29 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
           dependentDetails: d.dependentDetails || emp.dependentDetails || [],
         } as Employee;
       }
-    } catch { /* fallback to list data */ }
+    } catch {
+      /* fallback to list data */
+    }
     return emp;
   }, []);
 
-  const handleEdit = useCallback(async (emp: Employee) => {
-    const full = await fetchFullEmployee(emp);
-    setSelectedEmployee(full);
-    setPageView("edit");
-  }, [fetchFullEmployee]);
+  const handleEdit = useCallback(
+    async (emp: Employee) => {
+      const full = await fetchFullEmployee(emp);
+      setSelectedEmployee(full);
+      setPageView("edit");
+    },
+    [fetchFullEmployee],
+  );
 
-  const handleView = useCallback(async (emp: Employee) => {
-    const full = await fetchFullEmployee(emp);
-    setSelectedEmployee(full);
-    setPageView("view");
-  }, [fetchFullEmployee]);
+  const handleView = useCallback(
+    async (emp: Employee) => {
+      const full = await fetchFullEmployee(emp);
+      setSelectedEmployee(full);
+      setPageView("view");
+    },
+    [fetchFullEmployee],
+  );
 
   const handleTerminate = useCallback((emp: Employee) => {
     setTerminatingEmployee(emp);
@@ -147,7 +158,11 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ status: "terminated", terminateReason, terminateDate: new Date().toISOString() }),
+      body: JSON.stringify({
+        status: "terminated",
+        terminateReason,
+        terminateDate: new Date().toISOString(),
+      }),
     });
     if (res.ok) {
       setEmployees((prev) => prev.filter((e) => e.id !== terminatingEmployee.id));
@@ -200,8 +215,19 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
           />
         </div>
         <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-2">
-          <Button variant="outline" onClick={() => setTerminatingEmployee(null)} className="touch-target">Cancel</Button>
-          <Button variant="destructive" onClick={handleTerminateConfirm} disabled={!terminateReason.trim()} className="touch-target">
+          <Button
+            variant="outline"
+            onClick={() => setTerminatingEmployee(null)}
+            className="touch-target"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleTerminateConfirm}
+            disabled={!terminateReason.trim()}
+            className="touch-target"
+          >
             Terminate
           </Button>
         </div>
@@ -247,7 +273,7 @@ export default function EmployeesInteractive({ employees: initialEmployees, user
         onSave={(updatedEmployee) => {
           // Update in local list immediately
           setEmployees((prev) =>
-            prev.map((e) => e.id === updatedEmployee.id ? { ...e, ...updatedEmployee } : e)
+            prev.map((e) => (e.id === updatedEmployee.id ? { ...e, ...updatedEmployee } : e)),
           );
           refreshEmployees();
           handleBack();

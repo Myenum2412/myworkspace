@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IStatusTransition {
   status: "online" | "break" | "offline";
@@ -32,35 +32,41 @@ export interface ISession extends Document {
   updatedAt: Date;
 }
 
-const statusTransitionSchema = new Schema<IStatusTransition>({
-  status: { type: String, enum: ["online", "break", "offline"], required: true },
-  timestamp: { type: Date, required: true },
-}, { _id: false });
+const statusTransitionSchema = new Schema<IStatusTransition>(
+  {
+    status: { type: String, enum: ["online", "break", "offline"], required: true },
+    timestamp: { type: Date, required: true },
+  },
+  { _id: false },
+);
 
-const sessionSchema = new Schema<ISession>({
-  userId: { type: String, required: true, index: true },
-  orgId: { type: String, required: true, index: true },
-  loginTime: { type: Date, required: true, default: Date.now },
-  logoutTime: { type: Date },
-  currentStatus: { type: String, enum: ["online", "break", "offline"], default: "online" },
-  statusTransitions: { type: [statusTransitionSchema], default: [] },
-  totalBreakDuration: { type: Number, default: 0 },
-  duration: { type: Number },
-  expiresAt: { type: Date, required: true },
-  deviceFingerprint: { type: String },
-  sessionFingerprint: { type: String },
-  ipAddress: { type: String },
-  userAgent: { type: String },
-  browser: { type: String },
-  os: { type: String },
-  deviceType: { type: String, enum: ["desktop", "mobile", "tablet"] },
-  lastActivityAt: { type: Date, default: Date.now },
-  isActive: { type: Boolean, default: true, index: true },
-  terminatedBy: { type: String },
-  terminationReason: { type: String },
-  anomalyScore: { type: Number, default: 0 },
-  anomalyFlags: { type: [String], default: [] },
-}, { timestamps: true });
+const sessionSchema = new Schema<ISession>(
+  {
+    userId: { type: String, required: true, index: true },
+    orgId: { type: String, required: true, index: true },
+    loginTime: { type: Date, required: true, default: Date.now },
+    logoutTime: { type: Date },
+    currentStatus: { type: String, enum: ["online", "break", "offline"], default: "online" },
+    statusTransitions: { type: [statusTransitionSchema], default: [] },
+    totalBreakDuration: { type: Number, default: 0 },
+    duration: { type: Number },
+    expiresAt: { type: Date, required: true },
+    deviceFingerprint: { type: String },
+    sessionFingerprint: { type: String },
+    ipAddress: { type: String },
+    userAgent: { type: String },
+    browser: { type: String },
+    os: { type: String },
+    deviceType: { type: String, enum: ["desktop", "mobile", "tablet"] },
+    lastActivityAt: { type: Date, default: Date.now },
+    isActive: { type: Boolean, default: true, index: true },
+    terminatedBy: { type: String },
+    terminationReason: { type: String },
+    anomalyScore: { type: Number, default: 0 },
+    anomalyFlags: { type: [String], default: [] },
+  },
+  { timestamps: true },
+);
 
 // Indexes for efficient queries
 sessionSchema.index({ userId: 1, loginTime: -1 });
@@ -93,10 +99,7 @@ export function isSessionTimedOut(session: ISession): boolean {
  * Update session activity timestamp.
  */
 export async function updateSessionActivity(sessionId: string): Promise<void> {
-  await Session.updateOne(
-    { _id: sessionId },
-    { $set: { lastActivityAt: new Date() } },
-  ).exec();
+  await Session.updateOne({ _id: sessionId }, { $set: { lastActivityAt: new Date() } }).exec();
 }
 
 /**
@@ -157,10 +160,7 @@ export async function getActiveSessionCount(userId: string): Promise<number> {
  * Get all active sessions for a user.
  */
 export async function getActiveSessions(userId: string): Promise<any[]> {
-  return Session.find({ userId, isActive: true })
-    .sort({ lastActivityAt: -1 })
-    .lean()
-    .exec();
+  return Session.find({ userId, isActive: true }).sort({ lastActivityAt: -1 }).lean().exec();
 }
 
 /**

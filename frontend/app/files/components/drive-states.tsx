@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  FolderIcon,
-  UploadIcon,
-  FolderPlusIcon,
   AlertCircleIcon,
+  FolderIcon,
   FolderOpenIcon,
+  FolderPlusIcon,
+  UploadIcon,
 } from "@/lib/icons";
 
 export function DriveSkeleton({ viewMode }: { viewMode: "grid" | "list" }) {
@@ -13,7 +13,10 @@ export function DriveSkeleton({ viewMode }: { viewMode: "grid" | "list" }) {
     return (
       <div className="space-y-2">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 rounded-lg border border-border/60 bg-card px-4 py-3">
+          <div
+            key={i}
+            className="flex items-center gap-3 rounded-lg border border-border/60 bg-card px-4 py-3"
+          >
             <div className="size-6 animate-pulse rounded bg-muted" />
             <div className="flex-1">
               <div className="h-3 w-2/5 animate-pulse rounded bg-muted" />
@@ -89,7 +92,9 @@ export function DriveError({ message, onRetry }: { message?: string; onRetry?: (
     <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
       <AlertCircleIcon className="size-10 text-destructive/70" />
       <p className="text-sm font-medium text-foreground">We couldn&apos;t load your files</p>
-      <p className="max-w-sm text-xs text-muted-foreground">{message || "Something went wrong. Please try again."}</p>
+      <p className="max-w-sm text-xs text-muted-foreground">
+        {message || "Something went wrong. Please try again."}
+      </p>
       {onRetry && (
         <button
           onClick={onRetry}

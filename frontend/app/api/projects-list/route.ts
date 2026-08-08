@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { auth } from "@/lib/auth/config";
 import { getUserOrgId } from "@/lib/org";
 
 export async function GET() {
@@ -11,12 +11,13 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
     if (!orgId) {
       return NextResponse.json({ data: [] });
     }
 
-    const projects = await db.collection(collections.projects)
+    const projects = await db
+      .collection(collections.projects)
       .find({ orgId })
       .sort({ createdAt: -1 })
       .toArray();

@@ -1,8 +1,8 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
-import { requireOrgMembership } from "../lib/org-utils.js";
+import { type Response, Router } from "express";
 import { Settings } from "../lib/db/models/Settings.js";
+import { requireOrgMembership } from "../lib/org-utils.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
@@ -10,8 +10,10 @@ const router = Router();
 router.use(authenticate);
 
 router.get("/", async (req: AuthRequest, res: Response) => {
-  const orgId = (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
-  let settings = await Settings.findOne({ orgId }).select("orgId general team notifications").lean();
+  const orgId = (req.query.orgId as string) || (await requireOrgMembership(req.user!.userId));
+  let settings = await Settings.findOne({ orgId })
+    .select("orgId general team notifications")
+    .lean();
   if (!settings) {
     const created = await Settings.create({ orgId });
     settings = created.toObject() as any;
@@ -21,7 +23,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.put("/", async (req: AuthRequest, res: Response) => {
-  const orgId = req.body.orgId || await requireOrgMembership(req.user!.userId);
+  const orgId = req.body.orgId || (await requireOrgMembership(req.user!.userId));
   const { general, team, notifications } = req.body;
 
   const update: Record<string, unknown> = {};
@@ -32,13 +34,20 @@ router.put("/", async (req: AuthRequest, res: Response) => {
   const settings = await Settings.findOneAndUpdate(
     { orgId },
     { $set: update },
-    { upsert: true, returnDocument: "after" }
+    { upsert: true, returnDocument: "after" },
   ).lean();
 
   if (!settings) throw new AppError(500, "Failed to save settings");
 
   const { _id, ...rest } = settings as any;
-  processEvent({ type: "profile_updated", category: "auth", userId: req.user!.userId, orgId: orgId as string, createdBy: req.user!.userId, title: "Settings updated" }).catch(() => {});
+  processEvent({
+    type: "profile_updated",
+    category: "auth",
+    userId: req.user!.userId,
+    orgId: orgId as string,
+    createdBy: req.user!.userId,
+    title: "Settings updated",
+  }).catch(() => {});
 
   res.json({ success: true, data: rest });
 });

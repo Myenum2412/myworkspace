@@ -6,36 +6,43 @@ import { getUserOrgId } from "@/lib/org";
 
 export async function GET() {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
   if (!orgId) return NextResponse.json({ revisions: [] });
   try {
-    const raw = await db.collection(collections.tasks).aggregate([
-      { $match: { orgId, status: { $in: ["rejected", "review"] } } },
-      { $sort: { updatedAt: -1 } },
-      {
-        $lookup: {
-          from: "users",
-          localField: "assigneeId",
-          foreignField: "id",
-          as: "assignee",
+    const raw = await db
+      .collection(collections.tasks)
+      .aggregate([
+        { $match: { orgId, status: { $in: ["rejected", "review"] } } },
+        { $sort: { updatedAt: -1 } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "assigneeId",
+            foreignField: "id",
+            as: "assignee",
+          },
         },
-      },
-      { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: "users",
-          localField: "rejectedBy",
-          foreignField: "id",
-          as: "rejector",
+        { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "rejectedBy",
+            foreignField: "id",
+            as: "rejector",
+          },
         },
-      },
-      { $unwind: { path: "$rejector", preserveNullAndEmptyArrays: true } },
-    ]).toArray();
+        { $unwind: { path: "$rejector", preserveNullAndEmptyArrays: true } },
+      ])
+      .toArray();
 
     const revisions = (raw as any[]).map((t, index) => ({
-      id: (index + 1),
+      id: index + 1,
       _id: t._id?.toString() || "",
       taskId: t._id?.toString() || "",
       description: t.title || "",
@@ -49,5 +56,7 @@ export async function GET() {
       dueDate: t.dueDate || null,
     }));
     return NextResponse.json({ revisions });
-  } catch { return NextResponse.json({ revisions: [] }); }
+  } catch {
+    return NextResponse.json({ revisions: [] });
+  }
 }

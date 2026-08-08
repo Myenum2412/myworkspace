@@ -1,4 +1,4 @@
-import { EmailData } from "./types.js";
+import type { EmailData } from "./types.js";
 
 function ts(): string {
   return new Date().toLocaleString();
@@ -11,7 +11,7 @@ export const buildTaskCreated = (
   createdBy: string,
   dueDate: string,
   priority: string,
-  taskUrl: string
+  taskUrl: string,
 ): EmailData => ({
   subject: `Task Created: ${taskTitle}`,
   previewText: `A new task "${taskTitle}" has been created in ${projectName}`,
@@ -38,7 +38,7 @@ export const buildTaskAssigned = (
   assignedBy: string,
   dueDate: string,
   priority: string,
-  taskUrl: string
+  taskUrl: string,
 ): EmailData => ({
   subject: `Task Assigned: ${taskTitle}`,
   previewText: `You have been assigned the task "${taskTitle}"`,
@@ -64,7 +64,7 @@ export const buildTaskUpdated = (
   projectName: string,
   updatedBy: string,
   changes: string,
-  taskUrl: string
+  taskUrl: string,
 ): EmailData => ({
   subject: `Task Updated: ${taskTitle}`,
   previewText: `The task "${taskTitle}" has been updated`,
@@ -88,7 +88,7 @@ export const buildTaskDueSoon = (
   projectName: string,
   dueDate: string,
   daysRemaining: number,
-  taskUrl: string
+  taskUrl: string,
 ): EmailData => ({
   subject: `Task Due Soon: ${taskTitle}`,
   previewText: `"${taskTitle}" is due in ${daysRemaining} days`,
@@ -104,9 +104,10 @@ export const buildTaskDueSoon = (
     { label: "Project", value: projectName },
     { label: "Due Date", value: dueDate },
   ],
-  warning: daysRemaining <= 1
-    ? "This task is due today. Please prioritize completion."
-    : `This task is due in ${daysRemaining} days. Please ensure you are on track.`,
+  warning:
+    daysRemaining <= 1
+      ? "This task is due today. Please prioritize completion."
+      : `This task is due in ${daysRemaining} days. Please ensure you are on track.`,
   button: { text: "View Task", url: taskUrl },
   supportEmail: "support@workspace.com",
 });
@@ -117,7 +118,7 @@ export const buildTaskOverdue = (
   projectName: string,
   dueDate: string,
   daysOverdue: number,
-  taskUrl: string
+  taskUrl: string,
 ): EmailData => ({
   subject: `Overdue Task: ${taskTitle}`,
   previewText: `"${taskTitle}" is overdue by ${daysOverdue} days`,
@@ -130,7 +131,8 @@ export const buildTaskOverdue = (
     { label: "Project", value: projectName },
     { label: "Due Date", value: dueDate },
   ],
-  warning: "This task is overdue. Please update your status or request an extension as soon as possible.",
+  warning:
+    "This task is overdue. Please update your status or request an extension as soon as possible.",
   button: { text: "View Task", url: taskUrl },
   supportEmail: "support@workspace.com",
 });
@@ -140,7 +142,7 @@ export const buildTaskCompleted = (
   taskTitle: string,
   projectName: string,
   completedBy: string,
-  taskUrl: string
+  taskUrl: string,
 ): EmailData => ({
   subject: `Task Completed: ${taskTitle}`,
   previewText: `"${taskTitle}" has been marked as complete`,
@@ -164,7 +166,7 @@ export const buildTaskReopened = (
   projectName: string,
   reopenedBy: string,
   reason: string,
-  taskUrl: string
+  taskUrl: string,
 ): EmailData => ({
   subject: `Task Reopened: ${taskTitle}`,
   previewText: `"${taskTitle}" has been reopened`,
@@ -188,7 +190,7 @@ export const buildTaskCommentAdded = (
   projectName: string,
   commentAuthor: string,
   commentText: string,
-  taskUrl: string
+  taskUrl: string,
 ): EmailData => ({
   subject: `New Comment on Task: ${taskTitle}`,
   previewText: `${commentAuthor} commented on "${taskTitle}"`,
@@ -218,7 +220,7 @@ export const buildTaskStatusChanged = (
   changedBy: string,
   oldStatus: string,
   newStatus: string,
-  taskUrl: string
+  taskUrl: string,
 ): EmailData => ({
   subject: `Task Status Changed: ${taskTitle}`,
   previewText: `"${taskTitle}" moved from ${oldStatus} to ${newStatus}`,
@@ -244,7 +246,7 @@ export const buildTaskPriorityChanged = (
   changedBy: string,
   oldPriority: string,
   newPriority: string,
-  taskUrl: string
+  taskUrl: string,
 ): EmailData => ({
   subject: `Task Priority Changed: ${taskTitle}`,
   previewText: `"${taskTitle}" priority changed to ${newPriority}`,
@@ -271,7 +273,7 @@ export const buildTaskDeleted = (
   taskTitle: string,
   projectName: string,
   deletedBy: string,
-  taskUrl: string
+  taskUrl: string,
 ): EmailData => ({
   subject: `Task Removed: ${taskTitle}`,
   previewText: `"${taskTitle}" has been deleted from ${projectName}`,
@@ -294,7 +296,7 @@ export const buildDailyTaskSummary = (
   completedCount: number,
   pendingCount: number,
   overdueCount: number,
-  dashboardUrl: string
+  dashboardUrl: string,
 ): EmailData => ({
   subject: `Daily Task Summary - ${projectName}`,
   previewText: `${completedCount} completed, ${pendingCount} pending, ${overdueCount} overdue`,
@@ -307,9 +309,10 @@ export const buildDailyTaskSummary = (
     { label: "Pending", value: String(pendingCount) },
     { label: "Overdue", value: String(overdueCount) },
   ],
-  warning: overdueCount > 0
-    ? `You have ${overdueCount} overdue task${overdueCount > 1 ? 's' : ''} that need${overdueCount > 1 ? '' : 's'} attention.`
-    : undefined,
+  warning:
+    overdueCount > 0
+      ? `You have ${overdueCount} overdue task${overdueCount > 1 ? "s" : ""} that need${overdueCount > 1 ? "" : "s"} attention.`
+      : undefined,
   button: { text: "View Dashboard", url: dashboardUrl },
   supportEmail: "support@workspace.com",
 });
@@ -376,9 +379,7 @@ export const buildDailyTaskEmail = (options: DailyTaskEmailOptions): string => {
   };
 
   const getTaskRow = (task: TaskItem) => {
-    const dueDateStr = task.dueDate
-      ? new Date(task.dueDate).toLocaleDateString()
-      : "No due date";
+    const dueDateStr = task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No due date";
     const taskLink = includeTaskLinks
       ? `<a href="${dashboardUrl}/tasks/${task.id}" style="color:#2563eb;text-decoration:none;">${task.title}</a>`
       : task.title;
@@ -506,20 +507,25 @@ export const buildDailyTaskEmail = (options: DailyTaskEmailOptions): string => {
           <!-- Greeting -->
           <p style="font-size:16px;color:#374151;margin:0 0 16px 0;">Hi ${firstName},</p>
           
-          ${totalTasks > 0 
-            ? `<p style="font-size:14px;color:#6b7280;margin:0 0 24px 0;">You have <strong>${totalTasks}</strong> task${totalTasks > 1 ? 's' : ''} assigned today.</p>`
-            : ""
+          ${
+            totalTasks > 0
+              ? `<p style="font-size:14px;color:#6b7280;margin:0 0 24px 0;">You have <strong>${totalTasks}</strong> task${totalTasks > 1 ? "s" : ""} assigned today.</p>`
+              : ""
           }
 
           <!-- Task Sections -->
           ${taskSections}
 
           <!-- View Dashboard Button -->
-          ${totalTasks > 0 ? `
+          ${
+            totalTasks > 0
+              ? `
             <div style="text-align:center;margin:24px 0;">
               <a href="${dashboardUrl}" style="display:inline-block;background-color:#3b82f6;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">View Dashboard</a>
             </div>
-          ` : ""}
+          `
+              : ""
+          }
         </div>
 
         <!-- Branding Footer -->

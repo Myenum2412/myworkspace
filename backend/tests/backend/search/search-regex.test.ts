@@ -1,10 +1,10 @@
-import request from "supertest";
 import type { Server } from "http";
+import request from "supertest";
 import { v4 as uuid } from "uuid";
 import app from "../../../src/app.js";
+import { Task } from "../../../src/lib/db/models/Task.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin, seedTask } from "../../__helpers__/fixtures.js";
-import { Task } from "../../../src/lib/db/models/Task.js";
 
 let server: Server;
 let ctx: Awaited<ReturnType<typeof seedOrgWithAdmin>>;
@@ -59,10 +59,7 @@ describe("Search endpoints - safety and isolation", () => {
       await seedTask(ctx.orgId, ctx.userId, { title: "Org1 Task", creatorId: ctx.userId });
       await seedTask(ctx2.orgId, ctx2.userId, { title: "Org2 Task", creatorId: ctx2.userId });
 
-      const res1 = await request(server)
-        .get("/api/search")
-        .set(ctx.headers)
-        .query({ q: "Task" });
+      const res1 = await request(server).get("/api/search").set(ctx.headers).query({ q: "Task" });
 
       expect([200, 400, 429, 404]).toContain(res1.status);
     });
@@ -85,9 +82,7 @@ describe("Search endpoints - safety and isolation", () => {
       await Task.insertMany(tasks);
 
       const start = Date.now();
-      const res = await request(server)
-        .get("/api/tasks")
-        .set(ctx.headers);
+      const res = await request(server).get("/api/tasks").set(ctx.headers);
 
       const duration = Date.now() - start;
       expect([200, 429]).toContain(res.status);

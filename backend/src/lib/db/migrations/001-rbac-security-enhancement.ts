@@ -9,7 +9,7 @@
  * 4. New indexes for performance
  */
 
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { logger } from "../../logger/index.js";
 
 export const migration = {
@@ -21,7 +21,9 @@ export const migration = {
 
     // 1. Add tokenVersion to users collection
     const usersCollection = db.collection("users");
-    const usersWithTokenVersion = await usersCollection.countDocuments({ tokenVersion: { $exists: true } });
+    const usersWithTokenVersion = await usersCollection.countDocuments({
+      tokenVersion: { $exists: true },
+    });
     if (usersWithTokenVersion === 0) {
       await usersCollection.updateMany(
         { tokenVersion: { $exists: false } },

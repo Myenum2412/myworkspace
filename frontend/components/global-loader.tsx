@@ -1,17 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { useBootstrapStore } from "@/stores/bootstrap-store";
-import { setDataCache } from "@/lib/api/schemas";
+import { useEffect, useRef } from "react";
 import { fetchBootstrapData } from "@/lib/api/bootstrap";
+import { setDataCache } from "@/lib/api/schemas";
+import { useBootstrapStore } from "@/stores/bootstrap-store";
 
-const NAV_ENDPOINTS = [
-  "/api/notifications",
-  "/api/orgmenu",
-  "/api/departments",
-  "/api/employees",
-];
+const NAV_ENDPOINTS = ["/api/notifications", "/api/orgmenu", "/api/departments", "/api/employees"];
 
 export function GlobalLoader({ children }: { children: React.ReactNode }) {
   const { status } = useSession();
@@ -35,8 +30,8 @@ export function GlobalLoader({ children }: { children: React.ReactNode }) {
           NAV_ENDPOINTS.map((endpoint) =>
             fetch(endpoint, { credentials: "include" })
               .then((res) => (res.ok ? res.json() : null))
-              .catch(() => null)
-          )
+              .catch(() => null),
+          ),
         );
       })
       .then((results) => {

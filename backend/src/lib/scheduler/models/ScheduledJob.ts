@@ -1,15 +1,15 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 import {
-  JOB_STATUSES,
   JOB_PRIORITIES,
+  JOB_STATUSES,
   JOB_TYPES,
+  type JobPayload,
+  type JobPriority,
+  type JobStatus,
+  type JobType,
   SCHEDULE_TYPES,
-  JobStatus,
-  JobPriority,
-  JobType,
-  ScheduleType,
-  JobPayload,
+  type ScheduleType,
 } from "../types.js";
 
 export interface IScheduledJob extends Document {
@@ -80,7 +80,7 @@ const scheduledJobSchema = new Schema<IScheduledJob>(
     deletedAt: Date,
     isDeleted: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 scheduledJobSchema.index({ orgId: 1, status: 1, nextExecutionAt: 1 });

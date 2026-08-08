@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
-import { OrgMember } from "./db/models/OrgMember.js";
-import { User } from "./db/models/User.js";
+import { AppError } from "../middleware/error.js";
+import type { AuthRequest } from "../types/index.js";
+import { cacheManager } from "./cache.js";
 import { ClientUser } from "./db/models/ClientUser.js";
 import { ClientWorkspace } from "./db/models/ClientWorkspace.js";
 import { Organization } from "./db/models/Organization.js";
-import { AuthRequest } from "../types/index.js";
-import { AppError } from "../middleware/error.js";
-import { cacheManager } from "./cache.js";
+import { OrgMember } from "./db/models/OrgMember.js";
+import { User } from "./db/models/User.js";
 
 const ORG_CACHE_TTL = 120;
 
@@ -61,7 +61,12 @@ export async function getUserOrgId(userId: string, email?: string): Promise<stri
  *
  * Optimized: trusts JWT orgId first, uses cache, parallelizes fallbacks.
  */
-export async function requireOrgMembership(userId: string, orgId?: string, email?: string, tokenOrgId?: string): Promise<string> {
+export async function requireOrgMembership(
+  userId: string,
+  orgId?: string,
+  email?: string,
+  tokenOrgId?: string,
+): Promise<string> {
   if (tokenOrgId && (!orgId || tokenOrgId === orgId)) return tokenOrgId;
 
   const cacheKey = `org:${userId}`;
@@ -85,7 +90,9 @@ export async function requireOrgMembership(userId: string, orgId?: string, email
 
   // Parallelize all membership lookups
   const queries: Promise<any>[] = [
-    OrgMember.findOne(preferredOrg ? { userId: resolvedId, orgId: preferredOrg } : { userId: resolvedId }).lean(),
+    OrgMember.findOne(
+      preferredOrg ? { userId: resolvedId, orgId: preferredOrg } : { userId: resolvedId },
+    ).lean(),
   ];
 
   if (mongoose.Types.ObjectId.isValid(resolvedId)) {
@@ -116,7 +123,10 @@ export async function requireOrgMembership(userId: string, orgId?: string, email
       if (preferredOrg) nextAuthFilter.orgId = preferredOrg;
       const nextAuthMember = await db.collection("org_members").findOne(nextAuthFilter);
       if (nextAuthMember) {
-        const orgIdVal = typeof nextAuthMember.orgId === "string" ? nextAuthMember.orgId : String(nextAuthMember.orgId);
+        const orgIdVal =
+          typeof nextAuthMember.orgId === "string"
+            ? nextAuthMember.orgId
+            : String(nextAuthMember.orgId);
         cacheManager.set(cacheKey, orgIdVal, ORG_CACHE_TTL);
         return orgIdVal;
       }
@@ -189,8 +199,16 @@ export function getOrgIdFromRequest(req: AuthRequest, strict = false): string {
 /**
  * Convenience wrapper that passes the email from the authenticated request.
  */
-export async function requireOrgMembershipFromRequest(req: AuthRequest, orgId?: string): Promise<string> {
-  return requireOrgMembership(req.user!.userId, orgId, req.user!.email || undefined, req.user!.orgId);
+export async function requireOrgMembershipFromRequest(
+  req: AuthRequest,
+  orgId?: string,
+): Promise<string> {
+  return requireOrgMembership(
+    req.user!.userId,
+    orgId,
+    req.user!.email || undefined,
+    req.user!.orgId,
+  );
 }
 
 /**

@@ -2,33 +2,29 @@
 
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
-  SelectValue,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  PlusIcon,
   AlertCircleIcon,
+  ArrowLeftIcon,
+  FileIcon,
+  PlusIcon,
+  SearchIcon,
+  UploadIcon,
   UsersIcon,
   XIcon,
-  FileIcon,
-  UploadIcon,
-  ArrowLeftIcon,
-  SearchIcon,
 } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import type { ProjectCreateFormProps, ProjectEditFormProps } from "./project-types";
@@ -82,12 +78,13 @@ export function ProjectCreateForm({
       )}
 
       <div className="px-4 sm:px-6 py-5 space-y-6">
-
         <fieldset className="border p-4 space-y-4">
           <legend className="text-sm font-semibold px-2">Basic Information</legend>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Project Name <span className="text-destructive">*</span></Label>
+              <Label className="text-xs text-muted-foreground">
+                Project Name <span className="text-destructive">*</span>
+              </Label>
               <Input
                 placeholder=""
                 value={projectName}
@@ -97,14 +94,22 @@ export function ProjectCreateForm({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Client <span className="text-destructive">*</span></Label>
-              <Select value={selectedClient} onValueChange={onSelectedClientChange} disabled={submitting}>
+              <Label className="text-xs text-muted-foreground">
+                Client <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={selectedClient}
+                onValueChange={onSelectedClientChange}
+                disabled={submitting}
+              >
                 <SelectTrigger className="border-black bg-white">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
                   {clientList.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -149,64 +154,93 @@ export function ProjectCreateForm({
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Team Members</Label>
               <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="justify-start font-normal" disabled={submitting}>
-                  <UsersIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                  {projectMembers.length === 0
-                    ? "Select team members"
-                    : `${projectMembers.length} member${projectMembers.length > 1 ? "s" : ""} selected`}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-72 p-2" align="start">
-                <div className="relative mb-2">
-                  <Input
-                    placeholder=""
-                    value={memberSearch}
-                    onChange={(e) => onMemberSearchChange(e.target.value)}
-                    className="pl-8 h-8 bg-white"
-                  />
-                  <svg
-                    className="absolute left-2.5 top-2 size-4 text-muted-foreground"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="justify-start font-normal"
+                    disabled={submitting}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
-                  </svg>
-                </div>
-                <div className="max-h-48 space-y-1 overflow-y-auto">
-                  {filteredMembers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">
-                      {memberSearch ? "No matching members" : "No employees available"}
-                    </p>
-                  ) : filteredMembers.map((m) => {
-                    const checked = projectMembers.includes(m.id);
-                    return (
-                      <label key={m.id} className="flex items-center gap-2.5 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-muted">
-                        <Checkbox
-                          checked={checked}
-                          onCheckedChange={() => {
-                            onProjectMembersChange(
-                              checked ? projectMembers.filter((id) => id !== m.id) : [...projectMembers, m.id]
-                            );
-                          }}
-                        />
-                        <div className="size-7 rounded-sm bg-muted flex items-center justify-center text-[10px] font-medium shrink-0 overflow-hidden">
-                          {m.image ? (
-                            <img src={m.image} alt={m.name} className="size-full object-cover" />
-                          ) : (
-                            <span>{m.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}</span>
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium truncate">{m.name}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">{m.email}</p>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </PopoverContent>
+                    <UsersIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
+                    {projectMembers.length === 0
+                      ? "Select team members"
+                      : `${projectMembers.length} member${projectMembers.length > 1 ? "s" : ""} selected`}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 p-2" align="start">
+                  <div className="relative mb-2">
+                    <Input
+                      placeholder=""
+                      value={memberSearch}
+                      onChange={(e) => onMemberSearchChange(e.target.value)}
+                      className="pl-8 h-8 bg-white"
+                    />
+                    <svg
+                      className="absolute left-2.5 top-2 size-4 text-muted-foreground"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="max-h-48 space-y-1 overflow-y-auto">
+                    {filteredMembers.length === 0 ? (
+                      <p className="text-sm text-muted-foreground py-4 text-center">
+                        {memberSearch ? "No matching members" : "No employees available"}
+                      </p>
+                    ) : (
+                      filteredMembers.map((m) => {
+                        const checked = projectMembers.includes(m.id);
+                        return (
+                          <label
+                            key={m.id}
+                            className="flex items-center gap-2.5 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-muted"
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={() => {
+                                onProjectMembersChange(
+                                  checked
+                                    ? projectMembers.filter((id) => id !== m.id)
+                                    : [...projectMembers, m.id],
+                                );
+                              }}
+                            />
+                            <div className="size-7 rounded-sm bg-muted flex items-center justify-center text-[10px] font-medium shrink-0 overflow-hidden">
+                              {m.image ? (
+                                <img
+                                  src={m.image}
+                                  alt={m.name}
+                                  className="size-full object-cover"
+                                />
+                              ) : (
+                                <span>
+                                  {m.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .toUpperCase()
+                                    .slice(0, 2)}
+                                </span>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium truncate">{m.name}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">
+                                {m.email}
+                              </p>
+                            </div>
+                          </label>
+                        );
+                      })
+                    )}
+                  </div>
+                </PopoverContent>
               </Popover>
             </div>
           </div>
@@ -217,7 +251,11 @@ export function ProjectCreateForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Priority</Label>
-              <Select value={projectPriority} onValueChange={onProjectPriorityChange} disabled={submitting}>
+              <Select
+                value={projectPriority}
+                onValueChange={onProjectPriorityChange}
+                disabled={submitting}
+              >
                 <SelectTrigger className="border-black bg-white">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
@@ -231,7 +269,11 @@ export function ProjectCreateForm({
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Category</Label>
-              <Select value={projectCategory} onValueChange={onProjectCategoryChange} disabled={submitting}>
+              <Select
+                value={projectCategory}
+                onValueChange={onProjectCategoryChange}
+                disabled={submitting}
+              >
                 <SelectTrigger className="border-black bg-white">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
@@ -278,7 +320,7 @@ export function ProjectCreateForm({
                     type="button"
                     onClick={() => onProjectColorChange(c)}
                     disabled={submitting}
-                    className={`rounded-sm ring-offset-2 ring-offset-background transition-all ${ projectColor === c ? "ring-2 ring-foreground scale-110 shadow-md" : "hover:scale-105" }`}
+                    className={`rounded-sm ring-offset-2 ring-offset-background transition-all ${projectColor === c ? "ring-2 ring-foreground scale-110 shadow-md" : "hover:scale-105"}`}
                     style={{ backgroundColor: c }}
                   />
                 ))}
@@ -315,11 +357,16 @@ export function ProjectCreateForm({
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-medium">{projectAttachment.name}</p>
-                    <p className="text-xs text-muted-foreground">{(projectAttachment.size / 1024).toFixed(1)} KB</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(projectAttachment.size / 1024).toFixed(1)} KB
+                    </p>
                   </div>
                   <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); onProjectAttachmentChange(null); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onProjectAttachmentChange(null);
+                    }}
                     className="ml-auto p-1.5 rounded-sm hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
                   >
                     <XIcon className="size-4" />
@@ -330,9 +377,12 @@ export function ProjectCreateForm({
                   <UploadIcon className="size-8 mx-auto text-muted-foreground/40 group-hover:text-primary/40 transition-colors" />
                   <div>
                     <p className="text-sm text-muted-foreground">
-                      <span className="font-medium text-foreground">Click to upload</span> or drag and drop
+                      <span className="font-medium text-foreground">Click to upload</span> or drag
+                      and drop
                     </p>
-                    <p className="text-xs text-muted-foreground/60 mt-0.5">PDF, DOC, XLS, PNG, JPG up to 10MB</p>
+                    <p className="text-xs text-muted-foreground/60 mt-0.5">
+                      PDF, DOC, XLS, PNG, JPG up to 10MB
+                    </p>
                   </div>
                 </div>
               )}
@@ -350,14 +400,17 @@ export function ProjectCreateForm({
             />
           </div>
         </fieldset>
-
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t">
         <Button variant="outline" onClick={onCancel} disabled={submitting} className="w-32 h-10">
           Cancel
         </Button>
-        <Button disabled={!projectName || !selectedClient || submitting} onClick={onSubmit} className="w-32 h-10 touch-target">
+        <Button
+          disabled={!projectName || !selectedClient || submitting}
+          onClick={onSubmit}
+          className="w-32 h-10 touch-target"
+        >
           {submitting ? (
             <span className="flex items-center gap-2">
               <span className="size-4 animate-spin rounded-sm border-2 border-background border-t-transparent" />
@@ -439,7 +492,11 @@ export function ProjectEditForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Project Name</Label>
-                  <Input value={editName} onChange={(e) => onEditNameChange(e.target.value)} className="border-black bg-white" />
+                  <Input
+                    value={editName}
+                    onChange={(e) => onEditNameChange(e.target.value)}
+                    className="border-black bg-white"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Client</Label>
@@ -449,10 +506,14 @@ export function ProjectEditForm({
                     </SelectTrigger>
                     <SelectContent>
                       {clientList.length === 0 ? (
-                        <div className="px-2 py-4 text-center text-xs text-muted-foreground">No clients</div>
+                        <div className="px-2 py-4 text-center text-xs text-muted-foreground">
+                          No clients
+                        </div>
                       ) : (
                         clientList.map((c) => (
-                          <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
+                          <SelectItem key={c} value={c} className="text-sm">
+                            {c}
+                          </SelectItem>
                         ))
                       )}
                     </SelectContent>
@@ -469,11 +530,19 @@ export function ProjectEditForm({
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Deadline</Label>
-                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} className="border-black bg-white" />
+                  <Input
+                    type="date"
+                    value={editDeadline}
+                    onChange={(e) => onEditDeadlineChange(e.target.value)}
+                    className="border-black bg-white"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Status</Label>
-                  <Select value={editStatus} onValueChange={(v) => onEditStatusChange(v as "Active" | "Inactive")}>
+                  <Select
+                    value={editStatus}
+                    onValueChange={(v) => onEditStatusChange(v as "Active" | "Inactive")}
+                  >
                     <SelectTrigger className="border-black bg-white">
                       <SelectValue />
                     </SelectTrigger>
@@ -493,11 +562,21 @@ export function ProjectEditForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Start Date</Label>
-                  <Input type="date" value={editStartDate} onChange={(e) => onEditStartDateChange(e.target.value)} className="border-black bg-white" />
+                  <Input
+                    type="date"
+                    value={editStartDate}
+                    onChange={(e) => onEditStartDateChange(e.target.value)}
+                    className="border-black bg-white"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Deadline</Label>
-                  <Input type="date" value={editDeadline} onChange={(e) => onEditDeadlineChange(e.target.value)} className="border-black bg-white" />
+                  <Input
+                    type="date"
+                    value={editDeadline}
+                    onChange={(e) => onEditDeadlineChange(e.target.value)}
+                    className="border-black bg-white"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Health</Label>
@@ -549,7 +628,9 @@ export function ProjectEditForm({
                       </div>
                       <div className="max-h-48 overflow-y-auto space-y-1">
                         {filteredMembers.length === 0 ? (
-                          <p className="text-xs text-muted-foreground text-center py-4">No employees available</p>
+                          <p className="text-xs text-muted-foreground text-center py-4">
+                            No employees available
+                          </p>
                         ) : (
                           filteredMembers.map((m) => (
                             <label
@@ -618,7 +699,10 @@ export function ProjectEditForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Access</Label>
-                  <Select value={editAccess} onValueChange={(v) => onEditAccessChange(v as "Public" | "Private")}>
+                  <Select
+                    value={editAccess}
+                    onValueChange={(v) => onEditAccessChange(v as "Public" | "Private")}
+                  >
                     <SelectTrigger className="border-black bg-white">
                       <SelectValue />
                     </SelectTrigger>
@@ -639,7 +723,7 @@ export function ProjectEditForm({
                           onClick={() => onEditColorChange(c)}
                           className={cn(
                             "rounded-sm ring-offset-2 ring-offset-background transition-all",
-                            editColor === c ? "ring-2 ring-foreground scale-110" : ""
+                            editColor === c ? "ring-2 ring-foreground scale-110" : "",
                           )}
                           style={{ backgroundColor: c }}
                         />
@@ -679,11 +763,16 @@ export function ProjectEditForm({
                       </div>
                       <div className="text-left">
                         <p className="text-sm font-medium">{editAttachment.name}</p>
-                        <p className="text-xs text-muted-foreground">{(editAttachment.size / 1024).toFixed(1)} KB</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(editAttachment.size / 1024).toFixed(1)} KB
+                        </p>
                       </div>
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); onEditAttachmentChange(null); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditAttachmentChange(null);
+                        }}
                         className="ml-auto p-1.5 rounded-sm hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
                       >
                         <XIcon className="size-4" />
@@ -694,9 +783,12 @@ export function ProjectEditForm({
                       <UploadIcon className="size-8 mx-auto text-muted-foreground/40 group-hover:text-primary/40 transition-colors" />
                       <div>
                         <p className="text-sm text-muted-foreground">
-                          <span className="font-medium text-foreground">Click to upload</span> or drag and drop
+                          <span className="font-medium text-foreground">Click to upload</span> or
+                          drag and drop
                         </p>
-                        <p className="text-xs text-muted-foreground/60 mt-0.5">PDF, DOC, XLS, PNG, JPG up to 10MB</p>
+                        <p className="text-xs text-muted-foreground/60 mt-0.5">
+                          PDF, DOC, XLS, PNG, JPG up to 10MB
+                        </p>
                       </div>
                     </div>
                   )}
@@ -722,7 +814,11 @@ export function ProjectEditForm({
         <Button variant="ghost" onClick={onCancel} className="w-32 h-10 order-2 md:order-1">
           Cancel
         </Button>
-        <Button className="w-32 h-10 bg-primary hover:bg-primary/80 touch-target order-1 md:order-2" onClick={onSubmit} disabled={submitting}>
+        <Button
+          className="w-32 h-10 bg-primary hover:bg-primary/80 touch-target order-1 md:order-2"
+          onClick={onSubmit}
+          disabled={submitting}
+        >
           {submitting ? "Saving..." : "Save"}
         </Button>
       </div>

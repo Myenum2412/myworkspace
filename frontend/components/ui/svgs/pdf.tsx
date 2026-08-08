@@ -9,28 +9,30 @@ const Pdf = (props: SVGProps<SVGSVGElement>) => (
       font-family="sans-serif"
       overflow="visible"
       paint-order="markers fill stroke"
-      style={{
-        lineHeight: "normal",
-        fontVariantLigatures: "normal",
-        fontVariantPosition: "normal",
-        fontVariantCaps: "normal",
-        fontVariantNumeric: "normal",
-        fontVariantAlternates: "normal",
-        fontFeatureSettings: "normal",
-        textIndent: "0",
-        textAlign: "start",
-        textDecorationLine: "none",
-        textDecorationStyle: "solid",
-        textDecorationColor: "#000",
-        textTransform: "none",
-        textOrientation: "mixed",
-        whiteSpace: "normal",
-        shapePadding: "0",
-        isolation: "auto",
-        mixBlendMode: "normal",
-        solidColor: "#000",
-        solidOpacity: "1",
-      } as any}
+      style={
+        {
+          lineHeight: "normal",
+          fontVariantLigatures: "normal",
+          fontVariantPosition: "normal",
+          fontVariantCaps: "normal",
+          fontVariantNumeric: "normal",
+          fontVariantAlternates: "normal",
+          fontFeatureSettings: "normal",
+          textIndent: "0",
+          textAlign: "start",
+          textDecorationLine: "none",
+          textDecorationStyle: "solid",
+          textDecorationColor: "#000",
+          textTransform: "none",
+          textOrientation: "mixed",
+          whiteSpace: "normal",
+          shapePadding: "0",
+          isolation: "auto",
+          mixBlendMode: "normal",
+          solidColor: "#000",
+          solidOpacity: "1",
+        } as any
+      }
       transform="translate(53.548 -183.975) scale(1.4843)"
     />
     <path
@@ -40,28 +42,30 @@ const Pdf = (props: SVGProps<SVGSVGElement>) => (
       font-family="sans-serif"
       overflow="visible"
       paint-order="markers fill stroke"
-      style={{
-        lineHeight: "normal",
-        fontVariantLigatures: "normal",
-        fontVariantPosition: "normal",
-        fontVariantCaps: "normal",
-        fontVariantNumeric: "normal",
-        fontVariantAlternates: "normal",
-        fontFeatureSettings: "normal",
-        textIndent: "0",
-        textAlign: "start",
-        textDecorationLine: "none",
-        textDecorationStyle: "solid",
-        textDecorationColor: "#000",
-        textTransform: "none",
-        textOrientation: "mixed",
-        whiteSpace: "normal",
-        shapePadding: "0",
-        isolation: "auto",
-        mixBlendMode: "normal",
-        solidColor: "#000",
-        solidOpacity: "1",
-      } as any}
+      style={
+        {
+          lineHeight: "normal",
+          fontVariantLigatures: "normal",
+          fontVariantPosition: "normal",
+          fontVariantCaps: "normal",
+          fontVariantNumeric: "normal",
+          fontVariantAlternates: "normal",
+          fontFeatureSettings: "normal",
+          textIndent: "0",
+          textAlign: "start",
+          textDecorationLine: "none",
+          textDecorationStyle: "solid",
+          textDecorationColor: "#000",
+          textTransform: "none",
+          textOrientation: "mixed",
+          whiteSpace: "normal",
+          shapePadding: "0",
+          isolation: "auto",
+          mixBlendMode: "normal",
+          solidColor: "#000",
+          solidOpacity: "1",
+        } as any
+      }
       transform="translate(53.548 -183.975) scale(1.4843)"
     />
     <path

@@ -1,21 +1,24 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { Contractor } from "@/app/contractors/columns";
+import { ContractorEditDialog } from "@/components/contractors/contractor-actions";
+import { ContractorForm } from "@/components/contractors/contractor-form";
+import { ContractorList } from "@/components/contractors/contractor-list";
+import { ContractorViewDialog } from "@/components/contractors/contractor-view-dialog";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusIcon, ChevronLeftIcon, SearchIcon, XIcon, BriefcaseIcon } from "@/lib/icons";
-import { PageHeader } from "@/components/page-header";
-import { ContractorList } from "@/components/contractors/contractor-list";
-import { ContractorForm } from "@/components/contractors/contractor-form";
-import { ContractorViewDialog } from "@/components/contractors/contractor-view-dialog";
-import { ContractorEditDialog } from "@/components/contractors/contractor-actions";
-import type { Contractor } from "@/app/contractors/columns";
+import { BriefcaseIcon, ChevronLeftIcon, PlusIcon, SearchIcon, XIcon } from "@/lib/icons";
 
 type ContractorsPageProps = {
   searchQuery?: string;
   onSearchChange?: (value: string) => void;
 };
 
-export default function ContractorsPage({ searchQuery: externalSearchQuery, onSearchChange }: ContractorsPageProps) {
+export default function ContractorsPage({
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+}: ContractorsPageProps) {
   const [contractors, setContractors] = useState<Contractor[]>([]);
   const [pageView, setPageView] = useState<"list" | "add">("list");
   const [viewingContractor, setViewingContractor] = useState<Contractor | null>(null);
@@ -29,7 +32,7 @@ export default function ContractorsPage({ searchQuery: externalSearchQuery, onSe
         c.fullName.toLowerCase().includes(q) ||
         c.emailAddress.toLowerCase().includes(q) ||
         (c.companyName && c.companyName.toLowerCase().includes(q)) ||
-        c.mainTrade.toLowerCase().includes(q)
+        c.mainTrade.toLowerCase().includes(q),
     );
   }, [contractors, externalSearchQuery]);
 
@@ -95,7 +98,12 @@ export default function ContractorsPage({ searchQuery: externalSearchQuery, onSe
         <PageHeader
           icon={<BriefcaseIcon className="size-6" />}
           title={<h1>Contractors</h1>}
-          subtitle={<p>{filteredContractors.length} {filteredContractors.length === 1 ? "contractor" : "contractors"}</p>}
+          subtitle={
+            <p>
+              {filteredContractors.length}{" "}
+              {filteredContractors.length === 1 ? "contractor" : "contractors"}
+            </p>
+          }
           search={
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -106,7 +114,10 @@ export default function ContractorsPage({ searchQuery: externalSearchQuery, onSe
                 className="pl-9 h-9"
               />
               {externalSearchQuery && (
-                <button onClick={() => onSearchChange?.("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1">
+                <button
+                  onClick={() => onSearchChange?.("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                >
                   <XIcon className="size-4" />
                 </button>
               )}
@@ -131,13 +142,17 @@ export default function ContractorsPage({ searchQuery: externalSearchQuery, onSe
       <ContractorViewDialog
         contractor={viewingContractor}
         open={!!viewingContractor}
-        onOpenChange={(open) => { if (!open) setViewingContractor(null); }}
+        onOpenChange={(open) => {
+          if (!open) setViewingContractor(null);
+        }}
       />
 
       <ContractorEditDialog
         contractor={editingContractor}
         open={!!editingContractor}
-        onOpenChange={(open) => { if (!open) setEditingContractor(null); }}
+        onOpenChange={(open) => {
+          if (!open) setEditingContractor(null);
+        }}
         onContractorUpdated={handleContractorUpdated}
       />
     </>

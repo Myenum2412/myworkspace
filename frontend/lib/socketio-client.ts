@@ -1,6 +1,6 @@
 "use client";
 
-import { io, Socket } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
 
 let socket: Socket | null = null;
 let tokenPromise: Promise<string | null> | null = null;
@@ -16,7 +16,12 @@ function fetchSocketToken(): Promise<string | null> {
     } catch {
       return null;
     } finally {
-      setTimeout(() => { tokenPromise = null; }, 5 * 60 * 1000);
+      setTimeout(
+        () => {
+          tokenPromise = null;
+        },
+        5 * 60 * 1000,
+      );
     }
   })();
   return tokenPromise;
@@ -24,9 +29,13 @@ function fetchSocketToken(): Promise<string | null> {
 
 function resolveTokenFromCookie(): string | null {
   try {
-    const secure = (typeof window !== "undefined" && window.location.protocol === "https:") ? "__Secure-" : "";
+    const secure =
+      typeof window !== "undefined" && window.location.protocol === "https:" ? "__Secure-" : "";
     const name = `${secure}authjs.session-token`;
-    const hit = document.cookie.split(";").map((c) => c.trim()).find((c) => c.startsWith(`${name}=`));
+    const hit = document.cookie
+      .split(";")
+      .map((c) => c.trim())
+      .find((c) => c.startsWith(`${name}=`));
     if (!hit) return null;
     return hit.slice(name.length + 1) || null;
   } catch {

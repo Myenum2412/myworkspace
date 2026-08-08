@@ -1,14 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { TimeEntryViewDialog } from "@/components/time-tracker/time-entry-view-dialog";
 import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -16,8 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Clock, Calendar, Loader2, Trash2, EyeIcon, Plus, Save } from "@/lib/icons";
-import { TimeEntryViewDialog } from "@/components/time-tracker/time-entry-view-dialog";
+import { Calendar, Clock, EyeIcon, Loader2, Plus, Save, Trash2 } from "@/lib/icons";
 
 interface TimeEntry {
   id: string;
@@ -127,17 +123,13 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
   };
 
   const updateRow = (id: string, field: "projectId" | "taskId", value: string) => {
-    setTimesheetRows((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
-    );
+    setTimesheetRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
   };
 
   const updateHour = (id: string, day: string, value: string) => {
     const num = parseFloat(value) || 0;
     setTimesheetRows((prev) =>
-      prev.map((r) =>
-        r.id === id ? { ...r, hours: { ...r.hours, [day]: num } } : r
-      )
+      prev.map((r) => (r.id === id ? { ...r, hours: { ...r.hours, [day]: num } } : r)),
     );
   };
 
@@ -146,7 +138,9 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
   };
 
   const getRowTotal = (hours: Record<string, number>) => {
-    return Object.values(hours).reduce((s, h) => s + h, 0).toFixed(1);
+    return Object.values(hours)
+      .reduce((s, h) => s + h, 0)
+      .toFixed(1);
   };
 
   const getWeekTotal = () => {
@@ -168,7 +162,10 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/time-entries/${id}`, { method: "DELETE", credentials: "include" });
+    const res = await fetch(`/api/time-entries/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
     if (res.ok) setEntries((prev) => prev.filter((e) => e.id !== id));
   };
 
@@ -186,7 +183,11 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
           <PopoverTrigger asChild>
             <button className="flex items-center gap-2 px-3 py-2 text-sm rounded-sm border hover:bg-muted transition-colors">
               <Calendar className="size-4" />
-              {date ? date.toDateString() === new Date().toDateString() ? "Today" : date.toLocaleDateString() : "Select date"}
+              {date
+                ? date.toDateString() === new Date().toDateString()
+                  ? "Today"
+                  : date.toLocaleDateString()
+                : "Select date"}
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="end">
@@ -203,11 +204,21 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
             Weekly Timesheet
           </CardTitle>
           <div className="flex items-center gap-2">
-            <button onClick={prevWeek} className="px-2 py-1 text-sm rounded-sm border hover:bg-muted transition-colors">←</button>
+            <button
+              onClick={prevWeek}
+              className="px-2 py-1 text-sm rounded-sm border hover:bg-muted transition-colors"
+            >
+              ←
+            </button>
             <span className="text-sm font-medium min-w-[160px] text-center">
               {weekDates[0].date} — {weekDates[6].date}
             </span>
-            <button onClick={nextWeek} className="px-2 py-1 text-sm rounded-sm border hover:bg-muted transition-colors">→</button>
+            <button
+              onClick={nextWeek}
+              className="px-2 py-1 text-sm rounded-sm border hover:bg-muted transition-colors"
+            >
+              →
+            </button>
           </div>
         </CardHeader>
         <CardContent>
@@ -218,7 +229,9 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
                   <th className="px-4 py-3 font-semibold text-left min-w-[180px]">Project</th>
                   <th className="px-4 py-3 font-semibold text-left min-w-[180px]">Task</th>
                   {weekDates.map((d) => (
-                    <th key={d.key} className="px-3 py-3 font-semibold text-center min-w-[90px]">{d.label}</th>
+                    <th key={d.key} className="px-3 py-3 font-semibold text-center min-w-[90px]">
+                      {d.label}
+                    </th>
                   ))}
                   <th className="px-3 py-3 font-semibold text-center min-w-[80px]">Total</th>
                   <th className="w-10"></th>
@@ -226,27 +239,40 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
               </thead>
               <tbody>
                 {timesheetRows.map((row) => (
-                  <tr key={row.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
+                  <tr
+                    key={row.id}
+                    className="border-b last:border-0 hover:bg-slate-50 transition-colors"
+                  >
                     <td className="px-4 py-2">
-                      <Select value={row.projectId} onValueChange={(v) => updateRow(row.id, "projectId", v)}>
+                      <Select
+                        value={row.projectId}
+                        onValueChange={(v) => updateRow(row.id, "projectId", v)}
+                      >
                         <SelectTrigger className="h-8">
                           <SelectValue placeholder="Select project" />
                         </SelectTrigger>
                         <SelectContent>
                           {projects.map((p) => (
-                            <SelectItem key={p._id} value={p._id}>{p.name}</SelectItem>
+                            <SelectItem key={p._id} value={p._id}>
+                              {p.name}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </td>
                     <td className="px-4 py-2">
-                      <Select value={row.taskId} onValueChange={(v) => updateRow(row.id, "taskId", v)}>
+                      <Select
+                        value={row.taskId}
+                        onValueChange={(v) => updateRow(row.id, "taskId", v)}
+                      >
                         <SelectTrigger className="h-8">
                           <SelectValue placeholder="Select task" />
                         </SelectTrigger>
                         <SelectContent>
                           {filteredTasks(row.projectId).map((t) => (
-                            <SelectItem key={t._id} value={t._id}>{t.title}</SelectItem>
+                            <SelectItem key={t._id} value={t._id}>
+                              {t.title}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -268,7 +294,10 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
                       {getRowTotal(row.hours)}h
                     </td>
                     <td className="px-2 py-2">
-                      <button onClick={() => removeRow(row.id)} className="text-muted-foreground hover:text-red-600 transition-colors">
+                      <button
+                        onClick={() => removeRow(row.id)}
+                        className="text-muted-foreground hover:text-red-600 transition-colors"
+                      >
                         <Trash2 className="size-4" />
                       </button>
                     </td>
@@ -285,7 +314,9 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
               {timesheetRows.length > 0 && (
                 <tfoot>
                   <tr className="bg-slate-50 font-medium">
-                    <td colSpan={2} className="px-4 py-2 text-right">Week Total</td>
+                    <td colSpan={2} className="px-4 py-2 text-right">
+                      Week Total
+                    </td>
                     {DAYS.map((day) => (
                       <td key={day} className="px-3 py-2 text-center font-mono text-sm">
                         {timesheetRows.reduce((s, r) => s + (r.hours[day] || 0), 0).toFixed(1)}h
@@ -301,7 +332,10 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
             </table>
           </div>
           <div className="mt-3 flex gap-2">
-            <button onClick={addTimesheetRow} className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-sm border hover:bg-muted transition-colors">
+            <button
+              onClick={addTimesheetRow}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-sm border hover:bg-muted transition-colors"
+            >
               <Plus className="size-4" /> Add Row
             </button>
           </div>
@@ -337,21 +371,35 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
               <table className="table-premium w-full text-sm text-left">
                 <thead>
                   <tr>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Description</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                      Description
+                    </th>
                     <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Time</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Duration</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                      Duration
+                    </th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                      Status
+                    </th>
                     <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredEntries.map((entry) => (
-                    <tr key={entry.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer" onClick={() => setViewEntry(entry)}>
+                    <tr
+                      key={entry.id}
+                      className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer"
+                      onClick={() => setViewEntry(entry)}
+                    >
                       <td className="px-4 py-3">
-                        <p className="text-sm font-medium">{entry.description || "No description"}</p>
+                        <p className="text-sm font-medium">
+                          {entry.description || "No description"}
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(entry.date).toLocaleDateString()}
-                          {entry.startTime && entry.endTime && ` · ${entry.startTime} - ${entry.endTime}`}
+                          {entry.startTime &&
+                            entry.endTime &&
+                            ` · ${entry.startTime} - ${entry.endTime}`}
                         </p>
                       </td>
                       <td className="px-4 py-3">
@@ -367,21 +415,25 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <Badge className={statusColors[entry.status]}>
-                          {entry.status}
-                        </Badge>
+                        <Badge className={statusColors[entry.status]}>{entry.status}</Badge>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           <button
-                            onClick={(e) => { e.stopPropagation(); setViewEntry(entry); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setViewEntry(entry);
+                            }}
                             className="text-muted-foreground hover:text-black transition-colors"
                             title="View"
                           >
                             <EyeIcon className="size-4" />
                           </button>
                           <button
-                            onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(entry.id);
+                            }}
                             className="text-muted-foreground hover:text-black transition-colors"
                           >
                             <Trash2 className="size-4" />
@@ -400,7 +452,9 @@ export default function MyTime({ initialEntries, user }: MyTimeProps) {
       <TimeEntryViewDialog
         entry={viewEntry}
         open={!!viewEntry}
-        onOpenChange={(open) => { if (!open) setViewEntry(null); }}
+        onOpenChange={(open) => {
+          if (!open) setViewEntry(null);
+        }}
       />
     </main>
   );

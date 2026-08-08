@@ -1,14 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  FolderIcon,
-  FileIcon,
-  DownloadIcon,
-  ArchiveIcon,
-} from "@/lib/icons";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatSize } from "@/lib/file-system/types";
+import { ArchiveIcon, DownloadIcon, FileIcon, FolderIcon } from "@/lib/icons";
 
 interface ArchiveEntry {
   name: string;
@@ -56,7 +51,11 @@ export function ArchiveViewer({ src, fileName, fileSize }: ArchiveViewerProps) {
   const getChildren = (parentPath: string) =>
     entries.filter((e) => {
       const parts = e.path.split("/");
-      return parts.length > 1 && e.path.startsWith(parentPath + "/") && parts[parts.length - 2] === parentPath.split("/").pop();
+      return (
+        parts.length > 1 &&
+        e.path.startsWith(parentPath + "/") &&
+        parts[parts.length - 2] === parentPath.split("/").pop()
+      );
     });
 
   const renderEntry = (entry: ArchiveEntry, depth = 0) => {
@@ -125,7 +124,12 @@ export function ArchiveViewer({ src, fileName, fileSize }: ArchiveViewerProps) {
             {entries.filter((e) => !e.isDirectory).length} files &middot; {formatSize(fileSize)}
           </span>
         </div>
-        <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(src, "_blank")}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-0"
+          onClick={() => window.open(src, "_blank")}
+        >
           <DownloadIcon className="size-3.5" />
         </Button>
       </div>

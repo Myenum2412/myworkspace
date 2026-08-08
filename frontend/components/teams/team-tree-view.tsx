@@ -4,15 +4,15 @@ import { useMemo } from "react";
 import ReactFlow, {
   Background,
   Controls,
-  MiniMap,
-  Handle,
-  Position,
-  type Node,
   type Edge,
+  Handle,
+  MiniMap,
+  type Node,
+  Position,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import type { TeamDetail, TeamMember } from "./team-types";
 import { CrownIcon } from "@/lib/icons";
+import type { TeamDetail, TeamMember } from "./team-types";
 import { getInitials } from "./team-types";
 
 function TeamNode({ data }: { data: { label: string; description?: string } }) {
@@ -21,7 +21,9 @@ function TeamNode({ data }: { data: { label: string; description?: string } }) {
       <Handle type="source" position={Position.Bottom} className="!bg-primary" />
       <p className="text-sm font-bold text-card-foreground">{data.label}</p>
       {data.description && (
-        <p className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[200px]">{data.description}</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[200px]">
+          {data.description}
+        </p>
       )}
     </div>
   );
@@ -34,7 +36,11 @@ function LeadNode({ data }: { data: { name: string; email: string; avatar?: stri
       <Handle type="source" position={Position.Bottom} className="!bg-amber-500" />
       <div className="flex items-center gap-3">
         {data.avatar ? (
-          <img src={data.avatar} alt={data.name} className="size-9 rounded-full object-cover ring-2 ring-amber-200" />
+          <img
+            src={data.avatar}
+            alt={data.name}
+            className="size-9 rounded-full object-cover ring-2 ring-amber-200"
+          />
         ) : (
           <div className="size-9 rounded-full flex items-center justify-center text-xs font-bold bg-amber-200 text-amber-800">
             {getInitials(data.name)}
@@ -58,7 +64,11 @@ function MemberNode({ data }: { data: TeamMember }) {
       <Handle type="target" position={Position.Top} className="!bg-muted-foreground" />
       <div className="flex items-center gap-3">
         {data.avatar ? (
-          <img src={data.avatar} alt={data.name} className="size-8 rounded-full object-cover ring-2 ring-background" />
+          <img
+            src={data.avatar}
+            alt={data.name}
+            className="size-8 rounded-full object-cover ring-2 ring-background"
+          />
         ) : (
           <div className="size-8 rounded-full flex items-center justify-center text-xs font-bold bg-muted text-muted-foreground">
             {getInitials(data.name)}
@@ -66,7 +76,9 @@ function MemberNode({ data }: { data: TeamMember }) {
         )}
         <div className="min-w-0">
           <p className="text-sm font-medium text-card-foreground truncate">{data.name}</p>
-          <p className="text-[11px] text-muted-foreground truncate">{data.designation || data.email}</p>
+          <p className="text-[11px] text-muted-foreground truncate">
+            {data.designation || data.email}
+          </p>
         </div>
       </div>
     </div>

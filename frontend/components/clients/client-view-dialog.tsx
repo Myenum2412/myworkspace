@@ -1,23 +1,41 @@
-"use client"
+"use client";
 import { useEffect, useState } from "react";
+import type { Client } from "@/app/clients/columns";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  Building2, Mail, Phone, MapPin, Globe, User, Briefcase,
-  Hash, FileText, Calendar, CreditCard, Banknote, Tag, Info,
-  Users, Key, Upload, Send, Loader2, CheckCircle2, AlertCircle,
+  AlertCircle,
+  Banknote,
+  Briefcase,
+  Building2,
+  Calendar,
+  CheckCircle2,
+  CreditCard,
+  FileText,
+  Globe,
+  Hash,
+  Info,
+  Key,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  Send,
+  Tag,
+  Upload,
+  User,
+  Users,
 } from "@/lib/icons";
-import type { Client } from "@/app/clients/columns";
 import { sendClientWelcomeEmail } from "@/lib/mail";
 
 type ClientViewDialogProps = {
@@ -43,28 +61,44 @@ type FileItem = {
   uploaderName: string;
 };
 
-function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: string }>; label: string; value?: string | number | null }) {
+function Field({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon?: React.FC<{ className?: string }>;
+  label: string;
+  value?: string | number | null;
+}) {
   return (
     <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
       {Icon && <Icon className="size-4 text-muted-foreground shrink-0 mt-0.5" />}
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          {label}
+        </p>
         <p className="text-sm font-medium mt-0.5 break-words">{value ?? "\u2014"}</p>
       </div>
     </div>
   );
 }
 
-function Section({ title, icon: Icon, children }: { title: string; icon?: React.FC<{ className?: string }>; children: React.ReactNode }) {
+function Section({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  icon?: React.FC<{ className?: string }>;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-3">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
         {Icon && <Icon className="size-3.5" />}
         {title}
       </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {children}
-      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{children}</div>
     </div>
   );
 }
@@ -84,8 +118,8 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
 
     setLoadingCreds(true);
     fetch(`/api/clients/credentials?clientId=${client.id}`, { credentials: "include" })
-      .then(r => r.json())
-      .then(d => {
+      .then((r) => r.json())
+      .then((d) => {
         if (d.success) setCredentials(d.data);
       })
       .catch(() => {})
@@ -95,8 +129,8 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
     if (orgId) {
       setLoadingDocs(true);
       fetch(`/api/files?orgId=${orgId}&clientId=${client.id}`, { credentials: "include" })
-        .then(r => r.json())
-        .then(d => {
+        .then((r) => r.json())
+        .then((d) => {
           setDocuments(Array.isArray(d) ? d : d.data || []);
         })
         .catch(() => {})
@@ -110,12 +144,11 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
     setSendResult("idle");
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-    const staffInfo = [
-      client.assignedSalesPerson,
-      client.assignedProjectManager,
-    ].filter(Boolean) as string[];
+    const staffInfo = [client.assignedSalesPerson, client.assignedProjectManager].filter(
+      Boolean,
+    ) as string[];
 
-    const documentsInfo = documents.map(d => d.originalName);
+    const documentsInfo = documents.map((d) => d.originalName);
 
     const result = await sendClientWelcomeEmail(
       client.email,
@@ -124,7 +157,7 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
       "",
       `${appUrl}/login`,
       staffInfo.length > 0 ? staffInfo : undefined,
-      documentsInfo.length > 0 ? documentsInfo : undefined
+      documentsInfo.length > 0 ? documentsInfo : undefined,
     );
 
     setSending(false);
@@ -134,17 +167,17 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
   if (!client) return null;
 
   const statusColorMap: Record<string, string> = {
-    "Lead": "bg-gray-200 text-gray-700",
-    "Prospect": "bg-gray-700 text-white",
+    Lead: "bg-gray-200 text-gray-700",
+    Prospect: "bg-gray-700 text-white",
     "Active Client": "bg-green-50 text-green-700",
     "Inactive Client": "bg-gray-100 text-gray-700",
-    "Completed": "bg-purple-50 text-purple-700",
+    Completed: "bg-purple-50 text-purple-700",
   };
 
   const staffMembers = [
     { label: "Sales Person", value: client.assignedSalesPerson },
     { label: "Project Manager", value: client.assignedProjectManager },
-  ].filter(s => s.value);
+  ].filter((s) => s.value);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -170,12 +203,15 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
 
         <ScrollArea className="flex-1 px-6 py-4">
           <div className="space-y-6 pb-4">
-
             <Section title="Assigned Staff" icon={Users}>
-              {staffMembers.length > 0 ? staffMembers.map(s => (
-                <Field key={s.label} icon={User} label={s.label} value={s.value} />
-              )) : (
-                <div className="col-span-full text-sm text-muted-foreground py-2">No staff assigned</div>
+              {staffMembers.length > 0 ? (
+                staffMembers.map((s) => (
+                  <Field key={s.label} icon={User} label={s.label} value={s.value} />
+                ))
+              ) : (
+                <div className="col-span-full text-sm text-muted-foreground py-2">
+                  No staff assigned
+                </div>
               )}
             </Section>
 
@@ -191,10 +227,16 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
                 <>
                   <Field icon={User} label="Username" value={credentials.username} />
                   <Field icon={Mail} label="Email" value={credentials.email} />
-                  <Field icon={Tag} label="Status" value={credentials.isActive ? "Active" : "Inactive"} />
+                  <Field
+                    icon={Tag}
+                    label="Status"
+                    value={credentials.isActive ? "Active" : "Inactive"}
+                  />
                 </>
               ) : (
-                <div className="col-span-full text-sm text-muted-foreground py-2">Credentials not found</div>
+                <div className="col-span-full text-sm text-muted-foreground py-2">
+                  Credentials not found
+                </div>
               )}
             </Section>
 
@@ -207,11 +249,20 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
                   Loading documents...
                 </div>
               ) : documents.length > 0 ? (
-                documents.slice(0, 10).map(doc => (
-                  <Field key={doc.id} icon={FileText} label={doc.originalName} value={`${(doc.size / 1024).toFixed(1)} KB`} />
-                ))
+                documents
+                  .slice(0, 10)
+                  .map((doc) => (
+                    <Field
+                      key={doc.id}
+                      icon={FileText}
+                      label={doc.originalName}
+                      value={`${(doc.size / 1024).toFixed(1)} KB`}
+                    />
+                  ))
               ) : (
-                <div className="col-span-full text-sm text-muted-foreground py-2">No documents uploaded</div>
+                <div className="col-span-full text-sm text-muted-foreground py-2">
+                  No documents uploaded
+                </div>
               )}
               {documents.length > 10 && (
                 <div className="col-span-full text-xs text-muted-foreground">
@@ -261,8 +312,24 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
               <Field icon={Briefcase} label="Project Name" value={client.projectName} />
               <Field icon={FileText} label="Service Required" value={client.serviceRequired} />
               <Field icon={Banknote} label="Project Budget" value={client.projectBudget} />
-              <Field icon={Calendar} label="Expected Start Date" value={client.expectedStartDate ? new Date(client.expectedStartDate).toLocaleDateString() : null} />
-              <Field icon={Calendar} label="Expected End Date" value={client.expectedEndDate ? new Date(client.expectedEndDate).toLocaleDateString() : null} />
+              <Field
+                icon={Calendar}
+                label="Expected Start Date"
+                value={
+                  client.expectedStartDate
+                    ? new Date(client.expectedStartDate).toLocaleDateString()
+                    : null
+                }
+              />
+              <Field
+                icon={Calendar}
+                label="Expected End Date"
+                value={
+                  client.expectedEndDate
+                    ? new Date(client.expectedEndDate).toLocaleDateString()
+                    : null
+                }
+              />
             </Section>
 
             <Separator />
@@ -281,7 +348,11 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
               <Field icon={CreditCard} label="Bank Name" value={client.bankName} />
               <Field icon={User} label="Account Holder Name" value={client.accountHolderName} />
               <Field icon={Hash} label="Account Number" value={client.accountNumber} />
-              <Field icon={Hash} label="Confirm Account Number" value={client.confirmAccountNumber} />
+              <Field
+                icon={Hash}
+                label="Confirm Account Number"
+                value={client.confirmAccountNumber}
+              />
               <Field icon={Hash} label="IFSC Code" value={client.ifscCode} />
               <Field icon={Building2} label="Branch Name" value={client.branchName} />
               <Field icon={FileText} label="Account Type" value={client.accountType} />
@@ -291,7 +362,11 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
             <Separator />
 
             <Section title="Additional Information">
-              <Field icon={Tag} label="Preferred Contact Method" value={client.preferredContactMethod} />
+              <Field
+                icon={Tag}
+                label="Preferred Contact Method"
+                value={client.preferredContactMethod}
+              />
               <Field icon={Tag} label="Preferred Time Zone" value={client.preferredTimeZone} />
               <Field icon={Tag} label="Source of Lead" value={client.sourceOfLead} />
               <div className="sm:col-span-2 lg:col-span-3">
@@ -305,10 +380,23 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
               <Field icon={User} label="Sales Person" value={client.assignedSalesPerson} />
               <Field icon={User} label="Project Manager" value={client.assignedProjectManager} />
               <Field icon={User} label="Created By" value={client.createdBy} />
-              <Field icon={Calendar} label="Created Date" value={client.createdDate ? new Date(client.createdDate).toLocaleDateString() : null} />
-              <Field icon={Calendar} label="Last Updated" value={client.lastUpdatedDate ? new Date(client.lastUpdatedDate).toLocaleDateString() : null} />
+              <Field
+                icon={Calendar}
+                label="Created Date"
+                value={
+                  client.createdDate ? new Date(client.createdDate).toLocaleDateString() : null
+                }
+              />
+              <Field
+                icon={Calendar}
+                label="Last Updated"
+                value={
+                  client.lastUpdatedDate
+                    ? new Date(client.lastUpdatedDate).toLocaleDateString()
+                    : null
+                }
+              />
             </Section>
-
           </div>
         </ScrollArea>
 
@@ -325,18 +413,20 @@ export function ClientViewDialog({ client, open, onOpenChange }: ClientViewDialo
               Failed to send invite
             </span>
           )}
-          <Button
-            variant="default"
-            onClick={handleSendInvite}
-            disabled={sending || !credentials}
-          >
+          <Button variant="default" onClick={handleSendInvite} disabled={sending || !credentials}>
             {sending ? (
-              <><Loader2 className="mr-2 animate-spin" /> Sending...</>
+              <>
+                <Loader2 className="mr-2 animate-spin" /> Sending...
+              </>
             ) : (
-              <><Send className="mr-2 size-4" /> Send Invite</>
+              <>
+                <Send className="mr-2 size-4" /> Send Invite
+              </>
             )}
           </Button>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

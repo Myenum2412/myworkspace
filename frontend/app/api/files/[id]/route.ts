@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { auth } from "@/lib/auth/config";
 import { validateOrgMembership } from "@/lib/org";
 
 const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -20,10 +20,7 @@ export const dynamic = "force-dynamic";
  *  - default          -> inline (view in browser)
  * Download is only forced when the caller explicitly asks for it.
  */
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const { searchParams } = new URL(request.url);
@@ -83,10 +80,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   let session;
   try {
     session = await auth();
@@ -123,11 +117,9 @@ export async function PATCH(
     if (originalName) updateFields.originalName = originalName;
     if (description !== undefined) updateFields.description = description;
 
-    const result = await db.collection(collections.fileAttachments).findOneAndUpdate(
-      { id },
-      { $set: updateFields },
-      { returnDocument: "after" }
-    );
+    const result = await db
+      .collection(collections.fileAttachments)
+      .findOneAndUpdate({ id }, { $set: updateFields }, { returnDocument: "after" });
 
     if (!result) {
       return NextResponse.json({ error: "File not found" }, { status: 404 });

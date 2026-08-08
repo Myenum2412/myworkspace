@@ -1,4 +1,12 @@
-export const JOB_STATUSES = ["pending", "running", "completed", "failed", "cancelled", "paused", "retrying"] as const;
+export const JOB_STATUSES = [
+  "pending",
+  "running",
+  "completed",
+  "failed",
+  "cancelled",
+  "paused",
+  "retrying",
+] as const;
 export type JobStatus = (typeof JOB_STATUSES)[number];
 
 export const JOB_PRIORITIES = ["critical", "high", "medium", "low", "background"] as const;
@@ -41,7 +49,14 @@ export const JOB_TYPES = [
 ] as const;
 export type JobType = (typeof JOB_TYPES)[number];
 
-export const SCHEDULE_TYPES = ["cron", "one_time", "recurring", "delayed", "interval", "event_triggered"] as const;
+export const SCHEDULE_TYPES = [
+  "cron",
+  "one_time",
+  "recurring",
+  "delayed",
+  "interval",
+  "event_triggered",
+] as const;
 export type ScheduleType = (typeof SCHEDULE_TYPES)[number];
 
 export const EXECUTION_CHANNELS = ["email", "sms", "push", "in_app", "webhook", "system"] as const;

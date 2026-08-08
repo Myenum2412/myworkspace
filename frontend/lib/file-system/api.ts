@@ -1,4 +1,15 @@
-import type { FileItem, FolderItem, FileVersion, ShareLink, FileShare, AuditLogEntry, StorageStats, FilterState, SortField, SortDir } from "./types";
+import type {
+  AuditLogEntry,
+  FileItem,
+  FileShare,
+  FileVersion,
+  FilterState,
+  FolderItem,
+  ShareLink,
+  SortDir,
+  SortField,
+  StorageStats,
+} from "./types";
 
 const API = {
   files: "/api/files",
@@ -85,7 +96,10 @@ export function getFile(id: string) {
   return request<FileItem>(`${API.files}/${id}`);
 }
 
-export function uploadFile(formData: FormData, moduleContext?: { moduleName?: string; entityId?: string; projectId?: string }) {
+export function uploadFile(
+  formData: FormData,
+  moduleContext?: { moduleName?: string; entityId?: string; projectId?: string },
+) {
   if (moduleContext?.moduleName) formData.append("moduleName", moduleContext.moduleName);
   if (moduleContext?.entityId) formData.append("entityId", moduleContext.entityId);
   if (moduleContext?.projectId) formData.append("projectId", moduleContext.projectId);
@@ -128,9 +142,12 @@ export function bulkDownload(ids: string[]) {
   const popup = window.open(`${API.files}/${ids[0]}/download`, "_blank");
   if (popup) {
     ids.slice(1).forEach((id, i) => {
-      setTimeout(() => {
-        popup.location.href = `${API.files}/${id}/download`;
-      }, (i + 1) * 2000);
+      setTimeout(
+        () => {
+          popup.location.href = `${API.files}/${id}/download`;
+        },
+        (i + 1) * 2000,
+      );
     });
   } else {
     ids.forEach((id) => window.open(`${API.files}/${id}/download`, "_blank"));
@@ -314,7 +331,9 @@ export function deactivateShareLink(id: string) {
 // ── Search ──
 
 export function globalSearch(params: { orgId: string; q: string }) {
-  return request<Record<string, unknown[]>>(`${API.search}?orgId=${params.orgId}&q=${encodeURIComponent(params.q)}`);
+  return request<Record<string, unknown[]>>(
+    `${API.search}?orgId=${params.orgId}&q=${encodeURIComponent(params.q)}`,
+  );
 }
 
 // ── Storage ──

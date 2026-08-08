@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { logger } from "./logger/index.js";
 
 export interface IQuota extends Document {
@@ -42,7 +42,11 @@ export const QuotaResources = {
 export class QuotaManager {
   async initializeDefaults(tenantId: string): Promise<void> {
     const defaults = [
-      { resource: QuotaResources.STORAGE_BYTES, limit: 10 * 1024 * 1024 * 1024, softLimit: 8 * 1024 * 1024 * 1024 },
+      {
+        resource: QuotaResources.STORAGE_BYTES,
+        limit: 10 * 1024 * 1024 * 1024,
+        softLimit: 8 * 1024 * 1024 * 1024,
+      },
       { resource: QuotaResources.FILE_COUNT, limit: 100000 },
       { resource: QuotaResources.TEAM_COUNT, limit: 500 },
       { resource: QuotaResources.USER_COUNT, limit: 5000 },
@@ -70,7 +74,11 @@ export class QuotaManager {
     }
   }
 
-  async checkQuota(tenantId: string, resource: string, amount = 1): Promise<{
+  async checkQuota(
+    tenantId: string,
+    resource: string,
+    amount = 1,
+  ): Promise<{
     allowed: boolean;
     current: number;
     limit: number;
@@ -97,35 +105,28 @@ export class QuotaManager {
   }
 
   async incrementUsage(tenantId: string, resource: string, amount = 1): Promise<void> {
-    await Quota.updateOne(
-      { tenantId, resource },
-      { $inc: { usage: amount } },
-    );
+    await Quota.updateOne({ tenantId, resource }, { $inc: { usage: amount } });
   }
 
   async decrementUsage(tenantId: string, resource: string, amount = 1): Promise<void> {
-    await Quota.updateOne(
-      { tenantId, resource },
-      { $inc: { usage: -amount } },
-    );
+    await Quota.updateOne({ tenantId, resource }, { $inc: { usage: -amount } });
   }
 
   async updateLimit(tenantId: string, resource: string, limit: number): Promise<void> {
-    await Quota.updateOne(
-      { tenantId, resource },
-      { $set: { limit } },
-    );
+    await Quota.updateOne({ tenantId, resource }, { $set: { limit } });
   }
 
-  async getUsageSummary(tenantId: string): Promise<Array<{
-    resource: string;
-    limit: number;
-    usage: number;
-    usagePercent: number;
-    remaining: number;
-  }>> {
+  async getUsageSummary(tenantId: string): Promise<
+    Array<{
+      resource: string;
+      limit: number;
+      usage: number;
+      usagePercent: number;
+      remaining: number;
+    }>
+  > {
     const quotas = await Quota.find({ tenantId }).lean();
-    return quotas.map(q => ({
+    return quotas.map((q) => ({
       resource: q.resource,
       limit: q.limit,
       usage: q.usage,

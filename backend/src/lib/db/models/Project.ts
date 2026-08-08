@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IProject extends Document {
   id: string;
@@ -46,7 +46,7 @@ const projectSchema = new Schema<IProject>(
     createdBy: { type: String, required: true },
     updatedBy: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 projectSchema.index({ orgId: 1, createdAt: -1 });

@@ -142,7 +142,10 @@ export function getCountryByIso(iso: string): Country | undefined {
   return countries.find((c) => c.iso === iso);
 }
 
-export function parsePhone(value: string, defaultCode = "+91"): { countryCode: string; localNumber: string } {
+export function parsePhone(
+  value: string,
+  defaultCode = "+91",
+): { countryCode: string; localNumber: string } {
   if (!value) return { countryCode: defaultCode, localNumber: "" };
   const trimmed = value.trim();
   if (trimmed.startsWith("+")) {

@@ -1,7 +1,7 @@
-import { getEnforcer, loadPolicy, resetEnforcer } from "../../config/casbin.js";
-import { onPolicyReload } from "../permission-cache.js";
-import { logger } from "../logger/index.js";
 import mongoose from "mongoose";
+import { getEnforcer, loadPolicy, resetEnforcer } from "../../config/casbin.js";
+import { logger } from "../logger/index.js";
+import { onPolicyReload } from "../permission-cache.js";
 
 /**
  * Casbin Policy Manager with versioning and hot-reload support.
@@ -80,7 +80,7 @@ function calculatePolicyHash(policies: string[][]): string {
   let hash = 0;
   for (let i = 0; i < content.length; i++) {
     const char = content.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return Math.abs(hash).toString(16);
@@ -90,7 +90,10 @@ function calculatePolicyHash(policies: string[][]): string {
  * Reload Casbin policies from the adapter.
  * Includes cooldown to prevent rapid reloads.
  */
-export async function reloadPolicies(description = "Manual reload", performedBy = "system"): Promise<{
+export async function reloadPolicies(
+  description = "Manual reload",
+  performedBy = "system",
+): Promise<{
   success: boolean;
   version: number;
   error?: string;
@@ -142,13 +145,16 @@ export async function reloadPolicies(description = "Manual reload", performedBy 
       // Invalidate permission cache
       onPolicyReload();
 
-      logger.info({
-        version: currentVersion,
-        description,
-        performedBy,
-        oldHash,
-        newHash,
-      }, "Casbin policies reloaded");
+      logger.info(
+        {
+          version: currentVersion,
+          description,
+          performedBy,
+          oldHash,
+          newHash,
+        },
+        "Casbin policies reloaded",
+      );
 
       recordChange({
         action: "update",
@@ -195,14 +201,17 @@ export async function addPolicyDynamically(
         performedBy,
       });
 
-      logger.info({
-        subject,
-        object,
-        action,
-        effect,
-        performedBy,
-        version: currentVersion,
-      }, "Policy added dynamically");
+      logger.info(
+        {
+          subject,
+          object,
+          action,
+          effect,
+          performedBy,
+          version: currentVersion,
+        },
+        "Policy added dynamically",
+      );
     }
 
     return added;
@@ -235,13 +244,16 @@ export async function removePolicyDynamically(
         performedBy,
       });
 
-      logger.info({
-        subject,
-        object,
-        action,
-        performedBy,
-        version: currentVersion,
-      }, "Policy removed dynamically");
+      logger.info(
+        {
+          subject,
+          object,
+          action,
+          performedBy,
+          version: currentVersion,
+        },
+        "Policy removed dynamically",
+      );
     }
 
     return removed;
@@ -273,12 +285,15 @@ export async function addRoleDynamically(
         performedBy,
       });
 
-      logger.info({
-        user,
-        role,
-        performedBy,
-        version: currentVersion,
-      }, "Role assigned dynamically");
+      logger.info(
+        {
+          user,
+          role,
+          performedBy,
+          version: currentVersion,
+        },
+        "Role assigned dynamically",
+      );
     }
 
     return added;
@@ -310,12 +325,15 @@ export async function removeRoleDynamically(
         performedBy,
       });
 
-      logger.info({
-        user,
-        role,
-        performedBy,
-        version: currentVersion,
-      }, "Role unassigned dynamically");
+      logger.info(
+        {
+          user,
+          role,
+          performedBy,
+          version: currentVersion,
+        },
+        "Role unassigned dynamically",
+      );
     }
 
     return removed;

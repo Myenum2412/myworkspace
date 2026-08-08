@@ -1,38 +1,38 @@
-export { schedulerService } from "./scheduler.service.js";
 export { schedulerHealthService } from "./health.service.js";
-export { schedulerMetricsService } from "./metrics.service.js";
-export { jobRegistry } from "./job-registry.js";
 export type { JobHandler } from "./job-registry.js";
-export { ScheduledJob } from "./models/ScheduledJob.js";
+export { jobRegistry } from "./job-registry.js";
+export { schedulerMetricsService } from "./metrics.service.js";
 export { JobExecution } from "./models/JobExecution.js";
+export { ScheduledJob } from "./models/ScheduledJob.js";
+export { schedulerService } from "./scheduler.service.js";
+export type {
+  CreateJobInput,
+  ExecutionChannel,
+  JobDefinition,
+  JobExecutionResult,
+  JobPayload,
+  JobPriority,
+  JobStatus,
+  JobType,
+  SchedulerHealth,
+  SchedulerStats,
+  ScheduleType,
+  UpdateJobInput,
+} from "./types.js";
 export {
-  JOB_STATUSES,
+  EXECUTION_CHANNELS,
   JOB_PRIORITIES,
+  JOB_STATUSES,
+  JOB_TYPE_LABELS,
   JOB_TYPES,
   SCHEDULE_TYPES,
-  EXECUTION_CHANNELS,
-  JOB_TYPE_LABELS,
-} from "./types.js";
-export type {
-  JobStatus,
-  JobPriority,
-  JobType,
-  ScheduleType,
-  ExecutionChannel,
-  JobPayload,
-  JobDefinition,
-  CreateJobInput,
-  UpdateJobInput,
-  JobExecutionResult,
-  SchedulerStats,
-  SchedulerHealth,
 } from "./types.js";
 
-import { schedulerService } from "./scheduler.service.js";
-import { schedulerHealthService } from "./health.service.js";
-import { schedulerMetricsService } from "./metrics.service.js";
-import { jobRegistry } from "./job-registry.js";
 import { logger } from "../logger/index.js";
+import { schedulerHealthService } from "./health.service.js";
+import { jobRegistry } from "./job-registry.js";
+import { schedulerMetricsService } from "./metrics.service.js";
+import { schedulerService } from "./scheduler.service.js";
 
 export async function initializeScheduler(): Promise<void> {
   try {

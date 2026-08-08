@@ -1,1 +1,1 @@
-export { CreateProjectPageInteractive } from "./page-interactive.client"
+export { CreateProjectPageInteractive } from "./page-interactive.client";

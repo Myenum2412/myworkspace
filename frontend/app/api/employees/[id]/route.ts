@@ -1,16 +1,13 @@
+import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
+import { v4 as uuid } from "uuid";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { v4 as uuid } from "uuid";
-import { hash } from "bcryptjs";
-import { auth } from "@/lib/auth/config";
 import { ensureUserOrg } from "@/lib/org";
 import { isAdminRole } from "@/lib/rbac";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -24,10 +21,9 @@ export async function GET(
     if (ObjectId.isValid(id)) {
       orClauses.push({ _id: new ObjectId(id) });
     }
-    const user = await db.collection(collections.users).findOne(
-      { $or: orClauses } as any,
-      { projection: { password: 0 } }
-    );
+    const user = await db
+      .collection(collections.users)
+      .findOne({ $or: orClauses } as any, { projection: { password: 0 } });
     if (!user) {
       return NextResponse.json({ error: "Employee not found" }, { status: 404 });
     }
@@ -53,10 +49,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -77,13 +70,37 @@ export async function PUT(
 
     const body = await request.json();
     const allowedFields = [
-      "firstName", "lastName", "nickname", "email", "avatar",
-      "department", "designation", "location", "phone",
-      "role", "branchName", "shift", "employmentType", "status",
-      "sourceOfHire", "joiningDate", "currentExperience", "totalExperience",
-      "alternateEmail", "address", "city", "state", "country", "zipCode",
-      "offerLetter", "linkedin", "github", "twitter", "website",
-      "terminateReason", "terminateDate",
+      "firstName",
+      "lastName",
+      "nickname",
+      "email",
+      "avatar",
+      "department",
+      "designation",
+      "location",
+      "phone",
+      "role",
+      "branchName",
+      "shift",
+      "employmentType",
+      "status",
+      "sourceOfHire",
+      "joiningDate",
+      "currentExperience",
+      "totalExperience",
+      "alternateEmail",
+      "address",
+      "city",
+      "state",
+      "country",
+      "zipCode",
+      "offerLetter",
+      "linkedin",
+      "github",
+      "twitter",
+      "website",
+      "terminateReason",
+      "terminateDate",
     ];
 
     const updateData: Record<string, unknown> = {};
@@ -98,16 +115,12 @@ export async function PUT(
     }
 
     if (body.firstName || body.lastName) {
-      updateData.name = [body.firstName || "", body.lastName || ""]
-        .filter(Boolean).join(" ");
+      updateData.name = [body.firstName || "", body.lastName || ""].filter(Boolean).join(" ");
     }
 
     updateData.updatedAt = new Date();
 
-    await db.collection(collections.users).updateOne(
-      { id },
-      { $set: updateData }
-    );
+    await db.collection(collections.users).updateOne({ id }, { $set: updateData });
 
     const now = new Date();
     if (Array.isArray(body.workExperience)) {
@@ -127,7 +140,7 @@ export async function PUT(
             relevant: exp.relevant || false,
             createdAt: now,
             updatedAt: now,
-          }))
+          })),
         );
       }
     }
@@ -146,7 +159,7 @@ export async function PUT(
             completionDate: edu.completionDate || null,
             createdAt: now,
             updatedAt: now,
-          }))
+          })),
         );
       }
     }
@@ -164,15 +177,14 @@ export async function PUT(
             dob: dep.dob || null,
             createdAt: now,
             updatedAt: now,
-          }))
+          })),
         );
       }
     }
 
-    const updated = await db.collection(collections.users).findOne(
-      { id },
-      { projection: { password: 0 } }
-    );
+    const updated = await db
+      .collection(collections.users)
+      .findOne({ id }, { projection: { password: 0 } });
 
     return NextResponse.json(updated);
   } catch (err: any) {

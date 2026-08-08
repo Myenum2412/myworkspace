@@ -1,10 +1,10 @@
-import { connectDb, mongoose } from "./index.js";
+import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
-import { ClientUser } from "./models/ClientUser.js";
+import { connectDb, mongoose } from "./index.js";
 import { Client } from "./models/Client.js";
+import { ClientUser } from "./models/ClientUser.js";
 import { Organization } from "./models/Organization.js";
 import { User } from "./models/User.js";
-import bcrypt from "bcryptjs";
 
 async function seedClient() {
   await connectDb();

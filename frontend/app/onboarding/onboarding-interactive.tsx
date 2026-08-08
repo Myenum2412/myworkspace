@@ -1,1 +1,1 @@
-export { OnboardingInteractive } from "./onboarding-interactive.client"
+export { OnboardingInteractive } from "./onboarding-interactive.client";

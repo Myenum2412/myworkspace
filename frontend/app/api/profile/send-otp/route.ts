@@ -1,21 +1,25 @@
+import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
 import { sendEmailDirect } from "@/lib/email";
-import { ObjectId } from "mongodb";
+import { getUserOrgId } from "@/lib/org";
 
 export async function POST() {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
   if (!orgId) return NextResponse.json({ error: "No org found" }, { status: 400 });
 
   try {
-    const user = await db.collection(collections.users).findOne({ id: session.user.id }) as any;
+    const user = (await db.collection(collections.users).findOne({ id: session.user.id })) as any;
     const email = user?.email || session.user.email;
     if (!email) return NextResponse.json({ error: "No email on file" }, { status: 400 });
 

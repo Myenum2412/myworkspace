@@ -1,5 +1,5 @@
-import request from "supertest";
 import type { Server } from "http";
+import request from "supertest";
 import app from "../../src/app.js";
 import { connectTestDb, resetDb } from "../__helpers__/db.js";
 import { seedOrgWithAdmin } from "../__helpers__/users.js";
@@ -20,7 +20,9 @@ function agent() {
 
 describe("enhanced search", () => {
   it("GET /api/search returns results grouped by entity type", async () => {
-    const { headers, orgId } = await seedOrgWithAdmin({ email: `search-group-${Date.now()}@ex.com` });
+    const { headers, orgId } = await seedOrgWithAdmin({
+      email: `search-group-${Date.now()}@ex.com`,
+    });
     await agent().post("/api/projects").set(headers).send({ orgId, name: "Alpha Project" });
     await agent().post("/api/teams").set(headers).send({ orgId, name: "Alpha Team" });
 

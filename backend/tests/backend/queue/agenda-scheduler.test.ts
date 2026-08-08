@@ -1,9 +1,9 @@
+import { MongoBackend } from "@agendajs/mongo-backend";
+import { Agenda } from "agenda";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
-import { Agenda } from "agenda";
-import { MongoBackend } from "@agendajs/mongo-backend";
-import { Session } from "../../../src/lib/db/models/Session.js";
 import { v4 as uuid } from "uuid";
+import { Session } from "../../../src/lib/db/models/Session.js";
 
 describe("Agenda scheduled jobs", () => {
   let mongoServer: MongoMemoryServer;

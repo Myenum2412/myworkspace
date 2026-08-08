@@ -1,4 +1,4 @@
-import { Request } from "express";
+import type { Request } from "express";
 
 export interface JwtPayload {
   userId: string;
@@ -30,6 +30,26 @@ export interface ApiResponse<T = unknown> {
 export type TaskStatus = "todo" | "in_progress" | "review" | "done" | "cancelled";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
 export type UserStatus = "online" | "offline" | "break";
-export type UserRole = "org_admin" | "members" | "manager" | "team_leader" | "staffs" | "hr" | "finance" | "contractors" | "clients" | "guest" | "api_token" | "service_account" | "automation_bot";
-export type NotificationType = "task_assigned" | "task_updated" | "mention" | "invite" | "system" | "comment" | "status_change";
+export type UserRole =
+  | "org_admin"
+  | "members"
+  | "manager"
+  | "team_leader"
+  | "staffs"
+  | "hr"
+  | "finance"
+  | "contractors"
+  | "clients"
+  | "guest"
+  | "api_token"
+  | "service_account"
+  | "automation_bot";
+export type NotificationType =
+  | "task_assigned"
+  | "task_updated"
+  | "mention"
+  | "invite"
+  | "system"
+  | "comment"
+  | "status_change";
 export type OrgPlan = "free" | "growth" | "enterprise" | string;

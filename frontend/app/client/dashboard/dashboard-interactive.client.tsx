@@ -1,14 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { FolderIcon } from "@/lib/icons";
-import { LogOut, Receipt, FileText, Loader2, AlertCircleIcon, ClockIcon } from "@/lib/icons";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { useIndustry } from "@/components/industry-provider";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertCircleIcon,
+  ClockIcon,
+  FileText,
+  FolderIcon,
+  Loader2,
+  LogOut,
+  Receipt,
+} from "@/lib/icons";
 
 type ClientUser = {
   id: string;
@@ -29,7 +36,14 @@ type ClientInfo = {
 type WorkspaceStats = {
   folderCount: number;
   fileCount: number;
-  recentFiles: { id: string; name: string; mimeType: string; size: number; category: string; createdAt: string }[];
+  recentFiles: {
+    id: string;
+    name: string;
+    mimeType: string;
+    size: number;
+    category: string;
+    createdAt: string;
+  }[];
 };
 
 type BillingStatus = {
@@ -50,7 +64,9 @@ export default function DashboardInteractive() {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (status === "unauthenticated") { router.push("/login"); }
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
   }, [status, router]);
 
   useEffect(() => {
@@ -62,7 +78,7 @@ export default function DashboardInteractive() {
         email: session.user.email || "",
         role: session.user.role || "client",
         mustChangePassword: false,
-        emailVerified: true
+        emailVerified: true,
       });
     }
   }, [status, session]);
@@ -152,10 +168,12 @@ export default function DashboardInteractive() {
           <div className="w-full flex items-center gap-3 rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
             <AlertCircleIcon className="size-5 text-amber-600 shrink-0" />
             <span className="font-medium text-amber-800">
-              {billingStatus.pendingCount} pending invoice{billingStatus.pendingCount > 1 ? "s" : ""}
+              {billingStatus.pendingCount} pending invoice
+              {billingStatus.pendingCount > 1 ? "s" : ""}
             </span>
             <span className="text-amber-700">
-              — ₹{(billingStatus.totalDue / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              — ₹
+              {(billingStatus.totalDue / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </span>
             <ClockIcon className="size-4 text-amber-500 ml-auto shrink-0" />
           </div>
@@ -163,8 +181,18 @@ export default function DashboardInteractive() {
       )}
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
-        <QuickActionCard icon={FolderIcon} title={t("nav.fileManager")} description={`${stats?.fileCount ?? 0} ${t("nav.tasks").toLowerCase()}`} href="/client/file-manager" />
-        <QuickActionCard icon={Receipt} title={t("nav.clientBills")} description={t("page.client.bills")} href="/client/bills" />
+        <QuickActionCard
+          icon={FolderIcon}
+          title={t("nav.fileManager")}
+          description={`${stats?.fileCount ?? 0} ${t("nav.tasks").toLowerCase()}`}
+          href="/client/file-manager"
+        />
+        <QuickActionCard
+          icon={Receipt}
+          title={t("nav.clientBills")}
+          description={t("page.client.bills")}
+          href="/client/bills"
+        />
       </div>
 
       <Card>
@@ -206,7 +234,10 @@ function QuickActionCard({
 }) {
   const router = useRouter();
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push(href)}>
+    <Card
+      className="cursor-pointer hover:shadow-md transition-shadow"
+      onClick={() => router.push(href)}
+    >
       <CardContent className="p-6">
         <div className="rounded-sm bg-primary/10 p-3 w-fit mb-3">
           <Icon className="size-5 text-primary" />

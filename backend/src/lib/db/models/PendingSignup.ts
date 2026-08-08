@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IPendingSignup extends Document {
   email: string;
@@ -20,7 +20,7 @@ const PendingSignupSchema = new Schema<IPendingSignup>(
     plan: { type: String },
     createdAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 PendingSignupSchema.index({ otpExpires: 1 }, { expireAfterSeconds: 0 });

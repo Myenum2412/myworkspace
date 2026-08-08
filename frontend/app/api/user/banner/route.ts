@@ -1,7 +1,7 @@
+import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { ObjectId } from "mongodb";
 
 export async function POST(request: Request) {
   let session;
@@ -53,7 +53,9 @@ export async function POST(request: Request) {
     } else {
       userQuery.$or!.push({ _id: userId });
     }
-    const result = await db.collection("users").updateOne(userQuery as never, { $set: { bannerUrl, updatedAt: new Date() } });
+    const result = await db
+      .collection("users")
+      .updateOne(userQuery as never, { $set: { bannerUrl, updatedAt: new Date() } });
     if (result.matchedCount === 0) {
       console.warn(`[banner] user not found for userId=${userId}`);
       return NextResponse.json({ error: "User not found" }, { status: 404 });

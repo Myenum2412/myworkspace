@@ -5,10 +5,14 @@ import { getUserOrgId } from "@/lib/org";
 
 export async function withAuthOrg(handler: (orgId: string, session: any) => Promise<any>) {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
   if (!orgId) return NextResponse.json({ error: "No organization" }, { status: 404 });
 
   try {

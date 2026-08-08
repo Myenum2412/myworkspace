@@ -2,39 +2,33 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useIndustry } from "@/components/industry-provider";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { SidebarBrand } from "@/components/sidebar-brand";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarRail } from "@/components/ui/sidebar";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarRail,
-} from "@/components/ui/sidebar";
-import { AttachMoneyIcon } from "@/lib/icons";
-import { CameraAltIcon } from "@/lib/icons";
-import { MuiFolderIcon } from "@/lib/icons";
-import {
+  AttachMoneyIcon,
+  BarChart3Icon,
+  CameraAltIcon,
+  CheckCheckIcon,
+  ClockIcon,
+  HeartHandshakeIcon,
   LayoutDashboardIcon,
   ListChecksIcon,
-  UsersIcon,
-  WorkflowIcon,
-  ClockIcon,
-  Settings2Icon,
-  CheckCheckIcon,
-  HeartHandshakeIcon,
+  MuiFolderIcon,
   PackageIcon,
   RotateCcwIcon,
-  BarChart3Icon,
   SendIcon,
+  Settings2Icon,
+  UsersIcon,
+  WorkflowIcon,
 } from "@/lib/icons";
-import { useIndustry } from "@/components/industry-provider";
-
-import { ROLES, isAdminRole } from "@/lib/rbac";
-import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
-import { canAccessPath, filterNavByRole } from "@/lib/rbac/navigation";
 import type { TermKey } from "@/lib/industry-terms";
+import { isAdminRole, ROLES } from "@/lib/rbac";
+import { canAccessPath, filterNavByRole } from "@/lib/rbac/navigation";
+import { SIDEBAR_FEATURES } from "@/lib/sidebar-features";
 
 export interface NavItem {
   title: string;
@@ -61,13 +55,26 @@ export function AppSidebar({
 
   useEffect(() => {
     Promise.allSettled([
-      fetch("/api/photography").then(r => r.json()).then(data => setPhotographyInstalled(data.installed)).catch(() => { }),
-      fetch("/api/sidebar-features").then(r => r.json()).then(data => { if (data.hidden) setHiddenFeatures(data.hidden); }).catch(() => { }),
+      fetch("/api/photography")
+        .then((r) => r.json())
+        .then((data) => setPhotographyInstalled(data.installed))
+        .catch(() => {}),
+      fetch("/api/sidebar-features")
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.hidden) setHiddenFeatures(data.hidden);
+        })
+        .catch(() => {}),
     ]);
   }, []);
 
   const platformItems: NavItem[] = [
-    { title: t("nav.dashboard"), url: "/dashboard", icon: <LayoutDashboardIcon className="size-6" />, isActive: true },
+    {
+      title: t("nav.dashboard"),
+      url: "/dashboard",
+      icon: <LayoutDashboardIcon className="size-6" />,
+      isActive: true,
+    },
     { title: t("nav.overview"), url: "/overview", icon: <ListChecksIcon className="size-6" /> },
     { title: t("nav.employees"), url: "/employees", icon: <UsersIcon className="size-6" /> },
     { title: t("nav.projects"), url: "/projects", icon: <WorkflowIcon className="size-6" /> },
@@ -75,19 +82,31 @@ export function AppSidebar({
     { title: t("nav.timeTracker"), url: "/time-tracker", icon: <ClockIcon className="size-6" /> },
     { title: t("nav.fileManager"), url: "/files", icon: <MuiFolderIcon className="size-6" /> },
     { title: t("nav.billing"), url: "/billing", icon: <AttachMoneyIcon className="size-6" /> },
-    { title: t("nav.engagement"), url: "/engagement", icon: <HeartHandshakeIcon className="size-6" /> },
+    {
+      title: t("nav.engagement"),
+      url: "/engagement",
+      icon: <HeartHandshakeIcon className="size-6" />,
+    },
     { title: t("nav.inventory"), url: "/stocks", icon: <PackageIcon className="size-6" /> },
     { title: t("nav.reworks"), url: "/reworks", icon: <RotateCcwIcon className="size-6" /> },
     { title: t("nav.submissions"), url: "/submissions", icon: <SendIcon className="size-6" /> },
-    { title: t("nav.reports"), url: "/dashboard/reports", icon: <BarChart3Icon className="size-6" /> },
+    {
+      title: t("nav.reports"),
+      url: "/dashboard/reports",
+      icon: <BarChart3Icon className="size-6" />,
+    },
   ];
 
   const photographyItem: NavItem = {
-    title: t("nav.photography"), url: "/photography", icon: <CameraAltIcon className="size-6" />,
+    title: t("nav.photography"),
+    url: "/photography",
+    icon: <CameraAltIcon className="size-6" />,
   };
 
   const settingsItem: NavItem = {
-    title: t("nav.settings"), url: "/settings", icon: <Settings2Icon className="size-6" />,
+    title: t("nav.settings"),
+    url: "/settings",
+    icon: <Settings2Icon className="size-6" />,
   };
 
   const role = user.role || "";
@@ -95,7 +114,9 @@ export function AppSidebar({
 
   const visibleItems = [
     ...roleFilteredItems.filter((item) => !hiddenFeatures.includes(item.title)),
-    ...(photographyInstalled && !hiddenFeatures.includes(t("nav.photography")) ? [photographyItem] : []),
+    ...(photographyInstalled && !hiddenFeatures.includes(t("nav.photography"))
+      ? [photographyItem]
+      : []),
   ];
 
   const settingsItems: NavItem[] = [settingsItem];

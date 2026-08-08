@@ -1,20 +1,8 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import {
-  RiGoogleLine,
-  RiMicrosoftLine,
-  RiCheckLine,
-  RiRefreshLine,
-  RiCalendarLine,
-  RiSettings3Line,
-  RiDeleteBinLine,
-  RiExternalLinkLine,
-  RiInformationLine,
-} from "@/lib/icons"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { useCallback, useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -22,113 +10,125 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
-import { Loader2Icon } from "@/lib/icons"
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import {
+  Loader2Icon,
+  RiCalendarLine,
+  RiCheckLine,
+  RiDeleteBinLine,
+  RiExternalLinkLine,
+  RiGoogleLine,
+  RiInformationLine,
+  RiMicrosoftLine,
+  RiRefreshLine,
+  RiSettings3Line,
+} from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 type CalendarConnection = {
-  id: string
-  provider: "google" | "microsoft"
-  calendarEmail: string
-  calendarName: string
-  syncEnabled: boolean
-  lastSyncAt: string | null
-  createdAt: string
-}
+  id: string;
+  provider: "google" | "microsoft";
+  calendarEmail: string;
+  calendarName: string;
+  syncEnabled: boolean;
+  lastSyncAt: string | null;
+  createdAt: string;
+};
 
 type CalendarInfo = {
-  id: string
-  summary: string
-  description?: string
-  timeZone?: string
-  backgroundColor?: string
-  accessRole?: string
-  primary?: boolean
-  selected?: boolean
-}
+  id: string;
+  summary: string;
+  description?: string;
+  timeZone?: string;
+  backgroundColor?: string;
+  accessRole?: string;
+  primary?: boolean;
+  selected?: boolean;
+};
 
 export default function CalendarIntegrationClient() {
-  const [connections, setConnections] = useState<CalendarConnection[]>([])
-  const [calendars, setCalendars] = useState<CalendarInfo[]>([])
-  const [loading, setLoading] = useState(true)
-  const [connecting, setConnecting] = useState<string | null>(null)
-  const [syncing, setSyncing] = useState<string | null>(null)
-  const [showCalendars, setShowCalendars] = useState(false)
+  const [connections, setConnections] = useState<CalendarConnection[]>([]);
+  const [calendars, setCalendars] = useState<CalendarInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [connecting, setConnecting] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState<string | null>(null);
+  const [showCalendars, setShowCalendars] = useState(false);
 
   const fetchConnections = useCallback(async () => {
     try {
-      const res = await fetch("/api/calendar/connections")
+      const res = await fetch("/api/calendar/connections");
       if (res.ok) {
-        const data = await res.json()
-        setConnections(data.data || [])
+        const data = await res.json();
+        setConnections(data.data || []);
       }
     } catch {
       // silent
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   const fetchCalendars = useCallback(async () => {
     try {
-      const res = await fetch("/api/calendar/calendars")
+      const res = await fetch("/api/calendar/calendars");
       if (res.ok) {
-        const data = await res.json()
-        setCalendars(data.data || [])
+        const data = await res.json();
+        setCalendars(data.data || []);
       }
     } catch {
       // silent
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchConnections()
-  }, [fetchConnections])
+    fetchConnections();
+  }, [fetchConnections]);
 
   useEffect(() => {
     if (connections.length > 0) {
-      fetchCalendars()
+      fetchCalendars();
     }
-  }, [connections.length, fetchCalendars])
+  }, [connections.length, fetchCalendars]);
 
   const handleConnect = async (provider: "google" | "microsoft") => {
-    setConnecting(provider)
-    window.location.href = `/api/calendar/${provider}`
-  }
+    setConnecting(provider);
+    window.location.href = `/api/calendar/${provider}`;
+  };
 
   const handleDisconnect = async (provider: string) => {
-    setConnecting(provider)
+    setConnecting(provider);
     try {
       await fetch(`/api/calendar/connections?provider=${provider}`, {
         method: "DELETE",
-      })
-      await fetchConnections()
-      setCalendars([])
+      });
+      await fetchConnections();
+      setCalendars([]);
     } finally {
-      setConnecting(null)
+      setConnecting(null);
     }
-  }
+  };
 
   const handleSync = async (connectionId: string) => {
-    setSyncing(connectionId)
+    setSyncing(connectionId);
     try {
       await fetch("/api/calendar/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ connectionId }),
-      })
-      await fetchConnections()
+      });
+      await fetchConnections();
     } finally {
-      setSyncing(null)
+      setSyncing(null);
     }
-  }
+  };
 
   const formatLastSync = (date: string | null): string => {
-    if (!date) return "Never"
-    const d = new Date(date)
-    return d.toLocaleString()
-  }
+    if (!date) return "Never";
+    const d = new Date(date);
+    return d.toLocaleString();
+  };
 
   return (
     <div className="space-y-6">
@@ -151,9 +151,7 @@ export default function CalendarIntegrationClient() {
           ) : connections.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <RiCalendarLine className="size-12 text-muted-foreground mb-4" />
-              <p className="text-sm text-muted-foreground">
-                No calendar connections found.
-              </p>
+              <p className="text-sm text-muted-foreground">No calendar connections found.</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Connect your Google Calendar or Outlook to get started.
               </p>
@@ -291,15 +289,9 @@ export default function CalendarIntegrationClient() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Discovered Calendars</CardTitle>
-                <CardDescription>
-                  Calendars found in your connected accounts.
-                </CardDescription>
+                <CardDescription>Calendars found in your connected accounts.</CardDescription>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowCalendars(!showCalendars)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setShowCalendars(!showCalendars)}>
                 {showCalendars ? "Hide" : "Show"} ({calendars.length})
               </Button>
             </div>
@@ -388,5 +380,5 @@ export default function CalendarIntegrationClient() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

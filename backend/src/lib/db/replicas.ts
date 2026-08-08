@@ -8,14 +8,16 @@ interface ReplicaConfig {
   readTags: Record<string, string>;
 }
 
-let readReplicaConnections: mongoose.Connection[] = [];
+const readReplicaConnections: mongoose.Connection[] = [];
 let writeConnection: mongoose.Connection | null = null;
 
-export function configureReplicaSets(config: ReplicaConfig = {
-  readPreference: "secondaryPreferred",
-  maxStalenessSeconds: 30,
-  readTags: {},
-}) {
+export function configureReplicaSets(
+  config: ReplicaConfig = {
+    readPreference: "secondaryPreferred",
+    maxStalenessSeconds: 30,
+    readTags: {},
+  },
+) {
   const uri = process.env.MONGODB_URI || "";
   if (!uri.includes(",")) return;
 
@@ -29,7 +31,10 @@ export function configureReplicaSets(config: ReplicaConfig = {
 }
 
 export function getReadConnection(): mongoose.Connection {
-  return readReplicaConnections[Math.floor(Math.random() * readReplicaConnections.length)] || mongoose.connection;
+  return (
+    readReplicaConnections[Math.floor(Math.random() * readReplicaConnections.length)] ||
+    mongoose.connection
+  );
 }
 
 export function getWriteConnection(): mongoose.Connection {
@@ -44,20 +49,24 @@ export async function queryWithReadPreference<T>(
   try {
     return await query();
   } finally {
-    metricsRegistry.observeHistogram("db_query_duration_ms",
-      { operation: "read" }, Date.now() - start);
+    metricsRegistry.observeHistogram(
+      "db_query_duration_ms",
+      { operation: "read" },
+      Date.now() - start,
+    );
   }
 }
 
-export async function writeOperation<T>(
-  operation: () => Promise<T>,
-): Promise<T> {
+export async function writeOperation<T>(operation: () => Promise<T>): Promise<T> {
   const start = Date.now();
   try {
     return await operation();
   } finally {
-    metricsRegistry.observeHistogram("db_query_duration_ms",
-      { operation: "write" }, Date.now() - start);
+    metricsRegistry.observeHistogram(
+      "db_query_duration_ms",
+      { operation: "write" },
+      Date.now() - start,
+    );
   }
 }
 

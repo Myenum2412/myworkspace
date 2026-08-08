@@ -1,1 +1,1 @@
-export { ProfilePageInteractive } from "./profile-interactive.client"
+export { ProfilePageInteractive } from "./profile-interactive.client";

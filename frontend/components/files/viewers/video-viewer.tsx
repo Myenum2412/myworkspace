@@ -1,18 +1,18 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import {
-  PlayIcon,
-  PauseIcon,
+  DownloadIcon,
   MaximizeIcon,
   MinimizeIcon,
+  PauseIcon,
   PictureInPicture2Icon,
-  DownloadIcon,
+  PlayIcon,
   Volume2Icon,
   VolumeXIcon,
 } from "@/lib/icons";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 
 interface VideoViewerProps {
   src: string;
@@ -36,7 +36,10 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
   const togglePlay = useCallback(() => {
     if (!videoRef.current) return;
     if (videoRef.current.paused) {
-      videoRef.current.play().then(() => setPlaying(true)).catch(() => {});
+      videoRef.current
+        .play()
+        .then(() => setPlaying(true))
+        .catch(() => {});
     } else {
       videoRef.current.pause();
       setPlaying(false);
@@ -86,9 +89,14 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
     const el = videoRef.current?.parentElement;
     if (!el) return;
     if (!document.fullscreenElement) {
-      el.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+      el.requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch(() => {});
     } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+      document
+        .exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch(() => {});
     }
   };
 
@@ -141,16 +149,25 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
         className="max-w-full max-h-full"
         preload="metadata"
         onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={() => { handleLoadedMetadata(); setLoading(false); }}
-        onError={() => { setLoading(false); setError(true); }}
+        onLoadedMetadata={() => {
+          handleLoadedMetadata();
+          setLoading(false);
+        }}
+        onError={() => {
+          setLoading(false);
+          setError(true);
+        }}
         onEnded={() => setPlaying(false)}
         onClick={(e) => e.stopPropagation()}
       />
 
       <div
-        className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300 ${ playing ? "opacity-0" : "opacity-100" }`}
+        className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300 ${playing ? "opacity-0" : "opacity-100"}`}
       >
-        <div className="size-16 rounded-sm bg-black/60 flex items-center justify-center pointer-events-auto cursor-pointer" onClick={togglePlay}>
+        <div
+          className="size-16 rounded-sm bg-black/60 flex items-center justify-center pointer-events-auto cursor-pointer"
+          onClick={togglePlay}
+        >
           <PlayIcon className="size-8 text-white ml-1" />
         </div>
       </div>
@@ -170,10 +187,20 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
         />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="p-0 text-white hover:bg-white/20" onClick={togglePlay}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-0 text-white hover:bg-white/20"
+              onClick={togglePlay}
+            >
               {playing ? <PauseIcon className="size-4" /> : <PlayIcon className="size-4" />}
             </Button>
-            <Button variant="ghost" size="sm" className="p-0 text-white hover:bg-white/20" onClick={toggleMute}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-0 text-white hover:bg-white/20"
+              onClick={toggleMute}
+            >
               {muted ? <VolumeXIcon className="size-4" /> : <Volume2Icon className="size-4" />}
             </Button>
             <Slider
@@ -188,17 +215,41 @@ export function VideoViewer({ src, fileName }: VideoViewerProps) {
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="text-xs text-white hover:bg-white/20 px-2" onClick={changeSpeed}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-white hover:bg-white/20 px-2"
+              onClick={changeSpeed}
+            >
               {playbackRate}x
             </Button>
-            <Button variant="ghost" size="sm" className="p-0 text-white hover:bg-white/20" onClick={togglePiP}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-0 text-white hover:bg-white/20"
+              onClick={togglePiP}
+            >
               <PictureInPicture2Icon className="size-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-0 text-white hover:bg-white/20" onClick={() => window.open(src, "_blank")}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-0 text-white hover:bg-white/20"
+              onClick={() => window.open(src, "_blank")}
+            >
               <DownloadIcon className="size-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-0 text-white hover:bg-white/20" onClick={toggleFullscreen}>
-              {isFullscreen ? <MinimizeIcon className="size-4" /> : <MaximizeIcon className="size-4" />}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-0 text-white hover:bg-white/20"
+              onClick={toggleFullscreen}
+            >
+              {isFullscreen ? (
+                <MinimizeIcon className="size-4" />
+              ) : (
+                <MaximizeIcon className="size-4" />
+              )}
             </Button>
           </div>
         </div>

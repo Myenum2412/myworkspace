@@ -1,21 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Roboto, Inter } from "next/font/google";
-import { Providers } from "@/components/providers";
+import { Inter, Roboto } from "next/font/google";
+import { Toaster } from "sonner";
 import { AppLayout } from "@/components/app-layout";
 import { ContextMenuProvider } from "@/components/context-menu-provider";
-import { OfflineBanner } from "@/components/offline-banner";
-import { OfflineSyncManager } from "@/components/offline-sync-manager";
-import { Toaster } from "sonner";
-import { NotificationInitializer } from "@/components/notification-initializer";
+import CookieConsentBlock from "@/components/cookie-consent-block";
 import { CsrfInterceptor } from "@/components/csrf-interceptor";
 import { GlobalLoader } from "@/components/global-loader";
+import { NotificationInitializer } from "@/components/notification-initializer";
+import { OfflineBanner } from "@/components/offline-banner";
+import { OfflineSyncManager } from "@/components/offline-sync-manager";
 import { PerformanceMonitor } from "@/components/performance-monitor";
-import CookieConsentBlock from "@/components/cookie-consent-block";
-import { siteConfig, organizationJsonLd, webSiteJsonLd, softwareApplicationJsonLd } from "@/lib/seo/seo-config";
+import { Providers } from "@/components/providers";
+import {
+  organizationJsonLd,
+  siteConfig,
+  softwareApplicationJsonLd,
+  webSiteJsonLd,
+} from "@/lib/seo/seo-config";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -215,16 +220,17 @@ export default function RootLayout({
           />
         ))}
       </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
+      <body
+        className="min-h-full flex flex-col bg-background text-foreground"
+        suppressHydrationWarning
+      >
         <Providers>
           <CsrfInterceptor />
           <ContextMenuProvider />
           <NotificationInitializer />
           <PerformanceMonitor />
           <GlobalLoader>
-            <AppLayout>
-              {children}
-            </AppLayout>
+            <AppLayout>{children}</AppLayout>
           </GlobalLoader>
           <OfflineBanner />
           <OfflineSyncManager />

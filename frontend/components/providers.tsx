@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect, memo } from "react";
-import { SessionProvider } from "next-auth/react";
-import { ThemeProvider } from "next-themes";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import {
+  focusManager,
+  onlineManager,
   QueryClient,
   QueryClientProvider,
-  onlineManager,
-  focusManager,
 } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { SessionProvider } from "next-auth/react";
+import { ThemeProvider } from "next-themes";
+import { memo, useEffect, useState } from "react";
 import { AppInitProvider } from "@/components/app-init-provider";
 import { IndustryProvider } from "@/components/industry-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { createIndexedDbPersister } from "@/lib/offline/query-persister";
 
 let persister: ReturnType<typeof createIndexedDbPersister> | null = null;
@@ -46,7 +46,11 @@ function createQueryClient() {
 
 const onlineManagerInitialized = { current: false };
 
-const OnlineStatusManager = memo(function OnlineStatusManager({ queryClient }: { queryClient: QueryClient }) {
+const OnlineStatusManager = memo(function OnlineStatusManager({
+  queryClient,
+}: {
+  queryClient: QueryClient;
+}) {
   useEffect(() => {
     if (onlineManagerInitialized.current) return;
     onlineManagerInitialized.current = true;
@@ -102,9 +106,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         >
           <TooltipProvider>
             <AppInitProvider>
-              <IndustryProvider>
-                {children}
-              </IndustryProvider>
+              <IndustryProvider>{children}</IndustryProvider>
             </AppInitProvider>
           </TooltipProvider>
         </ThemeProvider>

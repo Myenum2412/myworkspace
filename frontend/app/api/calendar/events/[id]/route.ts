@@ -1,13 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { updateCalendarEvent, deleteCalendarEvent } from "@/lib/services/calendar-service";
+import { deleteCalendarEvent, updateCalendarEvent } from "@/lib/services/calendar-service";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -51,10 +48,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -74,7 +68,18 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const { title, description, location, start, end, allDay, calendarId, attendees, reminders, status } = body;
+    const {
+      title,
+      description,
+      location,
+      start,
+      end,
+      allDay,
+      calendarId,
+      attendees,
+      reminders,
+      status,
+    } = body;
 
     const updated = await updateCalendarEvent(
       session.user.id,
@@ -91,7 +96,7 @@ export async function PUT(
         attendees: attendees || existingEvent.attendees,
         reminders: reminders || existingEvent.reminders,
         status: status || existingEvent.status,
-      }
+      },
     );
 
     if (!updated) {
@@ -114,7 +119,7 @@ export async function PUT(
           lastModified: new Date(updated.lastModified || Date.now()),
           updatedAt: new Date(),
         },
-      }
+      },
     );
 
     return NextResponse.json({ data: updated });
@@ -124,10 +129,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -150,7 +152,7 @@ export async function DELETE(
       session.user.id,
       existingEvent.connectionId,
       existingEvent.externalId,
-      existingEvent.calendarId
+      existingEvent.calendarId,
     );
 
     if (!deleted) {

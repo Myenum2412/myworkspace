@@ -36,7 +36,11 @@ export function fail(fields: FieldError[]): never {
   throw new AppError(400, "Validation failed", obj);
 }
 
-export function requireString(value: unknown, path: string, { min = 1, max = 10_000 }: { min?: number; max?: number } = {}): string {
+export function requireString(
+  value: unknown,
+  path: string,
+  { min = 1, max = 10_000 }: { min?: number; max?: number } = {},
+): string {
   if (typeof value !== "string") fail([{ path, message: `${path} must be a string` }]);
   const v = value.trim();
   if (v.length < min) fail([{ path, message: `${path} must be at least ${min} char(s)` }]);
@@ -44,7 +48,11 @@ export function requireString(value: unknown, path: string, { min = 1, max = 10_
   return v;
 }
 
-export function optionalString(value: unknown, path: string, { max = 10_000 }: { max?: number } = {}): string | undefined {
+export function optionalString(
+  value: unknown,
+  path: string,
+  { max = 10_000 }: { max?: number } = {},
+): string | undefined {
   if (value === undefined || value === null) return undefined;
   if (typeof value !== "string") fail([{ path, message: `${path} must be a string` }]);
   const v = value.trim();
@@ -55,18 +63,27 @@ export function optionalString(value: unknown, path: string, { max = 10_000 }: {
 
 export function requireEmail(value: unknown, path = "email"): string {
   const v = requireString(value, path, { min: 5, max: 254 });
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) fail([{ path, message: `${path} must be a valid email` }]);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))
+    fail([{ path, message: `${path} must be a valid email` }]);
   return v.toLowerCase();
 }
 
-export function requireEnum<T extends string>(value: unknown, allowed: readonly T[], path: string): T {
+export function requireEnum<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+  path: string,
+): T {
   if (typeof value !== "string" || !allowed.includes(value as T)) {
     fail([{ path, message: `${path} must be one of: ${allowed.join(", ")}` }]);
   }
   return value as T;
 }
 
-export function optionalArray(value: unknown, path: string, { max = 1000 }: { max?: number } = {}): unknown[] | undefined {
+export function optionalArray(
+  value: unknown,
+  path: string,
+  { max = 1000 }: { max?: number } = {},
+): unknown[] | undefined {
   if (value === undefined || value === null) return undefined;
   if (!Array.isArray(value)) fail([{ path, message: `${path} must be an array` }]);
   if (value.length > max) fail([{ path, message: `${path} must have at most ${max} items` }]);
@@ -75,9 +92,21 @@ export function optionalArray(value: unknown, path: string, { max = 1000 }: { ma
 
 // Common enums for the hot routes.
 export const TASK_STATUSES = [
-  "assigned", "pending", "in_progress", "completed", "closed",
-  "hold", "cancelled", "rejected", "reopened", "submitted", "approved",
-  "published", "accepted", "scheduled", "activated",
+  "assigned",
+  "pending",
+  "in_progress",
+  "completed",
+  "closed",
+  "hold",
+  "cancelled",
+  "rejected",
+  "reopened",
+  "submitted",
+  "approved",
+  "published",
+  "accepted",
+  "scheduled",
+  "activated",
 ] as const;
 export const TASK_PRIORITIES = ["low", "medium", "high", "urgent"] as const;
 export const TASK_TYPES = ["individual", "team", "common", "upcoming"] as const;

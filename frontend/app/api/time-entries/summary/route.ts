@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
-import { getUserOrgId } from "@/lib/org";
+import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
+import { getUserOrgId } from "@/lib/org";
 
 export const dynamic = "force-dynamic";
 
@@ -27,60 +27,72 @@ export async function GET() {
   const match = { orgId };
 
   const [totalRes, prevRes, weeklyAgg, topMembers] = await Promise.all([
-    db.collection(collections.timeEntries).aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: null,
-          totalHours: { $sum: "$duration" },
-          billableHours: { $sum: { $cond: ["$billable", "$duration", 0] } },
-          totalEntries: { $sum: 1 },
+    db
+      .collection(collections.timeEntries)
+      .aggregate([
+        { $match: match },
+        {
+          $group: {
+            _id: null,
+            totalHours: { $sum: "$duration" },
+            billableHours: { $sum: { $cond: ["$billable", "$duration", 0] } },
+            totalEntries: { $sum: 1 },
+          },
         },
-      },
-    ]).toArray(),
-    db.collection(collections.timeEntries).aggregate([
-      { $match: { ...match, date: { $gte: fourteenDaysAgo, $lt: sevenDaysAgo } } },
-      { $group: { _id: null, totalHours: { $sum: "$duration" } } },
-    ]).toArray(),
-    db.collection(collections.timeEntries).aggregate([
-      { $match: { ...match, date: { $gte: sevenDaysAgo } } },
-      {
-        $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
-          hours: { $sum: "$duration" },
+      ])
+      .toArray(),
+    db
+      .collection(collections.timeEntries)
+      .aggregate([
+        { $match: { ...match, date: { $gte: fourteenDaysAgo, $lt: sevenDaysAgo } } },
+        { $group: { _id: null, totalHours: { $sum: "$duration" } } },
+      ])
+      .toArray(),
+    db
+      .collection(collections.timeEntries)
+      .aggregate([
+        { $match: { ...match, date: { $gte: sevenDaysAgo } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+            hours: { $sum: "$duration" },
+          },
         },
-      },
-      { $sort: { _id: 1 } },
-    ]).toArray(),
-    db.collection(collections.timeEntries).aggregate([
-      { $match: { ...match, date: { $gte: sevenDaysAgo } } },
-      {
-        $group: {
-          _id: "$userId",
-          hours: { $sum: "$duration" },
-          billable: { $sum: { $cond: ["$billable", "$duration", 0] } },
+        { $sort: { _id: 1 } },
+      ])
+      .toArray(),
+    db
+      .collection(collections.timeEntries)
+      .aggregate([
+        { $match: { ...match, date: { $gte: sevenDaysAgo } } },
+        {
+          $group: {
+            _id: "$userId",
+            hours: { $sum: "$duration" },
+            billable: { $sum: { $cond: ["$billable", "$duration", 0] } },
+          },
         },
-      },
-      { $sort: { hours: -1 } },
-      { $limit: 5 },
-      {
-        $lookup: {
-          from: collections.users,
-          localField: "_id",
-          foreignField: "id",
-          as: "user",
+        { $sort: { hours: -1 } },
+        { $limit: 5 },
+        {
+          $lookup: {
+            from: collections.users,
+            localField: "_id",
+            foreignField: "id",
+            as: "user",
+          },
         },
-      },
-      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
-      {
-        $project: {
-          _id: 1,
-          hours: 1,
-          billable: 1,
-          name: "$user.name",
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            _id: 1,
+            hours: 1,
+            billable: 1,
+            name: "$user.name",
+          },
         },
-      },
-    ]).toArray(),
+      ])
+      .toArray(),
   ]);
 
   const totals = totalRes[0] || { totalHours: 0, billableHours: 0, totalEntries: 0 };

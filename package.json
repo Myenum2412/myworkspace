@@ -2,11 +2,29 @@
   "private": true,
   "scripts": {
     "build": "cd frontend && npm ci --include=dev --legacy-peer-deps && npm run build",
-    "vercel-build": "cd frontend && npm ci --include=dev --legacy-peer-deps && npm run build && rm -rf ../.next && cp -r .next ../.next && cp -r public ../public"
+    "vercel-build": "cd frontend && npm ci --include=dev --legacy-peer-deps && npm run build && rm -rf ../.next && cp -r .next ../.next && cp -r public ../public",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "check": "biome check .",
+    "fix": "biome check --write .",
+    "fix:unsafe": "biome check --write --unsafe ."
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs,json,jsonc,css,html}": "biome check --write"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged --concurrent=false"
   },
   "dependencies": {
     "next": "^16.2.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.7",
+    "lint-staged": "^17.3.0",
+    "simple-git-hooks": "^2.13.1"
   }
 }

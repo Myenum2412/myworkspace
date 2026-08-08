@@ -1,14 +1,18 @@
 import http from "http";
-import { Server as IOServer } from "socket.io";
-import { io as ioClient, Socket as ClientSocket } from "socket.io-client";
 import jwt from "jsonwebtoken";
+import { Server as IOServer } from "socket.io";
+import { Socket as ClientSocket, io as ioClient } from "socket.io-client";
 import { v4 as uuid } from "uuid";
 import { connectTestDb } from "../../__helpers__/db.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "test-secret";
 
 function makeToken(userId: string, orgId: string): string {
-  return jwt.sign({ userId, email: "t@e.com", role: "members", permissions: [], orgId }, JWT_SECRET, { expiresIn: "10m" });
+  return jwt.sign(
+    { userId, email: "t@e.com", role: "members", permissions: [], orgId },
+    JWT_SECRET,
+    { expiresIn: "10m" },
+  );
 }
 
 describe("Chat Socket.IO events", () => {
@@ -31,7 +35,9 @@ describe("Chat Socket.IO events", () => {
         (socket as any).userId = decoded.userId;
         (socket as any).orgId = decoded.orgId;
         next();
-      } catch { next(new Error("Invalid token")); }
+      } catch {
+        next(new Error("Invalid token"));
+      }
     });
     io.on("connection", (socket) => {
       const userId = (socket as any).userId;
@@ -45,14 +51,24 @@ describe("Chat Socket.IO events", () => {
   });
 
   afterAll(async () => {
-    await new Promise<void>((resolve) => httpServer.close(() => { io.close(); resolve(); }));
+    await new Promise<void>((resolve) =>
+      httpServer.close(() => {
+        io.close();
+        resolve();
+      }),
+    );
   });
 
   it("broadcasts chat:message to org room", async () => {
     const userId = uuid();
     const orgId = uuid();
     const token = makeToken(userId, orgId);
-    const client = ioClient(`http://127.0.0.1:${port}`, { path: "/api/socketio", auth: { token }, transports: ["websocket"], forceNew: true });
+    const client = ioClient(`http://127.0.0.1:${port}`, {
+      path: "/api/socketio",
+      auth: { token },
+      transports: ["websocket"],
+      forceNew: true,
+    });
     await new Promise<void>((resolve, reject) => {
       client.on("connect", resolve);
       client.on("connect_error", reject);
@@ -61,7 +77,10 @@ describe("Chat Socket.IO events", () => {
 
     const msgPromise = new Promise<any>((resolve, reject) => {
       const t = setTimeout(() => reject(new Error("timeout waiting for chat:message")), 5000);
-      client.once("chat:message", (d: any) => { clearTimeout(t); resolve(d); });
+      client.once("chat:message", (d: any) => {
+        clearTimeout(t);
+        resolve(d);
+      });
     });
 
     io.to(`org:${orgId}`).emit("chat:message", {
@@ -79,7 +98,12 @@ describe("Chat Socket.IO events", () => {
     const userId = uuid();
     const orgId = uuid();
     const token = makeToken(userId, orgId);
-    const client = ioClient(`http://127.0.0.1:${port}`, { path: "/api/socketio", auth: { token }, transports: ["websocket"], forceNew: true });
+    const client = ioClient(`http://127.0.0.1:${port}`, {
+      path: "/api/socketio",
+      auth: { token },
+      transports: ["websocket"],
+      forceNew: true,
+    });
     await new Promise<void>((resolve, reject) => {
       client.on("connect", resolve);
       client.on("connect_error", (err) => reject(err));
@@ -88,7 +112,10 @@ describe("Chat Socket.IO events", () => {
 
     const typingPromise = new Promise<any>((resolve, reject) => {
       const t = setTimeout(() => reject(new Error("timeout waiting for chat:typing")), 5000);
-      client.once("chat:typing", (d: any) => { clearTimeout(t); resolve(d); });
+      client.once("chat:typing", (d: any) => {
+        clearTimeout(t);
+        resolve(d);
+      });
     });
 
     io.to(`org:${orgId}`).emit("chat:typing", {
@@ -107,7 +134,12 @@ describe("Chat Socket.IO events", () => {
     const userId = uuid();
     const orgId = uuid();
     const token = makeToken(userId, orgId);
-    const client = ioClient(`http://127.0.0.1:${port}`, { path: "/api/socketio", auth: { token }, transports: ["websocket"], forceNew: true });
+    const client = ioClient(`http://127.0.0.1:${port}`, {
+      path: "/api/socketio",
+      auth: { token },
+      transports: ["websocket"],
+      forceNew: true,
+    });
     await new Promise<void>((resolve, reject) => {
       client.on("connect", resolve);
       client.on("connect_error", (err) => reject(err));
@@ -116,7 +148,10 @@ describe("Chat Socket.IO events", () => {
 
     const readPromise = new Promise<any>((resolve, reject) => {
       const t = setTimeout(() => reject(new Error("timeout waiting for chat:read")), 5000);
-      client.once("chat:read", (d: any) => { clearTimeout(t); resolve(d); });
+      client.once("chat:read", (d: any) => {
+        clearTimeout(t);
+        resolve(d);
+      });
     });
 
     io.to(`org:${orgId}`).emit("chat:read", {

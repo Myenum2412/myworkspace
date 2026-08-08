@@ -1,11 +1,17 @@
-import { Notification, NotificationType, NotificationCategory, NotificationPriority, INotificationAction } from "../lib/db/models/Notification.js";
-import { NotificationSettings } from "../lib/db/models/NotificationSettings.js";
-import { socketIOManager } from "../lib/socketio/index.js";
-import { cacheManager } from "../lib/cache.js";
-import { sendPushNotification } from "./push.service.js";
-import { recordAuditLog } from "./audit.service.js";
-import { logger } from "../lib/logger/index.js";
 import { v4 as uuid } from "uuid";
+import { cacheManager } from "../lib/cache.js";
+import {
+  type INotificationAction,
+  Notification,
+  type NotificationCategory,
+  type NotificationPriority,
+  type NotificationType,
+} from "../lib/db/models/Notification.js";
+import { NotificationSettings } from "../lib/db/models/NotificationSettings.js";
+import { logger } from "../lib/logger/index.js";
+import { socketIOManager } from "../lib/socketio/index.js";
+import { recordAuditLog } from "./audit.service.js";
+import { sendPushNotification } from "./push.service.js";
 
 export interface EngineEvent {
   userId: string;
@@ -52,8 +58,13 @@ export interface EngineResult {
 
 const NOTIFICATION_TTL_DAYS = parseInt(process.env.NOTIFICATION_TTL_DAYS || "90", 10);
 const CRITICAL_TYPES = new Set([
-  "suspicious_login", "account_locked", "password_changed", "payment_failed",
-  "storage_exceeded", "system_outage", "unauthorized_access_attempt",
+  "suspicious_login",
+  "account_locked",
+  "password_changed",
+  "payment_failed",
+  "storage_exceeded",
+  "system_outage",
+  "unauthorized_access_attempt",
 ]);
 
 async function checkDeduplication(event: EngineEvent): Promise<boolean> {
@@ -97,9 +108,7 @@ async function determineChannels(event: EngineEvent): Promise<string[]> {
       channels.push("email");
     }
 
-    const typeSetting = settings.typeSettings?.find(
-      (ts: any) => ts.type === event.type
-    );
+    const typeSetting = settings.typeSettings?.find((ts: any) => ts.type === event.type);
     if (typeSetting && typeSetting.enabled === false) {
       const idx = channels.indexOf("inapp");
       if (idx >= 0) channels.splice(idx, 1);
@@ -150,7 +159,7 @@ async function determineChannels(event: EngineEvent): Promise<string[]> {
     const isMuted = settings.mutedNotifications?.some(
       (m: any) =>
         m.type === event.type &&
-        (m.mutedForever || (m.mutedUntil && new Date(m.mutedUntil) > new Date()))
+        (m.mutedForever || (m.mutedUntil && new Date(m.mutedUntil) > new Date())),
     );
     if (isMuted) {
       const idx = channels.indexOf("inapp");
@@ -182,41 +191,47 @@ async function createInApp(event: EngineEvent) {
     source: event.source || "system",
     channels: event.channels || [],
     correlationId: event.correlationId || uuid(),
-    expiresAt: event.expiresAt ? new Date(event.expiresAt) : new Date(Date.now() + NOTIFICATION_TTL_DAYS * 86400000),
+    expiresAt: event.expiresAt
+      ? new Date(event.expiresAt)
+      : new Date(Date.now() + NOTIFICATION_TTL_DAYS * 86400000),
     read: false,
     archived: false,
   });
 
   try {
     await cacheManager.del(`unread:${event.userId}:${event.orgId}`);
-  } catch { /* ok */ }
+  } catch {
+    /* ok */
+  }
 
   return doc;
 }
 
 async function emitSocket(event: EngineEvent, notificationDoc?: any) {
   try {
-    const payload = notificationDoc ? {
-      _id: notificationDoc._id,
-      type: event.type,
-      category: event.category || "system",
-      priority: event.priority || "normal",
-      title: event.title,
-      message: event.message,
-      link: event.link,
-      actions: event.actions,
-      metadata: event.metadata,
-      createdAt: notificationDoc.createdAt || new Date().toISOString(),
-      read: false,
-      archived: false,
-    } : {
-      type: event.type,
-      category: event.category || "system",
-      priority: event.priority || "normal",
-      title: event.title,
-      message: event.message,
-      link: event.link,
-    };
+    const payload = notificationDoc
+      ? {
+          _id: notificationDoc._id,
+          type: event.type,
+          category: event.category || "system",
+          priority: event.priority || "normal",
+          title: event.title,
+          message: event.message,
+          link: event.link,
+          actions: event.actions,
+          metadata: event.metadata,
+          createdAt: notificationDoc.createdAt || new Date().toISOString(),
+          read: false,
+          archived: false,
+        }
+      : {
+          type: event.type,
+          category: event.category || "system",
+          priority: event.priority || "normal",
+          title: event.title,
+          message: event.message,
+          link: event.link,
+        };
 
     socketIOManager.emitToUser(event.userId, "notification", payload);
     socketIOManager.emitToOrg(event.orgId, "notification:org", payload);
@@ -303,11 +318,17 @@ async function recordAudit(event: EngineEvent) {
 }
 
 export async function processBatch(events: EngineEvent[]): Promise<EngineResult[]> {
-  const results = await Promise.allSettled(events.map(e => processEvent(e)));
-  return results.map(r =>
-    r.status === "fulfilled" ? r.value : {
-      channels: [], emailQueued: false, pushSent: false,
-      socketEmitted: false, auditRecorded: false, deduplicated: false,
-    }
+  const results = await Promise.allSettled(events.map((e) => processEvent(e)));
+  return results.map((r) =>
+    r.status === "fulfilled"
+      ? r.value
+      : {
+          channels: [],
+          emailQueued: false,
+          pushSent: false,
+          socketEmitted: false,
+          auditRecorded: false,
+          deduplicated: false,
+        },
   );
 }

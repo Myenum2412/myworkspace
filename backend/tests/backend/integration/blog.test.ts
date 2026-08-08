@@ -1,5 +1,5 @@
 import { enforce } from "../../../src/config/casbin.js";
-import { ROLES, getEffectivePermissions } from "../../../src/lib/rbac/index.js";
+import { getEffectivePermissions, ROLES } from "../../../src/lib/rbac/index.js";
 
 describe("Blog Integration Tests", () => {
   describe("RBAC - Blog access control", () => {
@@ -91,7 +91,7 @@ describe("Blog Integration Tests", () => {
 
   describe("Reading time calculation", () => {
     function calculateReadingTime(content: string): number {
-      const text = content.replace(/<[^>]*>/g, "").replace(/[#*`>\-\[\]()]/g, "");
+      const text = content.replace(/<[^>]*>/g, "").replace(/[#*`>\-[\]()]/g, "");
       const words = text.split(/\s+/).filter(Boolean).length;
       return Math.max(1, Math.ceil(words / 200));
     }

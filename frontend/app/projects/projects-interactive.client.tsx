@@ -1,20 +1,19 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Trash2Icon, ChevronLeftIcon, SearchIcon, XIcon, FolderIcon } from "@/lib/icons";
+import { useEffect, useMemo, useState } from "react";
+import { createProjectAction } from "@/actions/projects";
+import DeleteConfirmDialog from "@/components/dialog-03";
+import { useIndustry } from "@/components/industry-provider";
 import { PageHeader } from "@/components/page-header";
+import { ProjectCreateForm, ProjectEditForm } from "@/components/projects/project-form";
+import ProjectList from "@/components/projects/project-list";
 import type { Project } from "@/components/projects/project-types";
 import { PROJECT_COLORS } from "@/components/projects/project-types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ChevronLeftIcon, FolderIcon, SearchIcon, Trash2Icon, XIcon } from "@/lib/icons";
 import { ProjectDetailedView } from "./project-detailed-view";
-import ProjectList from "@/components/projects/project-list";
 import ProjectsDashboard from "./projects-dashboard";
-import { useIndustry } from "@/components/industry-provider";
-
-import { ProjectCreateForm, ProjectEditForm } from "@/components/projects/project-form";
-import DeleteConfirmDialog from "@/components/dialog-03";
-import { createProjectAction } from "@/actions/projects";
 
 export interface ProjectsInteractiveProps {
   orgId: string;
@@ -54,7 +53,9 @@ export default function ProjectsInteractive({
   const [projectMembers, setProjectMembers] = useState<string[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
   const [clientList, setClientList] = useState<string[]>(initialClientList);
-  const [employees, setEmployees] = useState<{ id: string; name: string; email: string; image?: string }[]>([]);
+  const [employees, setEmployees] = useState<
+    { id: string; name: string; email: string; image?: string }[]
+  >([]);
   const [projectPriority, setProjectPriority] = useState("medium");
   const [projectCategory, setProjectCategory] = useState("");
   const [projectStartDate, setProjectStartDate] = useState("");
@@ -82,20 +83,24 @@ export default function ProjectsInteractive({
         p.name.toLowerCase().includes(q) ||
         (p.client && p.client.toLowerCase().includes(q)) ||
         (p.description && p.description.toLowerCase().includes(q)) ||
-        (p.category && p.category.toLowerCase().includes(q))
+        (p.category && p.category.toLowerCase().includes(q)),
     );
   }, [projects, externalSearchQuery]);
 
   const filteredMembers = useMemo(() => {
     if (!memberSearch) return employees;
     const q = memberSearch.toLowerCase();
-    return employees.filter((m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q));
+    return employees.filter(
+      (m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q),
+    );
   }, [employees, memberSearch]);
 
   const editFilteredMembers = useMemo(() => {
     if (!editMemberSearch) return employees;
     const q = editMemberSearch.toLowerCase();
-    return employees.filter((m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q));
+    return employees.filter(
+      (m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q),
+    );
   }, [employees, editMemberSearch]);
 
   useEffect(() => {
@@ -122,12 +127,16 @@ export default function ProjectsInteractive({
       .then((r) => r.json())
       .then((d) => {
         const arr = d?.employees || [];
-        setEmployees(arr.map((e: { id?: string; _id?: string; name: string; email: string; image?: string }) => ({
-          id: e.id || e._id || "",
-          name: e.name,
-          email: e.email,
-          image: e.image,
-        })));
+        setEmployees(
+          arr.map(
+            (e: { id?: string; _id?: string; name: string; email: string; image?: string }) => ({
+              id: e.id || e._id || "",
+              name: e.name,
+              email: e.email,
+              image: e.image,
+            }),
+          ),
+        );
       })
       .catch(() => {});
   }, []);
@@ -342,14 +351,29 @@ export default function ProjectsInteractive({
         {showForm ? (
           <>
             <div className="flex items-center gap-3 px-3 sm:px-4 md:px-6 py-4 border-b bg-white sticky top-0 z-10 shrink-0">
-              <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); resetForm(); }} className="gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowForm(false);
+                  resetForm();
+                }}
+                className="gap-1.5"
+              >
                 <ChevronLeftIcon className="size-4" />
                 Back
               </Button>
               <div className="h-5 w-px bg-border" />
               <h1 className="text-lg font-semibold text-black">New Project</h1>
               <div className="ml-auto" />
-              <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); resetForm(); }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowForm(false);
+                  resetForm();
+                }}
+              >
                 <XIcon className="size-4" />
               </Button>
             </div>
@@ -390,7 +414,10 @@ export default function ProjectsInteractive({
                   onMemberSearchChange={setMemberSearch}
                   colors={PROJECT_COLORS}
                   onSubmit={handleSubmit}
-                  onCancel={() => { setShowForm(false); resetForm(); }}
+                  onCancel={() => {
+                    setShowForm(false);
+                    resetForm();
+                  }}
                 />
               </div>
             </div>
@@ -403,7 +430,9 @@ export default function ProjectsInteractive({
                 Back
               </Button>
               <div className="h-5 w-px bg-border" />
-              <h1 className="text-lg font-semibold text-black">Edit Project — {editingProject.name}</h1>
+              <h1 className="text-lg font-semibold text-black">
+                Edit Project — {editingProject.name}
+              </h1>
             </div>
             <div className="flex-1 overflow-auto bg-white">
               <div className="w-full py-6 bg-white my-6">
@@ -453,11 +482,18 @@ export default function ProjectsInteractive({
           <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full h-full">
             <div className="flex items-center justify-between gap-2 flex-wrap shrink-0">
               <div className="flex items-center gap-3 min-w-0">
-                <Button variant="ghost" size="sm" onClick={() => setViewProject(null)}>← Back</Button>
+                <Button variant="ghost" size="sm" onClick={() => setViewProject(null)}>
+                  ← Back
+                </Button>
                 <h1 className="text-xl md:text-2xl font-bold truncate">{viewProject.name}</h1>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="touch-target" onClick={() => handleEditFromView(viewProject)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="touch-target"
+                  onClick={() => handleEditFromView(viewProject)}
+                >
                   Edit Project
                 </Button>
                 <DeleteConfirmDialog
@@ -466,7 +502,8 @@ export default function ProjectsInteractive({
                   onConfirm={() => handleDelete(viewProject)}
                 >
                   <Button variant="destructive" size="sm" className="touch-target">
-                    <Trash2Icon className="mr-2 size-4" />Delete
+                    <Trash2Icon className="mr-2 size-4" />
+                    Delete
                   </Button>
                 </DeleteConfirmDialog>
               </div>
@@ -478,7 +515,11 @@ export default function ProjectsInteractive({
             <PageHeader
               icon={<FolderIcon className="size-6" />}
               title={<h1 data-tour-step-id="step-projects">{t("page.projects.title")}</h1>}
-              subtitle={<p>{filteredProjects.length} {filteredProjects.length === 1 ? "project" : "projects"}</p>}
+              subtitle={
+                <p>
+                  {filteredProjects.length} {filteredProjects.length === 1 ? "project" : "projects"}
+                </p>
+              }
               search={
                 <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -489,7 +530,10 @@ export default function ProjectsInteractive({
                     className="pl-9 h-9"
                   />
                   {externalSearchQuery && (
-                    <button onClick={() => onSearchChange?.("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1">
+                    <button
+                      onClick={() => onSearchChange?.("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                    >
                       <XIcon className="size-4" />
                     </button>
                   )}

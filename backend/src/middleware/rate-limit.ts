@@ -1,7 +1,7 @@
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import RedisStore from "rate-limit-redis";
-import { getValkey, isValkeyConnected } from "../lib/valkey.js";
 import { logger } from "../lib/logger/index.js";
+import { getValkey, isValkeyConnected } from "../lib/valkey.js";
 
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

@@ -1,14 +1,14 @@
 import { v4 as uuid } from "uuid";
-import {
-  getChannel,
-  isRabbitMQConfigured,
-  EXCHANGES,
-  ROUTING_KEYS,
-  QUEUES,
-  publishWithConfirm,
-} from "./connection.js";
 import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
+import {
+  EXCHANGES,
+  getChannel,
+  isRabbitMQConfigured,
+  publishWithConfirm,
+  QUEUES,
+  ROUTING_KEYS,
+} from "./connection.js";
 
 export interface DomainEvent {
   id: string;
@@ -94,34 +94,64 @@ async function publish(
 export const eventProducer = {
   async uploadStarted(
     params: {
-      uploadId: string; orgId: string; userId: string; fileName: string;
-      fileSize: number; mimeType: string; checksum?: string;
-      folderId?: string; projectId?: string; clientId?: string;
+      uploadId: string;
+      orgId: string;
+      userId: string;
+      fileName: string;
+      fileSize: number;
+      mimeType: string;
+      checksum?: string;
+      folderId?: string;
+      projectId?: string;
+      clientId?: string;
     },
     correlationId?: string,
   ) {
     return publish(
       EXCHANGES.UPLOAD_EVENTS,
       ROUTING_KEYS.UPLOAD_STARTED,
-      createEvent("UploadStarted", params.uploadId, params as unknown as Record<string, unknown>, correlationId, undefined, params.orgId),
+      createEvent(
+        "UploadStarted",
+        params.uploadId,
+        params as unknown as Record<string, unknown>,
+        correlationId,
+        undefined,
+        params.orgId,
+      ),
     );
   },
 
   async uploadChunkReceived(params: {
-    uploadId: string; orgId: string; chunkIndex: number; chunkSize: number;
-    bytesReceived: number; totalBytes: number;
+    uploadId: string;
+    orgId: string;
+    chunkIndex: number;
+    chunkSize: number;
+    bytesReceived: number;
+    totalBytes: number;
   }) {
     return publish(
       EXCHANGES.UPLOAD_EVENTS,
       ROUTING_KEYS.UPLOAD_CHUNK_RECEIVED,
-      createEvent("UploadChunkReceived", params.uploadId, params as unknown as Record<string, unknown>),
+      createEvent(
+        "UploadChunkReceived",
+        params.uploadId,
+        params as unknown as Record<string, unknown>,
+      ),
     );
   },
 
   async uploadCompleted(params: {
-    uploadId: string; fileId: string; orgId: string; userId: string;
-    fileName: string; fileSize: number; mimeType: string; checksum: string;
-    storagePath: string; durationMs: number; isDuplicate?: boolean;
+    uploadId: string;
+    fileId: string;
+    orgId: string;
+    userId: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    checksum: string;
+    storagePath: string;
+    durationMs: number;
+    isDuplicate?: boolean;
   }) {
     return publish(
       EXCHANGES.UPLOAD_EVENTS,
@@ -131,8 +161,13 @@ export const eventProducer = {
   },
 
   async uploadFailed(params: {
-    uploadId: string; orgId: string; userId: string; fileName: string;
-    errorType: string; errorMessage: string; retryCount: number;
+    uploadId: string;
+    orgId: string;
+    userId: string;
+    fileName: string;
+    errorType: string;
+    errorMessage: string;
+    retryCount: number;
   }) {
     return publish(
       EXCHANGES.UPLOAD_EVENTS,
@@ -153,22 +188,33 @@ export const eventProducer = {
     return publish(
       EXCHANGES.FILE_EVENTS,
       ROUTING_KEYS.THUMBNAIL_GENERATED,
-      createEvent("ThumbnailGenerated", params.fileId, params as unknown as Record<string, unknown>),
+      createEvent(
+        "ThumbnailGenerated",
+        params.fileId,
+        params as unknown as Record<string, unknown>,
+      ),
     );
   },
 
-  async fileProcessingRequired(params: {
-    fileId: string; orgId: string; processingType: string;
-  }) {
+  async fileProcessingRequired(params: { fileId: string; orgId: string; processingType: string }) {
     return publish(
       EXCHANGES.FILE_EVENTS,
       ROUTING_KEYS.FILE_PROCESSING_REQUIRED,
-      createEvent("FileProcessingRequired", params.fileId, params as unknown as Record<string, unknown>),
+      createEvent(
+        "FileProcessingRequired",
+        params.fileId,
+        params as unknown as Record<string, unknown>,
+      ),
     );
   },
 
   async notificationSend(params: {
-    userId: string; orgId: string; type: string; title: string; message: string; link?: string;
+    userId: string;
+    orgId: string;
+    type: string;
+    title: string;
+    message: string;
+    link?: string;
   }) {
     return publish(
       EXCHANGES.NOTIFICATION_EVENTS,
@@ -178,8 +224,13 @@ export const eventProducer = {
   },
 
   async auditLogRecord(params: {
-    orgId: string; userId: string; action: string; entityType: string;
-    entityId: string; description: string; metadata?: string;
+    orgId: string;
+    userId: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    description: string;
+    metadata?: string;
   }) {
     return publish(
       EXCHANGES.NOTIFICATION_EVENTS,
@@ -188,7 +239,12 @@ export const eventProducer = {
     );
   },
 
-  async fileDeleted(params: { fileId: string; orgId: string; userId: string; storagePath: string }) {
+  async fileDeleted(params: {
+    fileId: string;
+    orgId: string;
+    userId: string;
+    storagePath: string;
+  }) {
     return publish(
       EXCHANGES.FILE_EVENTS,
       ROUTING_KEYS.FILE_DELETED,
@@ -213,7 +269,10 @@ export const eventProducer = {
   },
 
   async uploadPaused(params: {
-    uploadId: string; orgId: string; userId: string; bytesReceived: number;
+    uploadId: string;
+    orgId: string;
+    userId: string;
+    bytesReceived: number;
   }) {
     return publish(
       EXCHANGES.UPLOAD_EVENTS,
@@ -223,7 +282,10 @@ export const eventProducer = {
   },
 
   async uploadResumed(params: {
-    uploadId: string; orgId: string; userId: string; bytesReceived: number;
+    uploadId: string;
+    orgId: string;
+    userId: string;
+    bytesReceived: number;
   }) {
     return publish(
       EXCHANGES.UPLOAD_EVENTS,
@@ -233,7 +295,11 @@ export const eventProducer = {
   },
 
   async retryRequired(params: {
-    uploadId: string; orgId: string; userId: string; retryCount: number; maxRetries: number;
+    uploadId: string;
+    orgId: string;
+    userId: string;
+    retryCount: number;
+    maxRetries: number;
   }) {
     return publish(
       EXCHANGES.UPLOAD_EVENTS,
@@ -242,22 +308,20 @@ export const eventProducer = {
     );
   },
 
-  async publishPriority(params: {
-    fileId: string; orgId: string; processingType: string;
-  }) {
+  async publishPriority(params: { fileId: string; orgId: string; processingType: string }) {
     return publish(
       EXCHANGES.PRIORITY,
       ROUTING_KEYS.PRIORITY_PROCESSING,
-      createEvent("PriorityProcessing", params.fileId, params as unknown as Record<string, unknown>),
+      createEvent(
+        "PriorityProcessing",
+        params.fileId,
+        params as unknown as Record<string, unknown>,
+      ),
       10,
     );
   },
 
-  async publishEvent(
-    exchange: string,
-    routingKey: string,
-    event: DomainEvent,
-  ) {
+  async publishEvent(exchange: string, routingKey: string, event: DomainEvent) {
     return publish(exchange, routingKey, event);
   },
 };

@@ -1,9 +1,9 @@
 import { v4 as uuid } from "uuid";
-import { Folder } from "../lib/db/models/Folder.js";
-import { FileAttachment } from "../lib/db/models/FileAttachment.js";
-import { recordAuditLog } from "./audit.service.js";
-import { CLIENT_SUBFOLDERS, CLIENT_BASE_FOLDER } from "../lib/uploads/folder-mapper.js";
 import { cacheManager } from "../lib/cache.js";
+import { FileAttachment } from "../lib/db/models/FileAttachment.js";
+import { Folder } from "../lib/db/models/Folder.js";
+import { CLIENT_BASE_FOLDER, CLIENT_SUBFOLDERS } from "../lib/uploads/folder-mapper.js";
+import { recordAuditLog } from "./audit.service.js";
 
 export interface ClientFolderOptions {
   orgId: string;
@@ -20,11 +20,13 @@ export interface AutoRouteOptions {
   createdBy: string;
 }
 
-export async function ensureClientFolders(options: ClientFolderOptions): Promise<{ rootFolderId: string; subfolderIds: Record<string, string> }> {
+export async function ensureClientFolders(
+  options: ClientFolderOptions,
+): Promise<{ rootFolderId: string; subfolderIds: Record<string, string> }> {
   const { orgId, clientId, clientName, createdBy } = options;
 
   const rootPath = `/${CLIENT_BASE_FOLDER}/${clientId}`;
-  let rootFolder = await Folder.findOne({ orgId, path: rootPath, deletedAt: null }).lean();
+  const rootFolder = await Folder.findOne({ orgId, path: rootPath, deletedAt: null }).lean();
   let rootFolderId: string;
 
   if (rootFolder) {
@@ -42,14 +44,23 @@ export async function ensureClientFolders(options: ClientFolderOptions): Promise
       createdBy,
     });
     await recordAuditLog({
-      orgId, userId: createdBy, createdBy,
-      action: "folder.created", entityType: "folder", entityId: rootFolderId,
+      orgId,
+      userId: createdBy,
+      createdBy,
+      action: "folder.created",
+      entityType: "folder",
+      entityId: rootFolderId,
       description: `Client root folder created for ${clientName || clientId}`,
     });
   }
 
   const subfolderIds: Record<string, string> = {};
-  const existingSubs = await Folder.find({ orgId, clientId, parentId: rootFolderId, deletedAt: null }).lean();
+  const existingSubs = await Folder.find({
+    orgId,
+    clientId,
+    parentId: rootFolderId,
+    deletedAt: null,
+  }).lean();
   const existingNames = new Set(existingSubs.map((f) => f.name));
 
   for (const subName of CLIENT_SUBFOLDERS) {
@@ -67,7 +78,11 @@ export async function ensureClientFolders(options: ClientFolderOptions): Promise
       parentId: rootFolderId,
       name: subName,
       path: `${rootPath}/${subName}`,
-      permissions: { clientCanView: true, clientCanUpload: subName !== "Reports", clientCanDelete: false },
+      permissions: {
+        clientCanView: true,
+        clientCanUpload: subName !== "Reports",
+        clientCanDelete: false,
+      },
       createdBy,
     });
     subfolderIds[subName] = subId;
@@ -97,7 +112,7 @@ export async function ensureClientProjectFolder(options: {
 
   const name = projectName || "Unnamed Project";
   const projectPath = `${projectsPath}/${name}`;
-  let projectFolder = await Folder.findOne({ orgId, path: projectPath, deletedAt: null }).lean();
+  const projectFolder = await Folder.findOne({ orgId, path: projectPath, deletedAt: null }).lean();
   if (projectFolder) return projectFolder.id;
 
   const folderId = uuid();
@@ -147,7 +162,13 @@ export async function autoRouteFileInClientFolder(
 ): Promise<void> {
   const { orgId, clientId, moduleName, entityId, createdBy, projectName } = options;
 
-  const targetFolderId = await resolveClientFolder(orgId, clientId, moduleName, createdBy, projectName);
+  const targetFolderId = await resolveClientFolder(
+    orgId,
+    clientId,
+    moduleName,
+    createdBy,
+    projectName,
+  );
   if (!targetFolderId) return;
 
   const updateFields: Record<string, unknown> = { folderId: targetFolderId };
@@ -157,8 +178,12 @@ export async function autoRouteFileInClientFolder(
   await FileAttachment.updateOne({ id: fileId }, { $set: updateFields });
 
   await recordAuditLog({
-    orgId, userId: createdBy, createdBy,
-    action: "file.routed", entityType: "file", entityId: fileId,
+    orgId,
+    userId: createdBy,
+    createdBy,
+    action: "file.routed",
+    entityType: "file",
+    entityId: fileId,
     description: `File auto-routed to ${options.moduleName} folder in client ${clientId}`,
   });
 

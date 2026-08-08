@@ -1,25 +1,25 @@
 import Bree from "bree";
+import { CronExpressionParser } from "cron-parser";
+import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 import { v4 as uuid } from "uuid";
-import mongoose from "mongoose";
-import { CronExpressionParser } from "cron-parser";
 import { env } from "../../config/env.js";
 import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
-import { ScheduledJob, IScheduledJob } from "./models/ScheduledJob.js";
-import { JobExecution } from "./models/JobExecution.js";
 import { jobRegistry, SYSTEM_JOBS } from "./job-registry.js";
+import { JobExecution } from "./models/JobExecution.js";
+import { type IScheduledJob, ScheduledJob } from "./models/ScheduledJob.js";
 import {
-  JobType,
-  JobPriority,
-  JobStatus,
+  type CreateJobInput,
+  type JobPayload,
+  type JobPriority,
+  type JobStatus,
+  type JobType,
+  type SchedulerHealth,
+  type SchedulerStats,
   ScheduleType,
-  CreateJobInput,
-  UpdateJobInput,
-  JobPayload,
-  SchedulerStats,
-  SchedulerHealth,
+  type UpdateJobInput,
 } from "./types.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -160,10 +160,7 @@ class SchedulerService {
       status: { $in: ["pending", "retrying"] },
       isDeleted: false,
       nextExecutionAt: { $lte: new Date() },
-      $or: [
-        { status: "retrying", nextExecutionAt: { $lte: new Date() } },
-        { status: "pending" },
-      ],
+      $or: [{ status: "retrying", nextExecutionAt: { $lte: new Date() } }, { status: "pending" }],
     })
       .sort({ priority: 1, nextExecutionAt: 1 })
       .limit(50)
@@ -191,7 +188,7 @@ class SchedulerService {
             status: "pending",
             lastError: "Job recovered from stale running state",
           },
-        }
+        },
       );
     }
   }
@@ -202,7 +199,7 @@ class SchedulerService {
 
     await ScheduledJob.updateOne(
       { id: job.id },
-      { $set: { status: "running", currentRetryCount: job.currentRetryCount || 0 } }
+      { $set: { status: "running", currentRetryCount: job.currentRetryCount || 0 } },
     );
 
     const execution = new JobExecution({
@@ -240,7 +237,7 @@ class SchedulerService {
             durationMs: duration,
             result: "success",
           },
-        }
+        },
       );
 
       const updates: any = {
@@ -254,7 +251,11 @@ class SchedulerService {
 
       if (job.scheduleType === "one_time" || job.scheduleType === "delayed") {
         updates.nextExecutionAt = null;
-      } else if (job.scheduleType === "cron" || job.scheduleType === "interval" || job.scheduleType === "recurring") {
+      } else if (
+        job.scheduleType === "cron" ||
+        job.scheduleType === "interval" ||
+        job.scheduleType === "recurring"
+      ) {
         updates.nextExecutionAt = this.calculateNextExecution(job);
       }
 
@@ -270,7 +271,10 @@ class SchedulerService {
       const retryCount = (job.currentRetryCount || 0) + 1;
       const maxRetries = job.maxRetries || 3;
 
-      logger.error({ jobId: job.id, type: job.type, attempt: retryCount, err }, "Job execution failed");
+      logger.error(
+        { jobId: job.id, type: job.type, attempt: retryCount, err },
+        "Job execution failed",
+      );
 
       await JobExecution.updateOne(
         { id: executionId },
@@ -282,7 +286,7 @@ class SchedulerService {
             error: err.message,
             stackTrace: err.stack,
           },
-        }
+        },
       );
 
       if (retryCount < maxRetries) {
@@ -299,7 +303,7 @@ class SchedulerService {
               lastError: err.message,
               nextExecutionAt: nextRetry,
             },
-          }
+          },
         );
 
         metricsRegistry.incrementCounter("scheduler_jobs_retried_total", {
@@ -317,7 +321,7 @@ class SchedulerService {
               lastError: err.message,
               nextExecutionAt: null,
             },
-          }
+          },
         );
 
         metricsRegistry.incrementCounter("scheduler_jobs_failed_total", {
@@ -328,7 +332,7 @@ class SchedulerService {
   }
 
   private calculateBackoff(attempt: number, baseDelayMs: number): number {
-    const exponential = baseDelayMs * Math.pow(2, attempt - 1);
+    const exponential = baseDelayMs * 2 ** (attempt - 1);
     const jitter = Math.random() * 0.3 * exponential;
     return Math.min(exponential + jitter, 24 * 60 * 60 * 1000);
   }
@@ -455,7 +459,11 @@ class SchedulerService {
     }
   }
 
-  async updateJob(jobId: string, orgId: string, input: UpdateJobInput): Promise<IScheduledJob | null> {
+  async updateJob(
+    jobId: string,
+    orgId: string,
+    input: UpdateJobInput,
+  ): Promise<IScheduledJob | null> {
     const job = await ScheduledJob.findOne({ id: jobId, orgId, isDeleted: false });
     if (!job) return null;
 
@@ -473,7 +481,8 @@ class SchedulerService {
     if (input.tags) updateData.tags = input.tags;
 
     if (input.startAt) {
-      updateData.startAt = typeof input.startAt === "string" ? new Date(input.startAt) : input.startAt;
+      updateData.startAt =
+        typeof input.startAt === "string" ? new Date(input.startAt) : input.startAt;
     }
     if (input.endAt) {
       updateData.endAt = typeof input.endAt === "string" ? new Date(input.endAt) : input.endAt;
@@ -487,7 +496,7 @@ class SchedulerService {
     const updated = await ScheduledJob.findOneAndUpdate(
       { id: jobId },
       { $set: updateData },
-      { new: true }
+      { new: true },
     );
 
     if (updated) {
@@ -508,12 +517,17 @@ class SchedulerService {
     return ScheduledJob.findOneAndUpdate(
       { id: jobId, orgId, isDeleted: false, status: { $in: ["pending", "retrying"] } },
       { $set: { status: "paused", pausedAt: new Date(), updatedBy: userId } },
-      { new: true }
+      { new: true },
     );
   }
 
   async resumeJob(jobId: string, orgId: string, userId: string): Promise<IScheduledJob | null> {
-    const job = await ScheduledJob.findOne({ id: jobId, orgId, isDeleted: false, status: "paused" });
+    const job = await ScheduledJob.findOne({
+      id: jobId,
+      orgId,
+      isDeleted: false,
+      status: "paused",
+    });
     if (!job) return null;
 
     const nextExecutionAt = job.nextExecutionAt || new Date();
@@ -527,22 +541,37 @@ class SchedulerService {
           nextExecutionAt,
         },
       },
-      { new: true }
+      { new: true },
     );
   }
 
   async cancelJob(jobId: string, orgId: string, userId: string): Promise<IScheduledJob | null> {
     return ScheduledJob.findOneAndUpdate(
       { id: jobId, orgId, isDeleted: false, status: { $in: ["pending", "retrying", "paused"] } },
-      { $set: { status: "cancelled", cancelledAt: new Date(), updatedBy: userId, nextExecutionAt: null } },
-      { new: true }
+      {
+        $set: {
+          status: "cancelled",
+          cancelledAt: new Date(),
+          updatedBy: userId,
+          nextExecutionAt: null,
+        },
+      },
+      { new: true },
     );
   }
 
   async deleteJob(jobId: string, orgId: string, userId: string): Promise<boolean> {
     const result = await ScheduledJob.updateOne(
       { id: jobId, orgId, isDeleted: false },
-      { $set: { isDeleted: true, deletedAt: new Date(), updatedBy: userId, status: "cancelled", nextExecutionAt: null } }
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          updatedBy: userId,
+          status: "cancelled",
+          nextExecutionAt: null,
+        },
+      },
     );
     if (result.modifiedCount > 0) {
       logger.info({ jobId }, "Job soft-deleted");
@@ -559,7 +588,11 @@ class SchedulerService {
   }
 
   async getJob(jobId: string, orgId: string): Promise<IScheduledJob | null> {
-    return ScheduledJob.findOne({ id: jobId, orgId, isDeleted: false }).lean() as Promise<IScheduledJob | null>;
+    return ScheduledJob.findOne({
+      id: jobId,
+      orgId,
+      isDeleted: false,
+    }).lean() as Promise<IScheduledJob | null>;
   }
 
   async listJobs(params: {
@@ -574,7 +607,18 @@ class SchedulerService {
     sortBy?: string;
     sortOrder?: "asc" | "desc";
   }): Promise<{ data: IScheduledJob[]; total: number; page: number; totalPages: number }> {
-    const { orgId, userId, type, status, priority, tags, page = 1, limit = 20, sortBy = "createdAt", sortOrder = "desc" } = params;
+    const {
+      orgId,
+      userId,
+      type,
+      status,
+      priority,
+      tags,
+      page = 1,
+      limit = 20,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = params;
 
     const query: any = { isDeleted: false };
     if (orgId) query.orgId = orgId;
@@ -630,7 +674,12 @@ class SchedulerService {
   }
 
   async retryJob(jobId: string, orgId: string, userId: string): Promise<IScheduledJob | null> {
-    const job = await ScheduledJob.findOne({ id: jobId, orgId, isDeleted: false, status: "failed" });
+    const job = await ScheduledJob.findOne({
+      id: jobId,
+      orgId,
+      isDeleted: false,
+      status: "failed",
+    });
     if (!job) return null;
 
     return ScheduledJob.findOneAndUpdate(
@@ -644,7 +693,7 @@ class SchedulerService {
           nextExecutionAt: new Date(),
         },
       },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -667,7 +716,7 @@ class SchedulerService {
               status: "pending",
               nextExecutionAt: new Date(),
             },
-          }
+          },
         );
         recovered++;
       }
@@ -686,10 +735,7 @@ class SchedulerService {
         { $match: match },
         { $group: { _id: "$status", count: { $sum: 1 } } },
       ]),
-      ScheduledJob.aggregate([
-        { $match: match },
-        { $group: { _id: "$type", count: { $sum: 1 } } },
-      ]),
+      ScheduledJob.aggregate([{ $match: match }, { $group: { _id: "$type", count: { $sum: 1 } } }]),
       ScheduledJob.aggregate([
         { $match: match },
         { $group: { _id: "$priority", count: { $sum: 1 } } },
@@ -756,7 +802,9 @@ class SchedulerService {
 
     const totalJobs = await ScheduledJob.countDocuments({ isDeleted: false });
     const memUsage = process.memoryUsage();
-    const uptime = this.startupTime ? Math.floor((Date.now() - this.startupTime.getTime()) / 1000) : 0;
+    const uptime = this.startupTime
+      ? Math.floor((Date.now() - this.startupTime.getTime()) / 1000)
+      : 0;
 
     return {
       status,
@@ -779,7 +827,11 @@ class SchedulerService {
     return this.bree;
   }
 
-  getRuntimeStats(): { heartbeatCount: number; lastHeartbeatAt: Date | null; uptimeSeconds: number } {
+  getRuntimeStats(): {
+    heartbeatCount: number;
+    lastHeartbeatAt: Date | null;
+    uptimeSeconds: number;
+  } {
     return {
       heartbeatCount: this.heartbeatCount,
       lastHeartbeatAt: this.lastHeartbeatAt,

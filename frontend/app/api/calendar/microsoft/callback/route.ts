@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { v4 as uuid } from "uuid";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { v4 as uuid } from "uuid";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -10,26 +10,22 @@ export async function GET(req: NextRequest) {
   const error = searchParams.get("error");
 
   if (error) {
-    return NextResponse.redirect(
-      new URL(`/?error=${error}`, req.url)
-    );
+    return NextResponse.redirect(new URL(`/?error=${error}`, req.url));
   }
 
   if (!code || !state) {
-    return NextResponse.redirect(
-      new URL("/?error=missing_params", req.url)
-    );
+    return NextResponse.redirect(new URL("/?error=missing_params", req.url));
   }
 
   const tenantId = process.env.MICROSOFT_TENANT_ID || "common";
   const clientId = process.env.MICROSOFT_CLIENT_ID;
   const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
-  const redirectUri = process.env.MICROSOFT_CALENDAR_REDIRECT_URI || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/calendar/microsoft/callback`;
+  const redirectUri =
+    process.env.MICROSOFT_CALENDAR_REDIRECT_URI ||
+    `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/calendar/microsoft/callback`;
 
   if (!clientId || clientId === "YOUR_MICROSOFT_CLIENT_ID") {
-    return NextResponse.redirect(
-      new URL("/?error=microsoft_not_configured", req.url)
-    );
+    return NextResponse.redirect(new URL("/?error=microsoft_not_configured", req.url));
   }
 
   try {
@@ -46,15 +42,13 @@ export async function GET(req: NextRequest) {
           redirect_uri: redirectUri,
           grant_type: "authorization_code",
         }),
-      }
+      },
     );
 
     const tokenData = await tokenRes.json();
 
     if (!tokenData.access_token) {
-      return NextResponse.redirect(
-        new URL("/?error=token_exchange_failed", req.url)
-      );
+      return NextResponse.redirect(new URL("/?error=token_exchange_failed", req.url));
     }
 
     // Get user info from Microsoft Graph
@@ -81,9 +75,7 @@ export async function GET(req: NextRequest) {
       provider: "microsoft",
       accessToken: tokenData.access_token,
       refreshToken: tokenData.refresh_token || null,
-      tokenExpiry: tokenData.expires_in
-        ? new Date(Date.now() + tokenData.expires_in * 1000)
-        : null,
+      tokenExpiry: tokenData.expires_in ? new Date(Date.now() + tokenData.expires_in * 1000) : null,
       calendarEmail: userData.mail || userData.userPrincipalName || "",
       calendarName: "Outlook Calendar",
       syncEnabled: true,
@@ -92,13 +84,9 @@ export async function GET(req: NextRequest) {
       updatedAt: new Date(),
     });
 
-    return NextResponse.redirect(
-      new URL("/?success=microsoft_connected", req.url)
-    );
+    return NextResponse.redirect(new URL("/?success=microsoft_connected", req.url));
   } catch (err) {
     console.error("[Microsoft Calendar Callback]", err);
-    return NextResponse.redirect(
-      new URL("/?error=callback_failed", req.url)
-    );
+    return NextResponse.redirect(new URL("/?error=callback_failed", req.url));
   }
 }

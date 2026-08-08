@@ -1,1 +1,1 @@
-export { default } from "./billing-charts.client"
+export { default } from "./billing-charts.client";

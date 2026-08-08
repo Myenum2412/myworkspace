@@ -19,14 +19,52 @@ export type MemberData = {
 export type SortField = "name" | "email" | "role" | "status" | "provider" | "createdAt" | "orgName";
 export type SortDir = "asc" | "desc";
 
-export const statusConfig: Record<string, { label: string; dot: string; bg: string; text: string }> = {
-  active:     { label: "Active",     dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400" },
-  online:     { label: "Online",     dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400" },
-  inactive:   { label: "Inactive",   dot: "bg-slate-400",   bg: "bg-slate-50 dark:bg-slate-900/30",     text: "text-slate-600 dark:text-slate-400" },
-  offline:    { label: "Offline",    dot: "bg-slate-400",   bg: "bg-slate-50 dark:bg-slate-900/30",     text: "text-slate-600 dark:text-slate-400" },
-  on_leave:   { label: "On Leave",   dot: "bg-amber-500",   bg: "bg-amber-50 dark:bg-amber-950/30",     text: "text-amber-700 dark:text-amber-400" },
-  break:      { label: "Break",      dot: "bg-amber-500",   bg: "bg-amber-50 dark:bg-amber-950/30",     text: "text-amber-700 dark:text-amber-400" },
-  terminated: { label: "Terminated", dot: "bg-red-500",     bg: "bg-red-50 dark:bg-red-950/30",         text: "text-red-700 dark:text-red-400" },
+export const statusConfig: Record<
+  string,
+  { label: string; dot: string; bg: string; text: string }
+> = {
+  active: {
+    label: "Active",
+    dot: "bg-emerald-500",
+    bg: "bg-emerald-50 dark:bg-emerald-950/30",
+    text: "text-emerald-700 dark:text-emerald-400",
+  },
+  online: {
+    label: "Online",
+    dot: "bg-emerald-500",
+    bg: "bg-emerald-50 dark:bg-emerald-950/30",
+    text: "text-emerald-700 dark:text-emerald-400",
+  },
+  inactive: {
+    label: "Inactive",
+    dot: "bg-slate-400",
+    bg: "bg-slate-50 dark:bg-slate-900/30",
+    text: "text-slate-600 dark:text-slate-400",
+  },
+  offline: {
+    label: "Offline",
+    dot: "bg-slate-400",
+    bg: "bg-slate-50 dark:bg-slate-900/30",
+    text: "text-slate-600 dark:text-slate-400",
+  },
+  on_leave: {
+    label: "On Leave",
+    dot: "bg-amber-500",
+    bg: "bg-amber-50 dark:bg-amber-950/30",
+    text: "text-amber-700 dark:text-amber-400",
+  },
+  break: {
+    label: "Break",
+    dot: "bg-amber-500",
+    bg: "bg-amber-50 dark:bg-amber-950/30",
+    text: "text-amber-700 dark:text-amber-400",
+  },
+  terminated: {
+    label: "Terminated",
+    dot: "bg-red-500",
+    bg: "bg-red-50 dark:bg-red-950/30",
+    text: "text-red-700 dark:text-red-400",
+  },
 };
 
 export function getInitials(name: string) {

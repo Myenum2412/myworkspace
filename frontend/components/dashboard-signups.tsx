@@ -1,20 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
+import { DeleteSignupForm, EditSignupDialog } from "@/components/dashboard-actions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import {
+  CheckCircle2Icon,
+  PencilIcon,
+  SearchIcon,
+  Trash2Icon,
+  UserPlusIcon,
+  XCircleIcon,
+} from "@/lib/icons";
 import { ROLES } from "@/lib/rbac";
-import { UserPlusIcon, PencilIcon, Trash2Icon, SearchIcon, CheckCircle2Icon, XCircleIcon } from "@/lib/icons";
-import { EditSignupDialog, DeleteSignupForm } from "@/components/dashboard-actions";
 
 interface SignupRow {
   userId: string;
@@ -48,7 +50,11 @@ const statusVariant: Record<string, "default" | "secondary" | "outline" | "destr
 function fmt(d?: string): string {
   if (!d) return "—";
   try {
-    return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    return new Date(d).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   } catch {
     return "—";
   }
@@ -136,15 +142,22 @@ export function DashboardSignupsTable({
                 <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Verified</th>
                 <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Joined</th>
                 <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Last Login</th>
-                {isSuperAdmin && <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Organization</th>}
-                {isSuperAdmin && <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Org ID</th>}
+                {isSuperAdmin && (
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Organization</th>
+                )}
+                {isSuperAdmin && (
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Org ID</th>
+                )}
                 <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-24">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={colSpan} className="px-4 py-3 h-32 text-center text-muted-foreground">
+                  <td
+                    colSpan={colSpan}
+                    className="px-4 py-3 h-32 text-center text-muted-foreground"
+                  >
                     <div className="flex flex-col items-center justify-center gap-2 py-8">
                       <UserPlusIcon className="size-8 text-muted-foreground/40" />
                       <span>{search ? "No signups match your search" : "No recent signups"}</span>
@@ -167,24 +180,34 @@ export function DashboardSignupsTable({
                       <div className="flex items-center gap-2">
                         <Avatar className="size-7">
                           <AvatarImage src={u.avatar} alt={u.name} />
-                          <AvatarFallback className="text-[10px]">{u.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                          <AvatarFallback className="text-[10px]">
+                            {u.name.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
                         </Avatar>
                         <span className="font-medium text-sm">{u.name}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm">{u.email}</td>
                     <td className="px-4 py-3">
-                      <Badge variant={u.role === ROLES.MEMBERS ? "default" : "outline"} className="text-xs">
+                      <Badge
+                        variant={u.role === ROLES.MEMBERS ? "default" : "outline"}
+                        className="text-xs"
+                      >
                         {u.role}
                       </Badge>
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant={statusVariant[u.status] || "outline"} className="text-xs capitalize">
+                      <Badge
+                        variant={statusVariant[u.status] || "outline"}
+                        className="text-xs capitalize"
+                      >
                         {u.status}
                       </Badge>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs font-medium capitalize ${providerColors[u.provider] || "text-muted-foreground"}`}>
+                      <span
+                        className={`text-xs font-medium capitalize ${providerColors[u.provider] || "text-muted-foreground"}`}
+                      >
                         {u.provider}
                       </span>
                     </td>
@@ -195,26 +218,42 @@ export function DashboardSignupsTable({
                         <XCircleIcon className="size-4 text-muted-foreground" />
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(u.createdAt || u.joinedAt)}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
+                      {fmt(u.createdAt || u.joinedAt)}
+                    </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(u.lastLogin)}</td>
                     {isSuperAdmin && (
                       <td className="px-4 py-3">
-                        <Badge variant="outline" className="text-xs">{u.orgName || "—"}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {u.orgName || "—"}
+                        </Badge>
                       </td>
                     )}
                     {isSuperAdmin && (
                       <td className="px-4 py-3">
-                        <span className="text-xs text-muted-foreground font-mono">{u.orgId || "—"}</span>
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {u.orgId || "—"}
+                        </span>
                       </td>
                     )}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <EditSignupDialog user={{ ...u, createdAt: u.createdAt || u.joinedAt || new Date().toISOString() }}>
+                        <EditSignupDialog
+                          user={{
+                            ...u,
+                            createdAt: u.createdAt || u.joinedAt || new Date().toISOString(),
+                          }}
+                        >
                           <Button variant="ghost" size="icon" className="">
                             <PencilIcon className="size-4" />
                           </Button>
                         </EditSignupDialog>
-                        <DeleteSignupForm user={{ ...u, createdAt: u.createdAt || u.joinedAt || new Date().toISOString() }} />
+                        <DeleteSignupForm
+                          user={{
+                            ...u,
+                            createdAt: u.createdAt || u.joinedAt || new Date().toISOString(),
+                          }}
+                        />
                       </div>
                     </td>
                   </tr>

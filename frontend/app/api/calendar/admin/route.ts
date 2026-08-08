@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
@@ -16,44 +16,29 @@ export async function GET(req: NextRequest) {
 
   try {
     // Get all connections
-    const connections = await db
-      .collection(collections.calendarConnections)
-      .find({})
-      .toArray();
+    const connections = await db.collection(collections.calendarConnections).find({}).toArray();
 
     // Get all events
-    const eventCount = await db
-      .collection(collections.calendarEvents)
-      .countDocuments({});
+    const eventCount = await db.collection(collections.calendarEvents).countDocuments({});
 
     // Calculate stats
     const totalConnections = connections.length;
-    const activeConnections = connections.filter(
-      (c) => c.syncEnabled
-    ).length;
-    const googleConnections = connections.filter(
-      (c) => c.provider === "google"
-    ).length;
-    const microsoftConnections = connections.filter(
-      (c) => c.provider === "microsoft"
-    ).length;
+    const activeConnections = connections.filter((c) => c.syncEnabled).length;
+    const googleConnections = connections.filter((c) => c.provider === "google").length;
+    const microsoftConnections = connections.filter((c) => c.provider === "microsoft").length;
 
     // Get connections with webhooks
-    const webhookConnections = connections.filter(
-      (c) => c.webhookChannelId
-    ).length;
+    const webhookConnections = connections.filter((c) => c.webhookChannelId).length;
 
     // Get expired tokens
     const now = new Date();
     const expiredTokens = connections.filter(
-      (c) => c.tokenExpiry && new Date(c.tokenExpiry) < now
+      (c) => c.tokenExpiry && new Date(c.tokenExpiry) < now,
     ).length;
 
     // Get recent sync activity
     const recentSyncs = connections.filter(
-      (c) =>
-        c.lastSyncAt &&
-        new Date(c.lastSyncAt) > new Date(now.getTime() - 24 * 60 * 60 * 1000)
+      (c) => c.lastSyncAt && new Date(c.lastSyncAt) > new Date(now.getTime() - 24 * 60 * 60 * 1000),
     ).length;
 
     // Calculate health score
@@ -103,8 +88,7 @@ function calculateHealthScore(stats: {
   score -= Math.min(30, expiredRatio * 100);
 
   // Deduct for inactive connections (up to 20 points)
-  const inactiveRatio =
-    (stats.totalConnections - stats.activeConnections) / stats.totalConnections;
+  const inactiveRatio = (stats.totalConnections - stats.activeConnections) / stats.totalConnections;
   score -= Math.min(20, inactiveRatio * 100);
 
   // Bonus for webhooks (up to 10 points)

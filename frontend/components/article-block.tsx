@@ -1,13 +1,12 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { RiTimeLine } from "@/lib/icons"
+import * as React from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { RiTimeLine } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-
-type Section = { id: string; title: string; body: string[] }
+type Section = { id: string; title: string; body: string[] };
 
 const sections: Section[] = [
   {
@@ -42,35 +41,34 @@ const sections: Section[] = [
       "Within a few sprints the hard-coded values are gone and every surface speaks the same visual language.",
     ],
   },
-]
+];
 
 export default function ArticleBlock() {
-  const [active, setActive] = React.useState(sections[0].id)
-  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const [active, setActive] = React.useState(sections[0].id);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    const root = scrollRef.current
-    if (!root) return
+    const root = scrollRef.current;
+    if (!root) return;
 
     const update = () => {
-      const rootTop = root.getBoundingClientRect().top
-      const threshold = root.clientHeight * 0.3
-      let current = sections[0].id
+      const rootTop = root.getBoundingClientRect().top;
+      const threshold = root.clientHeight * 0.3;
+      let current = sections[0].id;
       for (const section of sections) {
-        const el = document.getElementById(section.id)
+        const el = document.getElementById(section.id);
         if (el && el.getBoundingClientRect().top - rootTop <= threshold) {
-          current = section.id
+          current = section.id;
         }
       }
-      const atBottom =
-        root.scrollTop + root.clientHeight >= root.scrollHeight - 48
-      setActive(atBottom ? sections[sections.length - 1].id : current)
-    }
+      const atBottom = root.scrollTop + root.clientHeight >= root.scrollHeight - 48;
+      setActive(atBottom ? sections[sections.length - 1].id : current);
+    };
 
-    update()
-    root.addEventListener("scroll", update, { passive: true })
-    return () => root.removeEventListener("scroll", update)
-  }, [])
+    update();
+    root.addEventListener("scroll", update, { passive: true });
+    return () => root.removeEventListener("scroll", update);
+  }, []);
 
   return (
     <section className="flex min-h-svh w-full justify-center bg-background px-6 py-16 text-foreground">
@@ -96,8 +94,7 @@ export default function ArticleBlock() {
               <span className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="tabular-nums">Jun 12, 2026</span>
                 <span className="flex items-center gap-1">
-                  <RiTimeLine className="size-3.5" aria-hidden="true" />8 Min
-                  Read
+                  <RiTimeLine className="size-3.5" aria-hidden="true" />8 Min Read
                 </span>
               </span>
             </div>
@@ -110,14 +107,8 @@ export default function ArticleBlock() {
             className="flex min-w-0 flex-1 flex-col gap-10 md:max-h-[26rem] md:overflow-y-auto md:pr-5"
           >
             {sections.map((section) => (
-              <section
-                key={section.id}
-                id={section.id}
-                className="scroll-mt-2"
-              >
-                <h2 className="text-xl font-semibold tracking-tight">
-                  {section.title}
-                </h2>
+              <section key={section.id} id={section.id} className="scroll-mt-2">
+                <h2 className="text-xl font-semibold tracking-tight">{section.title}</h2>
                 <div className="mt-3 flex flex-col gap-4 text-[15px]/relaxed text-foreground/80">
                   {section.body.map((paragraph, pIndex) => (
                     <p key={`${section.id}-${pIndex}`}>{paragraph}</p>
@@ -142,7 +133,7 @@ export default function ArticleBlock() {
                     "-ml-px border-l py-1.5 pl-4 text-sm transition-colors",
                     active === section.id
                       ? "border-primary font-medium text-foreground"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {section.title}
@@ -153,5 +144,5 @@ export default function ArticleBlock() {
         </div>
       </div>
     </section>
-  )
+  );
 }

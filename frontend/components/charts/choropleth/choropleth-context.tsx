@@ -102,10 +102,8 @@ export interface ChoroplethStableContextValue {
 export type ChoroplethContextValue = ChoroplethStableContextValue &
   ChoroplethInteractionContextValue;
 
-const ChoroplethStableContext =
-  createContext<ChoroplethStableContextValue | null>(null);
-const ChoroplethInteractionContext =
-  createContext<ChoroplethInteractionContextValue | null>(null);
+const ChoroplethStableContext = createContext<ChoroplethStableContextValue | null>(null);
+const ChoroplethInteractionContext = createContext<ChoroplethInteractionContextValue | null>(null);
 
 export function ChoroplethStableProvider({
   children,
@@ -115,23 +113,13 @@ export function ChoroplethStableProvider({
   value: ChoroplethStableContextValue;
 }) {
   return (
-    <ChoroplethStableContext.Provider value={value}>
-      {children}
-    </ChoroplethStableContext.Provider>
+    <ChoroplethStableContext.Provider value={value}>{children}</ChoroplethStableContext.Provider>
   );
 }
 
-export function ChoroplethInteractionShell({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [hoveredFeatureIndex, setHoveredFeatureIndex] = useState<number | null>(
-    null
-  );
-  const [tooltipData, setTooltipData] = useState<ChoroplethTooltipData | null>(
-    null
-  );
+export function ChoroplethInteractionShell({ children }: { children: React.ReactNode }) {
+  const [hoveredFeatureIndex, setHoveredFeatureIndex] = useState<number | null>(null);
+  const [tooltipData, setTooltipData] = useState<ChoroplethTooltipData | null>(null);
 
   const interaction = useMemo<ChoroplethInteractionContextValue>(
     () => ({
@@ -140,7 +128,7 @@ export function ChoroplethInteractionShell({
       tooltipData,
       setTooltipData,
     }),
-    [hoveredFeatureIndex, tooltipData]
+    [hoveredFeatureIndex, tooltipData],
   );
 
   return (
@@ -193,7 +181,7 @@ export function ChoroplethProvider({
       value.animationDuration,
       value.enterTransition,
       value.revealEpoch,
-    ]
+    ],
   );
 
   const interaction = useMemo<ChoroplethInteractionContextValue>(
@@ -208,7 +196,7 @@ export function ChoroplethProvider({
       value.setHoveredFeatureIndex,
       value.tooltipData,
       value.setTooltipData,
-    ]
+    ],
   );
 
   return (
@@ -223,9 +211,7 @@ export function ChoroplethProvider({
 export function useChoroplethStable(): ChoroplethStableContextValue {
   const context = useContext(ChoroplethStableContext);
   if (!context) {
-    throw new Error(
-      "useChoroplethStable must be used within a ChoroplethProvider"
-    );
+    throw new Error("useChoroplethStable must be used within a ChoroplethProvider");
   }
   return context;
 }
@@ -233,9 +219,7 @@ export function useChoroplethStable(): ChoroplethStableContextValue {
 export function useChoroplethInteraction(): ChoroplethInteractionContextValue {
   const context = useContext(ChoroplethInteractionContext);
   if (!context) {
-    throw new Error(
-      "useChoroplethInteraction must be used within a ChoroplethProvider"
-    );
+    throw new Error("useChoroplethInteraction must be used within a ChoroplethProvider");
   }
   return context;
 }

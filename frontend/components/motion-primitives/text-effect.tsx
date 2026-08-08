@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { motion } from "motion/react"
-import { cn } from "@/lib/utils"
+import { motion } from "motion/react";
+import type * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface TextEffectProps {
-  children: React.ReactNode
-  className?: string
-  preset?: "fade-in-blur" | "slide-up" | "scale-up"
-  per?: "char" | "word" | "line"
-  delay?: number
-  speedSegment?: number
-  as?: React.ElementType
+  children: React.ReactNode;
+  className?: string;
+  preset?: "fade-in-blur" | "slide-up" | "scale-up";
+  per?: "char" | "word" | "line";
+  delay?: number;
+  speedSegment?: number;
+  as?: React.ElementType;
 }
 
 export function TextEffect({
@@ -23,7 +23,7 @@ export function TextEffect({
   speedSegment = 0.3,
   as: Component = "div",
 }: TextEffectProps) {
-  const text = typeof children === "string" ? children : ""
+  const text = typeof children === "string" ? children : "";
 
   const getAnimation = () => {
     switch (preset) {
@@ -36,7 +36,7 @@ export function TextEffect({
             y: 0,
             transition: { type: "spring" as const, bounce: 0.3, duration: 1.5 },
           },
-        }
+        };
       case "slide-up":
         return {
           hidden: { opacity: 0, y: 20 },
@@ -45,7 +45,7 @@ export function TextEffect({
             y: 0,
             transition: { type: "spring" as const, bounce: 0.3, duration: 1.5 },
           },
-        }
+        };
       case "scale-up":
         return {
           hidden: { opacity: 0, scale: 0.9 },
@@ -54,23 +54,23 @@ export function TextEffect({
             scale: 1,
             transition: { type: "spring" as const, bounce: 0.3, duration: 1.5 },
           },
-        }
+        };
       default:
         return {
           hidden: { opacity: 0 },
           visible: { opacity: 1 },
-        }
+        };
     }
-  }
+  };
 
   const splitText = (str: string) => {
-    if (per === "char") return str.split("")
-    if (per === "word") return str.split(" ")
-    return [str]
-  }
+    if (per === "char") return str.split("");
+    if (per === "word") return str.split(" ");
+    return [str];
+  };
 
-  const segments = splitText(text)
-  const animation = getAnimation()
+  const segments = splitText(text);
+  const animation = getAnimation();
 
   return (
     <Component className={cn("inline", className)}>
@@ -90,5 +90,5 @@ export function TextEffect({
         </motion.span>
       ))}
     </Component>
-  )
+  );
 }

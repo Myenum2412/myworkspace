@@ -6,8 +6,7 @@ interface ProfitLossLegendHoverContextValue {
   hoveredIndex: number | null;
 }
 
-const ProfitLossLegendHoverContext =
-  createContext<ProfitLossLegendHoverContextValue | null>(null);
+const ProfitLossLegendHoverContext = createContext<ProfitLossLegendHoverContextValue | null>(null);
 
 export function ProfitLossLegendHoverProvider({
   hoveredIndex,

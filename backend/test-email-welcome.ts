@@ -9,7 +9,7 @@ async function test() {
       null,
       "User",
       "http://localhost:3000/login",
-      "gmail"
+      "gmail",
     );
     console.log("Success");
   } catch (err) {

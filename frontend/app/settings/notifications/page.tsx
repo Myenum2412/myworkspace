@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -16,10 +15,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { NotificationsActiveIcon } from "@/lib/icons";
-import { Loader2Icon, SaveIcon, GlobeIcon, BellIcon, CopyIcon, ExternalLinkIcon } from "@/lib/icons";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import {
+  BellIcon,
+  CopyIcon,
+  ExternalLinkIcon,
+  GlobeIcon,
+  Loader2Icon,
+  NotificationsActiveIcon,
+  SaveIcon,
+} from "@/lib/icons";
 import { getPushTopic, type NtfyTopic } from "@/lib/push-subscription";
-import { toast } from "sonner";
 
 interface ChannelSettings {
   inApp: boolean;
@@ -71,13 +78,27 @@ const FREQUENCIES = [
 ];
 
 const TIMEZONES = [
-  "UTC", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
-  "Europe/London", "Europe/Berlin", "Europe/Paris", "Asia/Tokyo", "Asia/Shanghai",
-  "Asia/Kolkata", "Australia/Sydney", "Pacific/Auckland",
+  "UTC",
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "Europe/London",
+  "Europe/Berlin",
+  "Europe/Paris",
+  "Asia/Tokyo",
+  "Asia/Shanghai",
+  "Asia/Kolkata",
+  "Australia/Sydney",
+  "Pacific/Auckland",
 ];
 
 const defaultChannel = (): ChannelSettings => ({
-  inApp: true, email: true, push: true, sms: false, webhook: false,
+  inApp: true,
+  email: true,
+  push: true,
+  sms: false,
+  webhook: false,
 });
 
 export default function NotificationSettingsPage() {
@@ -93,7 +114,9 @@ export default function NotificationSettingsPage() {
   }, [session]);
 
   useEffect(() => {
-    getPushTopic().then((t) => setPushInfo(t)).catch(() => {});
+    getPushTopic()
+      .then((t) => setPushInfo(t))
+      .catch(() => {});
   }, []);
 
   const fetchSettings = async () => {
@@ -103,7 +126,8 @@ export default function NotificationSettingsPage() {
         const d = await res.json();
         setSettings(d.data);
       }
-    } catch {} finally {
+    } catch {
+    } finally {
       setLoading(false);
     }
   };
@@ -113,11 +137,13 @@ export default function NotificationSettingsPage() {
     setSaving(true);
     try {
       await fetch("/api/notifications/settings", {
-        method: "PUT", credentials: "include",
+        method: "PUT",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
       });
-    } catch {} finally {
+    } catch {
+    } finally {
       setSaving(false);
     }
   };
@@ -148,10 +174,16 @@ export default function NotificationSettingsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">Notification Settings</h1>
-          <p className="text-sm text-muted-foreground mt-1">Configure how you receive notifications</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Configure how you receive notifications
+          </p>
         </div>
         <Button onClick={saveSettings} disabled={saving} className="gap-1.5">
-          {saving ? <Loader2Icon className="size-4 animate-spin" /> : <SaveIcon className="size-4" />}
+          {saving ? (
+            <Loader2Icon className="size-4 animate-spin" />
+          ) : (
+            <SaveIcon className="size-4" />
+          )}
           Save Changes
         </Button>
       </div>
@@ -170,12 +202,18 @@ export default function NotificationSettingsPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Notification Frequency</Label>
-              <Select value={settings?.frequency || "instant"}
-                onValueChange={(v) => setSettings((p) => p ? { ...p, frequency: v } : p)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={settings?.frequency || "instant"}
+                onValueChange={(v) => setSettings((p) => (p ? { ...p, frequency: v } : p))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {FREQUENCIES.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                    <SelectItem key={f.value} value={f.value}>
+                      {f.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -183,9 +221,13 @@ export default function NotificationSettingsPage() {
 
             <div className="space-y-2">
               <Label>Language</Label>
-              <Select value={settings?.language || "en"}
-                onValueChange={(v) => setSettings((p) => p ? { ...p, language: v } : p)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={settings?.language || "en"}
+                onValueChange={(v) => setSettings((p) => (p ? { ...p, language: v } : p))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en">English</SelectItem>
                   <SelectItem value="es">Español</SelectItem>
@@ -201,17 +243,30 @@ export default function NotificationSettingsPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Email Digest Time</Label>
-              <Input type="time" value={settings?.emailDigestTime || "08:00"}
-                onChange={(e) => setSettings((p) => p ? { ...p, emailDigestTime: e.target.value } : p)} />
+              <Input
+                type="time"
+                value={settings?.emailDigestTime || "08:00"}
+                onChange={(e) =>
+                  setSettings((p) => (p ? { ...p, emailDigestTime: e.target.value } : p))
+                }
+              />
             </div>
             <div className="space-y-2">
               <Label>Timezone</Label>
-              <Select value={settings?.emailDigestTimezone || "UTC"}
-                onValueChange={(v) => setSettings((p) => p ? { ...p, emailDigestTimezone: v } : p)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={settings?.emailDigestTimezone || "UTC"}
+                onValueChange={(v) =>
+                  setSettings((p) => (p ? { ...p, emailDigestTimezone: v } : p))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {TIMEZONES.map((tz) => (
-                    <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                    <SelectItem key={tz} value={tz}>
+                      {tz}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -234,8 +289,10 @@ export default function NotificationSettingsPage() {
               <Label>Desktop Notifications</Label>
               <p className="text-xs text-muted-foreground">Show desktop notification popups</p>
             </div>
-            <Switch checked={settings?.desktopEnabled ?? true}
-              onCheckedChange={(v) => setSettings((p) => p ? { ...p, desktopEnabled: v } : p)} />
+            <Switch
+              checked={settings?.desktopEnabled ?? true}
+              onCheckedChange={(v) => setSettings((p) => (p ? { ...p, desktopEnabled: v } : p))}
+            />
           </div>
 
           <div className="flex items-center justify-between">
@@ -243,17 +300,25 @@ export default function NotificationSettingsPage() {
               <Label>Sound</Label>
               <p className="text-xs text-muted-foreground">Play sound for new notifications</p>
             </div>
-            <Switch checked={settings?.soundEnabled ?? true}
-              onCheckedChange={(v) => setSettings((p) => p ? { ...p, soundEnabled: v } : p)} />
+            <Switch
+              checked={settings?.soundEnabled ?? true}
+              onCheckedChange={(v) => setSettings((p) => (p ? { ...p, soundEnabled: v } : p))}
+            />
           </div>
 
           <div className="flex items-center justify-between">
             <div>
               <Label>Critical Notifications Always On</Label>
-              <p className="text-xs text-muted-foreground">Security alerts and critical notifications bypass all mute settings</p>
+              <p className="text-xs text-muted-foreground">
+                Security alerts and critical notifications bypass all mute settings
+              </p>
             </div>
-            <Switch checked={settings?.criticalNotificationsAlwaysOn ?? true}
-              onCheckedChange={(v) => setSettings((p) => p ? { ...p, criticalNotificationsAlwaysOn: v } : p)} />
+            <Switch
+              checked={settings?.criticalNotificationsAlwaysOn ?? true}
+              onCheckedChange={(v) =>
+                setSettings((p) => (p ? { ...p, criticalNotificationsAlwaysOn: v } : p))
+              }
+            />
           </div>
         </CardContent>
       </Card>
@@ -280,7 +345,9 @@ export default function NotificationSettingsPage() {
                     size="sm"
                     className="p-0"
                     onClick={() => {
-                      navigator.clipboard.writeText(pushInfo.topic).then(() => toast.success("Topic copied to clipboard"));
+                      navigator.clipboard
+                        .writeText(pushInfo.topic)
+                        .then(() => toast.success("Topic copied to clipboard"));
                     }}
                   >
                     <CopyIcon className="size-4" />
@@ -293,12 +360,15 @@ export default function NotificationSettingsPage() {
                 </a>
               </Button>
               <p className="text-xs text-muted-foreground">
-                Open this link on your phone or desktop to subscribe your device to push notifications. You will receive a push for every notification on this account.
+                Open this link on your phone or desktop to subscribe your device to push
+                notifications. You will receive a push for every notification on this account.
               </p>
             </>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Push notifications are not configured. Ask your administrator to set the <code className="rounded bg-muted px-1.5 py-0.5 text-xs">NTFY_BASE_URL</code> environment variable.
+              Push notifications are not configured. Ask your administrator to set the{" "}
+              <code className="rounded bg-muted px-1.5 py-0.5 text-xs">NTFY_BASE_URL</code>{" "}
+              environment variable.
             </p>
           )}
         </CardContent>
@@ -323,19 +393,28 @@ export default function NotificationSettingsPage() {
             {CATEGORIES.map((cat) => {
               const channels = settings?.categorySettings?.[cat.id] || defaultChannel();
               return (
-                <div key={cat.id} className="grid grid-cols-4 gap-4 items-center py-2 border-b last:border-0">
+                <div
+                  key={cat.id}
+                  className="grid grid-cols-4 gap-4 items-center py-2 border-b last:border-0"
+                >
                   <Label className="text-sm font-medium">{cat.label}</Label>
                   <div className="flex justify-center">
-                    <Switch checked={channels.inApp}
-                      onCheckedChange={(v) => updateCategory(cat.id, "inApp", v)} />
+                    <Switch
+                      checked={channels.inApp}
+                      onCheckedChange={(v) => updateCategory(cat.id, "inApp", v)}
+                    />
                   </div>
                   <div className="flex justify-center">
-                    <Switch checked={channels.push}
-                      onCheckedChange={(v) => updateCategory(cat.id, "push", v)} />
+                    <Switch
+                      checked={channels.push}
+                      onCheckedChange={(v) => updateCategory(cat.id, "push", v)}
+                    />
                   </div>
                   <div className="flex justify-center">
-                    <Switch checked={channels.sms}
-                      onCheckedChange={(v) => updateCategory(cat.id, "sms", v)} />
+                    <Switch
+                      checked={channels.sms}
+                      onCheckedChange={(v) => updateCategory(cat.id, "sms", v)}
+                    />
                   </div>
                 </div>
               );

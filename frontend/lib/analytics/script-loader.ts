@@ -15,7 +15,13 @@ declare global {
   }
 }
 
-type ScriptCategory = "essential" | "functional" | "analytics" | "performance" | "personalization" | "marketing";
+type ScriptCategory =
+  | "essential"
+  | "functional"
+  | "analytics"
+  | "performance"
+  | "personalization"
+  | "marketing";
 
 interface ScriptDefinition {
   id: string;
@@ -27,18 +33,58 @@ interface ScriptDefinition {
 }
 
 const SCRIPTS: ScriptDefinition[] = [
-  { id: "gtm", src: "https://www.googletagmanager.com/gtm.js?id=GTM-XXXXX", category: "analytics", consentRequired: true },
-  { id: "ga4", src: "https://www.googletagmanager.com/gtag/js?id=G-XXXXX", category: "analytics", consentRequired: true },
-  { id: "meta-pixel", src: "https://connect.facebook.net/en_US/fbevents.js", category: "marketing", consentRequired: true },
-  { id: "linkedin", src: "https://snap.licdn.com/li.lms-analytics/insight.min.js", category: "analytics", consentRequired: true },
-  { id: "clarity", src: "https://www.clarity.ms/tag/XXXXX", category: "analytics", consentRequired: true },
-  { id: "hotjar", src: "https://static.hotjar.com/c/hotjar-XXXXX.js", category: "analytics", consentRequired: true },
-  { id: "intercom", src: "https://widget.intercom.io/widget/XXXXX", category: "functional", consentRequired: true },
+  {
+    id: "gtm",
+    src: "https://www.googletagmanager.com/gtm.js?id=GTM-XXXXX",
+    category: "analytics",
+    consentRequired: true,
+  },
+  {
+    id: "ga4",
+    src: "https://www.googletagmanager.com/gtag/js?id=G-XXXXX",
+    category: "analytics",
+    consentRequired: true,
+  },
+  {
+    id: "meta-pixel",
+    src: "https://connect.facebook.net/en_US/fbevents.js",
+    category: "marketing",
+    consentRequired: true,
+  },
+  {
+    id: "linkedin",
+    src: "https://snap.licdn.com/li.lms-analytics/insight.min.js",
+    category: "analytics",
+    consentRequired: true,
+  },
+  {
+    id: "clarity",
+    src: "https://www.clarity.ms/tag/XXXXX",
+    category: "analytics",
+    consentRequired: true,
+  },
+  {
+    id: "hotjar",
+    src: "https://static.hotjar.com/c/hotjar-XXXXX.js",
+    category: "analytics",
+    consentRequired: true,
+  },
+  {
+    id: "intercom",
+    src: "https://widget.intercom.io/widget/XXXXX",
+    category: "functional",
+    consentRequired: true,
+  },
   { id: "stripe", src: "https://js.stripe.com/v3/", category: "essential", consentRequired: false },
-  { id: "recaptcha", src: "https://www.google.com/recaptcha/api.js", category: "essential", consentRequired: false },
+  {
+    id: "recaptcha",
+    src: "https://www.google.com/recaptcha/api.js",
+    category: "essential",
+    consentRequired: false,
+  },
 ];
 
-let loaded = new Set<string>();
+const loaded = new Set<string>();
 
 export function injectScript(script: ScriptDefinition): void {
   if (loaded.has(script.id) || document.getElementById(`script-${script.id}`)) return;
@@ -66,7 +112,14 @@ export function removeScript(id: string): void {
   }
 }
 
-export function applyConsent(categories: { essential?: boolean; functional?: boolean; analytics?: boolean; performance?: boolean; personalization?: boolean; marketing?: boolean }): void {
+export function applyConsent(categories: {
+  essential?: boolean;
+  functional?: boolean;
+  analytics?: boolean;
+  performance?: boolean;
+  personalization?: boolean;
+  marketing?: boolean;
+}): void {
   if (typeof window === "undefined") return;
 
   for (const script of SCRIPTS) {
@@ -81,7 +134,7 @@ export function applyConsent(categories: { essential?: boolean; functional?: boo
 }
 
 export function getScriptsForCategory(category: ScriptCategory): ScriptDefinition[] {
-  return SCRIPTS.filter(s => s.category === category);
+  return SCRIPTS.filter((s) => s.category === category);
 }
 
 export function getAllScripts(): ScriptDefinition[] {

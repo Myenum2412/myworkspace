@@ -1,9 +1,19 @@
 "use client";
 
-import { useActionState, useMemo, useState, useCallback } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useActionState, useCallback, useMemo, useState } from "react";
+import { deleteOrganization, updateOrganization } from "@/actions/admin";
 import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,36 +23,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight } from "@/lib/icons";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
-  Building2Icon,
-  PencilIcon,
-  Trash2Icon,
   AlertCircleIcon,
-  SearchIcon,
-  GlobeIcon,
-  TagIcon,
-  HashIcon,
-  CheckCircle2Icon,
-  EyeIcon,
+  Building2Icon,
   CalendarDays,
+  CheckCircle2Icon,
+  ChevronLeft,
+  ChevronRight,
+  EyeIcon,
+  GlobeIcon,
+  HashIcon,
+  PencilIcon,
+  SearchIcon,
+  TagIcon,
+  Trash2Icon,
 } from "@/lib/icons";
-import { updateOrganization, deleteOrganization } from "@/actions/admin";
 
 interface OrgRow {
   id: string;
@@ -53,7 +49,15 @@ interface OrgRow {
   createdAt: string;
 }
 
-function ViewOrgDialog({ org, open, onOpenChange }: { org: OrgRow | null; open: boolean; onOpenChange: (open: boolean) => void }) {
+function ViewOrgDialog({
+  org,
+  open,
+  onOpenChange,
+}: {
+  org: OrgRow | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   if (!org) return null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,35 +78,45 @@ function ViewOrgDialog({ org, open, onOpenChange }: { org: OrgRow | null; open: 
             <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
               <TagIcon className="size-4 text-muted-foreground shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Plan</p>
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                  Plan
+                </p>
                 <p className="text-sm font-medium mt-0.5 capitalize">{org.plan || "free"}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
               <GlobeIcon className="size-4 text-muted-foreground shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Domain</p>
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                  Domain
+                </p>
                 <p className="text-sm font-medium mt-0.5">{org.domain || "\u2014"}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
               <HashIcon className="size-4 text-muted-foreground shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Slug</p>
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                  Slug
+                </p>
                 <p className="text-sm font-medium mt-0.5">{org.slug || "\u2014"}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
               <CalendarDays className="size-4 text-muted-foreground shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Created</p>
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                  Created
+                </p>
                 <p className="text-sm font-medium mt-0.5">{org.createdAt}</p>
               </div>
             </div>
           </div>
         </div>
         <DialogFooter className="border-t px-6 py-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -111,15 +125,12 @@ function ViewOrgDialog({ org, open, onOpenChange }: { org: OrgRow | null; open: 
 
 function EditOrgDialog({ org }: { org: OrgRow }) {
   const [open, setOpen] = useState(false);
-  const [state, formAction, pending] = useActionState(
-    async (_prev: unknown, fd: FormData) => {
-      fd.set("id", org.id);
-      const result = await updateOrganization(null, fd);
-      if (result?.success) setOpen(false);
-      return result;
-    },
-    null,
-  );
+  const [state, formAction, pending] = useActionState(async (_prev: unknown, fd: FormData) => {
+    fd.set("id", org.id);
+    const result = await updateOrganization(null, fd);
+    if (result?.success) setOpen(false);
+    return result;
+  }, null);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -152,12 +163,7 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
                 <Building2Icon className="size-3.5 text-muted-foreground" />
                 Organization Name
               </Label>
-              <Input
-                name="name"
-                defaultValue={org.name}
-                required
-                placeholder=""
-              />
+              <Input name="name" defaultValue={org.name} required placeholder="" />
             </div>
 
             <Separator />
@@ -168,7 +174,16 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
                   <TagIcon className="size-3.5 text-muted-foreground" />
                   Plan
                 </Label>
-                <Select name="plan" defaultValue={org.plan === "starter" ? "free" : org.plan === "pro" ? "growth" : org.plan || "free"}>
+                <Select
+                  name="plan"
+                  defaultValue={
+                    org.plan === "starter"
+                      ? "free"
+                      : org.plan === "pro"
+                        ? "growth"
+                        : org.plan || "free"
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -184,11 +199,7 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
                   <GlobeIcon className="size-3.5 text-muted-foreground" />
                   Domain
                 </Label>
-                <Input
-                  name="domain"
-                  defaultValue={org.domain || ""}
-                  placeholder=""
-                />
+                <Input name="domain" defaultValue={org.domain || ""} placeholder="" />
               </div>
             </div>
 
@@ -197,19 +208,24 @@ function EditOrgDialog({ org }: { org: OrgRow }) {
                 <HashIcon className="size-3.5 text-muted-foreground" />
                 Slug
               </Label>
-              <Input
-                name="slug"
-                defaultValue={org.slug || ""}
-                placeholder=""
-              />
+              <Input name="slug" defaultValue={org.slug || ""} placeholder="" />
             </div>
           </div>
 
           <div className="flex items-center justify-end gap-3 px-6 py-4 bg-muted/30 border-t">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-32 h-10">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="w-32 h-10"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={pending} className="w-32 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+            <Button
+              type="submit"
+              disabled={pending}
+              className="w-32 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            >
               {pending ? (
                 <>
                   <span className="animate-spin size-4 border-2 border-white/30 border-t-white rounded-sm mr-2" />
@@ -306,142 +322,152 @@ export function OrgsTable({ orgs }: OrgsTableProps) {
       <ViewOrgDialog
         org={viewOrg}
         open={!!viewOrg}
-        onOpenChange={(open) => { if (!open) setViewOrg(null); }}
+        onOpenChange={(open) => {
+          if (!open) setViewOrg(null);
+        }}
       />
       <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Building2Icon className="size-5" />
-          Organizations
-          {selected.size > 0 && (
-            <span className="text-sm font-normal text-muted-foreground ml-auto">
-              {selected.size} selected
-            </span>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex">
-          <div className="flex-1" />
-          <div className="relative w-full max-w-sm">
-            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              placeholder=""
-              className="pl-9 h-9 w-full"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2Icon className="size-5" />
+            Organizations
+            {selected.size > 0 && (
+              <span className="text-sm font-normal text-muted-foreground ml-auto">
+                {selected.size} selected
+              </span>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex">
+            <div className="flex-1" />
+            <div className="relative w-full max-w-sm">
+              <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder=""
+                className="pl-9 h-9 w-full"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="flex-1" />
           </div>
-          <div className="flex-1" />
-        </div>
-        <div className="border border-border bg-card shadow-xs overflow-hidden">
-          <table className="table-premium w-full text-sm text-left">
-            <thead className="sticky top-0 z-10">
-              <tr>
-                <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-10">
-                  <Checkbox
-                    checked={selected.size === paginated.length && paginated.length > 0}
-                    onCheckedChange={toggleAll}
-                  />
-                </th>
-                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Name</th>
-                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Plan</th>
-                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Domain</th>
-                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Slug</th>
-                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Created</th>
-                <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-24">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filtered.length === 0 ? (
+          <div className="border border-border bg-card shadow-xs overflow-hidden">
+            <table className="table-premium w-full text-sm text-left">
+              <thead className="sticky top-0 z-10">
                 <tr>
-                  <td colSpan={7} className="h-32 text-center text-muted-foreground px-4 py-3">
-                    <div className="flex flex-col items-center justify-center gap-2 py-8">
-                      <Building2Icon className="size-8 text-muted-foreground/40" />
-                      <span>{search ? "No organizations match your search" : "No organizations found"}</span>
-                    </div>
-                  </td>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-10">
+                    <Checkbox
+                      checked={selected.size === paginated.length && paginated.length > 0}
+                      onCheckedChange={toggleAll}
+                    />
+                  </th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Name</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Plan</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Domain</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Slug</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Created</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-24">Actions</th>
                 </tr>
-              ) : (
-                paginated.map((o) => (
-                  <tr key={o.id} className={`bg-card group hover:bg-muted/40 transition-colors cursor-pointer ${selected.has(o.id) ? "bg-muted/30" : ""}`} onClick={() => setViewOrg(o)}>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={selected.has(o.id)}
-                        onCheckedChange={() => toggle(o.id)}
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Building2Icon className="size-4 text-muted-foreground shrink-0" />
-                        <span className="font-medium">{o.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="inline-flex items-center rounded-sm border px-2.5 py-0.5 text-xs font-medium capitalize">
-                        {o.plan || "free"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{o.domain || "—"}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{o.slug || "—"}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{o.createdAt}</td>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1">
-                        <EditOrgDialog org={o} />
-                        <DeleteOrgButton org={o} />
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="h-32 text-center text-muted-foreground px-4 py-3">
+                      <div className="flex flex-col items-center justify-center gap-2 py-8">
+                        <Building2Icon className="size-8 text-muted-foreground/40" />
+                        <span>
+                          {search ? "No organizations match your search" : "No organizations found"}
+                        </span>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border border-gray-200 rounded-lg">
-          <span className="text-sm text-muted-foreground">
-            {filtered.length === 0
-              ? "0 items"
-              : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)} of ${filtered.length}`}
-          </span>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
-              <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-                <SelectTrigger className="h-8 w-[70px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="30">30</SelectItem>
-                  <SelectItem value="60">60</SelectItem>
-                  <SelectItem value="90">90</SelectItem>
-                  <SelectItem value="120">120</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                disabled={page === 0}
-              >
-                <ChevronLeft className="size-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={(page + 1) * pageSize >= filtered.length}
-              >
-                <ChevronRight className="size-4" />
-              </Button>
+                ) : (
+                  paginated.map((o) => (
+                    <tr
+                      key={o.id}
+                      className={`bg-card group hover:bg-muted/40 transition-colors cursor-pointer ${selected.has(o.id) ? "bg-muted/30" : ""}`}
+                      onClick={() => setViewOrg(o)}
+                    >
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selected.has(o.id)}
+                          onCheckedChange={() => toggle(o.id)}
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Building2Icon className="size-4 text-muted-foreground shrink-0" />
+                          <span className="font-medium">{o.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center rounded-sm border px-2.5 py-0.5 text-xs font-medium capitalize">
+                          {o.plan || "free"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{o.domain || "—"}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{o.slug || "—"}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{o.createdAt}</td>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1">
+                          <EditOrgDialog org={o} />
+                          <DeleteOrgButton org={o} />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border border-gray-200 rounded-lg">
+            <span className="text-sm text-muted-foreground">
+              {filtered.length === 0
+                ? "0 items"
+                : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)} of ${filtered.length}`}
+            </span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Rows per page:
+                </span>
+                <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="60">60</SelectItem>
+                    <SelectItem value="90">90</SelectItem>
+                    <SelectItem value="120">120</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={(page + 1) * pageSize >= filtered.length}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
     </>
   );
 }

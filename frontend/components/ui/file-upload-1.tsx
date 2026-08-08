@@ -46,10 +46,7 @@ export function BannerUpload({ onFile, disabled }: Props) {
 
             {acceptedFiles.length > 0 && (
               <FileUpload.ItemGroup>
-                <FileUpload.Item
-                  file={acceptedFiles[0]}
-                  className="flex items-center gap-2 w-full"
-                >
+                <FileUpload.Item file={acceptedFiles[0]} className="flex items-center gap-2 w-full">
                   <FileUpload.ItemName className="text-sm text-muted-foreground truncate max-w-[200px]" />
                   <FileUpload.ItemDeleteTrigger className="text-sm text-destructive hover:text-destructive/80 ml-auto shrink-0">
                     Remove

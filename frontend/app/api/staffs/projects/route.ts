@@ -6,14 +6,18 @@ import { getUserOrgId } from "@/lib/org";
 
 export async function GET() {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
   if (!orgId) return NextResponse.json({ orgId: "", initialProjects: [], initialClientList: [] });
   try {
     const [projectDocs, clientDocs] = await Promise.all([
       db.collection(collections.projects).find({ orgId }).sort({ createdAt: -1 }).toArray(),
-      db.collection(collections.clients).find({ orgId }).toArray()
+      db.collection(collections.clients).find({ orgId }).toArray(),
     ]);
     const initialProjects = (projectDocs as any[]).map((p) => ({
       id: p.id || p._id?.toString() || "",
@@ -31,7 +35,11 @@ export async function GET() {
       tasks: p.tasks || [],
       attachments: p.attachments || [],
     }));
-    const initialClientList = (clientDocs as any[]).map(c => c.name || c.companyName || "").filter(Boolean);
+    const initialClientList = (clientDocs as any[])
+      .map((c) => c.name || c.companyName || "")
+      .filter(Boolean);
     return NextResponse.json({ orgId, initialProjects, initialClientList });
-  } catch { return NextResponse.json({ orgId, initialProjects: [], initialClientList: [] }); }
+  } catch {
+    return NextResponse.json({ orgId, initialProjects: [], initialClientList: [] });
+  }
 }

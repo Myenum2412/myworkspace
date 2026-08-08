@@ -1,13 +1,7 @@
 import Image from "next/image";
 import { SidebarHeader } from "@/components/ui/sidebar";
 
-export function SidebarBrand({
-  title,
-  subtitle,
-}: {
-  title: string;
-  subtitle?: string;
-}) {
+export function SidebarBrand({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <SidebarHeader className="h-20 shrink-0 justify-center border-b bg-sidebar/40">
       <div className="flex items-center gap-2.5 px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">

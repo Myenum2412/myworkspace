@@ -1,18 +1,12 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { NotificationsActiveIcon } from "@/lib/icons";
-import {
-  CheckCheckIcon, ArchiveIcon, Trash2Icon, Loader2Icon,
-  SearchIcon, FilterIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon,
-  MessageSquareIcon, CheckCircle2Icon, AlertTriangleIcon, CreditCardIcon,
-  UsersIcon, FolderKanbanIcon, InfoIcon, ExternalLinkIcon, MegaphoneIcon,
-  FileIcon, ShieldIcon, UserPlusIcon, LockIcon, SettingsIcon,
-} from "@/lib/icons";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -20,14 +14,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { type NotificationItem, useNotifications } from "@/hooks/use-notifications";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useNotifications, type NotificationItem } from "@/hooks/use-notifications";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
+  AlertTriangleIcon,
+  ArchiveIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CheckCheckIcon,
+  CheckCircle2Icon,
+  ClockIcon,
+  CreditCardIcon,
+  ExternalLinkIcon,
+  FileIcon,
+  FilterIcon,
+  FolderKanbanIcon,
+  InfoIcon,
+  Loader2Icon,
+  LockIcon,
+  MegaphoneIcon,
+  MessageSquareIcon,
+  NotificationsActiveIcon,
+  SearchIcon,
+  SettingsIcon,
+  ShieldIcon,
+  Trash2Icon,
+  UserPlusIcon,
+  UsersIcon,
+} from "@/lib/icons";
 
 const categoryIcons: Record<string, React.ReactNode> = {
   auth: <ShieldIcon className="size-4 text-purple-500" />,
@@ -71,20 +85,49 @@ function formatDate(dateStr: string) {
   const diff = now.getTime() - d.getTime();
   if (diff < 24 * 60 * 60 * 1000) return timeAgo(dateStr);
   return d.toLocaleDateString("en-US", {
-    month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   });
 }
 
-const CATEGORIES = ["all", "auth", "tasks", "projects", "files", "approvals", "permissions", "hr", "clients", "messages", "billing", "security", "system", "team"];
+const CATEGORIES = [
+  "all",
+  "auth",
+  "tasks",
+  "projects",
+  "files",
+  "approvals",
+  "permissions",
+  "hr",
+  "clients",
+  "messages",
+  "billing",
+  "security",
+  "system",
+  "team",
+];
 const PRIORITIES = ["all", "critical", "high", "medium", "low"];
 
 export default function NotificationsPage() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const {
-    notifications, unreadCount, total, loading, hasMore, loadMore,
-    markAsRead, markAllAsRead, archiveNotification, deleteNotification,
-    bulkArchive, bulkDelete, snoozeNotification, refresh,
+    notifications,
+    unreadCount,
+    total,
+    loading,
+    hasMore,
+    loadMore,
+    markAsRead,
+    markAllAsRead,
+    archiveNotification,
+    deleteNotification,
+    bulkArchive,
+    bulkDelete,
+    snoozeNotification,
+    refresh,
   } = useNotifications(userId);
 
   const [filterCategory, setFilterCategory] = useState("all");
@@ -98,7 +141,8 @@ export default function NotificationsPage() {
     if (filterPriority !== "all" && n.priority !== filterPriority) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      if (!n.title.toLowerCase().includes(q) && !(n.message || "").toLowerCase().includes(q)) return false;
+      if (!n.title.toLowerCase().includes(q) && !(n.message || "").toLowerCase().includes(q))
+        return false;
     }
     return true;
   });
@@ -117,7 +161,7 @@ export default function NotificationsPage() {
       if (!n.read) await markAsRead(n.id);
       if (n.link) window.location.href = n.link;
     },
-    [markAsRead, selectMode]
+    [markAsRead, selectMode],
   );
 
   const toggleSelectMode = () => {
@@ -151,13 +195,23 @@ export default function NotificationsPage() {
                 <ArchiveIcon className="size-4" />
                 Archive ({selectedIds.size})
               </Button>
-              <Button variant="outline" size="sm" onClick={handleBulkDelete} className="gap-1.5 text-destructive">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkDelete}
+                className="gap-1.5 text-destructive"
+              >
                 <Trash2Icon className="size-4" />
                 Delete ({selectedIds.size})
               </Button>
             </>
           )}
-          <Button variant={selectMode ? "default" : "outline"} size="sm" onClick={toggleSelectMode} className="gap-1.5">
+          <Button
+            variant={selectMode ? "default" : "outline"}
+            size="sm"
+            onClick={toggleSelectMode}
+            className="gap-1.5"
+          >
             {selectMode ? "Cancel" : "Select"}
           </Button>
           {unreadCount > 0 && (
@@ -225,7 +279,11 @@ export default function NotificationsPage() {
             <NotificationsActiveIcon className="size-12 mb-3 opacity-20" />
             <p className="text-sm font-medium">No notifications</p>
             <p className="text-xs mt-1">
-              {searchQuery ? "No results for your search" : filterCategory !== "all" ? `No ${filterCategory} notifications` : "You're all caught up!"}
+              {searchQuery
+                ? "No results for your search"
+                : filterCategory !== "all"
+                  ? `No ${filterCategory} notifications`
+                  : "You're all caught up!"}
             </p>
           </div>
         ) : (
@@ -233,7 +291,7 @@ export default function NotificationsPage() {
             {filtered.map((n) => (
               <div
                 key={n.id}
-                className={`group relative flex items-start gap-4 rounded-sm border p-4 transition-colors cursor-pointer ${ selectMode ? selectedIds.has(n.id) ? "ring-2 ring-primary bg-accent/50" : "hover:bg-accent/20" : !n.read ? "bg-accent/20 border-accent hover:bg-accent/30" : "bg-card hover:bg-accent/20" }`}
+                className={`group relative flex items-start gap-4 rounded-sm border p-4 transition-colors cursor-pointer ${selectMode ? (selectedIds.has(n.id) ? "ring-2 ring-primary bg-accent/50" : "hover:bg-accent/20") : !n.read ? "bg-accent/20 border-accent hover:bg-accent/30" : "bg-card hover:bg-accent/20"}`}
                 onClick={() => handleNotificationClick(n)}
               >
                 {selectMode && (
@@ -254,38 +312,84 @@ export default function NotificationsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <p className={`text-sm truncate ${!n.read ? "font-semibold" : "font-medium"}`}>
+                      <p
+                        className={`text-sm truncate ${!n.read ? "font-semibold" : "font-medium"}`}
+                      >
                         {n.title}
                       </p>
                       {!n.read && <span className="size-2 shrink-0 rounded-full bg-blue-500" />}
                       {n.priority === "critical" && (
-                        <Badge variant="destructive" className="text-[9px] px-1 py-0">CRITICAL</Badge>
+                        <Badge variant="destructive" className="text-[9px] px-1 py-0">
+                          CRITICAL
+                        </Badge>
                       )}
                     </div>
                     {!selectMode && (
                       <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Popover>
                           <PopoverTrigger asChild>
-                            <button onClick={(e) => e.stopPropagation()}
-                              className="p-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors" title="Snooze">
+                            <button
+                              onClick={(e) => e.stopPropagation()}
+                              className="p-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                              title="Snooze"
+                            >
                               <ClockIcon className="size-3.5" />
                             </button>
                           </PopoverTrigger>
                           <PopoverContent className="w-28 p-1" align="end">
-                            <button onClick={(e) => { e.stopPropagation(); snoozeNotification(n.id, new Date(Date.now() + 3600000)).catch(() => {}); }}
-                              className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded-sm">Snooze 1h</button>
-                            <button onClick={(e) => { e.stopPropagation(); snoozeNotification(n.id, new Date(Date.now() + 14400000)).catch(() => {}); }}
-                              className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded-sm">Snooze 4h</button>
-                            <button onClick={(e) => { e.stopPropagation(); snoozeNotification(n.id, new Date(Date.now() + 86400000)).catch(() => {}); }}
-                              className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded-sm">Snooze 24h</button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                snoozeNotification(n.id, new Date(Date.now() + 3600000)).catch(
+                                  () => {},
+                                );
+                              }}
+                              className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded-sm"
+                            >
+                              Snooze 1h
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                snoozeNotification(n.id, new Date(Date.now() + 14400000)).catch(
+                                  () => {},
+                                );
+                              }}
+                              className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded-sm"
+                            >
+                              Snooze 4h
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                snoozeNotification(n.id, new Date(Date.now() + 86400000)).catch(
+                                  () => {},
+                                );
+                              }}
+                              className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded-sm"
+                            >
+                              Snooze 24h
+                            </button>
                           </PopoverContent>
                         </Popover>
-                        <button onClick={(e) => { e.stopPropagation(); archiveNotification(n.id); }}
-                          className="p-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors" title="Archive">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            archiveNotification(n.id);
+                          }}
+                          className="p-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                          title="Archive"
+                        >
                           <ArchiveIcon className="size-3.5" />
                         </button>
-                        <button onClick={(e) => { e.stopPropagation(); deleteNotification(n.id); }}
-                          className="p-1 text-muted-foreground/40 hover:text-destructive transition-colors" title="Delete">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteNotification(n.id);
+                          }}
+                          className="p-1 text-muted-foreground/40 hover:text-destructive transition-colors"
+                          title="Delete"
+                        >
                           <Trash2Icon className="size-3.5" />
                         </button>
                       </div>
@@ -297,9 +401,15 @@ export default function NotificationsPage() {
                   )}
 
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <span className="text-[10px] text-muted-foreground/60">{formatDate(n.createdAt)}</span>
-                    <Badge variant="outline" className="text-[9px] px-1 py-0 capitalize">{n.category}</Badge>
-                    <Badge variant="outline" className="text-[9px] px-1 py-0">{n.type.replace(/_/g, " ")}</Badge>
+                    <span className="text-[10px] text-muted-foreground/60">
+                      {formatDate(n.createdAt)}
+                    </span>
+                    <Badge variant="outline" className="text-[9px] px-1 py-0 capitalize">
+                      {n.category}
+                    </Badge>
+                    <Badge variant="outline" className="text-[9px] px-1 py-0">
+                      {n.type.replace(/_/g, " ")}
+                    </Badge>
                     {n.priority !== "medium" && (
                       <Badge className={`text-[9px] px-1 py-0 ${priorityColors[n.priority] || ""}`}>
                         {n.priority}
@@ -308,12 +418,20 @@ export default function NotificationsPage() {
                   </div>
 
                   {n.actions && n.actions.length > 0 && (
-                    <div className="flex items-center gap-1.5 mt-2" onClick={(e) => e.stopPropagation()}>
+                    <div
+                      className="flex items-center gap-1.5 mt-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {n.actions.map((a) => (
-                        <Button key={a.action}
+                        <Button
+                          key={a.action}
                           variant={a.primary ? "default" : "outline"}
-                          size="sm" className="text-[11px] px-2 gap-1"
-                          onClick={() => { if (a.url) window.location.href = a.url; }}>
+                          size="sm"
+                          className="text-[11px] px-2 gap-1"
+                          onClick={() => {
+                            if (a.url) window.location.href = a.url;
+                          }}
+                        >
                           <ExternalLinkIcon className="size-3" />
                           {a.label}
                         </Button>
@@ -323,14 +441,22 @@ export default function NotificationsPage() {
                 </div>
 
                 <div className="hidden sm:block shrink-0 text-right">
-                  <p className="text-[10px] text-muted-foreground/60 whitespace-nowrap">{timeAgo(n.createdAt)}</p>
+                  <p className="text-[10px] text-muted-foreground/60 whitespace-nowrap">
+                    {timeAgo(n.createdAt)}
+                  </p>
                 </div>
               </div>
             ))}
 
             {hasMore && (
               <div className="flex justify-center py-4">
-                <Button variant="outline" size="sm" onClick={loadMore} disabled={loading} className="gap-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadMore}
+                  disabled={loading}
+                  className="gap-1.5"
+                >
                   {loading && <Loader2Icon className="size-3 animate-spin" />}
                   Load more notifications
                 </Button>

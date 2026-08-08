@@ -1,29 +1,29 @@
-"use client"
+"use client";
 
-import { useCallback, useRef, useEffect } from "react"
+import { useCallback, useEffect, useRef } from "react";
 
 interface GoogleDocsEditorProps {
-  value: string
-  onChange: (value: string) => void
+  value: string;
+  onChange: (value: string) => void;
 }
 
 export function GoogleDocsEditor({ value, onChange }: GoogleDocsEditorProps) {
-  const ref = useRef<HTMLTextAreaElement>(null)
+  const ref = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const el = ref.current
+    const el = ref.current;
     if (el) {
-      el.style.height = "auto"
-      el.style.height = `${el.scrollHeight}px`
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
     }
-  }, [value])
+  }, [value]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      onChange(e.target.value)
+      onChange(e.target.value);
     },
-    [onChange]
-  )
+    [onChange],
+  );
 
   return (
     <div className="h-full flex flex-col">
@@ -35,5 +35,5 @@ export function GoogleDocsEditor({ value, onChange }: GoogleDocsEditorProps) {
         className="flex-1 w-full resize-none border-0 bg-transparent px-4 sm:px-8 py-4 text-base leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-0"
       />
     </div>
-  )
+  );
 }

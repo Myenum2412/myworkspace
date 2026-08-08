@@ -1,4 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:4000/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:4000/api";
 
 async function fetchAPI<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -19,23 +20,39 @@ export interface HealthScore {
 }
 
 export interface Insight {
-  type: string; severity: string; category: string;
-  title: string; description: string; metric: string;
-  currentValue: number; threshold: number; recommendation: string;
+  type: string;
+  severity: string;
+  category: string;
+  title: string;
+  description: string;
+  metric: string;
+  currentValue: number;
+  threshold: number;
+  recommendation: string;
 }
 
 export interface Prediction {
-  metric: string; predictedValue: number; confidence: number;
-  timeframe: string; model: string;
+  metric: string;
+  predictedValue: number;
+  confidence: number;
+  timeframe: string;
+  model: string;
 }
 
 export interface Recommendation {
-  id: string; title: string; description: string;
-  impact: string; effort: string; category: string; action: string;
+  id: string;
+  title: string;
+  description: string;
+  impact: string;
+  effort: string;
+  category: string;
+  action: string;
 }
 
 export interface BIWidgetData {
-  value: number; trend?: number[]; labels?: string[];
+  value: number;
+  trend?: number[];
+  labels?: string[];
 }
 
 export interface OrgSummary {
@@ -46,51 +63,82 @@ export interface OrgSummary {
 }
 
 export interface OnboardingStatus {
-  progress: number; currentStep: string;
-  completedSteps: string[]; skippedSteps: string[];
+  progress: number;
+  currentStep: string;
+  completedSteps: string[];
+  skippedSteps: string[];
   isComplete: boolean;
 }
 
 export interface CustomerHealth {
-  score: number; factors: Record<string, number>;
+  score: number;
+  factors: Record<string, number>;
   risk: "low" | "medium" | "high";
 }
 
 export interface BillingSummary {
-  plan: string; status: string; interval: string;
-  seats: number; amount: number; nextBillingDate: string;
-  paymentMethods: any[]; recentInvoices: any[];
+  plan: string;
+  status: string;
+  interval: string;
+  seats: number;
+  amount: number;
+  nextBillingDate: string;
+  paymentMethods: any[];
+  recentInvoices: any[];
 }
 
 export interface OpsSummary {
-  totalServices: number; healthy: number; degraded: number; down: number;
-  activeIncidents: number; totalAlerts: number; avgUptime: number;
+  totalServices: number;
+  healthy: number;
+  degraded: number;
+  down: number;
+  activeIncidents: number;
+  totalAlerts: number;
+  avgUptime: number;
 }
 
 export interface ServiceHealthItem {
-  id: string; service: string; status: string;
+  id: string;
+  service: string;
+  status: string;
   metrics: { uptime: number; latency: number; errorRate: number; throughput: number };
-  lastChecked: string; region: string; version: string;
+  lastChecked: string;
+  region: string;
+  version: string;
 }
 
 export interface ActivityFeedItem {
-  id: string; orgId: string; actorId: string; action: string;
-  entityType: string; entityId: string; summary: string;
+  id: string;
+  orgId: string;
+  actorId: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  summary: string;
   createdAt: string;
 }
 
 export interface UsageAnalytics {
-  snapshots: any[]; trends: Record<string, any>;
+  snapshots: any[];
+  trends: Record<string, any>;
   forecast: Record<string, number>;
 }
 
 export interface AnomalyResult {
-  anomalies: { metric: string; currentValue: number; expectedValue: number; deviation: number; severity: string }[];
+  anomalies: {
+    metric: string;
+    currentValue: number;
+    expectedValue: number;
+    deviation: number;
+    severity: string;
+  }[];
 }
 
 export interface RevenueReport {
-  totalRevenue: number; monthlyRecurring: number;
-  activeSubscriptions: number; byPlan: Record<string, number>;
+  totalRevenue: number;
+  monthlyRecurring: number;
+  activeSubscriptions: number;
+  byPlan: Record<string, number>;
   conversionRate: number;
 }
 
@@ -101,8 +149,13 @@ export interface ComplianceReport {
 }
 
 export interface ServiceHealth {
-  totalServices: number; healthy: number; degraded: number; down: number;
-  activeIncidents: number; totalAlerts: number; avgUptime: number;
+  totalServices: number;
+  healthy: number;
+  degraded: number;
+  down: number;
+  activeIncidents: number;
+  totalAlerts: number;
+  avgUptime: number;
 }
 
 export class EnterpriseAPI {
@@ -112,7 +165,12 @@ export class EnterpriseAPI {
     this.orgId = orgId;
   }
 
-  async getBISummary(): Promise<{ healthScore: HealthScore; insights: Insight[]; predictions: Prediction[]; recommendations?: Recommendation[] }> {
+  async getBISummary(): Promise<{
+    healthScore: HealthScore;
+    insights: Insight[];
+    predictions: Prediction[];
+    recommendations?: Recommendation[];
+  }> {
     return fetchAPI(`/ai/analyze?orgId=${this.orgId}`);
   }
 
@@ -144,7 +202,10 @@ export class EnterpriseAPI {
     return fetchAPI("/operations/services");
   }
 
-  async getActivityFeed(limit = 20, offset = 0): Promise<{ items: ActivityFeedItem[]; total: number }> {
+  async getActivityFeed(
+    limit = 20,
+    offset = 0,
+  ): Promise<{ items: ActivityFeedItem[]; total: number }> {
     return fetchAPI(`/collaboration/activity?orgId=${this.orgId}&limit=${limit}&offset=${offset}`);
   }
 
@@ -181,7 +242,9 @@ export class EnterpriseAPI {
   }
 
   async getKPITrends(metric: string, period: string, limit = 30): Promise<any> {
-    return fetchAPI(`/analytics/kpi-trends?orgId=${this.orgId}&metric=${metric}&period=${period}&limit=${limit}`);
+    return fetchAPI(
+      `/analytics/kpi-trends?orgId=${this.orgId}&metric=${metric}&period=${period}&limit=${limit}`,
+    );
   }
 
   async getExecutiveReport(): Promise<any> {

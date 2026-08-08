@@ -5,10 +5,17 @@ import { collections } from "@/lib/db/schema";
 
 export async function GET() {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const users = await db.collection(collections.users).find({ role: { $ne: "clients" } }).toArray() as any[];
+    const users = (await db
+      .collection(collections.users)
+      .find({ role: { $ne: "clients" } })
+      .toArray()) as any[];
 
     const members = users.map((u) => ({
       userId: u.id || u._id?.toString() || "",
@@ -28,5 +35,7 @@ export async function GET() {
     }));
 
     return NextResponse.json({ members });
-  } catch { return NextResponse.json({ members: [] }); }
+  } catch {
+    return NextResponse.json({ members: [] });
+  }
 }

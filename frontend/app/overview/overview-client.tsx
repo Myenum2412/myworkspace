@@ -1,27 +1,27 @@
-"use client"
+"use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import OverviewInteractive from "./overview-interactive.client"
-import TeamTasksOverview from "@/components/team-tasks-overview"
-import AllTasksInteractive from "../alltasks/alltasks-interactive.client"
-import MyTasksInteractive from "../mytasks/mytasks-interactive.client"
-import UpcomingTasksInteractive from "../upcomingtasks/upcomingtasks-interactive.client"
-import type { Task } from "./columns.client"
-import type { TeamTask } from "../teamtasks/teamtasks-interactive.client"
-import type { AllTasksProps } from "../alltasks/alltasks-interactive.client"
-import type { MyTasksProps } from "../mytasks/mytasks-interactive.client"
-import type { UpcomingTask } from "../upcomingtasks/upcomingtasks-interactive.client"
+import TeamTasksOverview from "@/components/team-tasks-overview";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { AllTasksProps } from "../alltasks/alltasks-interactive.client";
+import AllTasksInteractive from "../alltasks/alltasks-interactive.client";
+import type { MyTasksProps } from "../mytasks/mytasks-interactive.client";
+import MyTasksInteractive from "../mytasks/mytasks-interactive.client";
+import type { TeamTask } from "../teamtasks/teamtasks-interactive.client";
+import type { UpcomingTask } from "../upcomingtasks/upcomingtasks-interactive.client";
+import UpcomingTasksInteractive from "../upcomingtasks/upcomingtasks-interactive.client";
+import type { Task } from "./columns.client";
+import OverviewInteractive from "./overview-interactive.client";
 
 type OverviewClientProps = {
-  overviewTasks: Task[]
-  currentUserId: string
-  teamTasks: TeamTask[]
-  allTasks: AllTasksProps["initialTasks"]
-  orgId: string
-  myTasks: MyTasksProps["initialTasks"]
-  userId: string
-  upcomingTasks: UpcomingTask[]
-}
+  overviewTasks: Task[];
+  currentUserId: string;
+  teamTasks: TeamTask[];
+  allTasks: AllTasksProps["initialTasks"];
+  orgId: string;
+  myTasks: MyTasksProps["initialTasks"];
+  userId: string;
+  upcomingTasks: UpcomingTask[];
+};
 
 export default function OverviewClient({
   overviewTasks,
@@ -84,9 +84,12 @@ export default function OverviewClient({
         <MyTasksInteractive initialTasks={myTasks} orgId={orgId} userId={userId} />
       </TabsContent>
 
-      <TabsContent value="upcoming_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
+      <TabsContent
+        value="upcoming_tasks"
+        className="flex-1 min-h-0 data-[state=active]:flex flex-col"
+      >
         <UpcomingTasksInteractive initialTasks={upcomingTasks} />
       </TabsContent>
     </Tabs>
-  )
+  );
 }

@@ -1,6 +1,6 @@
 import { connectDb } from "../lib/db/index.js";
-import { Receipt } from "../lib/db/models/Receipt.js";
 import { Counter } from "../lib/db/models/Counter.js";
+import { Receipt } from "../lib/db/models/Receipt.js";
 import { logger } from "../lib/logger/index.js";
 
 async function seed() {
@@ -8,7 +8,9 @@ async function seed() {
   logger.info("Connected to DB — seeding receipts...");
 
   // Get the first org from the database
-  const orgs = await (await import("../lib/db/models/Organization.js")).Organization.find().limit(1).lean();
+  const orgs = await (await import("../lib/db/models/Organization.js")).Organization.find()
+    .limit(1)
+    .lean();
   if (orgs.length === 0) {
     logger.error("No organizations found. Create an org first.");
     process.exit(1);
@@ -33,14 +35,23 @@ async function seed() {
   ];
 
   const paymentMethods = ["Bank Transfer", "UPI", "Credit Card", "Cheque", "Razorpay", "Stripe"];
-  const statuses = ["paid", "paid", "paid", "paid", "pending", "failed", "refunded", "cancelled"] as const;
+  const statuses = [
+    "paid",
+    "paid",
+    "paid",
+    "paid",
+    "pending",
+    "failed",
+    "refunded",
+    "cancelled",
+  ] as const;
 
   const receipts = [];
   for (let i = 0; i < 24; i++) {
     const counter = await Counter.findByIdAndUpdate(
       `receipt_${orgId}`,
       { $inc: { seq: 1 } },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
     const receiptNumber = `RCPT-${String(counter.seq).padStart(5, "0")}`;
     const customer = customers[i % customers.length];

@@ -1,5 +1,4 @@
-"use client"
-import { useState, useRef, useEffect, useMemo, useCallback, type ReactNode } from "react";
+"use client";
 import {
   type ColumnDef,
   flexRender,
@@ -7,14 +6,15 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
+  type PaginationState,
   type SortingState,
   type Table,
-  type PaginationState,
+  useReactTable,
 } from "@tanstack/react-table";
-import { Input } from "@/components/ui/input";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -22,12 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  SearchIcon,
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-} from "@/lib/icons";
+import { ArrowUpDown, ChevronLeft, ChevronRight, SearchIcon } from "@/lib/icons";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -85,14 +80,18 @@ export function DataTable<TData, TValue>({
   // All three handlers guard against no-op updates to prevent TanStack Table's
   // synchronous render-time state sync from triggering infinite re-render loops.
   const handleRowSelectionChange = useCallback(
-    (updater: Record<string, boolean> | ((old: Record<string, boolean>) => Record<string, boolean>)) => {
+    (
+      updater:
+        | Record<string, boolean>
+        | ((old: Record<string, boolean>) => Record<string, boolean>),
+    ) => {
       setRowSelection((prev) => {
         const next = typeof updater === "function" ? updater(prev) : updater;
         if (JSON.stringify(prev) === JSON.stringify(next)) return prev;
         return next;
       });
     },
-    []
+    [],
   );
 
   const handleSortingChange = useCallback(
@@ -103,7 +102,7 @@ export function DataTable<TData, TValue>({
         return next;
       });
     },
-    []
+    [],
   );
 
   const globalFilter = searchQuery ?? internalFilter;
@@ -123,7 +122,7 @@ export function DataTable<TData, TValue>({
         });
       }
     },
-    [onSearchChange, globalFilter]
+    [onSearchChange, globalFilter],
   );
 
   const checkboxColumn = useMemo<ColumnDef<TData, TValue>>(
@@ -147,12 +146,12 @@ export function DataTable<TData, TValue>({
       enableHiding: false,
       size: 40,
     }),
-    []
+    [],
   );
 
   const allColumns = useMemo(
     () => (showCheckboxes ? [checkboxColumn, ...columns] : columns),
-    [showCheckboxes, columns, checkboxColumn]
+    [showCheckboxes, columns, checkboxColumn],
   );
 
   const table = useReactTable({
@@ -174,7 +173,8 @@ export function DataTable<TData, TValue>({
 
   useEffect(() => {
     if (onSelectionChange) {
-      const selectedRows = tableRef.current?.getSelectedRowModel().rows.map((r) => r.original) ?? [];
+      const selectedRows =
+        tableRef.current?.getSelectedRowModel().rows.map((r) => r.original) ?? [];
       onSelectionChange(selectedRows);
     }
   }, [rowSelection, onSelectionChange]);
@@ -227,17 +227,18 @@ export function DataTable<TData, TValue>({
                         style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
                         onClick={header.column.getToggleSortingHandler()}
                         aria-sort={
-                          header.column.getIsSorted() === "asc" ? "ascending" :
-                          header.column.getIsSorted() === "desc" ? "descending" : undefined
+                          header.column.getIsSorted() === "asc"
+                            ? "ascending"
+                            : header.column.getIsSorted() === "desc"
+                              ? "descending"
+                              : undefined
                         }
                       >
                         <div className="flex items-center gap-1">
                           {header.isPlaceholder
                             ? null
                             : flexRender(header.column.columnDef.header, header.getContext())}
-                          {canSort && (
-                            <ArrowUpDown className="size-3.5 shrink-0" />
-                          )}
+                          {canSort && <ArrowUpDown className="size-3.5 shrink-0" />}
                         </div>
                       </th>
                     );
@@ -260,7 +261,13 @@ export function DataTable<TData, TValue>({
                       onClick={() => onRowClick?.(row.original)}
                       role={onRowClick ? "button" : undefined}
                       tabIndex={onRowClick ? 0 : undefined}
-                      onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') onRowClick(row.original) } : undefined}
+                      onKeyDown={
+                        onRowClick
+                          ? (e) => {
+                              if (e.key === "Enter" || e.key === " ") onRowClick(row.original);
+                            }
+                          : undefined
+                      }
                     >
                       {row.getVisibleCells().map((cell) => (
                         <td
@@ -304,7 +311,9 @@ export function DataTable<TData, TValue>({
           <div className="flex items-center gap-4">
             {!hidePageSizeSelector && (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Rows per page:
+                </span>
                 <Select
                   value={String(pagination.pageSize)}
                   onValueChange={(value) => {

@@ -1,4 +1,4 @@
-import { Request } from "express";
+import type { Request } from "express";
 import geoip from "geoip-lite";
 
 export interface RegionInfo {
@@ -14,10 +14,39 @@ export interface RegionInfo {
 }
 
 const GDPR_COUNTRIES = new Set([
-  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR",
-  "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL",
-  "PL", "PT", "RO", "SK", "SI", "ES", "SE", "IS", "LI", "NO", "CH",
-  "GB", "GI",
+  "AT",
+  "BE",
+  "BG",
+  "HR",
+  "CY",
+  "CZ",
+  "DK",
+  "EE",
+  "FI",
+  "FR",
+  "DE",
+  "GR",
+  "HU",
+  "IE",
+  "IT",
+  "LV",
+  "LT",
+  "LU",
+  "MT",
+  "NL",
+  "PL",
+  "PT",
+  "RO",
+  "SK",
+  "SI",
+  "ES",
+  "SE",
+  "IS",
+  "LI",
+  "NO",
+  "CH",
+  "GB",
+  "GI",
 ]);
 
 const CCPA_STATES = new Set(["US-CA"]);

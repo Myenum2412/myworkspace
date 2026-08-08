@@ -1,8 +1,14 @@
-import NodeCache from "node-cache";
 import { EventEmitter } from "events";
-import { valkeyGet, valkeySet, valkeyDel, isValkeyConnected, valkeyDelByPattern } from "../valkey.js";
+import NodeCache from "node-cache";
 import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
+import {
+  isValkeyConnected,
+  valkeyDel,
+  valkeyDelByPattern,
+  valkeyGet,
+  valkeySet,
+} from "../valkey.js";
 
 interface CacheOptions {
   ttl: number;
@@ -182,7 +188,11 @@ class CacheService extends EventEmitter {
     return promise;
   }
 
-  private refreshInBackground<T>(key: string, fetcher: () => Promise<T>, options?: Partial<CacheOptions>): void {
+  private refreshInBackground<T>(
+    key: string,
+    fetcher: () => Promise<T>,
+    options?: Partial<CacheOptions>,
+  ): void {
     if (this.refreshQueues.has(key)) return;
     const promise = fetcher()
       .then((value) => {
@@ -279,14 +289,20 @@ class CacheService extends EventEmitter {
     }
     this.refreshTimers.clear();
     this.refreshQueues.clear();
-    this.stats = { hits: { l1: 0, l2: 0, l3: 0 }, misses: { l1: 0, l2: 0, l3: 0 }, localHits: 0, remoteHits: 0 };
+    this.stats = {
+      hits: { l1: 0, l2: 0, l3: 0 },
+      misses: { l1: 0, l2: 0, l3: 0 },
+      localHits: 0,
+      remoteHits: 0,
+    };
     this.version++;
     this.emit("flush");
   }
 
   getStats(): CacheLayerStats & { version: number; layers: Record<string, unknown> } {
     const nodeStats = this.local.getStats();
-    const total = this.stats.hits.l1 + this.stats.hits.l2 + this.stats.misses.l1 + this.stats.misses.l2;
+    const total =
+      this.stats.hits.l1 + this.stats.hits.l2 + this.stats.misses.l1 + this.stats.misses.l2;
     const keys = this.local.keys();
 
     return {
@@ -298,7 +314,11 @@ class CacheService extends EventEmitter {
       version: this.version,
       layers: {
         l1: { keys: keys.length, hits: this.stats.hits.l1, misses: this.stats.misses.l1 },
-        l2: { hits: this.stats.hits.l2, misses: this.stats.misses.l2, connected: isValkeyConnected() },
+        l2: {
+          hits: this.stats.hits.l2,
+          misses: this.stats.misses.l2,
+          connected: isValkeyConnected(),
+        },
         staleKeys: this.staleLocal.keys().length,
         refreshQueues: this.refreshQueues.size,
         version: this.version,

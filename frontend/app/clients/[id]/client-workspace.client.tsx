@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
 import Link from "next/link";
-import { FolderIcon } from "@/lib/icons";
+import { useEffect, useMemo } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { LucideIcon } from "@/lib/icons";
 import {
   ArrowLeft,
   BarChart3,
   FileText,
+  FolderIcon,
   Settings,
   ShieldCheck,
   Workflow,
 } from "@/lib/icons";
-import type { LucideIcon } from "@/lib/icons";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export type ClientWorkspaceResponse = {
   client: {
@@ -84,7 +84,15 @@ function formatBytes(bytes: number) {
   return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 
-function QuickLink({ href, icon: Icon, label }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string }) {
+function QuickLink({
+  href,
+  icon: Icon,
+  label,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+}) {
   return (
     <Button variant="outline" size="sm" asChild>
       <Link href={href}>
@@ -108,7 +116,17 @@ function MetricCard({ title, value }: { title: string; value: string | number })
   );
 }
 
-function ModuleCard({ id, icon: Icon, title, detail }: { id: string; icon: LucideIcon; title: string; detail: string }) {
+function ModuleCard({
+  id,
+  icon: Icon,
+  title,
+  detail,
+}: {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  detail: string;
+}) {
   return (
     <Card id={id} className="scroll-mt-20">
       <CardHeader>
@@ -213,7 +231,9 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
                   <ShieldCheck className="size-4 shrink-0 text-red-400" />
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  View {folder.permissions?.clientCanView ? "on" : "off"} · Upload {folder.permissions?.clientCanUpload ? "on" : "off"} · Delete {folder.permissions?.clientCanDelete ? "on" : "off"}
+                  View {folder.permissions?.clientCanView ? "on" : "off"} · Upload{" "}
+                  {folder.permissions?.clientCanUpload ? "on" : "off"} · Delete{" "}
+                  {folder.permissions?.clientCanDelete ? "on" : "off"}
                 </p>
               </div>
             ))}
@@ -228,12 +248,17 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
             {fileManagement.files.length ? (
               <div className="divide-y rounded-sm border">
                 {fileManagement.files.map((file) => (
-                  <div key={file.id} className="grid gap-2 p-3 text-sm md:grid-cols-[1fr_140px_100px_120px] md:items-center">
+                  <div
+                    key={file.id}
+                    className="grid gap-2 p-3 text-sm md:grid-cols-[1fr_140px_100px_120px] md:items-center"
+                  >
                     <div className="min-w-0">
                       <p className="truncate font-medium">{file.originalName || file.name}</p>
                       <p className="truncate text-xs text-muted-foreground">{file.mimeType}</p>
                     </div>
-                    <span className="text-muted-foreground">{folderNameById.get(file.folderId || "") || "Root"}</span>
+                    <span className="text-muted-foreground">
+                      {folderNameById.get(file.folderId || "") || "Root"}
+                    </span>
                     <span className="text-muted-foreground">{file.category}</span>
                     <span className="text-muted-foreground">{formatBytes(file.size)}</span>
                   </div>
@@ -241,7 +266,8 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
               </div>
             ) : (
               <div className="rounded-sm border border-dashed p-8 text-center text-sm text-muted-foreground">
-                Default folders are ready. Uploaded files and generated documents for this client will appear here.
+                Default folders are ready. Uploaded files and generated documents for this client
+                will appear here.
               </div>
             )}
           </CardContent>
@@ -249,9 +275,24 @@ export default function ClientWorkspace({ data }: ClientWorkspaceProps) {
       </section>
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
-        <ModuleCard id="projects" icon={Workflow} title="Projects" detail={`${metrics.projects} linked project records`} />
-        <ModuleCard id="reports" icon={FileText} title="Reports" detail={`${metrics.reports} report files linked to this client`} />
-        <ModuleCard id="settings" icon={Settings} title="Settings" detail="Workspace access and file permissions are scoped to this Client ID" />
+        <ModuleCard
+          id="projects"
+          icon={Workflow}
+          title="Projects"
+          detail={`${metrics.projects} linked project records`}
+        />
+        <ModuleCard
+          id="reports"
+          icon={FileText}
+          title="Reports"
+          detail={`${metrics.reports} report files linked to this client`}
+        />
+        <ModuleCard
+          id="settings"
+          icon={Settings}
+          title="Settings"
+          detail="Workspace access and file permissions are scoped to this Client ID"
+        />
       </div>
     </div>
   );

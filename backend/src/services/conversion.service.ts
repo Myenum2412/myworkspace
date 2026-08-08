@@ -1,22 +1,29 @@
-import { execSync, exec } from "child_process";
-import path from "path";
+import { exec, execSync } from "child_process";
 import fs from "fs/promises";
+import path from "path";
+import { v4 as uuid } from "uuid";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
-import { getStorageProvider } from "../lib/storage/providers.js";
 import { logger } from "../lib/logger/index.js";
 import { metricsRegistry } from "../lib/monitoring/index.js";
-import { v4 as uuid } from "uuid";
+import { getStorageProvider } from "../lib/storage/providers.js";
 
 const CONVERSION_DIR = path.resolve(process.cwd(), "data", "conversions");
 
 async function ensureDir(dir: string) {
-  try { await fs.mkdir(dir, { recursive: true }); }
-  catch (err: any) { if (err.code !== "EEXIST") throw err; }
+  try {
+    await fs.mkdir(dir, { recursive: true });
+  } catch (err: any) {
+    if (err.code !== "EEXIST") throw err;
+  }
 }
 
 function hasLibreOffice(): boolean {
-  try { execSync("which libreoffice", { stdio: "ignore" }); return true; }
-  catch { return false; }
+  try {
+    execSync("which libreoffice", { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function isOfficeMime(mimeType: string): boolean {
@@ -62,7 +69,7 @@ export async function convertTo(
         const proc = exec(
           `libreoffice --headless --convert-to ${format} --outdir "${outputDir}" "${inputPath}"`,
           { timeout: 60000 },
-          (err) => err ? reject(err) : resolve(),
+          (err) => (err ? reject(err) : resolve()),
         );
         proc.on("error", reject);
       });
@@ -81,7 +88,11 @@ export async function convertTo(
       await fs.unlink(inputPath).catch(() => {});
       await fs.rm(outputDir, { recursive: true, force: true }).catch(() => {});
 
-      metricsRegistry.observeHistogram("conversion_duration_ms", { format, from: file.mimeType }, Date.now() - startTime);
+      metricsRegistry.observeHistogram(
+        "conversion_duration_ms",
+        { format, from: file.mimeType },
+        Date.now() - startTime,
+      );
       metricsRegistry.incrementCounter("conversions_total", { format, from: file.mimeType });
 
       return storageKey;
@@ -98,7 +109,9 @@ export async function convertTo(
   }
 }
 
-export async function getConvertedFile(storageKey: string): Promise<{ buffer: Buffer; mimeType: string } | null> {
+export async function getConvertedFile(
+  storageKey: string,
+): Promise<{ buffer: Buffer; mimeType: string } | null> {
   try {
     const provider = getStorageProvider();
     const buffer = await provider.get(storageKey);

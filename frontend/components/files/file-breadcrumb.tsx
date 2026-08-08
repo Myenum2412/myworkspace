@@ -1,7 +1,6 @@
 "use client";
 
-import { FolderIcon } from "@/lib/icons";
-import { ChevronRightIcon } from "@/lib/icons";
+import { ChevronRightIcon, FolderIcon } from "@/lib/icons";
 
 interface FileBreadcrumbProps {
   breadcrumbs: { id: string | null; name: string }[];
@@ -18,7 +17,14 @@ export function FileBreadcrumb({ breadcrumbs, onNavigate }: FileBreadcrumbProps)
             className={`hover:underline ${index === breadcrumbs.length - 1 ? "font-medium" : "text-muted-foreground"}`}
             onClick={() => onNavigate(index)}
           >
-            {index === 0 ? <><FolderIcon className="inline size-3 mr-1" />{crumb.name}</> : crumb.name}
+            {index === 0 ? (
+              <>
+                <FolderIcon className="inline size-3 mr-1" />
+                {crumb.name}
+              </>
+            ) : (
+              crumb.name
+            )}
           </button>
         </span>
       ))}

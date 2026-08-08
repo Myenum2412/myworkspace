@@ -1,6 +1,5 @@
 "use client";
 
-import { useFileSystemStore } from "@/lib/file-system/store";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,6 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useFileSystemStore } from "@/lib/file-system/store";
 import { FolderIcon, HomeIcon } from "@/lib/icons";
 
 export function BreadcrumbNav() {

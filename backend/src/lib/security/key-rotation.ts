@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { logger } from "../logger/index.js";
 
 export interface ISigningKey extends Document {
@@ -57,14 +57,13 @@ export class KeyRotationManager {
   }
 
   async getActiveKey(): Promise<any> {
-    const needsRotation = this.activeKeyCache &&
-      (Date.now() - this.lastRotation.getTime() > this.rotationIntervalDays * 24 * 60 * 60 * 1000);
+    const needsRotation =
+      this.activeKeyCache &&
+      Date.now() - this.lastRotation.getTime() > this.rotationIntervalDays * 24 * 60 * 60 * 1000;
 
     if (this.activeKeyCache && !needsRotation) return this.activeKeyCache;
 
-    const key = await SigningKey.findOne({ isActive: true })
-      .sort({ version: -1 })
-      .lean() as any;
+    const key = (await SigningKey.findOne({ isActive: true }).sort({ version: -1 }).lean()) as any;
 
     if (key && !needsRotation) {
       this.activeKeyCache = key;
@@ -96,11 +95,11 @@ export class KeyRotationManager {
     return key?.publicKey || null;
   }
 
-  async getAllPublicKeys(): Promise<Array<{ keyId: string; publicKey: string; algorithm: string }>> {
-    const keys = await SigningKey.find({})
-      .select("keyId publicKey algorithm")
-      .lean();
-    return keys.map(k => ({ keyId: k.keyId, publicKey: k.publicKey, algorithm: k.algorithm }));
+  async getAllPublicKeys(): Promise<
+    Array<{ keyId: string; publicKey: string; algorithm: string }>
+  > {
+    const keys = await SigningKey.find({}).select("keyId publicKey algorithm").lean();
+    return keys.map((k) => ({ keyId: k.keyId, publicKey: k.publicKey, algorithm: k.algorithm }));
   }
 
   async rotateKey(): Promise<boolean> {
@@ -114,13 +113,16 @@ export class KeyRotationManager {
   }
 
   async scheduleAutoRotation(): Promise<void> {
-    const checkInterval = setInterval(async () => {
-      try {
-        await this.rotateKey();
-      } catch {
-        // Logged in rotateKey
-      }
-    }, this.rotationIntervalDays * 24 * 60 * 60 * 1000);
+    const checkInterval = setInterval(
+      async () => {
+        try {
+          await this.rotateKey();
+        } catch {
+          // Logged in rotateKey
+        }
+      },
+      this.rotationIntervalDays * 24 * 60 * 60 * 1000,
+    );
 
     if (checkInterval.unref) checkInterval.unref();
   }

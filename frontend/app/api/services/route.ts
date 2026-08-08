@@ -6,12 +6,20 @@ import { getUserOrgId } from "@/lib/org";
 
 export async function GET() {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
   if (!orgId) return NextResponse.json({ data: [] });
   try {
-    const services = await db.collection(collections.services).find({ orgId }).sort({ name: 1 }).toArray();
+    const services = await db
+      .collection(collections.services)
+      .find({ orgId })
+      .sort({ name: 1 })
+      .toArray();
     const data = (services as any[]).map((s) => ({
       id: s.id || s._id?.toString() || "",
       name: s.name || "",

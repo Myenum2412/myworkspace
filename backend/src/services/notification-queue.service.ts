@@ -1,27 +1,25 @@
-import { eventProducer } from "../lib/queue/producer.js";
-import { registerHandler } from "../lib/queue/consumer.js";
+import { env } from "../config/env.js";
 import { EmailLog } from "../lib/db/models/EmailLog.js";
 import { logger } from "../lib/logger/index.js";
 import { sendEmail } from "../lib/mail/sender.js";
-import { env } from "../config/env.js";
+import { registerHandler } from "../lib/queue/consumer.js";
+import { eventProducer } from "../lib/queue/producer.js";
 
 const MAX_DELIVERY_ATTEMPTS = 5;
 
-export async function enqueueEmailNotification(
-  params: {
-    userId: string;
-    orgId: string;
-    type: string;
-    title: string;
-    message?: string;
-    link?: string;
-    category?: string;
-    correlationId?: string;
-    to?: string;
-    html?: string;
-    subject?: string;
-  }
-): Promise<void> {
+export async function enqueueEmailNotification(params: {
+  userId: string;
+  orgId: string;
+  type: string;
+  title: string;
+  message?: string;
+  link?: string;
+  category?: string;
+  correlationId?: string;
+  to?: string;
+  html?: string;
+  subject?: string;
+}): Promise<void> {
   try {
     await eventProducer.notificationSend({
       userId: params.userId,
@@ -68,21 +66,17 @@ export function registerEmailConsumer(): void {
       try {
         await EmailLog.updateOne(
           { _id: emailLog._id },
-          { status: "sending", deliveryAttempts: 1, lastAttemptAt: new Date() }
+          { status: "sending", deliveryAttempts: 1, lastAttemptAt: new Date() },
         );
 
         const html = payload.html || buildFallbackEmail(payload);
         const subject = payload.subject || payload.title || "Notification";
 
-        await sendEmail(
-          payload.email || payload.userId,
-          subject,
-          html,
-        );
+        await sendEmail(payload.email || payload.userId, subject, html);
 
         await EmailLog.updateOne(
           { _id: emailLog._id },
-          { status: "sent", deliveredAt: new Date() }
+          { status: "sent", deliveredAt: new Date() },
         );
 
         return { success: true };
@@ -93,14 +87,19 @@ export function registerEmailConsumer(): void {
         if (attempts >= MAX_DELIVERY_ATTEMPTS) {
           await EmailLog.updateOne(
             { _id: emailLog._id },
-            { status: "failed", error: err.message, deliveryAttempts: attempts }
+            { status: "failed", error: err.message, deliveryAttempts: attempts },
           );
           return { success: false, error: err.message, deadLetter: true };
         }
 
         await EmailLog.updateOne(
           { _id: emailLog._id },
-          { status: "queued", error: err.message, deliveryAttempts: attempts, lastAttemptAt: new Date() }
+          {
+            status: "queued",
+            error: err.message,
+            deliveryAttempts: attempts,
+            lastAttemptAt: new Date(),
+          },
         );
 
         throw err;
@@ -132,5 +131,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;m
 }
 
 function escapeHtml(str: string): string {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }

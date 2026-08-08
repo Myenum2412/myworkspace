@@ -1,8 +1,11 @@
-import { HeroFinancial } from "@/components/landing/hero-financial";
-import { FeaturePlatform } from "@/components/feature-platform";
-import Feature2 from "@/components/feature-2";
+import {
+  type CarouselItem,
+  CircularCarousel,
+} from "@/components/circular-carousel/circular-carousel";
 import CtaSection3 from "@/components/cta-section-3";
-import { CircularCarousel, type CarouselItem } from "@/components/circular-carousel/circular-carousel";
+import Feature2 from "@/components/feature-2";
+import { FeaturePlatform } from "@/components/feature-platform";
+import { HeroFinancial } from "@/components/landing/hero-financial";
 
 const CAROUSEL_ITEMS: CarouselItem[] = [
   {
@@ -45,7 +48,9 @@ export default function Home() {
       <Feature2 />
       <section className="w-full py-16 bg-gradient-to-b from-white to-blue-50/40 text-neutral-900 flex flex-col items-center overflow-hidden border-t border-neutral-100/50">
         <div className="max-w-4xl text-center mb-8 px-4">
-          <h2 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">Platform in Motion</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
+            Platform in Motion
+          </h2>
           <p className="mt-3 text-neutral-500 max-w-xl mx-auto">
             Discover the key features built directly into our collaborative environment.
           </p>
@@ -56,4 +61,3 @@ export default function Home() {
     </main>
   );
 }
-

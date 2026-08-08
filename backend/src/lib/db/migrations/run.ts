@@ -3,7 +3,7 @@
  * Runs all pending migrations in order.
  */
 
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { logger } from "../../logger/index.js";
 import { migration } from "./001-rbac-security-enhancement.js";
 
@@ -28,7 +28,7 @@ export async function runMigrations(db: mongoose.Connection): Promise<MigrationR
 
   // Get completed migrations
   const completed = await migrationsCollection.find({}).toArray();
-  const completedVersions = new Set(completed.map(m => m.version));
+  const completedVersions = new Set(completed.map((m) => m.version));
 
   for (const mig of MIGRATIONS) {
     if (completedVersions.has(mig.version)) {
@@ -63,11 +63,14 @@ export async function runMigrations(db: mongoose.Connection): Promise<MigrationR
       });
     } catch (err: any) {
       const durationMs = Date.now() - startTime;
-      logger.error({
-        migration: mig.name,
-        error: err.message,
-        durationMs,
-      }, `Migration ${mig.name} failed`);
+      logger.error(
+        {
+          migration: mig.name,
+          error: err.message,
+          durationMs,
+        },
+        `Migration ${mig.name} failed`,
+      );
 
       results.push({
         name: mig.name,
@@ -105,7 +108,7 @@ export async function rollbackLastMigration(db: mongoose.Connection): Promise<Mi
     };
   }
 
-  const mig = MIGRATIONS.find(m => m.version === lastMigration[0].version);
+  const mig = MIGRATIONS.find((m) => m.version === lastMigration[0].version);
   if (!mig) {
     return {
       name: lastMigration[0].name,
@@ -133,11 +136,14 @@ export async function rollbackLastMigration(db: mongoose.Connection): Promise<Mi
     };
   } catch (err: any) {
     const durationMs = Date.now() - startTime;
-    logger.error({
-      migration: mig.name,
-      error: err.message,
-      durationMs,
-    }, `Rollback ${mig.name} failed`);
+    logger.error(
+      {
+        migration: mig.name,
+        error: err.message,
+        durationMs,
+      },
+      `Rollback ${mig.name} failed`,
+    );
 
     return {
       name: mig.name,

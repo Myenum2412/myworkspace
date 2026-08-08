@@ -1,13 +1,22 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { FileTextIcon, ExternalLinkIcon, ClockIcon, CheckCircleIcon, ReceiptIcon, TrendingUpIcon, PlusIcon, AttachMoneyIcon } from "@/lib/icons";
-import { PageHeader } from "@/components/page-header";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { PageHeader } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AttachMoneyIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  ExternalLinkIcon,
+  FileTextIcon,
+  PlusIcon,
+  ReceiptIcon,
+  TrendingUpIcon,
+} from "@/lib/icons";
 import { useBootstrapStore } from "@/stores/bootstrap-store";
 
 const BillingCharts = dynamic(() => import("./billing-charts"), {
@@ -43,7 +52,10 @@ export default function BillingPage() {
   const orgId = useBootstrapStore((s) => s.data?.orgId);
 
   useEffect(() => {
-    if (!orgId) { setLoading(false); return; }
+    if (!orgId) {
+      setLoading(false);
+      return;
+    }
     const controller = new AbortController();
 
     (async () => {
@@ -74,7 +86,8 @@ export default function BillingPage() {
   const totalAmountPaid = invoices.reduce((acc, inv) => acc + (inv.amountPaid || 0), 0);
   const paidInvoices = invoices.filter((inv) => inv.status === "paid");
   const openInvoices = invoices.filter((inv) => inv.status === "open");
-  const paymentRate = invoices.length > 0 ? Math.round((paidInvoices.length / invoices.length) * 100) : 100;
+  const paymentRate =
+    invoices.length > 0 ? Math.round((paidInvoices.length / invoices.length) * 100) : 100;
 
   return (
     <div className="flex flex-col gap-4">
@@ -83,25 +96,50 @@ export default function BillingPage() {
         title={<span data-tour-step-id="step-billing">Billing</span>}
         actions={
           <div className="flex items-center gap-2">
-            <Button asChild size="sm"><Link href="/billing/receipts"><ReceiptIcon className="mr-1" />My Receipts</Link></Button>
-            <Button asChild size="sm"><Link href="/billing/invoices"><FileTextIcon className="mr-1" />Invoices</Link></Button>
+            <Button asChild size="sm">
+              <Link href="/billing/receipts">
+                <ReceiptIcon className="mr-1" />
+                My Receipts
+              </Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/billing/invoices">
+                <FileTextIcon className="mr-1" />
+                Invoices
+              </Link>
+            </Button>
           </div>
         }
       />
 
-      {error && <div className="rounded-sm bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
+      {error && (
+        <div className="rounded-sm bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+      )}
 
       <Suspense fallback={null}>
-        <BillingCharts invoices={invoices} pieData={[
-          { name: "Paid", value: paidInvoices.length, color: COLORS.paid },
-          { name: "Open", value: openInvoices.length, color: COLORS.open },
-          { name: "Void", value: invoices.filter((inv) => inv.status === "void").length, color: COLORS.void },
-          { name: "Uncollectible", value: invoices.filter((inv) => inv.status === "uncollectible").length, color: COLORS.uncollectible },
-        ]} />
+        <BillingCharts
+          invoices={invoices}
+          pieData={[
+            { name: "Paid", value: paidInvoices.length, color: COLORS.paid },
+            { name: "Open", value: openInvoices.length, color: COLORS.open },
+            {
+              name: "Void",
+              value: invoices.filter((inv) => inv.status === "void").length,
+              color: COLORS.void,
+            },
+            {
+              name: "Uncollectible",
+              value: invoices.filter((inv) => inv.status === "uncollectible").length,
+              color: COLORS.uncollectible,
+            },
+          ]}
+        />
       </Suspense>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Recent Invoices</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">Recent Invoices</CardTitle>
+        </CardHeader>
         <CardContent>
           {invoices.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -111,18 +149,40 @@ export default function BillingPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="table-premium w-full text-sm">
-                <thead><tr><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Invoice</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {invoices.slice(0, 10).map((inv) => (
                     <tr key={inv.id} className="border-b last:border-0 hover:bg-slate-50">
                       <td className="px-4 py-3 font-medium">#{inv.number}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{new Date(inv.createdAt).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {new Date(inv.createdAt).toLocaleDateString()}
+                      </td>
                       <td className="px-4 py-3">₹{(inv.amountPaid / 100).toFixed(2)}</td>
                       <td className="px-4 py-3">{inv.status}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          {inv.pdfUrl && <Button variant="ghost" size="sm" asChild><Link href={inv.pdfUrl} target="_blank"><FileTextIcon className="" /></Link></Button>}
-                          {inv.hostedUrl && <Button variant="ghost" size="sm" asChild><Link href={inv.hostedUrl} target="_blank"><ExternalLinkIcon className="" /></Link></Button>}
+                          {inv.pdfUrl && (
+                            <Button variant="ghost" size="sm" asChild>
+                              <Link href={inv.pdfUrl} target="_blank">
+                                <FileTextIcon className="" />
+                              </Link>
+                            </Button>
+                          )}
+                          {inv.hostedUrl && (
+                            <Button variant="ghost" size="sm" asChild>
+                              <Link href={inv.hostedUrl} target="_blank">
+                                <ExternalLinkIcon className="" />
+                              </Link>
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>

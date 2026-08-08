@@ -1,8 +1,13 @@
 /**
  * Unit tests for upload-security.ts — magic-byte validation & MIME categorisation.
  */
-import { describe, it, expect } from "@jest/globals";
-import { categoriseMime, ALLOWED_IMAGE_TYPES, ALLOWED_DOCUMENT_TYPES, ALLOWED_ARCHIVE_TYPES } from "../../../src/lib/upload-security.js";
+import { describe, expect, it } from "@jest/globals";
+import {
+  ALLOWED_ARCHIVE_TYPES,
+  ALLOWED_DOCUMENT_TYPES,
+  ALLOWED_IMAGE_TYPES,
+  categoriseMime,
+} from "../../../src/lib/upload-security.js";
 
 describe("categoriseMime()", () => {
   it("returns 'image' for known image types", () => {
@@ -43,7 +48,9 @@ describe("allowed type sets", () => {
 
   it("document types include PDF and Office formats", () => {
     expect(ALLOWED_DOCUMENT_TYPES).toContain("application/pdf");
-    expect(ALLOWED_DOCUMENT_TYPES).toContain("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    expect(ALLOWED_DOCUMENT_TYPES).toContain(
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    );
     expect(ALLOWED_DOCUMENT_TYPES).toContain("text/plain");
   });
 

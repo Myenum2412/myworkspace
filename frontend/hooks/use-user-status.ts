@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useUserStatus(userId?: string) {
   const [status, setStatus] = useState<"online" | "offline" | "break" | string>("offline");
@@ -18,9 +18,10 @@ export function useUserStatus(userId?: string) {
       credentials: "include",
       signal: controller.signal,
     })
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d) setStatus((d.data?.status || d.status || "offline") as "online" | "offline" | "break");
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d)
+          setStatus((d.data?.status || d.status || "offline") as "online" | "offline" | "break");
       })
       .catch(() => {});
 
@@ -36,7 +37,9 @@ export function useUserStatus(userId?: string) {
         credentials: "include",
         body: JSON.stringify({ status: newStatus }),
       });
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   return { status, updateStatus, onlineUsers };

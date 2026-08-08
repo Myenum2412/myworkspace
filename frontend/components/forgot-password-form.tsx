@@ -1,12 +1,16 @@
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { forgotPasswordAction } from "@/lib/auth/actions";
 import { ArrowLeftIcon, MailIcon } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
-export function ForgotPasswordForm({ className, searchParams, ...props }: React.ComponentProps<"div"> & { searchParams: Record<string, string> }) {
+export function ForgotPasswordForm({
+  className,
+  searchParams,
+  ...props
+}: React.ComponentProps<"div"> & { searchParams: Record<string, string> }) {
   const success = searchParams.success;
 
   if (success) {
@@ -18,18 +22,22 @@ export function ForgotPasswordForm({ className, searchParams, ...props }: React.
           </div>
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold tracking-tight">Check your email</h1>
-            <p className="text-sm text-muted-foreground">
-              {success}
-            </p>
+            <p className="text-sm text-muted-foreground">{success}</p>
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
           Didn&apos;t receive an email?{" "}
-          <Link href="/forgot-password" className="font-medium text-foreground underline-offset-4 hover:underline">
+          <Link
+            href="/forgot-password"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
             Try again
           </Link>
         </p>
-        <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <Link
+          href="/login"
+          className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ArrowLeftIcon className="size-3.5" />
           Back to sign in
         </Link>
@@ -56,7 +64,10 @@ export function ForgotPasswordForm({ className, searchParams, ...props }: React.
         </Button>
       </form>
 
-      <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link
+        href="/login"
+        className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
         <ArrowLeftIcon className="size-3.5" />
         Back to sign in
       </Link>

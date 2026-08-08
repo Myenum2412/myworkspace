@@ -1,4 +1,4 @@
-import { CheckCircle, Users, FolderOpen, Clock, BarChart3, Shield, Layers } from "@/lib/icons";
+import { BarChart3, CheckCircle, Clock, FolderOpen, Layers, Shield, Users } from "@/lib/icons";
 
 export function FeaturePlatform() {
   return (

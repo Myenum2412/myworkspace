@@ -1,13 +1,17 @@
-import sharp from "sharp";
 import { execSync } from "child_process";
+import sharp from "sharp";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { FileMetadata } from "../lib/db/models/FileMetadata.js";
-import { getStorageProvider } from "../lib/storage/providers.js";
 import { logger } from "../lib/logger/index.js";
+import { getStorageProvider } from "../lib/storage/providers.js";
 
 function hasFfmpeg(): boolean {
-  try { execSync("which ffmpeg", { stdio: "ignore" }); return true; }
-  catch { return false; }
+  try {
+    execSync("which ffmpeg", { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function getFileBuffer(fileId: string, storagePath: string): Promise<Buffer | null> {
@@ -41,13 +45,18 @@ export async function extractFileMetadata(
     const metadata: Record<string, any> = { fileId, orgId, extractedAt: new Date() };
 
     if (mt.startsWith("image/")) {
-      const buffer = providedBuffer || await getFileBuffer(fileId, file.storagePath);
+      const buffer = providedBuffer || (await getFileBuffer(fileId, file.storagePath));
       if (buffer) {
         try {
           const { default: exifr } = await import("exifr");
           const exifData = await exifr.parse(buffer, {
-            tiff: true, exif: true, gps: true, xmp: false, iptc: false,
-            interop: true, jfif: true,
+            tiff: true,
+            exif: true,
+            gps: true,
+            xmp: false,
+            iptc: false,
+            interop: true,
+            jfif: true,
           });
           if (exifData) {
             if (exifData.Make) metadata.cameraMake = String(exifData.Make);
@@ -63,23 +72,28 @@ export async function extractFileMetadata(
               metadata.gpsLongitude = Number(exifData.longitude);
             }
             if (exifData.GPSAltitude) metadata.gpsAltitude = Number(exifData.GPSAltitude);
-            if (exifData.Orientation) metadata.extra = { ...metadata.extra, orientation: Number(exifData.Orientation) };
+            if (exifData.Orientation)
+              metadata.extra = { ...metadata.extra, orientation: Number(exifData.Orientation) };
           }
-        } catch { /* exifr parse failed - non-critical */ }
+        } catch {
+          /* exifr parse failed - non-critical */
+        }
 
-      try {
-        const img = sharp(buffer);
-        const meta = await img.metadata();
-        metadata.width = meta.width || null;
-        metadata.height = meta.height || null;
-        metadata.dpi = (meta as any).dpi || null;
-        metadata.colorProfile = meta.icc ? "ICC" : meta.space || null;
-        metadata.encoding = meta.format || null;
-        } catch { /* sharp metadata failed */ }
+        try {
+          const img = sharp(buffer);
+          const meta = await img.metadata();
+          metadata.width = meta.width || null;
+          metadata.height = meta.height || null;
+          metadata.dpi = (meta as any).dpi || null;
+          metadata.colorProfile = meta.icc ? "ICC" : meta.space || null;
+          metadata.encoding = meta.format || null;
+        } catch {
+          /* sharp metadata failed */
+        }
       }
     } else if (mt.startsWith("video/")) {
       if (hasFfmpeg()) {
-        const buffer = providedBuffer || await getFileBuffer(fileId, file.storagePath);
+        const buffer = providedBuffer || (await getFileBuffer(fileId, file.storagePath));
         if (buffer) {
           const tmpPath = `/tmp/video-meta-${fileId}`;
           try {
@@ -100,24 +114,33 @@ export async function extractFileMetadata(
                 metadata.frameRate = videoStream.r_frame_rate
                   ? evalFraction(videoStream.r_frame_rate)
                   : null;
-                metadata.bitrate = videoStream.bit_rate ? parseInt(videoStream.bit_rate, 10) : metadata.bitrate;
-                if (videoStream.color_primaries) metadata.colorProfile = videoStream.color_primaries;
+                metadata.bitrate = videoStream.bit_rate
+                  ? parseInt(videoStream.bit_rate, 10)
+                  : metadata.bitrate;
+                if (videoStream.color_primaries)
+                  metadata.colorProfile = videoStream.color_primaries;
               }
               if (audioStream) {
                 metadata.audioCodec = audioStream.codec_name || null;
-                metadata.audioBitrate = audioStream.bit_rate ? parseInt(audioStream.bit_rate, 10) : null;
-                metadata.audioSampleRate = audioStream.sample_rate ? parseInt(audioStream.sample_rate, 10) : null;
+                metadata.audioBitrate = audioStream.bit_rate
+                  ? parseInt(audioStream.bit_rate, 10)
+                  : null;
+                metadata.audioSampleRate = audioStream.sample_rate
+                  ? parseInt(audioStream.sample_rate, 10)
+                  : null;
                 metadata.audioChannels = audioStream.channels || null;
               }
             }
           } finally {
-            try { await require("fs/promises").unlink(tmpPath); } catch {}
+            try {
+              await require("fs/promises").unlink(tmpPath);
+            } catch {}
           }
         }
       }
     } else if (mt.startsWith("audio/")) {
       if (hasFfmpeg()) {
-        const buffer = providedBuffer || await getFileBuffer(fileId, file.storagePath);
+        const buffer = providedBuffer || (await getFileBuffer(fileId, file.storagePath));
         if (buffer) {
           const tmpPath = `/tmp/audio-meta-${fileId}`;
           try {
@@ -132,18 +155,24 @@ export async function extractFileMetadata(
               const audioStream = info.streams.find((s: any) => s.codec_type === "audio");
               if (audioStream) {
                 metadata.audioCodec = audioStream.codec_name || null;
-                metadata.audioBitrate = audioStream.bit_rate ? parseInt(audioStream.bit_rate, 10) : null;
-                metadata.audioSampleRate = audioStream.sample_rate ? parseInt(audioStream.sample_rate, 10) : null;
+                metadata.audioBitrate = audioStream.bit_rate
+                  ? parseInt(audioStream.bit_rate, 10)
+                  : null;
+                metadata.audioSampleRate = audioStream.sample_rate
+                  ? parseInt(audioStream.sample_rate, 10)
+                  : null;
                 metadata.audioChannels = audioStream.channels || null;
               }
             }
           } finally {
-            try { await require("fs/promises").unlink(tmpPath); } catch {}
+            try {
+              await require("fs/promises").unlink(tmpPath);
+            } catch {}
           }
         }
       }
     } else if (mt === "application/pdf") {
-      const buffer = providedBuffer || await getFileBuffer(fileId, file.storagePath);
+      const buffer = providedBuffer || (await getFileBuffer(fileId, file.storagePath));
       if (buffer) {
         const text = buffer.toString("utf8").slice(0, 4096);
         const pageCountMatch = text.match(/\/Type\s*\/Page[^s]/g);
@@ -166,8 +195,13 @@ export async function extractFileMetadata(
           metadata.pageHeight = meta.height || null;
         } catch {}
       }
-    } else if (mt.includes("officedocument") || mt.includes("msword") || mt.includes("ms-excel") || mt.includes("ms-powerpoint")) {
-      const buffer = providedBuffer || await getFileBuffer(fileId, file.storagePath);
+    } else if (
+      mt.includes("officedocument") ||
+      mt.includes("msword") ||
+      mt.includes("ms-excel") ||
+      mt.includes("ms-powerpoint")
+    ) {
+      const buffer = providedBuffer || (await getFileBuffer(fileId, file.storagePath));
       if (buffer) {
         try {
           const text = buffer.toString("utf8").slice(0, 8192);

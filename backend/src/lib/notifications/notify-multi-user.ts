@@ -14,7 +14,7 @@ export async function notifyMultiUser(
     actions?: any[];
     metadata?: Record<string, unknown>;
     correlationId?: string;
-  }
+  },
 ): Promise<any[]> {
   const results = [];
   for (const userId of userIds) {

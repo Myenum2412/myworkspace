@@ -1,6 +1,12 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
-export type UploadSessionStatus = "pending" | "finalized" | "duplicate" | "expired" | "cancelled" | "pending_approval";
+export type UploadSessionStatus =
+  | "pending"
+  | "finalized"
+  | "duplicate"
+  | "expired"
+  | "cancelled"
+  | "pending_approval";
 
 export interface IUploadSession extends Document {
   tusId: string;

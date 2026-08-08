@@ -13,20 +13,37 @@ export async function GET() {
   const [totalFiles, deletedFiles, totalSizeAgg] = await Promise.all([
     db.collection(collections.fileAttachments).countDocuments({ orgId, deletedAt: null }),
     db.collection(collections.fileAttachments).countDocuments({ orgId, deletedAt: { $ne: null } }),
-    db.collection(collections.fileAttachments).aggregate([
-      { $match: { orgId, deletedAt: null } },
-      { $group: { _id: null, total: { $sum: "$size" } } },
-    ]).toArray(),
+    db
+      .collection(collections.fileAttachments)
+      .aggregate([
+        { $match: { orgId, deletedAt: null } },
+        { $group: { _id: null, total: { $sum: "$size" } } },
+      ])
+      .toArray(),
   ]);
 
   const totalSize = totalSizeAgg[0]?.total || 0;
 
-  const mimeBreakdown = await db.collection(collections.fileAttachments).aggregate([
-    { $match: { orgId, deletedAt: null } },
-    { $group: { _id: { $arrayElemAt: [{ $split: ["$mimeType", "/"] }, 0] }, count: { $sum: 1 }, size: { $sum: "$size" } } },
-  ]).toArray();
+  const mimeBreakdown = await db
+    .collection(collections.fileAttachments)
+    .aggregate([
+      { $match: { orgId, deletedAt: null } },
+      {
+        $group: {
+          _id: { $arrayElemAt: [{ $split: ["$mimeType", "/"] }, 0] },
+          count: { $sum: 1 },
+          size: { $sum: "$size" },
+        },
+      },
+    ])
+    .toArray();
 
   return NextResponse.json({
-    data: { totalFiles, totalSize: Math.round(totalSize / (1024 * 1024) * 100) / 100, deletedFiles, mimeBreakdown },
+    data: {
+      totalFiles,
+      totalSize: Math.round((totalSize / (1024 * 1024)) * 100) / 100,
+      deletedFiles,
+      mimeBreakdown,
+    },
   });
 }

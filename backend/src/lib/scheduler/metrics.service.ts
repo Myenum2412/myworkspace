@@ -1,9 +1,9 @@
-import { schedulerService } from "./scheduler.service.js";
-import { metricsRegistry } from "../monitoring/index.js";
-import { ScheduledJob } from "./models/ScheduledJob.js";
-import { JobExecution } from "./models/JobExecution.js";
 import { logger } from "../logger/index.js";
-import { SchedulerStats } from "./types.js";
+import { metricsRegistry } from "../monitoring/index.js";
+import { JobExecution } from "./models/JobExecution.js";
+import { ScheduledJob } from "./models/ScheduledJob.js";
+import { schedulerService } from "./scheduler.service.js";
+import type { SchedulerStats } from "./types.js";
 
 class SchedulerMetricsService {
   private aggregationInterval: ReturnType<typeof setInterval> | null = null;
@@ -33,9 +33,17 @@ class SchedulerMetricsService {
 
       metricsRegistry.setGauge("scheduler_jobs_total", { status: "pending" }, stats.pendingJobs);
       metricsRegistry.setGauge("scheduler_jobs_total", { status: "running" }, stats.runningJobs);
-      metricsRegistry.setGauge("scheduler_jobs_total", { status: "completed" }, stats.completedJobs);
+      metricsRegistry.setGauge(
+        "scheduler_jobs_total",
+        { status: "completed" },
+        stats.completedJobs,
+      );
       metricsRegistry.setGauge("scheduler_jobs_total", { status: "failed" }, stats.failedJobs);
-      metricsRegistry.setGauge("scheduler_jobs_total", { status: "cancelled" }, stats.cancelledJobs);
+      metricsRegistry.setGauge(
+        "scheduler_jobs_total",
+        { status: "cancelled" },
+        stats.cancelledJobs,
+      );
       metricsRegistry.setGauge("scheduler_jobs_total", { status: "paused" }, stats.pausedJobs);
       metricsRegistry.setGauge("scheduler_jobs_total", { status: "retrying" }, stats.retryingJobs);
       metricsRegistry.setGauge("scheduler_jobs_total", { status: "total" }, stats.totalJobs);
@@ -67,7 +75,9 @@ class SchedulerMetricsService {
     return schedulerService.getStats(orgId);
   }
 
-  async getExecutionTrend(days = 7): Promise<{ date: string; completed: number; failed: number; total: number }[]> {
+  async getExecutionTrend(
+    days = 7,
+  ): Promise<{ date: string; completed: number; failed: number; total: number }[]> {
     const results: { date: string; completed: number; failed: number; total: number }[] = [];
 
     for (let i = days - 1; i >= 0; i--) {

@@ -1,1 +1,1 @@
-export { default } from "./dashboard-interactive.client"
+export { default } from "./dashboard-interactive.client";

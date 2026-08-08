@@ -1,25 +1,39 @@
 "use client";
 
-import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { lazy, type ReactNode, Suspense, useEffect, useMemo, useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { ClientSidebar } from "@/components/client-sidebar";
 import { OrgSidebar } from "@/components/org-sidebar";
 import { StaffSidebar } from "@/components/staff-sidebar";
-import { ClientSidebar } from "@/components/client-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { getAppContext, isAppPage, type AppContextType } from "@/lib/app-context";
+import { type AppContextType, getAppContext, isAppPage } from "@/lib/app-context";
 
-const Header = lazy(() => import("@/components/header").then(m => ({ default: m.Header })));
-const MobileBottomNav = lazy(() => import("@/components/mobile-bottom-nav").then(m => ({ default: m.MobileBottomNav })));
-const NewNav = lazy(() => import("@/components/landing/new-nav").then(m => ({ default: m.NewNav })));
-const NewFooter = lazy(() => import("@/components/landing/new-footer").then(m => ({ default: m.NewFooter })));
-const ProductTourProvider = lazy(() => import("@/components/product-tour").then(m => ({ default: m.ProductTourProvider })));
+const Header = lazy(() => import("@/components/header").then((m) => ({ default: m.Header })));
+const MobileBottomNav = lazy(() =>
+  import("@/components/mobile-bottom-nav").then((m) => ({ default: m.MobileBottomNav })),
+);
+const NewNav = lazy(() =>
+  import("@/components/landing/new-nav").then((m) => ({ default: m.NewNav })),
+);
+const NewFooter = lazy(() =>
+  import("@/components/landing/new-footer").then((m) => ({ default: m.NewFooter })),
+);
+const ProductTourProvider = lazy(() =>
+  import("@/components/product-tour").then((m) => ({ default: m.ProductTourProvider })),
+);
 
 const AUTH_ROUTES_WITHOUT_HEADER = [
-  "/login", "/signup", "/signup-mongo", "/forgot-password", "/auth/not-found",
-  "/client/forgot-password", "/client/reset-password",
-  "/reset-password", "/verify-email",
+  "/login",
+  "/signup",
+  "/signup-mongo",
+  "/forgot-password",
+  "/auth/not-found",
+  "/client/forgot-password",
+  "/client/reset-password",
+  "/reset-password",
+  "/verify-email",
 ];
 
 interface AppLayoutProps {
@@ -70,12 +84,15 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [session?.user?.role, pathname, router, status]);
 
-  const user = useMemo(() => ({
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "user@example.com",
-    avatar: session?.user?.image || "",
-    role: session?.user?.role || "",
-  }), [session?.user?.name, session?.user?.email, session?.user?.image, session?.user?.role]);
+  const user = useMemo(
+    () => ({
+      name: session?.user?.name || "User",
+      email: session?.user?.email || "user@example.com",
+      avatar: session?.user?.image || "",
+      role: session?.user?.role || "",
+    }),
+    [session?.user?.name, session?.user?.email, session?.user?.image, session?.user?.role],
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -87,14 +104,14 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, []);
 
   if (!isApp) {
-    const isAuthRouteWithoutHeader = AUTH_ROUTES_WITHOUT_HEADER.some((p) => pathname === p || pathname.startsWith(p + "/"));
+    const isAuthRouteWithoutHeader = AUTH_ROUTES_WITHOUT_HEADER.some(
+      (p) => pathname === p || pathname.startsWith(p + "/"),
+    );
 
     if (isAuthRouteWithoutHeader) {
       return (
         <div className="flex min-h-screen flex-col">
-          <main className="flex-1">
-            {children}
-          </main>
+          <main className="flex-1">{children}</main>
         </div>
       );
     }
@@ -106,9 +123,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         <Suspense fallback={null}>
           <NewNav />
         </Suspense>
-        <main className={`flex-1 ${!isHomePage ? "pt-16" : ""}`}>
-          {children}
-        </main>
+        <main className={`flex-1 ${!isHomePage ? "pt-16" : ""}`}>{children}</main>
         <Suspense fallback={null}>
           <NewFooter />
         </Suspense>

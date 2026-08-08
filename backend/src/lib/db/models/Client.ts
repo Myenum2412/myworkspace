@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IClient extends Document {
   id: string;
@@ -117,7 +117,7 @@ const clientSchema = new Schema<IClient>(
     createdDate: String,
     lastUpdatedDate: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 clientSchema.index({ name: "text", email: "text", company: "text" });

@@ -47,9 +47,7 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
 
   updateNotification: (id, updates) =>
     set((state) => ({
-      notifications: state.notifications.map((n) =>
-        n.id === id ? { ...n, ...updates } : n
-      ),
+      notifications: state.notifications.map((n) => (n.id === id ? { ...n, ...updates } : n)),
     })),
 
   setUnreadCount: (count) => set({ unreadCount: count }),
@@ -57,8 +55,7 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
   setLoading: (loading) => set({ loading }),
   setHasMore: (hasMore) => set({ hasMore }),
 
-  decrementUnread: () =>
-    set((state) => ({ unreadCount: Math.max(0, state.unreadCount - 1) })),
+  decrementUnread: () => set((state) => ({ unreadCount: Math.max(0, state.unreadCount - 1) })),
 
   reset: () =>
     set({

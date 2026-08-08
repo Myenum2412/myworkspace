@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { handleCalendarWebhook } from "@/lib/services/calendar-webhook-service";
 
 export async function POST(req: NextRequest) {

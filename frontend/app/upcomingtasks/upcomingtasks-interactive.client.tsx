@@ -1,18 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon, CalendarClockIcon, SearchIcon, LayoutGridIcon, CalendarIcon } from "@/lib/icons";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskDataTable } from "@/components/task-data-table";
-import TaskGanttView from "@/components/task-gantt-view";
-import { apiFetch } from "@/lib/api";
+import { useMemo, useState } from "react";
 import Stats07 from "@/components/stats-07";
-import { useMemo } from "react";
+import { TaskDataTable } from "@/components/task-data-table";
+import { TaskDetailedView } from "@/components/task-detailed-view";
+import TaskGanttView from "@/components/task-gantt-view";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { apiFetch } from "@/lib/api";
+import { CalendarClockIcon, CalendarIcon, LayoutGridIcon, PlusIcon, SearchIcon } from "@/lib/icons";
 
 export type UpcomingTask = {
   _id: string;
@@ -29,7 +28,11 @@ export type UpcomingTask = {
   createdAt: string;
 };
 
-export default function UpcomingTasksInteractive({ initialTasks }: { initialTasks: UpcomingTask[] }) {
+export default function UpcomingTasksInteractive({
+  initialTasks,
+}: {
+  initialTasks: UpcomingTask[];
+}) {
   const router = useRouter();
   const [tasks, setTasks] = useState<UpcomingTask[]>(initialTasks);
   const [viewOpen, setViewOpen] = useState(false);
@@ -56,7 +59,7 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
             <h1 className="text-2xl font-bold">Upcoming Tasks</h1>
             <Badge variant="secondary">{tasks.length} upcoming</Badge>
           </div>
-          <Button onClick={() => router.push('/createtask')}>
+          <Button onClick={() => router.push("/createtask")}>
             <PlusIcon className="mr-2" />
             New Task
           </Button>
@@ -65,12 +68,14 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
         {/* Stats Overview */}
         <Stats07
           items={[
-            { name: 'Upcoming', value: tasks.length, subtitle: 'Pending due dates' },
-            ...Object.entries(stats).slice(0, 5).map(([status, count]) => ({
-              name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-              value: count,
-              subtitle: `${status.replace(/_/g, ' ')} tasks`,
-            })),
+            { name: "Upcoming", value: tasks.length, subtitle: "Pending due dates" },
+            ...Object.entries(stats)
+              .slice(0, 5)
+              .map(([status, count]) => ({
+                name: status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+                value: count,
+                subtitle: `${status.replace(/_/g, " ")} tasks`,
+              })),
           ]}
         />
 
@@ -120,8 +125,15 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
               {viewMode === "table" ? (
                 <TaskDataTable
                   data={tasks}
-                  onView={(t) => { setSelectedTask(t as unknown as UpcomingTask); setViewOpen(true); }}
-                  onEdit={(t) => { setSelectedTask(t as unknown as UpcomingTask); setViewOpen(true); setEditMode(true); }}
+                  onView={(t) => {
+                    setSelectedTask(t as unknown as UpcomingTask);
+                    setViewOpen(true);
+                  }}
+                  onEdit={(t) => {
+                    setSelectedTask(t as unknown as UpcomingTask);
+                    setViewOpen(true);
+                    setEditMode(true);
+                  }}
                   searchPlaceholder="Search upcoming tasks..."
                   emptyMessage="No upcoming tasks."
                   label="task"
@@ -132,7 +144,11 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
               ) : (
                 <TaskGanttView
                   tasks={tasks}
-                  onViewTask={(t) => { setSelectedTask(t as unknown as UpcomingTask); setViewOpen(true); setEditMode(false); }}
+                  onViewTask={(t) => {
+                    setSelectedTask(t as unknown as UpcomingTask);
+                    setViewOpen(true);
+                    setEditMode(false);
+                  }}
                 />
               )}
             </div>
@@ -147,14 +163,19 @@ export default function UpcomingTasksInteractive({ initialTasks }: { initialTask
               task={selectedTask}
               editable
               onTaskUpdate={(updated) => {
-                setTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as UpcomingTask) : t));
+                setTasks((prev) =>
+                  prev.map((t) => (t._id === updated._id ? (updated as UpcomingTask) : t)),
+                );
               }}
-              onClose={() => { setViewOpen(false); setEditMode(false); setSelectedTask(null); }}
+              onClose={() => {
+                setViewOpen(false);
+                setEditMode(false);
+                setSelectedTask(null);
+              }}
             />
           </div>
         </div>
       )}
-
     </>
   );
 }

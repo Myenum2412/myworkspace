@@ -3,18 +3,12 @@
 import * as React from "react";
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
 } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 
@@ -137,8 +131,7 @@ const HOURS = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24];
 
 export function ChartBarInteractive() {
   type ChartKey = "desktop" | "employees";
-  const [activeChart, setActiveChart] =
-    React.useState<ChartKey>("desktop");
+  const [activeChart, setActiveChart] = React.useState<ChartKey>("desktop");
   const [selectedHour, setSelectedHour] = React.useState<number | null>(null);
 
   const total = React.useMemo(
@@ -146,12 +139,11 @@ export function ChartBarInteractive() {
       desktop: chartData.reduce((acc, curr) => acc + curr.desktop, 0),
       employees: chartData.reduce((acc, curr) => acc + curr.employees, 0),
     }),
-    []
+    [],
   );
 
   const displayData = React.useMemo(() => {
-    if (selectedHour === null)
-      return chartData.map((d) => ({ ...d, _selected: true }));
+    if (selectedHour === null) return chartData.map((d) => ({ ...d, _selected: true }));
     const min = selectedHour - 2;
     return chartData.map((d) => ({
       ...d,
@@ -164,9 +156,7 @@ export function ChartBarInteractive() {
       <CardHeader className="flex flex-col items-stretch border-b p-0! sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:py-0!">
           <CardTitle>Time Tracker</CardTitle>
-          <CardDescription>
-            Hours tracked per day for the last 3 months
-          </CardDescription>
+          <CardDescription>Hours tracked per day for the last 3 months</CardDescription>
         </div>
         <div className="flex">
           {(["desktop", "employees"] as const).map((chart) => {
@@ -177,9 +167,7 @@ export function ChartBarInteractive() {
                 className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
                 onClick={() => setActiveChart(chart)}
               >
-                <span className="text-xs text-muted-foreground">
-                  {chartConfig[chart].label}
-                </span>
+                <span className="text-xs text-muted-foreground">{chartConfig[chart].label}</span>
                 <span className="text-lg leading-none font-bold sm:text-3xl">
                   {total[chart].toLocaleString()}
                 </span>
@@ -194,16 +182,12 @@ export function ChartBarInteractive() {
             {HOURS.toReversed().map((hour) => (
               <button
                 key={hour}
-                onClick={() =>
-                  setSelectedHour(
-                    selectedHour === hour ? null : hour
-                  )
-                }
+                onClick={() => setSelectedHour(selectedHour === hour ? null : hour)}
                 className={cn(
                   "flex h-5 items-center justify-end rounded-sm px-2 text-xs leading-none transition-colors",
                   selectedHour === hour
                     ? "bg-primary font-medium text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {hour}h
@@ -211,10 +195,7 @@ export function ChartBarInteractive() {
             ))}
           </div>
           <div className="flex-1">
-            <ChartContainer
-              config={chartConfig}
-              className="aspect-auto h-[250px] w-full"
-            >
+            <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
               <BarChart
                 accessibilityLayer
                 data={displayData}
@@ -254,15 +235,9 @@ export function ChartBarInteractive() {
                     />
                   }
                 />
-                <Bar
-                  dataKey={activeChart}
-                  fill={`var(--color-${activeChart})`}
-                >
+                <Bar dataKey={activeChart} fill={`var(--color-${activeChart})`}>
                   {displayData.map((entry, index) => (
-                    <Cell
-                      key={index}
-                      fillOpacity={entry._selected ? 1 : 0.2}
-                    />
+                    <Cell key={index} fillOpacity={entry._selected ? 1 : 0.2} />
                   ))}
                 </Bar>
               </BarChart>

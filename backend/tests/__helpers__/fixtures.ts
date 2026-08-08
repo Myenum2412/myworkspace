@@ -1,16 +1,16 @@
-import { v4 as uuid } from "uuid";
-import jwt from "jsonwebtoken";
 import { hash } from "bcryptjs";
-import { User } from "../../src/lib/db/models/User.js";
+import jwt from "jsonwebtoken";
+import { v4 as uuid } from "uuid";
+import { signToken } from "../../src/config/auth.js";
+import { ActivityLog } from "../../src/lib/db/models/ActivityLog.js";
+import { FileAttachment } from "../../src/lib/db/models/FileAttachment.js";
+import { Notification } from "../../src/lib/db/models/Notification.js";
 import { Organization } from "../../src/lib/db/models/Organization.js";
 import { OrgMember } from "../../src/lib/db/models/OrgMember.js";
-import { signToken } from "../../src/config/auth.js";
-import { FileAttachment } from "../../src/lib/db/models/FileAttachment.js";
-import { Task } from "../../src/lib/db/models/Task.js";
 import { Session } from "../../src/lib/db/models/Session.js";
-import { Notification } from "../../src/lib/db/models/Notification.js";
-import { ActivityLog } from "../../src/lib/db/models/ActivityLog.js";
+import { Task } from "../../src/lib/db/models/Task.js";
 import { UploadSession } from "../../src/lib/db/models/UploadSession.js";
+import { User } from "../../src/lib/db/models/User.js";
 
 export interface OrgSeed {
   userId: string;
@@ -43,20 +43,33 @@ export async function seedOrgWithAdmin(opts: {
     orgId,
     userNumber: Math.floor(Math.random() * 900000) + 100000,
   });
-  await Organization.create({ id: orgId, name: `${name}'s Org`, slug: `slug-${userId.slice(0, 8)}`, plan: "free", ownerId: userId });
+  await Organization.create({
+    id: orgId,
+    name: `${name}'s Org`,
+    slug: `slug-${userId.slice(0, 8)}`,
+    plan: "free",
+    ownerId: userId,
+  });
   await OrgMember.create({ orgId, userId, role });
 
   const token = signToken({ userId, email, role, permissions: [], orgId });
   return { userId, orgId, email, headers: { Authorization: `Bearer ${token}` }, token };
 }
 
-export async function seedSecondUser(orgId: string, role: string = "staffs"): Promise<{ userId: string; headers: Record<string, string> }> {
+export async function seedSecondUser(
+  orgId: string,
+  role: string = "staffs",
+): Promise<{ userId: string; headers: Record<string, string> }> {
   const userId = uuid();
   const email = `user-${Date.now()}@example.com`;
   await User.create({
-    id: userId, name: "Second User", email,
+    id: userId,
+    name: "Second User",
+    email,
     password: await hash("SecurePass123", 10),
-    status: "online", role, orgId,
+    status: "online",
+    role,
+    orgId,
     userNumber: Math.floor(Math.random() * 900000) + 100000,
   });
   await OrgMember.create({ orgId, userId, role });
@@ -64,7 +77,11 @@ export async function seedSecondUser(orgId: string, role: string = "staffs"): Pr
   return { userId, headers: { Authorization: `Bearer ${token}` } };
 }
 
-export async function seedFile(orgId: string, uploaderId: string, overrides?: Partial<Record<string, unknown>>): Promise<{ fileId: string; storagePath: string }> {
+export async function seedFile(
+  orgId: string,
+  uploaderId: string,
+  overrides?: Partial<Record<string, unknown>>,
+): Promise<{ fileId: string; storagePath: string }> {
   const fileId = uuid();
   const storagePath = `test-${fileId}.pdf`;
   await FileAttachment.create({
@@ -87,7 +104,11 @@ export async function seedFile(orgId: string, uploaderId: string, overrides?: Pa
   return { fileId, storagePath };
 }
 
-export async function seedTask(orgId: string, assigneeId: string, overrides?: Partial<Record<string, unknown>>): Promise<string> {
+export async function seedTask(
+  orgId: string,
+  assigneeId: string,
+  overrides?: Partial<Record<string, unknown>>,
+): Promise<string> {
   const doc = await Task.create({
     orgId,
     title: "Test Task",
@@ -102,7 +123,11 @@ export async function seedTask(orgId: string, assigneeId: string, overrides?: Pa
   return doc.id;
 }
 
-export async function seedSession(userId: string, orgId: string, overrides?: Partial<Record<string, unknown>>): Promise<string> {
+export async function seedSession(
+  userId: string,
+  orgId: string,
+  overrides?: Partial<Record<string, unknown>>,
+): Promise<string> {
   const sessionId = uuid();
   await Session.create({
     id: sessionId,
@@ -117,7 +142,11 @@ export async function seedSession(userId: string, orgId: string, overrides?: Par
   return sessionId;
 }
 
-export async function seedNotification(userId: string, orgId: string, overrides?: Partial<Record<string, unknown>>): Promise<string> {
+export async function seedNotification(
+  userId: string,
+  orgId: string,
+  overrides?: Partial<Record<string, unknown>>,
+): Promise<string> {
   const notifId = uuid();
   await Notification.create({
     id: notifId,
@@ -132,7 +161,11 @@ export async function seedNotification(userId: string, orgId: string, overrides?
   return notifId;
 }
 
-export async function seedActivityLog(orgId: string, userId: string, overrides?: Partial<Record<string, unknown>>): Promise<string> {
+export async function seedActivityLog(
+  orgId: string,
+  userId: string,
+  overrides?: Partial<Record<string, unknown>>,
+): Promise<string> {
   const logId = uuid();
   await ActivityLog.create({
     id: logId,
@@ -148,7 +181,11 @@ export async function seedActivityLog(orgId: string, userId: string, overrides?:
   return logId;
 }
 
-export async function seedUploadSession(orgId: string, uploaderId: string, overrides?: Partial<Record<string, unknown>>): Promise<string> {
+export async function seedUploadSession(
+  orgId: string,
+  uploaderId: string,
+  overrides?: Partial<Record<string, unknown>>,
+): Promise<string> {
   const uploadId = uuid();
   await UploadSession.create({
     tusId: uuid(),
@@ -181,7 +218,9 @@ export function tamperedJWT(token: string): string {
 
 export function algorithmNoneJWT(payload: Record<string, unknown> = {}): string {
   const header = Buffer.from(JSON.stringify({ alg: "none", typ: "JWT" })).toString("base64url");
-  const body = Buffer.from(JSON.stringify({ userId: uuid(), email: "admin@example.com", role: "org_admin", ...payload })).toString("base64url");
+  const body = Buffer.from(
+    JSON.stringify({ userId: uuid(), email: "admin@example.com", role: "org_admin", ...payload }),
+  ).toString("base64url");
   return `${header}.${body}.`;
 }
 

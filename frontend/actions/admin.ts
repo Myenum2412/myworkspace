@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { auth } from "@/lib/auth/config";
-import { deleteFile } from "@/lib/storage";
 import { isPlatformRole } from "@/lib/rbac";
+import { deleteFile } from "@/lib/storage";
 
 async function requireAdmin() {
   const session = await auth();
@@ -20,8 +20,15 @@ type ActionResult = { error?: string; success?: boolean } | null;
 
 // ─── Organization CRUD ────────────────────────────────────────────────
 
-export async function updateOrganization(_prevState: ActionResult, formData: FormData): Promise<ActionResult> {
-  try { await requireAdmin(); } catch { return { error: "Unauthorized" }; }
+export async function updateOrganization(
+  _prevState: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { error: "Unauthorized" };
+  }
 
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
@@ -34,19 +41,33 @@ export async function updateOrganization(_prevState: ActionResult, formData: For
   try {
     await db.collection(collections.organizations).updateOne(
       { id },
-      { $set: { name, plan: plan === "starter" ? "free" : plan === "pro" ? "growth" : plan || "free", domain: domain || null, slug: slug || null } },
+      {
+        $set: {
+          name,
+          plan: plan === "starter" ? "free" : plan === "pro" ? "growth" : plan || "free",
+          domain: domain || null,
+          slug: slug || null,
+        },
+      },
     );
     revalidatePath("/orgmenu/org");
     revalidatePath("/orgmenu");
-    revalidateTag('dashboard', 'max');
+    revalidateTag("dashboard", "max");
     return { success: true };
   } catch {
     return { error: "Failed to update organization" };
   }
 }
 
-export async function deleteOrganizationAction(_prevState: ActionResult, formData: FormData): Promise<ActionResult> {
-  try { await requireAdmin(); } catch { return { error: "Unauthorized" }; }
+export async function deleteOrganizationAction(
+  _prevState: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { error: "Unauthorized" };
+  }
 
   const id = formData.get("id") as string;
   if (!id) return { error: "ID is required" };
@@ -56,7 +77,7 @@ export async function deleteOrganizationAction(_prevState: ActionResult, formDat
     await db.collection(collections.orgMembers).deleteMany({ orgId: id });
     revalidatePath("/orgmenu/org");
     revalidatePath("/orgmenu");
-    revalidateTag('dashboard', 'max');
+    revalidateTag("dashboard", "max");
     return { success: true };
   } catch {
     return { error: "Failed to delete organization" };
@@ -64,7 +85,11 @@ export async function deleteOrganizationAction(_prevState: ActionResult, formDat
 }
 
 export async function deleteOrganization(formData: FormData): Promise<void> {
-  try { await requireAdmin(); } catch { return; }
+  try {
+    await requireAdmin();
+  } catch {
+    return;
+  }
 
   const id = formData.get("id") as string;
   if (!id) return;
@@ -74,21 +99,37 @@ export async function deleteOrganization(formData: FormData): Promise<void> {
     await db.collection(collections.orgMembers).deleteMany({ orgId: id });
     revalidatePath("/orgmenu/org");
     revalidatePath("/orgmenu");
-    revalidateTag('dashboard', 'max');
-  } catch { /* ignore */ }
+    revalidateTag("dashboard", "max");
+  } catch {
+    /* ignore */
+  }
 }
 
 // ─── Cascade Deletion Helpers ────────────────────────────────────────
 
 async function deleteUserFiles(userId: string): Promise<void> {
-  const files = await db.collection(collections.fileAttachments).find({ uploaderId: userId }).toArray();
+  const files = await db
+    .collection(collections.fileAttachments)
+    .find({ uploaderId: userId })
+    .toArray();
 
   for (const file of files) {
-    try { await deleteFile(file.storagePath); } catch { /* ignore */ }
+    try {
+      await deleteFile(file.storagePath);
+    } catch {
+      /* ignore */
+    }
 
-    const versions = await db.collection(collections.fileVersions).find({ fileId: file.id }).toArray();
+    const versions = await db
+      .collection(collections.fileVersions)
+      .find({ fileId: file.id })
+      .toArray();
     for (const v of versions) {
-      try { await deleteFile(v.storagePath); } catch { /* ignore */ }
+      try {
+        await deleteFile(v.storagePath);
+      } catch {
+        /* ignore */
+      }
     }
     await db.collection(collections.fileVersions).deleteMany({ fileId: file.id });
     await db.collection(collections.fileShares).deleteMany({ fileId: file.id });
@@ -96,11 +137,12 @@ async function deleteUserFiles(userId: string): Promise<void> {
     await db.collection(collections.fileAttachments).deleteOne({ id: file.id });
 
     try {
-      await db.collection(collections.storageQuotas).updateOne(
-        { orgId: file.orgId },
-        { $inc: { usedStorageBytes: -file.size } },
-      );
-    } catch { /* ignore */ }
+      await db
+        .collection(collections.storageQuotas)
+        .updateOne({ orgId: file.orgId }, { $inc: { usedStorageBytes: -file.size } });
+    } catch {
+      /* ignore */
+    }
   }
 
   await db.collection(collections.folders).deleteMany({ createdBy: userId });
@@ -108,13 +150,29 @@ async function deleteUserFiles(userId: string): Promise<void> {
 
 // ─── Member / User CRUD ──────────────────────────────────────────────
 
-export async function updateMember(_prevState: ActionResult, formData: FormData): Promise<ActionResult> {
-  try { await requireAdmin(); } catch { return { error: "Unauthorized" }; }
+export async function updateMember(
+  _prevState: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { error: "Unauthorized" };
+  }
 
   const userId = formData.get("userId") as string;
   if (!userId) return { error: "User ID is required" };
 
-  const fields = ["name", "email", "phone", "location", "department", "designation", "role", "status"];
+  const fields = [
+    "name",
+    "email",
+    "phone",
+    "location",
+    "department",
+    "designation",
+    "role",
+    "status",
+  ];
   const updateData: Record<string, unknown> = {};
   for (const f of fields) {
     const v = formData.get(f);
@@ -122,13 +180,10 @@ export async function updateMember(_prevState: ActionResult, formData: FormData)
   }
 
   try {
-    await db.collection(collections.users).updateOne(
-      { id: userId },
-      { $set: updateData },
-    );
+    await db.collection(collections.users).updateOne({ id: userId }, { $set: updateData });
     revalidatePath("/orgmenu/members");
     revalidatePath("/orgmenu");
-    revalidateTag('dashboard', 'max');
+    revalidateTag("dashboard", "max");
     return { success: true };
   } catch {
     return { error: "Failed to update member" };
@@ -136,7 +191,11 @@ export async function updateMember(_prevState: ActionResult, formData: FormData)
 }
 
 export async function deleteMember(formData: FormData): Promise<void> {
-  try { await requireAdmin(); } catch { return; }
+  try {
+    await requireAdmin();
+  } catch {
+    return;
+  }
 
   const userId = formData.get("userId") as string;
   const orgId = formData.get("orgId") as string;
@@ -148,14 +207,23 @@ export async function deleteMember(formData: FormData): Promise<void> {
     await db.collection(collections.users).deleteOne({ id: userId });
     revalidatePath("/orgmenu/members");
     revalidatePath("/orgmenu");
-    revalidateTag('dashboard', 'max');
-  } catch { /* ignore */ }
+    revalidateTag("dashboard", "max");
+  } catch {
+    /* ignore */
+  }
 }
 
 // ─── Dashboard: Recent Signup (User) CRUD ────────────────────────────
 
-export async function updateRecentUser(_prevState: ActionResult, formData: FormData): Promise<ActionResult> {
-  try { await requireAdmin(); } catch { return { error: "Unauthorized" }; }
+export async function updateRecentUser(
+  _prevState: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { error: "Unauthorized" };
+  }
 
   const userId = formData.get("userId") as string;
   const name = formData.get("name") as string;
@@ -172,12 +240,9 @@ export async function updateRecentUser(_prevState: ActionResult, formData: FormD
     if (role) updateData.role = role;
     if (status) updateData.status = status;
 
-    await db.collection(collections.users).updateOne(
-      { id: userId },
-      { $set: updateData },
-    );
+    await db.collection(collections.users).updateOne({ id: userId }, { $set: updateData });
     revalidatePath("/orgmenu");
-    revalidateTag('dashboard', 'max');
+    revalidateTag("dashboard", "max");
     return { success: true };
   } catch {
     return { error: "Failed to update user" };
@@ -185,7 +250,11 @@ export async function updateRecentUser(_prevState: ActionResult, formData: FormD
 }
 
 export async function deleteRecentUser(formData: FormData): Promise<void> {
-  try { await requireAdmin(); } catch { return; }
+  try {
+    await requireAdmin();
+  } catch {
+    return;
+  }
 
   const userId = formData.get("userId") as string;
   if (!userId) return;
@@ -195,6 +264,8 @@ export async function deleteRecentUser(formData: FormData): Promise<void> {
     await db.collection(collections.users).deleteOne({ id: userId });
     await db.collection(collections.orgMembers).deleteMany({ userId });
     revalidatePath("/orgmenu");
-    revalidateTag('dashboard', 'max');
-  } catch { /* ignore */ }
+    revalidateTag("dashboard", "max");
+  } catch {
+    /* ignore */
+  }
 }

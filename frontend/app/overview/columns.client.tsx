@@ -1,5 +1,6 @@
-"use client"
-import { ColumnDef } from "@tanstack/react-table";
+"use client";
+import type { ColumnDef } from "@tanstack/react-table";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,13 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  EyeIcon,
-  PencilIcon,
-  Trash2Icon,
-  MoreHorizontalIcon,
-} from "@/lib/icons";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+import { EyeIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon } from "@/lib/icons";
 
 export type Task = {
   _id: string;
@@ -62,9 +57,7 @@ export function createColumns(callbacks: TaskColumnCallbacks = {}): ColumnDef<Ta
       id: "index",
       header: "Task #",
       cell: ({ row }) => (
-        <span className="font-mono text-xs text-muted-foreground">
-          #{row.index + 1}
-        </span>
+        <span className="font-mono text-xs text-muted-foreground">#{row.index + 1}</span>
       ),
       size: 80,
     },
@@ -82,10 +75,19 @@ export function createColumns(callbacks: TaskColumnCallbacks = {}): ColumnDef<Ta
           <div className="flex items-center gap-2">
             <div className="size-6 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
               {t.assigneeAvatar ? (
-                <img src={t.assigneeAvatar} alt={t.assigneeName} className="size-full object-cover" />
+                <img
+                  src={t.assigneeAvatar}
+                  alt={t.assigneeName}
+                  className="size-full object-cover"
+                />
               ) : (
                 <span className="text-[10px] font-medium text-muted-foreground">
-                  {(t.assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                  {(t.assigneeName || "U")
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase()}
                 </span>
               )}
             </div>
@@ -159,7 +161,8 @@ export function createColumns(callbacks: TaskColumnCallbacks = {}): ColumnDef<Ta
                   onView?.(task);
                 }}
               >
-                <EyeIcon className="mr-2 size-4" />View
+                <EyeIcon className="mr-2 size-4" />
+                View
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={(e: React.MouseEvent) => {
@@ -167,7 +170,8 @@ export function createColumns(callbacks: TaskColumnCallbacks = {}): ColumnDef<Ta
                   onEdit?.(task);
                 }}
               >
-                <PencilIcon className="mr-2 size-4" />Edit
+                <PencilIcon className="mr-2 size-4" />
+                Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DeleteConfirmDialog
@@ -176,7 +180,8 @@ export function createColumns(callbacks: TaskColumnCallbacks = {}): ColumnDef<Ta
                 onConfirm={() => onDelete?.(task)}
               >
                 <DropdownMenuItem className="text-destructive focus:text-destructive">
-                  <Trash2Icon className="mr-2 size-4" />Delete
+                  <Trash2Icon className="mr-2 size-4" />
+                  Delete
                 </DropdownMenuItem>
               </DeleteConfirmDialog>
             </DropdownMenuContent>

@@ -1,29 +1,33 @@
-import { Client } from "../lib/db/models/Client.js";
-import { ClientUser } from "../lib/db/models/ClientUser.js";
-import { ClientAuditLog } from "../lib/db/models/ClientAuditLog.js";
-import { ClientWorkspace } from "../lib/db/models/ClientWorkspace.js";
-import { Folder } from "../lib/db/models/Folder.js";
-import { FileAttachment } from "../lib/db/models/FileAttachment.js";
-import { ActivityLog } from "../lib/db/models/ActivityLog.js";
-import { OrgMember } from "../lib/db/models/OrgMember.js";
-import { User } from "../lib/db/models/User.js";
-import { Organization } from "../lib/db/models/Organization.js";
-import { Project } from "../lib/db/models/Project.js";
-import { Task } from "../lib/db/models/Task.js";
-import { AppError } from "../middleware/error.js";
-import { cacheManager } from "../lib/cache.js";
-import { sendClientWelcomeEmail } from "../lib/mail/index.js";
-import { eventProducer } from "../lib/queue/producer.js";
-import { provisionClientWorkspace } from "../lib/workspace/provision.js";
-import { requireString, requireEmail } from "../lib/validate.js";
-import { env } from "../config/env.js";
-import { logger } from "../lib/logger/index.js";
-import { revokeUserAccess } from "./account.service.js";
+import { hash } from "bcryptjs";
 import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
-import { hash } from "bcryptjs";
+import { env } from "../config/env.js";
+import { cacheManager } from "../lib/cache.js";
+import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { Client } from "../lib/db/models/Client.js";
+import { ClientAuditLog } from "../lib/db/models/ClientAuditLog.js";
+import { ClientUser } from "../lib/db/models/ClientUser.js";
+import { ClientWorkspace } from "../lib/db/models/ClientWorkspace.js";
+import { FileAttachment } from "../lib/db/models/FileAttachment.js";
+import { Folder } from "../lib/db/models/Folder.js";
+import { Organization } from "../lib/db/models/Organization.js";
+import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { Project } from "../lib/db/models/Project.js";
+import { Task } from "../lib/db/models/Task.js";
+import { User } from "../lib/db/models/User.js";
+import { logger } from "../lib/logger/index.js";
+import { sendClientWelcomeEmail } from "../lib/mail/index.js";
+import { eventProducer } from "../lib/queue/producer.js";
+import { requireEmail, requireString } from "../lib/validate.js";
+import { provisionClientWorkspace } from "../lib/workspace/provision.js";
+import { AppError } from "../middleware/error.js";
+import { revokeUserAccess } from "./account.service.js";
 
-export async function resolveOrgId(userId: string, email?: string, userOrgId?: string): Promise<string> {
+export async function resolveOrgId(
+  userId: string,
+  email?: string,
+  userOrgId?: string,
+): Promise<string> {
   if (userOrgId) return userOrgId;
 
   const direct = await OrgMember.findOne({ userId }).lean();
@@ -41,7 +45,10 @@ export async function resolveOrgId(userId: string, email?: string, userOrgId?: s
   const anyOrg = await Organization.findOne({}).sort({ createdAt: 1 }).lean();
   if (anyOrg) {
     // Do NOT auto-create admin membership — this bypasses workspace isolation
-    throw new AppError(403, "User is not a member of any workspace. Please contact your administrator.");
+    throw new AppError(
+      403,
+      "User is not a member of any workspace. Please contact your administrator.",
+    );
   }
 
   throw new AppError(400, "No organization found. Please set up company details first.");
@@ -61,18 +68,33 @@ export function generatePassword(length = 12): string {
   for (let i = 4; i < length; i++) {
     password += all[Math.floor(Math.random() * all.length)];
   }
-  return password.split("").sort(() => Math.random() - 0.5).join("");
+  return password
+    .split("")
+    .sort(() => Math.random() - 0.5)
+    .join("");
 }
 
 export function generateUsername(clientName: string): string {
-  const base = clientName.toLowerCase().replace(/[^a-z0-9]/g, ".").replace(/\.+/g, ".").replace(/^\.|\.$/g, "") || "client";
+  const base =
+    clientName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ".")
+      .replace(/\.+/g, ".")
+      .replace(/^\.|\.$/g, "") || "client";
   const suffix = Math.random().toString(36).substring(2, 6);
   return `${base}.${suffix}`;
 }
 
 export async function listClients(orgId: string): Promise<any[]> {
-  const clients = await Client.find({ orgId }).sort({ createdAt: -1 }).select("id orgId name email primaryContact phone company address notes isActive createdByAdminId clientUserId createdAt updatedAt").lean();
-  const clientUsers = await ClientUser.find({ orgId }).select("id clientId username email name isActive").lean();
+  const clients = await Client.find({ orgId })
+    .sort({ createdAt: -1 })
+    .select(
+      "id orgId name email primaryContact phone company address notes isActive createdByAdminId clientUserId createdAt updatedAt",
+    )
+    .lean();
+  const clientUsers = await ClientUser.find({ orgId })
+    .select("id clientId username email name isActive")
+    .lean();
   const userMap = new Map(clientUsers.map((u) => [u.clientId, u]));
   return clients.map((c) => ({
     ...c,
@@ -156,7 +178,11 @@ export interface CreateClientInput {
   body: Record<string, any>;
 }
 
-export async function createClient(data: CreateClientInput): Promise<{ client: any; workspaceUrl: string; credentials: { username: string; email: string; password: string; loginUrl: string } }> {
+export async function createClient(data: CreateClientInput): Promise<{
+  client: any;
+  workspaceUrl: string;
+  credentials: { username: string; email: string; password: string; loginUrl: string };
+}> {
   const { orgId, adminId, adminEmail } = data;
   const name = requireString(data.name, "name", { min: 1, max: 300 });
   const email = requireEmail(data.email, "email");
@@ -192,7 +218,9 @@ export async function createClient(data: CreateClientInput): Promise<{ client: a
     address: data.body?.address,
     notes: data.body?.notes,
   };
-  Object.keys(allowedFields).forEach(k => (allowedFields as any)[k] === undefined && delete (allowedFields as any)[k]);
+  Object.keys(allowedFields).forEach(
+    (k) => (allowedFields as any)[k] === undefined && delete (allowedFields as any)[k],
+  );
 
   const client = new Client({
     ...allowedFields,
@@ -237,7 +265,7 @@ export async function createClient(data: CreateClientInput): Promise<{ client: a
           description: `Client ${name} created by admin ${adminEmail}`,
         },
       ],
-      { session }
+      { session },
     );
     await session.commitTransaction();
   } catch (err) {
@@ -250,25 +278,26 @@ export async function createClient(data: CreateClientInput): Promise<{ client: a
   cacheManager.invalidatePattern(`clients:${orgId}`);
 
   // Send welcome email with queue-backed reliability
-  sendClientWelcomeEmail(
-    email,
-    name,
-    username,
-    rawPassword,
-    `${env.APP_URL}/client/login`
-  ).catch((err: Error) => {
-    logger.error({ err, clientId, email }, "Direct welcome email failed, enqueuing for retry");
-    eventProducer.notificationSend({
-      userId: adminId,
-      orgId,
-      type: "email_retry",
-      title: `Welcome email for ${name}`,
-      message: `Failed to send welcome email to ${email}. Will retry via queue.`,
-      link: `/clients/${clientId}`,
-    }).catch((retryErr: Error) => {
-      logger.error({ err: retryErr, clientId, email }, "Failed to enqueue email retry notification");
-    });
-  });
+  sendClientWelcomeEmail(email, name, username, rawPassword, `${env.APP_URL}/client/login`).catch(
+    (err: Error) => {
+      logger.error({ err, clientId, email }, "Direct welcome email failed, enqueuing for retry");
+      eventProducer
+        .notificationSend({
+          userId: adminId,
+          orgId,
+          type: "email_retry",
+          title: `Welcome email for ${name}`,
+          message: `Failed to send welcome email to ${email}. Will retry via queue.`,
+          link: `/clients/${clientId}`,
+        })
+        .catch((retryErr: Error) => {
+          logger.error(
+            { err: retryErr, clientId, email },
+            "Failed to enqueue email retry notification",
+          );
+        });
+    },
+  );
 
   return {
     client: { ...client.toObject(), username },
@@ -282,9 +311,25 @@ export async function createClient(data: CreateClientInput): Promise<{ client: a
   };
 }
 
-const CLIENT_ALLOWED_UPDATE_FIELDS = ["name", "email", "primaryContact", "phone", "company", "address", "notes", "isActive", "status"];
+const CLIENT_ALLOWED_UPDATE_FIELDS = [
+  "name",
+  "email",
+  "primaryContact",
+  "phone",
+  "company",
+  "address",
+  "notes",
+  "isActive",
+  "status",
+];
 
-export async function updateClient(orgId: string, clientId: string, adminId: string, adminEmail: string, body: any): Promise<any> {
+export async function updateClient(
+  orgId: string,
+  clientId: string,
+  adminId: string,
+  adminEmail: string,
+  body: any,
+): Promise<any> {
   const safeUpdate: Record<string, any> = { updatedBy: adminId };
   for (const field of CLIENT_ALLOWED_UPDATE_FIELDS) {
     if (body[field] !== undefined) safeUpdate[field] = body[field];
@@ -292,7 +337,7 @@ export async function updateClient(orgId: string, clientId: string, adminId: str
   const client = await Client.findOneAndUpdate(
     { id: clientId, orgId },
     { $set: safeUpdate },
-    { new: true }
+    { new: true },
   ).lean();
 
   if (!client) {
@@ -319,8 +364,12 @@ export async function updateClient(orgId: string, clientId: string, adminId: str
       { $set: { password: hashedPassword, mustChangePassword: true, updatedBy: adminId } },
     );
     await ClientAuditLog.create({
-      orgId, clientId, createdBy: adminId,
-      action: "client.password_changed", entityType: "client", entityId: clientId,
+      orgId,
+      clientId,
+      createdBy: adminId,
+      action: "client.password_changed",
+      entityType: "client",
+      entityId: clientId,
       description: `Password changed for client ${client.name} by ${adminEmail}`,
     });
   }
@@ -341,7 +390,11 @@ export async function updateClient(orgId: string, clientId: string, adminId: str
   return client;
 }
 
-export async function deleteClient(orgId: string, clientId: string, adminId: string): Promise<void> {
+export async function deleteClient(
+  orgId: string,
+  clientId: string,
+  adminId: string,
+): Promise<void> {
   const client = await Client.findOne({ id: clientId, orgId }).lean();
 
   if (!client) {
@@ -392,7 +445,7 @@ export async function deleteClient(orgId: string, clientId: string, adminId: str
           description: `Client ${client.name} deleted (including ${projects.length} project(s) and associated tasks)`,
         },
       ],
-      { session }
+      { session },
     );
 
     await session.commitTransaction();

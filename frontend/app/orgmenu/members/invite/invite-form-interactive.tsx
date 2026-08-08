@@ -1,1 +1,1 @@
-export { InviteMemberFormInteractive } from "./invite-form-interactive.client"
+export { InviteMemberFormInteractive } from "./invite-form-interactive.client";

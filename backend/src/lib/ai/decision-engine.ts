@@ -1,10 +1,10 @@
-import { logger } from "../logger/index.js";
-import { metricsRegistry } from "../monitoring/index.js";
+import { FileAttachment } from "../db/models/FileAttachment.js";
 import { Organization } from "../db/models/Organization.js";
 import { Project } from "../db/models/Project.js";
 import { Task } from "../db/models/Task.js";
 import { User } from "../db/models/User.js";
-import { FileAttachment } from "../db/models/FileAttachment.js";
+import { logger } from "../logger/index.js";
+import { metricsRegistry } from "../monitoring/index.js";
 
 export interface Insight {
   type: string;
@@ -45,7 +45,9 @@ export class EnterpriseAIEngine {
     const predictions: Prediction[] = [];
     let score = 85;
 
-    const overdueTasks = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "completed");
+    const overdueTasks = tasks.filter(
+      (t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "completed",
+    );
     if (overdueTasks.length > 5) {
       insights.push({
         type: "overdue_tasks",
@@ -62,7 +64,7 @@ export class EnterpriseAIEngine {
       score -= Math.min(15, overdueTasks.length);
     }
 
-    const activeUsers = users.filter(u => u.status === "online").length;
+    const activeUsers = users.filter((u) => u.status === "online").length;
     const totalUsers = users.length;
     if (totalUsers > 0 && activeUsers / totalUsers < 0.1) {
       insights.push({
@@ -96,7 +98,9 @@ export class EnterpriseAIEngine {
         entities: { orgId },
       });
 
-      const dailyRate = files.length / Math.max(1, (Date.now() - (org?.createdAt?.getTime() || Date.now())) / 86400000);
+      const dailyRate =
+        files.length /
+        Math.max(1, (Date.now() - (org?.createdAt?.getTime() || Date.now())) / 86400000);
       const projectedFiles = files.length + dailyRate * 365;
       predictions.push({
         metric: "files_count",
@@ -107,7 +111,7 @@ export class EnterpriseAIEngine {
       });
     }
 
-    const completedTasks = tasks.filter(t => t.status === "completed").length;
+    const completedTasks = tasks.filter((t) => t.status === "completed").length;
     const taskCompletionRate = tasks.length > 0 ? completedTasks / tasks.length : 0;
     if (taskCompletionRate < 0.3 && tasks.length > 10) {
       insights.push({
@@ -126,7 +130,9 @@ export class EnterpriseAIEngine {
     }
 
     if (tasks.length > 10) {
-      const monthlyRate = tasks.length / Math.max(1, (Date.now() - (org?.createdAt?.getTime() || Date.now())) / (86400000 * 30));
+      const monthlyRate =
+        tasks.length /
+        Math.max(1, (Date.now() - (org?.createdAt?.getTime() || Date.now())) / (86400000 * 30));
       predictions.push({
         metric: "task_volume",
         predictedValue: Math.round(tasks.length + monthlyRate * 3),
@@ -162,20 +168,25 @@ export class EnterpriseAIEngine {
     };
   }
 
-  async getRecommendations(orgId: string): Promise<Array<{
-    id: string;
-    title: string;
-    description: string;
-    impact: "low" | "medium" | "high" | "critical";
-    effort: "minutes" | "hours" | "days";
-    category: string;
-    action: string;
-  }>> {
-    const recs: Array<{
-      id: string; title: string; description: string;
+  async getRecommendations(orgId: string): Promise<
+    Array<{
+      id: string;
+      title: string;
+      description: string;
       impact: "low" | "medium" | "high" | "critical";
       effort: "minutes" | "hours" | "days";
-      category: string; action: string;
+      category: string;
+      action: string;
+    }>
+  > {
+    const recs: Array<{
+      id: string;
+      title: string;
+      description: string;
+      impact: "low" | "medium" | "high" | "critical";
+      effort: "minutes" | "hours" | "days";
+      category: string;
+      action: string;
     }> = [];
 
     const files = await FileAttachment.find({ orgId }).lean();
@@ -184,8 +195,10 @@ export class EnterpriseAIEngine {
       recs.push({
         id: "archive_old_files",
         title: "Archive Files Older Than 1 Year",
-        description: `${files.filter(f => f.createdAt && Date.now() - new Date(f.createdAt).getTime() > 365*86400000).length} files may be eligible for archival`,
-        impact: "high", effort: "hours", category: "storage",
+        description: `${files.filter((f) => f.createdAt && Date.now() - new Date(f.createdAt).getTime() > 365 * 86400000).length} files may be eligible for archival`,
+        impact: "high",
+        effort: "hours",
+        category: "storage",
         action: "Review and archive old files via Settings > Storage",
       });
     }
@@ -196,7 +209,9 @@ export class EnterpriseAIEngine {
         id: "cleanup_stale_tasks",
         title: "Review Stale Todo Tasks",
         description: `${tasks.length} tasks in todo status — consider pruning or reassigning`,
-        impact: "medium", effort: "hours", category: "productivity",
+        impact: "medium",
+        effort: "hours",
+        category: "productivity",
         action: "Review open tasks and close stale ones",
       });
     }
@@ -212,9 +227,11 @@ export class EnterpriseAIEngine {
       FileAttachment.find({ orgId }).lean(),
     ]);
 
-    const completedTasks = tasks.filter(t => t.status === "completed").length;
-    const overdueTasks = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "completed");
-    const activeUsers = users.filter(u => u.status === "online").length;
+    const completedTasks = tasks.filter((t) => t.status === "completed").length;
+    const overdueTasks = tasks.filter(
+      (t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "completed",
+    );
+    const activeUsers = users.filter((u) => u.status === "online").length;
     const totalFileSize = files.reduce((s, f) => s + (f.size || 0), 0);
 
     return {
@@ -224,16 +241,22 @@ export class EnterpriseAIEngine {
         totalTasks: tasks.length,
         completedTasks,
         overdueTasks: overdueTasks.length,
-        taskCompletionRate: tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0,
+        taskCompletionRate:
+          tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0,
         totalUsers: users.length,
         activeUsers,
         totalFiles: files.length,
         storageUsedGB: Math.round((totalFileSize / (1024 * 1024 * 1024)) * 100) / 100,
       },
       trends: {
-        tasksPerProject: projects.length > 0 ? Math.round((tasks.length / projects.length) * 10) / 10 : 0,
-        usersPerProject: projects.length > 0 ? Math.round((users.length / projects.length) * 10) / 10 : 0,
-        averageFileSizeMB: files.length > 0 ? Math.round((totalFileSize / files.length / (1024 * 1024)) * 100) / 100 : 0,
+        tasksPerProject:
+          projects.length > 0 ? Math.round((tasks.length / projects.length) * 10) / 10 : 0,
+        usersPerProject:
+          projects.length > 0 ? Math.round((users.length / projects.length) * 10) / 10 : 0,
+        averageFileSizeMB:
+          files.length > 0
+            ? Math.round((totalFileSize / files.length / (1024 * 1024)) * 100) / 100
+            : 0,
       },
     };
   }

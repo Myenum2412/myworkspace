@@ -1,12 +1,12 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
-import { logger } from "../logger/index.js";
+import { FileAttachment } from "../db/models/FileAttachment.js";
 import { Organization } from "../db/models/Organization.js";
-import { User } from "../db/models/User.js";
 import { OrgMember } from "../db/models/OrgMember.js";
 import { Project } from "../db/models/Project.js";
 import { Task } from "../db/models/Task.js";
-import { FileAttachment } from "../db/models/FileAttachment.js";
+import { User } from "../db/models/User.js";
+import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
 
 export interface ITenantConfig extends Document {
@@ -44,37 +44,41 @@ export interface ITenantConfig extends Document {
   updatedAt: Date;
 }
 
-const tenantConfigSchema = new Schema<ITenantConfig>({
-  id: { type: String, required: true, unique: true },
-  orgId: { type: String, required: true, unique: true },
-  branding: {
-    logo: String, favicon: String,
-    primaryColor: { type: String, default: "#2563eb" },
-    secondaryColor: { type: String, default: "#7c3aed" },
-    companyName: String,
+const tenantConfigSchema = new Schema<ITenantConfig>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, unique: true },
+    branding: {
+      logo: String,
+      favicon: String,
+      primaryColor: { type: String, default: "#2563eb" },
+      secondaryColor: { type: String, default: "#7c3aed" },
+      companyName: String,
+    },
+    features: { type: Schema.Types.Mixed, default: {} },
+    quotas: { type: Schema.Types.Mixed, default: {} },
+    policies: {
+      passwordMinLength: { type: Number, default: 8 },
+      sessionTimeout: { type: Number, default: 1440 },
+      maxLoginAttempts: { type: Number, default: 5 },
+      ipWhitelist: [{ type: String }],
+      allowedDomains: [{ type: String }],
+    },
+    localization: {
+      timezone: { type: String, default: "UTC" },
+      dateFormat: { type: String, default: "YYYY-MM-DD" },
+      currency: { type: String, default: "USD" },
+      language: { type: String, default: "en" },
+    },
+    retention: {
+      auditLogDays: { type: Number, default: 365 },
+      activityLogDays: { type: Number, default: 90 },
+      deletedFileDays: { type: Number, default: 30 },
+      sessionLogDays: { type: Number, default: 90 },
+    },
   },
-  features: { type: Schema.Types.Mixed, default: {} },
-  quotas: { type: Schema.Types.Mixed, default: {} },
-  policies: {
-    passwordMinLength: { type: Number, default: 8 },
-    sessionTimeout: { type: Number, default: 1440 },
-    maxLoginAttempts: { type: Number, default: 5 },
-    ipWhitelist: [{ type: String }],
-    allowedDomains: [{ type: String }],
-  },
-  localization: {
-    timezone: { type: String, default: "UTC" },
-    dateFormat: { type: String, default: "YYYY-MM-DD" },
-    currency: { type: String, default: "USD" },
-    language: { type: String, default: "en" },
-  },
-  retention: {
-    auditLogDays: { type: Number, default: 365 },
-    activityLogDays: { type: Number, default: 90 },
-    deletedFileDays: { type: Number, default: 30 },
-    sessionLogDays: { type: Number, default: 90 },
-  },
-}, { timestamps: true });
+  { timestamps: true },
+);
 
 export const TenantConfig = model<ITenantConfig>("TenantConfig", tenantConfigSchema);
 
@@ -84,9 +88,14 @@ export class TenantAdminCenter {
     if (existing) return existing as any;
 
     return TenantConfig.create({
-      id: uuid(), orgId,
-      branding: {}, features: {}, quotas: {}, policies: {},
-      localization: {}, retention: {},
+      id: uuid(),
+      orgId,
+      branding: {},
+      features: {},
+      quotas: {},
+      policies: {},
+      localization: {},
+      retention: {},
     });
   }
 
@@ -110,9 +119,10 @@ export class TenantAdminCenter {
 
     const tasksCompleted = await Task.countDocuments({ orgId, status: "completed" }).catch(() => 0);
     const completionRate = tasks > 0 ? Math.round((tasksCompleted / tasks) * 100) : 0;
-    const healthScore = Math.min(100, Math.round(
-      (users > 0 ? 20 : 0) + (projects > 0 ? 10 : 0) + (completionRate * 0.5) + 20
-    ));
+    const healthScore = Math.min(
+      100,
+      Math.round((users > 0 ? 20 : 0) + (projects > 0 ? 10 : 0) + completionRate * 0.5 + 20),
+    );
 
     return {
       organization: org,

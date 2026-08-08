@@ -1,4 +1,4 @@
-import amqplib, { Channel, ChannelModel, Options } from "amqplib";
+import amqplib, { type Channel, type ChannelModel, type Options } from "amqplib";
 import { env } from "../../config/env.js";
 import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
@@ -82,7 +82,7 @@ const PROCESSED_ID_MAX_SIZE = 50000;
 
 setInterval(() => {
   if (processedIds.size > PROCESSED_ID_MAX_SIZE) {
-    const toDelete = processedIds.size - (PROCESSED_ID_MAX_SIZE / 2);
+    const toDelete = processedIds.size - PROCESSED_ID_MAX_SIZE / 2;
     const iter = processedIds.values();
     for (let i = 0; i < toDelete; i++) {
       processedIds.delete(iter.next().value as string);
@@ -97,10 +97,7 @@ export function isDuplicateMessage(messageId: string): boolean {
 }
 
 function calculateBackoff(): number {
-  const delay = Math.min(
-    RECONNECT_BASE_MS * Math.pow(2, reconnectAttempt),
-    RECONNECT_MAX_MS,
-  );
+  const delay = Math.min(RECONNECT_BASE_MS * 2 ** reconnectAttempt, RECONNECT_MAX_MS);
   const jitter = delay * RECONNECT_JITTER * (Math.random() - 0.5);
   return Math.max(100, Math.round(delay + jitter));
 }
@@ -224,15 +221,61 @@ async function setupInfrastructure(ch: Channel) {
     ttl: number;
     priority?: number;
   }> = [
-    { name: QUEUES.UPLOAD_PROCESSING, exchange: EXCHANGES.UPLOAD_EVENTS, routingKey: "upload.*", ttl: 30000 },
-    { name: QUEUES.UPLOAD_RETRY, exchange: EXCHANGES.UPLOAD_EVENTS, routingKey: ROUTING_KEYS.RETRY_REQUIRED, ttl: 10000 },
-    { name: QUEUES.METADATA_SAVE, exchange: EXCHANGES.UPLOAD_EVENTS, routingKey: ROUTING_KEYS.METADATA_SAVED, ttl: 30000 },
-    { name: QUEUES.THUMBNAIL_GENERATION, exchange: EXCHANGES.FILE_EVENTS, routingKey: ROUTING_KEYS.THUMBNAIL_GENERATED, ttl: 60000 },
-    { name: QUEUES.FILE_PROCESSING, exchange: EXCHANGES.FILE_EVENTS, routingKey: ROUTING_KEYS.FILE_PROCESSING_REQUIRED, ttl: 60000 },
-    { name: QUEUES.NOTIFICATIONS, exchange: EXCHANGES.NOTIFICATION_EVENTS, routingKey: ROUTING_KEYS.NOTIFICATION_SEND, ttl: 30000 },
-    { name: QUEUES.AUDIT_LOG, exchange: EXCHANGES.NOTIFICATION_EVENTS, routingKey: ROUTING_KEYS.AUDIT_LOG_RECORD, ttl: 30000 },
-    { name: QUEUES.CLEANUP, exchange: EXCHANGES.FILE_EVENTS, routingKey: ROUTING_KEYS.CLEANUP_REQUIRED, ttl: 60000 },
-    { name: QUEUES.PRIORITY_UPLOAD, exchange: EXCHANGES.PRIORITY, routingKey: ROUTING_KEYS.PRIORITY_PROCESSING, ttl: 15000, priority: 10 },
+    {
+      name: QUEUES.UPLOAD_PROCESSING,
+      exchange: EXCHANGES.UPLOAD_EVENTS,
+      routingKey: "upload.*",
+      ttl: 30000,
+    },
+    {
+      name: QUEUES.UPLOAD_RETRY,
+      exchange: EXCHANGES.UPLOAD_EVENTS,
+      routingKey: ROUTING_KEYS.RETRY_REQUIRED,
+      ttl: 10000,
+    },
+    {
+      name: QUEUES.METADATA_SAVE,
+      exchange: EXCHANGES.UPLOAD_EVENTS,
+      routingKey: ROUTING_KEYS.METADATA_SAVED,
+      ttl: 30000,
+    },
+    {
+      name: QUEUES.THUMBNAIL_GENERATION,
+      exchange: EXCHANGES.FILE_EVENTS,
+      routingKey: ROUTING_KEYS.THUMBNAIL_GENERATED,
+      ttl: 60000,
+    },
+    {
+      name: QUEUES.FILE_PROCESSING,
+      exchange: EXCHANGES.FILE_EVENTS,
+      routingKey: ROUTING_KEYS.FILE_PROCESSING_REQUIRED,
+      ttl: 60000,
+    },
+    {
+      name: QUEUES.NOTIFICATIONS,
+      exchange: EXCHANGES.NOTIFICATION_EVENTS,
+      routingKey: ROUTING_KEYS.NOTIFICATION_SEND,
+      ttl: 30000,
+    },
+    {
+      name: QUEUES.AUDIT_LOG,
+      exchange: EXCHANGES.NOTIFICATION_EVENTS,
+      routingKey: ROUTING_KEYS.AUDIT_LOG_RECORD,
+      ttl: 30000,
+    },
+    {
+      name: QUEUES.CLEANUP,
+      exchange: EXCHANGES.FILE_EVENTS,
+      routingKey: ROUTING_KEYS.CLEANUP_REQUIRED,
+      ttl: 60000,
+    },
+    {
+      name: QUEUES.PRIORITY_UPLOAD,
+      exchange: EXCHANGES.PRIORITY,
+      routingKey: ROUTING_KEYS.PRIORITY_PROCESSING,
+      ttl: 15000,
+      priority: 10,
+    },
   ];
 
   for (const qc of queueConfigs) {
@@ -249,7 +292,11 @@ async function setupInfrastructure(ch: Channel) {
   }
 
   const priorityBindings = [
-    { queue: QUEUES.UPLOAD_PROCESSING, exchange: EXCHANGES.PRIORITY, key: ROUTING_KEYS.PRIORITY_PROCESSING },
+    {
+      queue: QUEUES.UPLOAD_PROCESSING,
+      exchange: EXCHANGES.PRIORITY,
+      key: ROUTING_KEYS.PRIORITY_PROCESSING,
+    },
   ];
   for (const pb of priorityBindings) {
     await ch.bindQueue(pb.queue, pb.exchange, pb.key);

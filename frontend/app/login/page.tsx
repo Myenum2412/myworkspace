@@ -26,7 +26,8 @@ function LoginContent() {
       <main
         className="relative min-h-dvh overflow-hidden"
         style={{
-          background: "linear-gradient(180deg, #03045E 0%, #0077B6 7.5%, #00B4D8 15%, #90E0EF 22.5%, #CAF0F8 27%, #ffffff 35%, #ffffff 100%)",
+          background:
+            "linear-gradient(180deg, #03045E 0%, #0077B6 7.5%, #00B4D8 15%, #90E0EF 22.5%, #CAF0F8 27%, #ffffff 35%, #ffffff 100%)",
         }}
         role="main"
       >

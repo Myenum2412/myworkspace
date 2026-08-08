@@ -1,6 +1,6 @@
 import { createNotification } from "../../services/notification.service.js";
-import { socketIOManager } from "../socketio/index.js";
 import { logger } from "../logger/index.js";
+import { socketIOManager } from "../socketio/index.js";
 
 export async function broadcastNotification(
   orgId: string,
@@ -16,7 +16,7 @@ export async function broadcastNotification(
     metadata?: Record<string, unknown>;
     userIds?: string[];
     roles?: string[];
-  }
+  },
 ): Promise<void> {
   const type = (options?.type as any) || "broadcast_message";
   const category = (options?.category as any) || "system";

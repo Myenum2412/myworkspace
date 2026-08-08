@@ -26,7 +26,10 @@ export interface R2MultipartUpload {
   key: string;
 }
 
-export async function initiateR2MultipartUpload(fileName: string, orgId: string): Promise<R2MultipartUpload> {
+export async function initiateR2MultipartUpload(
+  fileName: string,
+  orgId: string,
+): Promise<R2MultipartUpload> {
   const res = await fetch("/api/files/multipart/init", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -37,7 +40,11 @@ export async function initiateR2MultipartUpload(fileName: string, orgId: string)
   return data.data;
 }
 
-export async function getR2UploadPartUrl(uploadId: string, key: string, partNumber: number): Promise<string> {
+export async function getR2UploadPartUrl(
+  uploadId: string,
+  key: string,
+  partNumber: number,
+): Promise<string> {
   const res = await fetch("/api/files/multipart/part-url", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -48,7 +55,12 @@ export async function getR2UploadPartUrl(uploadId: string, key: string, partNumb
   return data.data.url;
 }
 
-export async function completeR2MultipartUpload(uploadId: string, key: string, parts: R2UploadPart[], orgId: string): Promise<void> {
+export async function completeR2MultipartUpload(
+  uploadId: string,
+  key: string,
+  parts: R2UploadPart[],
+  orgId: string,
+): Promise<void> {
   const res = await fetch("/api/files/multipart/complete", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -66,7 +78,11 @@ export async function abortR2MultipartUpload(uploadId: string, key: string): Pro
   if (!res.ok) throw new Error("Failed to abort multipart upload");
 }
 
-export async function getPresignedUploadUrl(fileName: string, contentType: string, orgId: string): Promise<string> {
+export async function getPresignedUploadUrl(
+  fileName: string,
+  contentType: string,
+  orgId: string,
+): Promise<string> {
   const res = await fetch("/api/files/presigned-upload", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

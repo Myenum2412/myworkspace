@@ -26,7 +26,12 @@ export class MockChannel extends EventEmitter {
     return;
   }
 
-  publish(exchange: string, routingKey: string, content: Buffer, _opts?: Record<string, unknown>): boolean {
+  publish(
+    exchange: string,
+    routingKey: string,
+    content: Buffer,
+    _opts?: Record<string, unknown>,
+  ): boolean {
     const msg: Message = {
       content,
       properties: _opts || {},
@@ -49,7 +54,11 @@ export class MockChannel extends EventEmitter {
     return true;
   }
 
-  async consume(queue: string, handler: (msg: Message) => Promise<void>, _opts?: Record<string, unknown>) {
+  async consume(
+    queue: string,
+    handler: (msg: Message) => Promise<void>,
+    _opts?: Record<string, unknown>,
+  ) {
     this.consumers.set(queue, handler);
     const msgs = this.queues.get(queue) || [];
     for (const msg of msgs) {

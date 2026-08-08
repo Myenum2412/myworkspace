@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 function getSentryIngestUrl(): string | null {
   const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;

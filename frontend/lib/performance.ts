@@ -1,6 +1,16 @@
 "use client";
 
-type MetricName = "LCP" | "FCP" | "TTI" | "INP" | "TBT" | "CLS" | "TTFB" | "bootstrap" | "login" | "dashboard-render";
+type MetricName =
+  | "LCP"
+  | "FCP"
+  | "TTI"
+  | "INP"
+  | "TBT"
+  | "CLS"
+  | "TTFB"
+  | "bootstrap"
+  | "login"
+  | "dashboard-render";
 
 interface MetricRecord {
   name: MetricName;
@@ -15,21 +25,24 @@ const MAX_METRICS = 200;
 
 function rateMetric(name: MetricName, value: number): "good" | "needs-improvement" | "poor" {
   switch (name) {
-    case "LCP": return value <= 2500 ? "good" : value <= 4000 ? "needs-improvement" : "poor";
-    case "FCP": return value <= 1800 ? "good" : value <= 3000 ? "needs-improvement" : "poor";
-    case "INP": return value <= 200 ? "good" : value <= 500 ? "needs-improvement" : "poor";
-    case "CLS": return value <= 0.1 ? "good" : value <= 0.25 ? "needs-improvement" : "poor";
-    case "TTFB": return value <= 800 ? "good" : value <= 1800 ? "needs-improvement" : "poor";
-    case "TBT": return value <= 200 ? "good" : value <= 600 ? "needs-improvement" : "poor";
-    default: return "good";
+    case "LCP":
+      return value <= 2500 ? "good" : value <= 4000 ? "needs-improvement" : "poor";
+    case "FCP":
+      return value <= 1800 ? "good" : value <= 3000 ? "needs-improvement" : "poor";
+    case "INP":
+      return value <= 200 ? "good" : value <= 500 ? "needs-improvement" : "poor";
+    case "CLS":
+      return value <= 0.1 ? "good" : value <= 0.25 ? "needs-improvement" : "poor";
+    case "TTFB":
+      return value <= 800 ? "good" : value <= 1800 ? "needs-improvement" : "poor";
+    case "TBT":
+      return value <= 200 ? "good" : value <= 600 ? "needs-improvement" : "poor";
+    default:
+      return "good";
   }
 }
 
-export function recordMetric(
-  name: MetricName,
-  value: number,
-  tags?: Record<string, string>,
-): void {
+export function recordMetric(name: MetricName, value: number, tags?: Record<string, string>): void {
   const record: MetricRecord = {
     name,
     value,
@@ -49,7 +62,10 @@ export function getMetrics(): MetricRecord[] {
   return [...metrics];
 }
 
-export function getMetricsSummary(): Record<string, { avg: number; min: number; max: number; count: number }> {
+export function getMetricsSummary(): Record<
+  string,
+  { avg: number; min: number; max: number; count: number }
+> {
   const summary: Record<string, number[]> = {};
   for (const m of metrics) {
     if (!summary[m.name]) summary[m.name] = [];
@@ -117,7 +133,9 @@ export function initPerformanceObserver(): void {
   } catch {}
 
   try {
-    const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    const navEntry = performance.getEntriesByType("navigation")[0] as
+      | PerformanceNavigationTiming
+      | undefined;
     if (navEntry) {
       recordMetric("TTFB", navEntry.responseStart - navEntry.requestStart);
     }
@@ -132,7 +150,11 @@ export function recordLoginTime(duration: number): void {
   recordMetric("login", duration);
 }
 
-export function measureAsync<T>(name: MetricName, fn: () => Promise<T>, tags?: Record<string, string>): Promise<T> {
+export function measureAsync<T>(
+  name: MetricName,
+  fn: () => Promise<T>,
+  tags?: Record<string, string>,
+): Promise<T> {
   const start = performance.now();
   return fn().finally(() => {
     recordMetric(name, performance.now() - start, tags);

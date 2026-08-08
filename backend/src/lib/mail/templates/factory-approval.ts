@@ -1,4 +1,4 @@
-import { EmailData } from "./types.js";
+import type { EmailData } from "./types.js";
 
 function ts(): string {
   return new Date().toLocaleString();
@@ -11,14 +11,16 @@ export const buildApprovalRequested = (
   requestedBy: string,
   projectName: string,
   reason: string,
-  approvalUrl: string
+  approvalUrl: string,
 ): EmailData => ({
   subject: `Approval Requested: ${itemName}`,
   previewText: `${requestedBy} is requesting approval for "${itemName}"`,
   greeting: `Hi ${firstName},`,
   metadata: { module: "Approvals", timestamp: ts(), action: "Approval Needed" },
   statusIndicator: { type: "warning", label: "Action Required" },
-  intro: [`${requestedBy} has submitted an approval request for "${itemName}" that requires your review.`],
+  intro: [
+    `${requestedBy} has submitted an approval request for "${itemName}" that requires your review.`,
+  ],
   details: [
     { label: "Item", value: itemName },
     { label: "Type", value: itemType },
@@ -38,7 +40,7 @@ export const buildApprovalApproved = (
   approvedBy: string,
   projectName: string,
   comments: string,
-  approvalUrl: string
+  approvalUrl: string,
 ): EmailData => ({
   subject: `Approval Granted: ${itemName}`,
   previewText: `"${itemName}" has been approved by ${approvedBy}`,
@@ -66,7 +68,7 @@ export const buildApprovalRejected = (
   projectName: string,
   reason: string,
   feedback: string,
-  approvalUrl: string
+  approvalUrl: string,
 ): EmailData => ({
   subject: `Approval Not Granted: ${itemName}`,
   previewText: `"${itemName}" was not approved by ${rejectedBy}`,
@@ -92,14 +94,16 @@ export const buildApprovalReminder = (
   requestedBy: string,
   daysPending: number,
   projectName: string,
-  approvalUrl: string
+  approvalUrl: string,
 ): EmailData => ({
   subject: `Reminder: Approval Pending - ${itemName}`,
   previewText: `"${itemName}" has been pending your approval for ${daysPending} days`,
   greeting: `Hi ${firstName},`,
   metadata: { module: "Approvals", timestamp: ts(), action: "Reminder" },
   statusIndicator: { type: "warning", label: `${daysPending} days pending` },
-  intro: [`This is a reminder that "${itemName}" submitted by ${requestedBy} is still awaiting your approval.`],
+  intro: [
+    `This is a reminder that "${itemName}" submitted by ${requestedBy} is still awaiting your approval.`,
+  ],
   details: [
     { label: "Item", value: itemName },
     { label: "Type", value: itemType },
@@ -107,7 +111,8 @@ export const buildApprovalReminder = (
     { label: "Requested By", value: requestedBy },
     { label: "Days Pending", value: String(daysPending) },
   ],
-  warning: "Long-pending approvals can delay project timelines. Please review at your earliest convenience.",
+  warning:
+    "Long-pending approvals can delay project timelines. Please review at your earliest convenience.",
   button: { text: "Review Now", url: approvalUrl },
   supportEmail: "support@workspace.com",
 });
@@ -118,14 +123,16 @@ export const buildDocumentApprovalRequested = (
   requestedBy: string,
   projectName: string,
   documentUrl: string,
-  approvalUrl: string
+  approvalUrl: string,
 ): EmailData => ({
   subject: `Document Approval Requested: ${documentName}`,
   previewText: `${requestedBy} is requesting approval for document "${documentName}"`,
   greeting: `Hi ${firstName},`,
   metadata: { module: "Approvals", timestamp: ts(), action: "Document Approval" },
   statusIndicator: { type: "warning", label: "Document Review Needed" },
-  intro: [`${requestedBy} has submitted "${documentName}" for document approval in ${projectName}.`],
+  intro: [
+    `${requestedBy} has submitted "${documentName}" for document approval in ${projectName}.`,
+  ],
   details: [
     { label: "Document", value: documentName },
     { label: "Project", value: projectName },
@@ -142,7 +149,7 @@ export const buildDocumentApproved = (
   approvedBy: string,
   projectName: string,
   comments: string,
-  documentUrl: string
+  documentUrl: string,
 ): EmailData => ({
   subject: `Document Approved: ${documentName}`,
   previewText: `"${documentName}" has been approved by ${approvedBy}`,
@@ -167,14 +174,16 @@ export const buildDocumentRejected = (
   projectName: string,
   reason: string,
   feedback: string,
-  documentUrl: string
+  documentUrl: string,
 ): EmailData => ({
   subject: `Document Revision Needed: ${documentName}`,
   previewText: `"${documentName}" requires revisions`,
   greeting: `Hi ${firstName},`,
   metadata: { module: "Approvals", timestamp: ts(), action: "Document Rejected" },
   statusIndicator: { type: "error", label: "Revisions Required" },
-  intro: [`The document "${documentName}" requires revisions before it can be approved by ${rejectedBy}.`],
+  intro: [
+    `The document "${documentName}" requires revisions before it can be approved by ${rejectedBy}.`,
+  ],
   details: [
     { label: "Document", value: documentName },
     { label: "Project", value: projectName },
@@ -192,7 +201,7 @@ export const buildFileReviewRequested = (
   requestedBy: string,
   projectName: string,
   dueDate: string,
-  reviewUrl: string
+  reviewUrl: string,
 ): EmailData => ({
   subject: `File Review Requested: ${fileName}`,
   previewText: `${requestedBy} is requesting your review on "${fileName}"`,
@@ -217,7 +226,7 @@ export const buildFileReviewCompleted = (
   projectName: string,
   verdict: string,
   comments: string,
-  fileUrl: string
+  fileUrl: string,
 ): EmailData => ({
   subject: `File Review Completed: ${fileName}`,
   previewText: `${reviewedBy} has completed their review of "${fileName}"`,

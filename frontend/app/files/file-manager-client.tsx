@@ -1,44 +1,48 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useFileSystemStore } from "@/lib/file-system/store";
 import { useFileData } from "@/hooks/file-system/use-file-data";
 import { useKeyboardShortcuts } from "@/hooks/file-system/use-keyboard";
-import { cn } from "@/lib/utils";
+import { useFileSystemStore } from "@/lib/file-system/store";
 import type { FileItem } from "@/lib/file-system/types";
+import { RiUploadCloud2Line } from "@/lib/icons";
 import { ROLES } from "@/lib/rbac";
-
+import { cn } from "@/lib/utils";
+import { ApprovalFilesView } from "./components/approval-files-view";
+import { AuditLogView } from "./components/audit-log";
+import { ClientFilesView } from "./components/client-files-view";
+import { DetailsPanel } from "./components/details-panel";
+import { CreateFolderDialog, MoveDialog, RenameDialog } from "./components/dialogs";
+import { DriveNewFab } from "./components/drive-new";
+import { DriveEmpty, DriveError, DriveSkeleton } from "./components/drive-states";
 import { DriveToolbar } from "./components/drive-toolbar";
+import { FavoritesView } from "./components/favorites-view";
 import { DriveGrid } from "./components/file-grid";
 import { DriveList } from "./components/file-list";
-import { DetailsPanel } from "./components/details-panel";
-import { DriveNewFab } from "./components/drive-new";
-import { DriveSkeleton, DriveEmpty, DriveError } from "./components/drive-states";
+import { FileSearch } from "./components/file-search";
 import { PreviewDialog } from "./components/preview-dialog";
 import { PreviewPane } from "./components/preview-pane";
-import { ShareDialog } from "./components/share-dialog";
 import { PropertiesPanel } from "./components/properties-panel";
-import { RecycleBin } from "./components/recycle-bin";
-import { AuditLogView } from "./components/audit-log";
 import { RecentView } from "./components/recent-view";
-import { FavoritesView } from "./components/favorites-view";
+import { RecycleBin } from "./components/recycle-bin";
+import { ShareDialog } from "./components/share-dialog";
 import { SharedWithMe } from "./components/shared-view";
-import { ClientFilesView } from "./components/client-files-view";
 import { StaffFilesView } from "./components/staff-files-view";
-import { TeamFilesView } from "./components/team-files-view";
 import { StorageDashboard } from "./components/storage-dashboard";
-import { ApprovalFilesView } from "./components/approval-files-view";
-import { CreateFolderDialog, RenameDialog, MoveDialog } from "./components/dialogs";
+import { TeamFilesView } from "./components/team-files-view";
 import { UploadDialog } from "./components/upload-queue";
-import { FileSearch } from "./components/file-search";
-import { RiUploadCloud2Line } from "@/lib/icons";
+
 interface FileManagerClientProps {
   orgId: string;
   userId: string;
   userRole: string;
 }
 
-export const FileManagerClient = React.memo(function FileManagerClient({ orgId, userId, userRole }: FileManagerClientProps) {
+export const FileManagerClient = React.memo(function FileManagerClient({
+  orgId,
+  userId,
+  userRole,
+}: FileManagerClientProps) {
   const currentNav = useFileSystemStore((s) => s.currentNav);
   const viewMode = useFileSystemStore((s) => s.viewMode);
   const previewFile = useFileSystemStore((s) => s.previewFile);
@@ -127,7 +131,7 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
         useFileSystemStore.getState().setShowUpload(true);
       }
     },
-    [userRole]
+    [userRole],
   );
 
   const contentEmpty = folders.length === 0 && files.length === 0 && !loading;
@@ -164,7 +168,11 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
                       ) : error ? (
                         <DriveError message={(error as Error)?.message} onRetry={() => refetch()} />
                       ) : contentEmpty ? (
-                        <DriveEmpty hasFolders={folders.length > 0} readonly={userRole === ROLES.CLIENTS} onNew={handleNew} />
+                        <DriveEmpty
+                          hasFolders={folders.length > 0}
+                          readonly={userRole === ROLES.CLIENTS}
+                          onNew={handleNew}
+                        />
                       ) : viewMode === "grid" ? (
                         <DriveGrid />
                       ) : (
@@ -211,7 +219,9 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
             </div>
             <div className="text-center">
               <p className="text-lg font-semibold text-foreground">Drop files to upload</p>
-              <p className="text-sm text-muted-foreground">Files will be uploaded to the current folder</p>
+              <p className="text-sm text-muted-foreground">
+                Files will be uploaded to the current folder
+              </p>
             </div>
           </div>
         </div>
@@ -230,9 +240,11 @@ export const FileManagerClient = React.memo(function FileManagerClient({ orgId, 
         <FileSearch
           orgId={orgId}
           onSelectFile={(fileId) => {
-            useFileSystemStore.getState().setPreviewFile(
-              useFileSystemStore.getState().files.find((f) => f.id === fileId) || null
-            );
+            useFileSystemStore
+              .getState()
+              .setPreviewFile(
+                useFileSystemStore.getState().files.find((f) => f.id === fileId) || null,
+              );
             setSearchOpen(false);
           }}
           onClose={() => setSearchOpen(false)}

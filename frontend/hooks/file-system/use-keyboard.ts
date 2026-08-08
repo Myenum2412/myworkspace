@@ -7,7 +7,8 @@ export function useKeyboardShortcuts() {
   useEffect(() => {
     async function handler(e: KeyboardEvent) {
       const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)
+        return;
 
       const state = useFileSystemStore.getState();
       const {
@@ -24,14 +25,27 @@ export function useKeyboardShortcuts() {
 
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {
-          case "a": e.preventDefault(); selectAll(); return;
-          case "d": e.preventDefault(); clearSelection(); return;
-          case "f": e.preventDefault(); setShowUpload(true); return;
-          case "n": e.preventDefault(); setIsCreatingFolder(true); return;
+          case "a":
+            e.preventDefault();
+            selectAll();
+            return;
+          case "d":
+            e.preventDefault();
+            clearSelection();
+            return;
+          case "f":
+            e.preventDefault();
+            setShowUpload(true);
+            return;
+          case "n":
+            e.preventDefault();
+            setIsCreatingFolder(true);
+            return;
           case "c": {
             e.preventDefault();
             const { selectedIds, setClipboard } = useFileSystemStore.getState();
-            if (selectedIds.size > 0) setClipboard({ ids: Array.from(selectedIds), action: "copy" });
+            if (selectedIds.size > 0)
+              setClipboard({ ids: Array.from(selectedIds), action: "copy" });
             return;
           }
           case "x": {
@@ -54,7 +68,9 @@ export function useKeyboardShortcuts() {
               useFileSystemStore.getState().setClipboard(null);
               useFileSystemStore.getState().setFiles([]);
               useFileSystemStore.getState().setFolders([]);
-            } catch (e) { console.error(e); }
+            } catch (e) {
+              console.error(e);
+            }
             return;
           }
         }
@@ -62,14 +78,30 @@ export function useKeyboardShortcuts() {
       }
 
       switch (e.key) {
-        case "g": setViewMode(viewMode === "grid" ? "list" : "grid"); break;
-        case "1": setCurrentNav("files"); break;
-        case "2": setCurrentNav("shared"); break;
-        case "3": setCurrentNav("recent"); break;
-        case "4": setCurrentNav("favorites"); break;
-        case "5": setCurrentNav("recycle"); break;
-        case "6": setCurrentNav("audit"); break;
-        case "u": setShowUpload(!showUpload); break;
+        case "g":
+          setViewMode(viewMode === "grid" ? "list" : "grid");
+          break;
+        case "1":
+          setCurrentNav("files");
+          break;
+        case "2":
+          setCurrentNav("shared");
+          break;
+        case "3":
+          setCurrentNav("recent");
+          break;
+        case "4":
+          setCurrentNav("favorites");
+          break;
+        case "5":
+          setCurrentNav("recycle");
+          break;
+        case "6":
+          setCurrentNav("audit");
+          break;
+        case "u":
+          setShowUpload(!showUpload);
+          break;
       }
     }
 

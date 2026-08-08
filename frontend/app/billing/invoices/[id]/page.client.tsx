@@ -1,25 +1,40 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import {
-  FileText, Info,
-  GripVertical, PlusCircle, ChevronDown, Trash2,
-  Sparkles, X, LayoutTemplate, Loader2Icon, Upload, PaperclipIcon
-} from "@/lib/icons";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import type React from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { SearchableSelect } from "@/components/ui/searchable-select";
-import Link from "next/link";
-import { useParams } from "next/navigation";
 import { defaultServices } from "@/lib/data/services";
+import {
+  ChevronDown,
+  FileText,
+  GripVertical,
+  Info,
+  LayoutTemplate,
+  Loader2Icon,
+  PaperclipIcon,
+  PlusCircle,
+  Sparkles,
+  Trash2,
+  Upload,
+  X,
+} from "@/lib/icons";
 import { queueOfflineRequest } from "@/lib/offline-sync";
-import { toast } from "sonner";
 
 export default function InvoiceFormPage() {
   const router = useRouter();
@@ -31,7 +46,7 @@ export default function InvoiceFormPage() {
   const [saving, setSaving] = useState(false);
   const [isSimplifiedView, setIsSimplifiedView] = useState(true);
   const [items, setItems] = useState([
-    { id: "1", details: "", description: "", quantity: 1, rate: 0, tax: "" }
+    { id: "1", details: "", description: "", quantity: 1, rate: 0, tax: "" },
   ]);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [tdsTcsType, setTdsTcsType] = useState("tds");
@@ -41,9 +56,10 @@ export default function InvoiceFormPage() {
   const [attachments, setAttachments] = useState<File[]>([]);
 
   const toggleSelectItem = (id: string) => {
-    setSelectedItems(prev => {
+    setSelectedItems((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -52,28 +68,32 @@ export default function InvoiceFormPage() {
     if (selectedItems.size === items.length) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(items.map(i => i.id)));
+      setSelectedItems(new Set(items.map((i) => i.id)));
     }
   };
 
   const deleteSelected = () => {
-    setItems(prev => prev.filter(i => !selectedItems.has(i.id)));
+    setItems((prev) => prev.filter((i) => !selectedItems.has(i.id)));
     setSelectedItems(new Set());
   };
 
   const deleteItem = (id: string) => {
-    setItems(prev => prev.filter(i => i.id !== id));
-    setSelectedItems(prev => { const next = new Set(prev); next.delete(id); return next; });
+    setItems((prev) => prev.filter((i) => i.id !== id));
+    setSelectedItems((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   };
 
   function handleAttachmentUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []);
-    const validFiles = files.filter(f => f.size <= 10 * 1024 * 1024);
-    setAttachments(prev => [...prev, ...validFiles].slice(0, 5));
+    const validFiles = files.filter((f) => f.size <= 10 * 1024 * 1024);
+    setAttachments((prev) => [...prev, ...validFiles].slice(0, 5));
   }
 
   function removeAttachment(index: number) {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   }
 
   const [clients, setClients] = useState<any[]>([]);
@@ -89,24 +109,28 @@ export default function InvoiceFormPage() {
       localStorage.setItem("lastInvoiceNum", String(next));
       setInvoiceNumber(`INV-${String(next).padStart(6, "0")}`);
       const today = new Date();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
       const yyyy = today.getFullYear();
       setCurrentDate(`${yyyy}-${mm}-${dd}`);
     } else {
       // Fetch existing invoice
       fetch(`/api/billing/invoices/${invoiceId}`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           const inv = data.data || data; // handle unwrapped or wrapped response
           if (inv) {
-            setInvoiceNumber(inv.invoiceNumber || inv.number || (inv.id ? `INV-${inv.id.slice(0, 5).toUpperCase()}` : ""));
+            setInvoiceNumber(
+              inv.invoiceNumber ||
+                inv.number ||
+                (inv.id ? `INV-${inv.id.slice(0, 5).toUpperCase()}` : ""),
+            );
             const dateStr = inv.invoiceDate || inv.periodStart || inv.createdAt;
             if (dateStr) {
               try {
-                setCurrentDate(new Date(dateStr).toISOString().split('T')[0]);
+                setCurrentDate(new Date(dateStr).toISOString().split("T")[0]);
               } catch {
-                setCurrentDate(dateStr.split('T')[0]);
+                setCurrentDate(dateStr.split("T")[0]);
               }
             }
             if (inv.items && Array.isArray(inv.items) && inv.items.length > 0) {
@@ -120,7 +144,7 @@ export default function InvoiceFormPage() {
             if (inv.isSimplifiedView !== undefined) setIsSimplifiedView(inv.isSimplifiedView);
           }
         })
-        .catch(err => {
+        .catch((err) => {
           console.error(err);
           toast.error("Failed to load invoice details");
         })
@@ -129,18 +153,34 @@ export default function InvoiceFormPage() {
         });
     }
 
-    fetch("/api/clients").then(res => res.json()).then(data => {
-      if (data.success && data.data) setClients(data.data);
-    }).catch(console.error);
+    fetch("/api/clients")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) setClients(data.data);
+      })
+      .catch(console.error);
 
-    fetch("/api/employees").then(res => res.json()).then(data => {
-      if (data.data) setEmployees(data.data);
-      else if (Array.isArray(data)) setEmployees(data);
-    }).catch(console.error);
+    fetch("/api/employees")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.data) setEmployees(data.data);
+        else if (Array.isArray(data)) setEmployees(data);
+      })
+      .catch(console.error);
   }, []);
 
   const addNewRow = () => {
-    setItems((prev) => [...prev, { id: Date.now().toString() + Math.random(), details: "", description: "", quantity: 1, rate: 0, tax: "" }]);
+    setItems((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString() + Math.random(),
+        details: "",
+        description: "",
+        quantity: 1,
+        rate: 0,
+        tax: "",
+      },
+    ]);
   };
 
   const addBulkRows = () => {
@@ -156,16 +196,18 @@ export default function InvoiceFormPage() {
   };
 
   const updateItem = (id: string, field: string, value: any) => {
-    setItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
   };
 
-  const subTotal = items.reduce((acc, item) => acc + (item.quantity * item.rate), 0);
+  const subTotal = items.reduce((acc, item) => acc + item.quantity * item.rate, 0);
   const discountAmount = subTotal * (discountPercent / 100);
   const tdsTcsAmount = subTotal * ((parseFloat(tdsTcsRate) || 0) / 100);
-  const total = isSimplifiedView ? subTotal : subTotal - discountAmount - tdsTcsAmount + adjustmentValue;
+  const total = isSimplifiedView
+    ? subTotal
+    : subTotal - discountAmount - tdsTcsAmount + adjustmentValue;
 
   const handleSave = useCallback(async () => {
-    const sub = items.reduce((acc, item) => acc + (item.quantity * item.rate), 0);
+    const sub = items.reduce((acc, item) => acc + item.quantity * item.rate, 0);
     const discAmt = sub * (discountPercent / 100);
     const tdsAmt = sub * ((parseFloat(tdsTcsRate) || 0) / 100);
     const tot = isSimplifiedView ? sub : sub - discAmt - tdsAmt + adjustmentValue;
@@ -173,12 +215,20 @@ export default function InvoiceFormPage() {
     setSaving(true);
     try {
       const profileRes = await fetch("/api/user/profile");
-      if (!profileRes.ok) { toast.error("Failed to load profile"); setSaving(false); return; }
+      if (!profileRes.ok) {
+        toast.error("Failed to load profile");
+        setSaving(false);
+        return;
+      }
       const profileData = await profileRes.json();
       const oid = profileData?.data?.org?.id;
-      if (!oid) { toast.error("No organization found"); setSaving(false); return; }
+      if (!oid) {
+        toast.error("No organization found");
+        setSaving(false);
+        return;
+      }
 
-      const customerName = clients.find(c => c.id === selectedClient)?.name || "";
+      const customerName = clients.find((c) => c.id === selectedClient)?.name || "";
       const payload = {
         orgId: oid,
         customerId: selectedClient,
@@ -195,7 +245,7 @@ export default function InvoiceFormPage() {
         tdsTcsAmount: tdsAmt,
         adjustmentValue,
         total: tot,
-        isSimplifiedView
+        isSimplifiedView,
       };
 
       const url = isEditing ? `/api/billing/invoices/${invoiceId}` : "/api/billing/invoices";
@@ -222,10 +272,14 @@ export default function InvoiceFormPage() {
 
         if (attachments.length > 0 && invoiceClientId) {
           try {
-            const foldersRes = await fetch(`/api/folders?clientId=${invoiceClientId}`, { credentials: "include" });
+            const foldersRes = await fetch(`/api/folders?clientId=${invoiceClientId}`, {
+              credentials: "include",
+            });
             const foldersData = await foldersRes.json();
             const folders = foldersData?.data || foldersData || [];
-            const invoicesFolder = Array.isArray(folders) ? folders.find((f: any) => f.name === "Invoices") : null;
+            const invoicesFolder = Array.isArray(folders)
+              ? folders.find((f: any) => f.name === "Invoices")
+              : null;
             const folderId = invoicesFolder?.id || "";
 
             for (const file of attachments) {
@@ -236,7 +290,9 @@ export default function InvoiceFormPage() {
               if (folderId) fd.append("folderId", folderId);
               await fetch("/api/files/upload", { method: "POST", body: fd }).catch(() => {});
             }
-          } catch { /* silent */ }
+          } catch {
+            /* silent */
+          }
         }
 
         toast.success("Invoice saved successfully.");
@@ -249,7 +305,22 @@ export default function InvoiceFormPage() {
     } finally {
       setSaving(false);
     }
-  }, [invoiceNumber, currentDate, items, discountPercent, tdsTcsType, tdsTcsRate, adjustmentValue, isSimplifiedView, router, selectedClient, clients, invoiceId, isEditing, attachments]);
+  }, [
+    invoiceNumber,
+    currentDate,
+    items,
+    discountPercent,
+    tdsTcsType,
+    tdsTcsRate,
+    adjustmentValue,
+    isSimplifiedView,
+    router,
+    selectedClient,
+    clients,
+    invoiceId,
+    isEditing,
+    attachments,
+  ]);
 
   if (loading) {
     return (
@@ -266,11 +337,24 @@ export default function InvoiceFormPage() {
         <div className="flex items-center gap-2 sm:gap-6 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <FileText className="size-4 sm:size-5 text-gray-700 shrink-0" />
-            <h1 className="text-base sm:text-xl font-semibold text-white-800 truncate">{isEditing ? "Edit Invoice" : "New Invoice"}</h1>
+            <h1 className="text-base sm:text-xl font-semibold text-white-800 truncate">
+              {isEditing ? "Edit Invoice" : "New Invoice"}
+            </h1>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <Label htmlFor="simplified" className="text-xs text-muted-foreground cursor-pointer whitespace-nowrap">Simplified</Label>
-            <div className="scale-75 sm:scale-100 origin-right"><Switch id="simplified" checked={isSimplifiedView} onCheckedChange={setIsSimplifiedView} /></div>
+            <Label
+              htmlFor="simplified"
+              className="text-xs text-muted-foreground cursor-pointer whitespace-nowrap"
+            >
+              Simplified
+            </Label>
+            <div className="scale-75 sm:scale-100 origin-right">
+              <Switch
+                id="simplified"
+                checked={isSimplifiedView}
+                onCheckedChange={setIsSimplifiedView}
+              />
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -285,34 +369,49 @@ export default function InvoiceFormPage() {
       {/* Form Content */}
       <div className="flex-1 overflow-auto">
         <div className="w-full p-3 sm:p-4 md:p-6 lg:p-8 pb-20 space-y-4 sm:space-y-6">
-
           {/* Customer Name & Salesperson */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
             <div className="flex items-center gap-3">
-              <Label className="text-xs text-muted-foreground whitespace-nowrap">Customer Name*</Label>
+              <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                Customer Name*
+              </Label>
               <Select value={selectedClient} onValueChange={setSelectedClient}>
                 <SelectTrigger className="w-full sm:w-[300px] sm:h-9 text-gray-500 bg-white border-black">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
                 <SelectContent>
-                  {clients.length === 0 && <SelectItem value="loading" disabled>Loading...</SelectItem>}
-                  {clients.map(client => (
-                    <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                  {clients.length === 0 && (
+                    <SelectItem value="loading" disabled>
+                      Loading...
+                    </SelectItem>
+                  )}
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             {!isSimplifiedView && (
               <div className="flex items-center gap-3">
-                <Label className="text-xs text-muted-foreground whitespace-nowrap">Salesperson</Label>
+                <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                  Salesperson
+                </Label>
                 <Select>
                   <SelectTrigger className="w-full sm:w-[250px] sm:h-9 text-gray-500 border-black">
                     <SelectValue placeholder="" />
                   </SelectTrigger>
                   <SelectContent>
-                    {employees.length === 0 && <SelectItem value="loading" disabled>Loading...</SelectItem>}
-                    {employees.map(emp => (
-                      <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
+                    {employees.length === 0 && (
+                      <SelectItem value="loading" disabled>
+                        Loading...
+                      </SelectItem>
+                    )}
+                    {employees.map((emp) => (
+                      <SelectItem key={emp.id} value={emp.id}>
+                        {emp.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -325,7 +424,11 @@ export default function InvoiceFormPage() {
           {/* Invoice# */}
           <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-y-1.5 sm:gap-y-6 sm:gap-x-4 items-start">
             <Label className="text-xs text-muted-foreground pt-2">Invoice#*</Label>
-            <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className="w-full sm:max-w-xs border-black" />
+            <Input
+              value={invoiceNumber}
+              onChange={(e) => setInvoiceNumber(e.target.value)}
+              className="w-full sm:max-w-xs border-black"
+            />
 
             {/* Order Number */}
             {!isSimplifiedView && (
@@ -338,10 +441,20 @@ export default function InvoiceFormPage() {
             {/* Invoice Date & Due Date */}
             <Label className="text-xs text-muted-foreground pt-2">Invoice Date*</Label>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-8">
-              <Input type="date" value={currentDate} onChange={(e) => setCurrentDate(e.target.value)} className="w-full sm:w-[200px] text-gray-700 border-black" />
+              <Input
+                type="date"
+                value={currentDate}
+                onChange={(e) => setCurrentDate(e.target.value)}
+                className="w-full sm:w-[200px] text-gray-700 border-black"
+              />
               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 <Label className="text-xs text-muted-foreground whitespace-nowrap">Due Date</Label>
-                <Input type="date" value={currentDate} className="flex-1 sm:w-[160px] border-dashed border-black text-gray-500" readOnly />
+                <Input
+                  type="date"
+                  value={currentDate}
+                  className="flex-1 sm:w-[160px] border-dashed border-black text-gray-500"
+                  readOnly
+                />
               </div>
             </div>
 
@@ -368,17 +481,29 @@ export default function InvoiceFormPage() {
               {items.map((item) => {
                 const amount = item.quantity * item.rate;
                 return (
-                  <div key={item.id} className="border border-gray-200 rounded-sm p-3 bg-white space-y-1.5">
+                  <div
+                    key={item.id}
+                    className="border border-gray-200 rounded-sm p-3 bg-white space-y-1.5"
+                  >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelectItem(item.id)} className="size-4 accent-blue-600 mt-0.5 shrink-0" />
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.has(item.id)}
+                          onChange={() => toggleSelectItem(item.id)}
+                          className="size-4 accent-blue-600 mt-0.5 shrink-0"
+                        />
                         <span className="text-xs font-medium text-muted-foreground truncate">
                           {item.details || "Select service"}
                         </span>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         {selectedItems.has(item.id) && (
-                          <button onClick={() => deleteItem(item.id)} className="p-1 text-red-400 hover:text-red-600" aria-label="Delete item">
+                          <button
+                            onClick={() => deleteItem(item.id)}
+                            className="p-1 text-red-400 hover:text-red-600"
+                            aria-label="Delete item"
+                          >
                             <Trash2 className="size-4" />
                           </button>
                         )}
@@ -389,37 +514,63 @@ export default function InvoiceFormPage() {
                       placeholder=""
                       value={item.details}
                       onValueChange={(val) => {
-                        const service = defaultServices.find(s => `${s.name} - ${s.description}` === val);
+                        const service = defaultServices.find(
+                          (s) => `${s.name} - ${s.description}` === val,
+                        );
                         if (service) {
-                          updateItem(item.id, 'details', val);
-                          updateItem(item.id, 'rate', service.rate);
+                          updateItem(item.id, "details", val);
+                          updateItem(item.id, "rate", service.rate);
                         }
                       }}
-                      options={defaultServices.filter(s => s.status === "Active").map(s => `${s.name} - ${s.description}`)}
+                      options={defaultServices
+                        .filter((s) => s.status === "Active")
+                        .map((s) => `${s.name} - ${s.description}`)}
                     />
                     <Textarea
                       placeholder=""
                       value={item.description}
-                      onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                      onChange={(e) => updateItem(item.id, "description", e.target.value)}
                       className="border focus-visible:ring-1 focus-visible:ring-blue-400 rounded-sm resize-none min-h-[50px] text-sm"
                     />
                     <div className="grid grid-cols-3 gap-2">
                       <div>
                         <Label className="text-[10px] text-muted-foreground">Qty</Label>
-                        <Input type="number" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="text-sm" />
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            updateItem(item.id, "quantity", parseFloat(e.target.value) || 0)
+                          }
+                          className="text-sm"
+                        />
                       </div>
                       <div>
                         <Label className="text-[10px] text-muted-foreground">Rate</Label>
-                        <Input type="number" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} className="text-sm" />
+                        <Input
+                          type="number"
+                          value={item.rate}
+                          onChange={(e) =>
+                            updateItem(item.id, "rate", parseFloat(e.target.value) || 0)
+                          }
+                          className="text-sm"
+                        />
                       </div>
                       <div>
                         <Label className="text-[10px] text-muted-foreground">Tax %</Label>
-                        <Input type="number" value={item.tax} onChange={(e) => updateItem(item.id, 'tax', e.target.value)} className="text-sm" placeholder="" />
+                        <Input
+                          type="number"
+                          value={item.tax}
+                          onChange={(e) => updateItem(item.id, "tax", e.target.value)}
+                          className="text-sm"
+                          placeholder=""
+                        />
                       </div>
                     </div>
                     <div className="flex items-center justify-between pt-1 border-t border-gray-100">
                       <span className="text-xs text-muted-foreground">Amount</span>
-                      <span className="text-sm font-semibold text-gray-900">{amount.toFixed(2)}</span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {amount.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 );
@@ -432,7 +583,12 @@ export default function InvoiceFormPage() {
                   <tr>
                     <th className="w-8 px-2"></th>
                     <th className="w-10 px-2">
-                      <input type="checkbox" checked={selectedItems.size === items.length && items.length > 0} onChange={toggleSelectAll} className="size-4 accent-blue-600" />
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.size === items.length && items.length > 0}
+                        onChange={toggleSelectAll}
+                        className="size-4 accent-blue-600"
+                      />
                     </th>
                     <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
                       <span className="text-white-800">Services &amp; Deliverable</span>
@@ -459,47 +615,63 @@ export default function InvoiceFormPage() {
                   {items.map((item) => {
                     const amount = item.quantity * item.rate;
                     return (
-                      <tr key={item.id} className="border-b border-gray-200 bg-white hover:bg-gray-50 transition-colors group">
+                      <tr
+                        key={item.id}
+                        className="border-b border-gray-200 bg-white hover:bg-gray-50 transition-colors group"
+                      >
                         <td className="px-2 text-center text-gray-400 align-top pt-4">
                           <GripVertical className="size-4 mx-auto cursor-move opacity-50 group-hover:opacity-100" />
                         </td>
                         <td className="px-2 align-top pt-4">
-                          <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelectItem(item.id)} className="size-4 accent-blue-600" />
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.has(item.id)}
+                            onChange={() => toggleSelectItem(item.id)}
+                            className="size-4 accent-blue-600"
+                          />
                         </td>
                         <td className="p-0 border-r border-gray-200 align-top pt-2 px-2 space-y-1 min-w-[250px]">
                           <SearchableSelect
                             placeholder=""
                             value={item.details}
                             onValueChange={(val) => {
-                              const service = defaultServices.find(s => `${s.name} - ${s.description}` === val);
+                              const service = defaultServices.find(
+                                (s) => `${s.name} - ${s.description}` === val,
+                              );
                               if (service) {
-                                updateItem(item.id, 'details', val);
-                                updateItem(item.id, 'rate', service.rate);
+                                updateItem(item.id, "details", val);
+                                updateItem(item.id, "rate", service.rate);
                               }
                             }}
-                            options={defaultServices.filter(s => s.status === "Active").map(s => `${s.name} - ${s.description}`)}
+                            options={defaultServices
+                              .filter((s) => s.status === "Active")
+                              .map((s) => `${s.name} - ${s.description}`)}
                           />
                           <Textarea
                             placeholder=""
                             value={item.description}
-                            onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                            onChange={(e) => updateItem(item.id, "description", e.target.value)}
                             className="border-0 focus-visible:ring-1 focus-visible:ring-blue-400 rounded-none resize-none min-h-[60px] bg-transparent text-sm mt-1"
                           />
                         </td>
                         <td className="p-0 align-top border-r border-gray-200">
-                          <Input 
+                          <Input
                             type="number"
                             value={item.quantity}
-                            onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
-                            className="text-right h-full border-0 focus-visible:ring-1 focus-visible:ring-blue-400 rounded-none pt-4 bg-transparent text-sm" 
+                            onChange={(e) =>
+                              updateItem(item.id, "quantity", parseFloat(e.target.value) || 0)
+                            }
+                            className="text-right h-full border-0 focus-visible:ring-1 focus-visible:ring-blue-400 rounded-none pt-4 bg-transparent text-sm"
                           />
                         </td>
                         <td className="p-0 align-top border-r border-gray-200">
-                          <Input 
+                          <Input
                             type="number"
                             value={item.rate}
-                            onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
-                            className="text-right h-full border-0 focus-visible:ring-1 focus-visible:ring-blue-400 rounded-none pt-4 bg-transparent text-sm" 
+                            onChange={(e) =>
+                              updateItem(item.id, "rate", parseFloat(e.target.value) || 0)
+                            }
+                            className="text-right h-full border-0 focus-visible:ring-1 focus-visible:ring-blue-400 rounded-none pt-4 bg-transparent text-sm"
                           />
                         </td>
                         <td className="p-0 align-top border-r border-gray-200">
@@ -507,7 +679,7 @@ export default function InvoiceFormPage() {
                             <Input
                               type="number"
                               value={item.tax}
-                              onChange={(e) => updateItem(item.id, 'tax', e.target.value)}
+                              onChange={(e) => updateItem(item.id, "tax", e.target.value)}
                               className="h-8 border-gray-200 text-sm bg-transparent"
                               placeholder=""
                             />
@@ -516,7 +688,10 @@ export default function InvoiceFormPage() {
                         <td className="px-4 align-top text-right font-medium text-gray-900 pt-4 whitespace-nowrap">
                           <div className="flex items-center justify-end gap-2">
                             {selectedItems.has(item.id) && (
-                              <Trash2 onClick={() => deleteItem(item.id)} className="size-4 cursor-pointer text-red-400 hover:text-red-600 shrink-0" />
+                              <Trash2
+                                onClick={() => deleteItem(item.id)}
+                                className="size-4 cursor-pointer text-red-400 hover:text-red-600 shrink-0"
+                              />
                             )}
                             <span>{amount.toFixed(2)}</span>
                           </div>
@@ -532,7 +707,12 @@ export default function InvoiceFormPage() {
           {/* Add Row Buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <div className="flex items-center rounded-sm overflow-hidden bg-gray-50 border border-gray-200">
-              <Button variant="ghost" size="sm" onClick={addNewRow} className="text-blue-600 gap-1.5 px-3 hover:bg-gray-100 font-medium text-sm touch-target">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={addNewRow}
+                className="text-blue-600 gap-1.5 px-3 hover:bg-gray-100 font-medium text-sm touch-target"
+              >
                 <PlusCircle className="size-4" />
                 Add New Row
               </Button>
@@ -541,7 +721,12 @@ export default function InvoiceFormPage() {
                 <ChevronDown className="size-4" />
               </Button>
             </div>
-            <Button variant="secondary" size="sm" onClick={addBulkRows} className="bg-gray-50 border border-gray-200 text-blue-600 gap-1.5 font-medium hover:bg-gray-100 touch-target">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={addBulkRows}
+              className="bg-gray-50 border border-gray-200 text-blue-600 gap-1.5 font-medium hover:bg-gray-100 touch-target"
+            >
               <PlusCircle className="size-4" />
               Add Items in Bulk
             </Button>
@@ -559,11 +744,10 @@ export default function InvoiceFormPage() {
 
               {/* Terms & Conditions */}
               <div>
-                <Label className="text-xs text-muted-foreground mb-2 block">Terms & Conditions</Label>
-                <Textarea
-                  placeholder=""
-                  className="min-h-[100px] text-sm w-full"
-                />
+                <Label className="text-xs text-muted-foreground mb-2 block">
+                  Terms & Conditions
+                </Label>
+                <Textarea placeholder="" className="min-h-[100px] text-sm w-full" />
               </div>
 
               {/* Attachments */}
@@ -574,7 +758,13 @@ export default function InvoiceFormPage() {
                 </Label>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <Button type="button" variant="outline" size="sm" className="relative" disabled={attachments.length >= 5}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="relative"
+                      disabled={attachments.length >= 5}
+                    >
                       <Upload className="size-4 mr-2" />
                       Upload File
                       <input
@@ -589,11 +779,19 @@ export default function InvoiceFormPage() {
                   {attachments.length > 0 && (
                     <div className="space-y-1">
                       {attachments.map((file, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground bg-gray-50 rounded-sm px-3 py-1.5">
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 text-sm text-muted-foreground bg-gray-50 rounded-sm px-3 py-1.5"
+                        >
                           <FileText className="size-4 shrink-0" />
                           <span className="flex-1 truncate">{file.name}</span>
-                          <span className="text-xs shrink-0">{(file.size / 1024).toFixed(1)} KB</span>
-                          <button onClick={() => removeAttachment(i)} className="text-destructive hover:text-destructive/80 shrink-0">
+                          <span className="text-xs shrink-0">
+                            {(file.size / 1024).toFixed(1)} KB
+                          </span>
+                          <button
+                            onClick={() => removeAttachment(i)}
+                            className="text-destructive hover:text-destructive/80 shrink-0"
+                          >
                             <X className="size-4" />
                           </button>
                         </div>
@@ -601,7 +799,8 @@ export default function InvoiceFormPage() {
                     </div>
                   )}
                   <p className="text-[11px] text-gray-500">
-                    Maximum: 5 files. Maximum size: 10 MB each. Files will appear in the Files page under Invoices folder.
+                    Maximum: 5 files. Maximum size: 10 MB each. Files will appear in the Files page
+                    under Invoices folder.
                   </p>
                 </div>
               </div>
@@ -626,7 +825,9 @@ export default function InvoiceFormPage() {
                           onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
                           className="w-14 sm:w-16 h-8 text-right border-0 focus-visible:ring-0 rounded-none"
                         />
-                        <span className="text-gray-500 bg-gray-50 border-l border-gray-200 h-8 px-2 sm:px-3 flex items-center font-medium">%</span>
+                        <span className="text-gray-500 bg-gray-50 border-l border-gray-200 h-8 px-2 sm:px-3 flex items-center font-medium">
+                          %
+                        </span>
                       </div>
                     </div>
                     <span className="text-gray-900">{discountAmount.toFixed(2)}</span>
@@ -634,14 +835,22 @@ export default function InvoiceFormPage() {
 
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-5 text-sm">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                      <RadioGroup value={tdsTcsType} onValueChange={setTdsTcsType} className="flex items-center gap-2 sm:gap-3">
+                      <RadioGroup
+                        value={tdsTcsType}
+                        onValueChange={setTdsTcsType}
+                        className="flex items-center gap-2 sm:gap-3"
+                      >
                         <div className="flex items-center space-x-1.5">
                           <RadioGroupItem value="tds" id="tds" className="size-3.5" />
-                          <Label htmlFor="tds" className="text-xs text-muted-foreground">TDS</Label>
+                          <Label htmlFor="tds" className="text-xs text-muted-foreground">
+                            TDS
+                          </Label>
                         </div>
                         <div className="flex items-center space-x-1.5">
                           <RadioGroupItem value="tcs" id="tcs" className="size-3.5" />
-                          <Label htmlFor="tcs" className="text-xs text-muted-foreground">TCS</Label>
+                          <Label htmlFor="tcs" className="text-xs text-muted-foreground">
+                            TCS
+                          </Label>
                         </div>
                       </RadioGroup>
                       <Select value={tdsTcsRate} onValueChange={setTdsTcsRate}>
@@ -660,7 +869,10 @@ export default function InvoiceFormPage() {
 
                   <div className="flex justify-between items-center mb-6 text-sm">
                     <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                      <Input defaultValue="Adjustment" className="w-20 sm:w-24 bg-white text-gray-600 border border-dashed border-gray-300 text-xs text-center" />
+                      <Input
+                        defaultValue="Adjustment"
+                        className="w-20 sm:w-24 bg-white text-gray-600 border border-dashed border-gray-300 text-xs text-center"
+                      />
                       <Input
                         type="number"
                         value={adjustmentValue}
@@ -675,13 +887,22 @@ export default function InvoiceFormPage() {
               )}
 
               <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                <span className="text-base sm:text-[17px] font-bold text-gray-900">Total ( ₹ )</span>
-                <span className="text-base sm:text-[17px] font-bold text-gray-900">{total.toFixed(2)}</span>
+                <span className="text-base sm:text-[17px] font-bold text-gray-900">
+                  Total ( ₹ )
+                </span>
+                <span className="text-base sm:text-[17px] font-bold text-gray-900">
+                  {total.toFixed(2)}
+                </span>
               </div>
-              
+
               {isSimplifiedView && (
                 <div className="flex justify-end mt-2">
-                  <Button variant="ghost" size="sm" className="text-blue-600 font-normal px-0 hover:bg-transparent" onClick={() => setIsSimplifiedView(false)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-blue-600 font-normal px-0 hover:bg-transparent"
+                    onClick={() => setIsSimplifiedView(false)}
+                  >
                     Show Total Summary <ChevronDown className="size-3.5 ml-1" />
                   </Button>
                 </div>

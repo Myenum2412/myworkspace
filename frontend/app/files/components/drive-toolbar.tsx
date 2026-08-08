@@ -1,40 +1,50 @@
 "use client";
 
 import { useCallback } from "react";
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { cn } from "@/lib/utils";
-import { ROLES } from "@/lib/rbac";
-import {
-  SearchIcon,
-  Grid3X3Icon,
-  ListIcon,
-  ChevronDownIcon,
-  ArrowUpIcon,
-  XIcon,
-  InfoIcon,
-  DownloadIcon,
-  Trash2Icon,
-  StarIcon,
-  FolderIcon,
-  UploadIcon,
-  FolderPlusIcon,
-  FilterListIcon,
-} from "@/lib/icons";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import * as api from "@/lib/file-system/api";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+import { useFileSystemStore } from "@/lib/file-system/store";
+import {
+  ArrowUpIcon,
+  ChevronDownIcon,
+  DownloadIcon,
+  FilterListIcon,
+  FolderIcon,
+  FolderPlusIcon,
+  Grid3X3Icon,
+  InfoIcon,
+  ListIcon,
+  SearchIcon,
+  StarIcon,
+  Trash2Icon,
+  UploadIcon,
+  XIcon,
+} from "@/lib/icons";
+import { ROLES } from "@/lib/rbac";
+import { cn } from "@/lib/utils";
 
-function BreadcrumbCrumb({ label, icon, onClick, last }: { label: string; icon?: React.ReactNode; onClick: () => void; last?: boolean }) {
+function BreadcrumbCrumb({
+  label,
+  icon,
+  onClick,
+  last,
+}: {
+  label: string;
+  icon?: React.ReactNode;
+  onClick: () => void;
+  last?: boolean;
+}) {
   if (last) {
     return (
       <span className="flex min-w-0 items-center gap-1.5 text-[17px] font-medium text-foreground">
@@ -96,7 +106,7 @@ export function DriveToolbar({
       setCurrentFolder(target.id);
       setBreadcrumbs(breadcrumbs.slice(0, index + 1));
     },
-    [breadcrumbs, setCurrentFolder, setBreadcrumbs]
+    [breadcrumbs, setCurrentFolder, setBreadcrumbs],
   );
 
   const handleDeleteSelected = useCallback(() => {
@@ -146,11 +156,7 @@ export function DriveToolbar({
               const last = i === breadcrumbs.length - 1;
               return (
                 <div key={crumb.id ?? "root"} className="flex min-w-0 items-center">
-                  <BreadcrumbCrumb
-                    label={crumb.name}
-                    last={last}
-                    onClick={() => navigate(i)}
-                  />
+                  <BreadcrumbCrumb label={crumb.name} last={last} onClick={() => navigate(i)} />
                   {!last && <ChevronDownIcon className="mx-0.5 size-3.5 text-muted-foreground" />}
                 </div>
               );
@@ -184,7 +190,9 @@ export function DriveToolbar({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-9 gap-1 rounded-full px-3">
-              <span className="hidden text-sm text-foreground lg:inline">{sortOptions.find((o) => o.value === sortValue)?.label ?? "Sort"}</span>
+              <span className="hidden text-sm text-foreground lg:inline">
+                {sortOptions.find((o) => o.value === sortValue)?.label ?? "Sort"}
+              </span>
               <ChevronDownIcon className="size-4 text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
@@ -209,16 +217,14 @@ export function DriveToolbar({
         {/* Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 w-9 rounded-full p-0"
-            >
+            <Button variant="ghost" size="sm" className="h-9 w-9 rounded-full p-0">
               <FilterListIcon className="size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Filter by type</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Filter by type
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {[
               { value: "all", label: "All files" },
@@ -254,7 +260,9 @@ export function DriveToolbar({
             onClick={() => setViewMode("grid")}
             className={cn(
               "grid size-7 place-items-center rounded-full transition-colors",
-              viewMode === "grid" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              viewMode === "grid"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Grid3X3Icon className="size-4" />
@@ -263,7 +271,9 @@ export function DriveToolbar({
             onClick={() => setViewMode("list")}
             className={cn(
               "grid size-7 place-items-center rounded-full transition-colors",
-              viewMode === "list" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              viewMode === "list"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <ListIcon className="size-4" />
@@ -292,13 +302,28 @@ export function DriveToolbar({
           <span className="mr-2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">
             {selectedCount} selected
           </span>
-          <Button variant="ghost" size="sm" className="h-8 rounded-full text-xs" onClick={() => setShowUpload(true)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 rounded-full text-xs"
+            onClick={() => setShowUpload(true)}
+          >
             <UploadIcon className="mr-1.5 size-3.5" /> Upload here
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 rounded-full text-xs" onClick={() => api.bulkDownload(Array.from(selectedIds))}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 rounded-full text-xs"
+            onClick={() => api.bulkDownload(Array.from(selectedIds))}
+          >
             <DownloadIcon className="mr-1.5 size-3.5" /> Download
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 rounded-full text-xs" onClick={() => setIsCreatingFolder(true)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 rounded-full text-xs"
+            onClick={() => setIsCreatingFolder(true)}
+          >
             <FolderPlusIcon className="mr-1.5 size-3.5" /> New folder
           </Button>
           <div className="flex-1" />
@@ -309,12 +334,21 @@ export function DriveToolbar({
               confirmLabel="Delete"
               onConfirm={handleDeleteSelected}
             >
-              <Button variant="ghost" size="sm" className="h-8 rounded-full text-xs text-destructive hover:bg-destructive/10">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 rounded-full text-xs text-destructive hover:bg-destructive/10"
+              >
                 <Trash2Icon className="mr-1.5 size-3.5" /> Move to trash
               </Button>
             </DeleteConfirmDialog>
           )}
-          <Button variant="ghost" size="sm" className="h-8 rounded-full text-xs" onClick={clearSelection}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 rounded-full text-xs"
+            onClick={clearSelection}
+          >
             <XIcon className="mr-1.5 size-3.5" /> Clear
           </Button>
         </div>

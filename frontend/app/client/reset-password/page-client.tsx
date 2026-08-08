@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { ClientResetPasswordForm } from "./form";
+import { useEffect, useState } from "react";
 import { Loader2 } from "@/lib/icons";
+import { ClientResetPasswordForm } from "./form";
 
 export function ClientResetPasswordClient() {
   const searchParams = useSearchParams();

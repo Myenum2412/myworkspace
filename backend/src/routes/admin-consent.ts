@@ -1,13 +1,13 @@
-import { Router, Response } from "express";
+import { type Response, Router } from "express";
+import { logger } from "../lib/logger/index.js";
 import { authenticate } from "../middleware/auth.js";
 import { platformAdminOnly } from "../middleware/authorize.js";
-import { AuthRequest } from "../types/index.js";
 import { AppError } from "../middleware/error.js";
-import { consentService } from "../services/consent/consent.service.js";
 import { analyticsService } from "../services/analytics/analytics.service.js";
 import { attributionService } from "../services/analytics/attribution.service.js";
 import { scriptLoaderService } from "../services/analytics/script-loader.js";
-import { logger } from "../lib/logger/index.js";
+import { consentService } from "../services/consent/consent.service.js";
+import type { AuthRequest } from "../types/index.js";
 
 const router = Router();
 
@@ -53,7 +53,10 @@ router.post("/consent/rotate-policy", async (req: AuthRequest, res: Response) =>
   }
 
   const count = await consentService.rotatePolicyVersion(newVersion);
-  logger.info({ newVersion, affectedRecords: count, performedBy: req.user?.userId }, "Policy version rotated");
+  logger.info(
+    { newVersion, affectedRecords: count, performedBy: req.user?.userId },
+    "Policy version rotated",
+  );
 
   res.json({ success: true, data: { affectedRecords: count, newVersion } });
 });
@@ -167,11 +170,14 @@ router.get("/attribution/funnel", async (req: AuthRequest, res: Response) => {
     {
       from: req.query.from ? new Date(req.query.from as string) : undefined,
       to: req.query.to ? new Date(req.query.to as string) : undefined,
-    }
+    },
   );
 
   if (!funnel) {
-    throw new AppError(404, `Funnel "${funnelName}" not found. Create it first via POST /api/admin/attribution/funnel`);
+    throw new AppError(
+      404,
+      `Funnel "${funnelName}" not found. Create it first via POST /api/admin/attribution/funnel`,
+    );
   }
 
   res.json({ success: true, data: funnel });
@@ -198,7 +204,7 @@ router.post("/attribution/funnel", async (req: AuthRequest, res: Response) => {
         })),
       },
     },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 
   res.json({ success: true, data: funnel });

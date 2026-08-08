@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { mkdir, writeFile } from "fs/promises";
+import { type NextRequest, NextResponse } from "next/server";
+import path from "path";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
@@ -15,7 +15,10 @@ export async function POST(request: NextRequest) {
   const selfie = formData.get("selfie") as File | null;
 
   if (!token || !galleryId || !fullName || !email || !phone || !selfie) {
-    return NextResponse.json({ success: false, message: "All fields are required" }, { status: 400 });
+    return NextResponse.json(
+      { success: false, message: "All fields are required" },
+      { status: 400 },
+    );
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -28,11 +31,17 @@ export async function POST(request: NextRequest) {
 
   const tokenDoc = await db.collection(collections.galleryAccessTokens).findOne({ token });
   if (!tokenDoc || !tokenDoc.active) {
-    return NextResponse.json({ success: false, message: "Invalid or expired access token" }, { status: 403 });
+    return NextResponse.json(
+      { success: false, message: "Invalid or expired access token" },
+      { status: 403 },
+    );
   }
 
   if (tokenDoc.expiresAt && new Date(tokenDoc.expiresAt) < new Date()) {
-    return NextResponse.json({ success: false, message: "Access token has expired" }, { status: 403 });
+    return NextResponse.json(
+      { success: false, message: "Access token has expired" },
+      { status: 403 },
+    );
   }
 
   const gallery = await db.collection(collections.qrGalleries).findOne({ id: galleryId });
@@ -72,7 +81,8 @@ export async function POST(request: NextRequest) {
   let bestConfidence = 0;
 
   for (const person of persons) {
-    const embeddings = await db.collection(collections.faceEmbeddings)
+    const embeddings = await db
+      .collection(collections.faceEmbeddings)
       .find({ personId: person.id })
       .toArray();
 
@@ -119,10 +129,9 @@ export async function POST(request: NextRequest) {
     createdAt: new Date(),
   });
 
-  await db.collection(collections.visitorInfo).updateOne(
-    { id: visitorId },
-    { $set: { verified: true, matchedPersonId } }
-  );
+  await db
+    .collection(collections.visitorInfo)
+    .updateOne({ id: visitorId }, { $set: { verified: true, matchedPersonId } });
 
   await db.collection(collections.accessLogs).insertOne({
     id: uuid(),

@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IEmailLog extends Document {
   orgId: string;
@@ -7,7 +7,15 @@ export interface IEmailLog extends Document {
   subject: string;
   template: string;
   data: string;
-  status: "queued" | "sent" | "delivered" | "opened" | "clicked" | "failed" | "bounced" | "complained";
+  status:
+    | "queued"
+    | "sent"
+    | "delivered"
+    | "opened"
+    | "clicked"
+    | "failed"
+    | "bounced"
+    | "complained";
   provider: "smtp" | "resend";
   providerMessageId?: string;
   deliveryAttempts: number;
@@ -31,7 +39,7 @@ const ClickedUrlSchema = new Schema(
     clickedAt: { type: Date, default: Date.now },
     count: { type: Number, default: 1 },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const emailLogSchema = new Schema<IEmailLog>(
@@ -64,7 +72,7 @@ const emailLogSchema = new Schema<IEmailLog>(
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 emailLogSchema.index({ orgId: 1, createdAt: -1 });

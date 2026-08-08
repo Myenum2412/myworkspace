@@ -1,2 +1,2 @@
-export { statusStyles,priorityStyles,columns } from "./columns.client"
-export type { Task } from "./columns.client"
+export type { Task } from "./columns.client";
+export { columns, priorityStyles, statusStyles } from "./columns.client";

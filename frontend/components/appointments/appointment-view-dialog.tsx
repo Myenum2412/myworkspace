@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
+import { statusColorMap } from "@/app/appointments/columns";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { statusColorMap } from "@/app/appointments/columns";
 import type { Appointment, AppointmentStatus } from "./appointment-types";
 
 interface Props {
@@ -24,9 +24,7 @@ export function AppointmentViewDialog({ appointment, open, onOpenChange }: Props
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Appointment Details</DialogTitle>
-          <DialogDescription>
-            Appointment ID: {appointment.appointmentId}
-          </DialogDescription>
+          <DialogDescription>Appointment ID: {appointment.appointmentId}</DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
@@ -47,7 +45,9 @@ export function AppointmentViewDialog({ appointment, open, onOpenChange }: Props
           </div>
           <div>
             <p className="text-muted-foreground">Appointment Date</p>
-            <p className="font-medium">{new Date(appointment.appointmentDate).toLocaleDateString()}</p>
+            <p className="font-medium">
+              {new Date(appointment.appointmentDate).toLocaleDateString()}
+            </p>
           </div>
           <div>
             <p className="text-muted-foreground">Preferred Time</p>
@@ -55,7 +55,9 @@ export function AppointmentViewDialog({ appointment, open, onOpenChange }: Props
           </div>
           <div>
             <p className="text-muted-foreground">Status</p>
-            <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${statusColorMap[appointment.status as AppointmentStatus] || ""}`}>
+            <span
+              className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${statusColorMap[appointment.status as AppointmentStatus] || ""}`}
+            >
               {appointment.status}
             </span>
           </div>

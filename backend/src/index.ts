@@ -1,28 +1,36 @@
-import { createServer } from "http";
+import { createServer, type Server } from "http";
 import app from "./app.js";
+import { getEnforcer } from "./config/casbin.js";
 import { env } from "./config/env.js";
-import { connectDb } from "./lib/db/index.js";
 import { createIndexes } from "./indexes.js";
-import { socketIOManager } from "./lib/socketio/index.js";
+import { connectDb } from "./lib/db/index.js";
+import { logger } from "./lib/logger/index.js";
+import { metricsRegistry } from "./lib/monitoring/index.js";
+import { getChannel, isRabbitMQConfigured } from "./lib/queue/connection.js";
+import { startWorkers } from "./lib/queue/worker.js";
 import { initializeScheduler, shutdownScheduler } from "./lib/scheduler/index.js";
 import { registerAllHandlers } from "./lib/scheduler/register-handlers.js";
-import { logger } from "./lib/logger/index.js";
-import { getEnforcer } from "./config/casbin.js";
-import { startWorkers } from "./lib/queue/worker.js";
-import { getChannel, isRabbitMQConfigured } from "./lib/queue/connection.js";
-import { promoteRateLimitersToValkey } from "./middleware/rate-limit.js";
 import { initSentry } from "./lib/sentry.js";
-import { metricsRegistry } from "./lib/monitoring/index.js";
-import { Server } from "http";
+import { socketIOManager } from "./lib/socketio/index.js";
+import { promoteRateLimitersToValkey } from "./middleware/rate-limit.js";
 
 let server: Server;
 
 process.on("unhandledRejection", (reason: unknown) => {
-  logger.error({ err: reason instanceof Error ? { message: reason.message, stack: reason.stack } : String(reason) }, "Unhandled rejection");
+  logger.error(
+    {
+      err:
+        reason instanceof Error ? { message: reason.message, stack: reason.stack } : String(reason),
+    },
+    "Unhandled rejection",
+  );
 });
 
 process.on("uncaughtException", (err: Error) => {
-  logger.fatal({ err: err.message, stack: err.stack }, "Uncaught exception — initiating graceful shutdown");
+  logger.fatal(
+    { err: err.message, stack: err.stack },
+    "Uncaught exception — initiating graceful shutdown",
+  );
   if (server) {
     server.close(() => process.exit(1));
     setTimeout(() => process.exit(1), 10000).unref();
@@ -38,20 +46,28 @@ async function start() {
 
   // Parallelize independent startup operations
   const [,] = await Promise.all([
-    connectDb().then(async () => {
-      try {
-        const { FileAttachment } = await import("./lib/db/models/FileAttachment.js");
-        const updateResult = await FileAttachment.updateMany(
-          { virusScanStatus: "pending" },
-          { virusScanStatus: "clean", virusScanResult: "Auto-cleaned pending file during system startup" }
-        );
-        logger.info({ matched: updateResult.matchedCount, modified: updateResult.modifiedCount }, "Auto-cleaned old pending virus scan files");
-      } catch (err: any) {
-        logger.error({ err: err.message }, "Failed to auto-clean pending virus scan files");
-      }
-    }).catch((err) => {
-      logger.error({ err }, "MongoDB connection failed — server will start without DB");
-    }),
+    connectDb()
+      .then(async () => {
+        try {
+          const { FileAttachment } = await import("./lib/db/models/FileAttachment.js");
+          const updateResult = await FileAttachment.updateMany(
+            { virusScanStatus: "pending" },
+            {
+              virusScanStatus: "clean",
+              virusScanResult: "Auto-cleaned pending file during system startup",
+            },
+          );
+          logger.info(
+            { matched: updateResult.matchedCount, modified: updateResult.modifiedCount },
+            "Auto-cleaned old pending virus scan files",
+          );
+        } catch (err: any) {
+          logger.error({ err: err.message }, "Failed to auto-clean pending virus scan files");
+        }
+      })
+      .catch((err) => {
+        logger.error({ err }, "MongoDB connection failed — server will start without DB");
+      }),
     getEnforcer().catch((err) => {
       logger.warn({ err }, "Casbin initialization failed (policies will use file fallback)");
     }),
@@ -123,50 +139,60 @@ async function start() {
 
     const tasks: Promise<void>[] = [];
 
-    tasks.push(new Promise((resolve) => {
-      server.close(() => {
-        logger.info("HTTP server closed");
+    tasks.push(
+      new Promise((resolve) => {
+        server.close(() => {
+          logger.info("HTTP server closed");
+          resolve();
+        });
+      }),
+    );
+
+    tasks.push(
+      new Promise((resolve) => {
+        try {
+          socketIOManager.close();
+          logger.info("Socket.IO closed");
+        } catch (err) {
+          logger.warn({ err }, "Socket.IO close error");
+        }
         resolve();
-      });
-    }));
+      }),
+    );
 
-    tasks.push(new Promise((resolve) => {
-      try {
-        socketIOManager.close();
-        logger.info("Socket.IO closed");
-      } catch (err) {
-        logger.warn({ err }, "Socket.IO close error");
-      }
-      resolve();
-    }));
+    tasks.push(
+      (async () => {
+        try {
+          await shutdownScheduler();
+        } catch (err) {
+          logger.warn({ err }, "Scheduler shutdown error");
+        }
+      })(),
+    );
 
-    tasks.push((async () => {
-      try {
-        await shutdownScheduler();
-      } catch (err) {
-        logger.warn({ err }, "Scheduler shutdown error");
-      }
-    })());
+    tasks.push(
+      (async () => {
+        try {
+          const { closeConnection } = await import("./lib/queue/connection.js");
+          await closeConnection();
+          logger.info("RabbitMQ connection closed");
+        } catch (err) {
+          logger.warn({ err }, "RabbitMQ close error");
+        }
+      })(),
+    );
 
-    tasks.push((async () => {
-      try {
-        const { closeConnection } = await import("./lib/queue/connection.js");
-        await closeConnection();
-        logger.info("RabbitMQ connection closed");
-      } catch (err) {
-        logger.warn({ err }, "RabbitMQ close error");
-      }
-    })());
-
-    tasks.push((async () => {
-      try {
-        const { default: mongoose } = await import("mongoose");
-        await mongoose.disconnect();
-        logger.info("MongoDB disconnected");
-      } catch (err) {
-        logger.warn({ err }, "MongoDB disconnect error");
-      }
-    })());
+    tasks.push(
+      (async () => {
+        try {
+          const { default: mongoose } = await import("mongoose");
+          await mongoose.disconnect();
+          logger.info("MongoDB disconnected");
+        } catch (err) {
+          logger.warn({ err }, "MongoDB disconnect error");
+        }
+      })(),
+    );
 
     await Promise.all(tasks);
     clearTimeout(timeout);

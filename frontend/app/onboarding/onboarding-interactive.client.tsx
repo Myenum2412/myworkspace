@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { CompanyDetailsForm, type CompanyDetails } from "@/components/company-details-form";
+import { type CompanyDetails, CompanyDetailsForm } from "@/components/company-details-form";
 import { completeOnboarding } from "@/lib/actions/onboarding";
 
 export function OnboardingInteractive() {
@@ -20,7 +20,12 @@ export function OnboardingInteractive() {
       if ((error as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
         throw error;
       }
-      const msg = error instanceof TypeError && error.message === "Failed to fetch" ? "Could not connect to server" : error instanceof Error ? error.message : "Could not save. Try again.";
+      const msg =
+        error instanceof TypeError && error.message === "Failed to fetch"
+          ? "Could not connect to server"
+          : error instanceof Error
+            ? error.message
+            : "Could not save. Try again.";
       toast.error(msg);
       setSubmitError(msg);
       setIsSubmitting(false);
@@ -44,10 +49,7 @@ export function OnboardingInteractive() {
             </div>
           )}
 
-          <CompanyDetailsForm
-            onSubmit={handleCompanyDetailsSubmit}
-            isSubmitting={isSubmitting}
-          />
+          <CompanyDetailsForm onSubmit={handleCompanyDetailsSubmit} isSubmitting={isSubmitting} />
         </div>
       </div>
     </div>

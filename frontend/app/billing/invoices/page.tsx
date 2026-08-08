@@ -1,4 +1,3 @@
-
 import BillingInvoicesPageClient from "./page.client";
 
 export default function BillingInvoicesPage() {

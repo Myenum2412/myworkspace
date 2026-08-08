@@ -251,19 +251,20 @@ const ChoroplethMercatorContent = memo(function ChoroplethMercatorContent({
   overlayChildren,
   zoom,
 }: ChoroplethMercatorContentProps) {
-  const featurePaths = data.features.map(
-    (feature) => mercator.path(feature) ?? null
-  ) as (string | null)[];
+  const featurePaths = data.features.map((feature) => mercator.path(feature) ?? null) as (
+    | string
+    | null
+  )[];
 
   const pathGenerator = useCallback(
     (feature: ChoroplethFeature) => mercator.path(feature) ?? undefined,
-    [mercator]
+    [mercator],
   );
 
   const rawPathGenerator = useCallback(
     // biome-ignore lint/suspicious/noExplicitAny: GeoJSON types are complex
     (geo: any) => mercator.path(geo),
-    [mercator]
+    [mercator],
   );
 
   const projectPoint = useCallback(
@@ -274,7 +275,7 @@ const ChoroplethMercatorContent = memo(function ChoroplethMercatorContent({
       }
       return projected as [number, number];
     },
-    [mercator]
+    [mercator],
   );
 
   const stableValue = useMemo(
@@ -312,7 +313,7 @@ const ChoroplethMercatorContent = memo(function ChoroplethMercatorContent({
       rawPathGenerator,
       revealEpoch,
       width,
-    ]
+    ],
   );
 
   return (
@@ -320,12 +321,7 @@ const ChoroplethMercatorContent = memo(function ChoroplethMercatorContent({
       <ChoroplethStableProvider value={stableValue}>
         <ChoroplethInteractionShell>
           <div className="relative h-full w-full" ref={containerRef}>
-            <ChoroplethSvg
-              height={height}
-              svgChildren={svgChildren}
-              width={width}
-              zoom={zoom}
-            />
+            <ChoroplethSvg height={height} svgChildren={svgChildren} width={width} zoom={zoom} />
             {overlayChildren}
           </div>
         </ChoroplethInteractionShell>
@@ -381,10 +377,7 @@ function ChoroplethChartInner({
     innerHeight / 2 + margin.top + 50,
   ];
 
-  const { svgChildren, overlayChildren } = useMemo(
-    () => separateChildren(children),
-    [children]
-  );
+  const { svgChildren, overlayChildren } = useMemo(() => separateChildren(children), [children]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: revealSignature
   useEffect(() => {
@@ -425,11 +418,7 @@ function ChoroplethChartInner({
     >
       {(mercator) => {
         const content = (zoom?: ZoomInstance<SVGSVGElement>) => (
-          <ChoroplethMercatorContent
-            {...mercatorContentProps}
-            mercator={mercator}
-            zoom={zoom}
-          />
+          <ChoroplethMercatorContent {...mercatorContentProps} mercator={mercator} zoom={zoom} />
         );
 
         if (zoomEnabled) {

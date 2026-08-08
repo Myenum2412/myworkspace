@@ -13,7 +13,11 @@ export type UploadCategory = "image" | "document" | "archive" | "video" | "audio
  * Orchestrate an upload: determine category and validate basic constraints.
  * Returns the category and whether the upload should proceed.
  */
-export function orchestrateUpload(mimeType: string, size: number, maxSize: number): {
+export function orchestrateUpload(
+  mimeType: string,
+  size: number,
+  maxSize: number,
+): {
   category: UploadCategory;
   allowed: boolean;
   reason?: string;

@@ -1,7 +1,14 @@
 "use client";
 import * as React from "react";
-import { BoldIcon, ItalicIcon, UnderlineIcon, ListIcon, ListOrderedIcon, HighlighterIcon } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
+import {
+  BoldIcon,
+  HighlighterIcon,
+  ItalicIcon,
+  ListIcon,
+  ListOrderedIcon,
+  UnderlineIcon,
+} from "@/lib/icons";
 
 interface BlogEditorProps {
   value: string;
@@ -14,7 +21,11 @@ export function BlogEditor({ value, onChange, placeholder }: BlogEditorProps) {
   const savedRange = React.useRef<Range | null>(null);
 
   React.useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value && !editorRef.current.innerHTML.trim()) {
+    if (
+      editorRef.current &&
+      editorRef.current.innerHTML !== value &&
+      !editorRef.current.innerHTML.trim()
+    ) {
       editorRef.current.innerHTML = value || "";
     }
   }, [value]);
@@ -67,22 +78,35 @@ export function BlogEditor({ value, onChange, placeholder }: BlogEditorProps) {
   return (
     <div className="border-2 border-black overflow-hidden bg-background flex flex-col focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 h-full min-h-0">
       <div className="flex items-center gap-1 p-1 border-b border-black bg-muted/50 shrink-0">
-        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('bold')}><BoldIcon className="" /></Button>
-        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('italic')}><ItalicIcon className="" /></Button>
-        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('underline')}><UnderlineIcon className="" /></Button>
+        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd("bold")}>
+          <BoldIcon className="" />
+        </Button>
+        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd("italic")}>
+          <ItalicIcon className="" />
+        </Button>
+        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd("underline")}>
+          <UnderlineIcon className="" />
+        </Button>
         <div className="w-px h-4 bg-border mx-1" />
-        <label className="flex items-center justify-center h-8 w-8 rounded-sm hover:bg-muted cursor-pointer relative text-muted-foreground hover:text-foreground transition-colors" title="Highlight Color">
+        <label
+          className="flex items-center justify-center h-8 w-8 rounded-sm hover:bg-muted cursor-pointer relative text-muted-foreground hover:text-foreground transition-colors"
+          title="Highlight Color"
+        >
           <HighlighterIcon className="size-4" />
           <input
             type="color"
             defaultValue="#fef08a"
             className="absolute opacity-0 w-full h-full cursor-pointer"
-            onChange={(e) => exec('backColor', e.target.value)}
+            onChange={(e) => exec("backColor", e.target.value)}
           />
         </label>
         <div className="w-px h-4 bg-border mx-1" />
-        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('insertUnorderedList')}><ListIcon className="" /></Button>
-        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd('insertOrderedList')}><ListIcon className="" /></Button>
+        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd("insertUnorderedList")}>
+          <ListIcon className="" />
+        </Button>
+        <Button type="button" variant="ghost" size="icon" onMouseDown={cmd("insertOrderedList")}>
+          <ListIcon className="" />
+        </Button>
       </div>
       <div
         ref={editorRef}

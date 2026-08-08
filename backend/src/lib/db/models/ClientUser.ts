@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IClientUser extends Document {
   id: string;
@@ -46,7 +46,7 @@ const clientUserSchema = new Schema<IClientUser>(
     createdBy: { type: String, required: true },
     updatedBy: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const ClientUser = model<IClientUser>("ClientUser", clientUserSchema);

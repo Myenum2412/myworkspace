@@ -10,17 +10,20 @@ export async function GET() {
 
   const orgId = await ensureUserOrg(session.user.id, session.user.email);
 
-  const files = await (await db.collection(collections.fileAttachments)
-    .find({ orgId, deletedAt: null }))
+  const files = await (
+    await db.collection(collections.fileAttachments).find({ orgId, deletedAt: null })
+  )
     .sort({ updatedAt: -1 })
     .limit(20)
     .toArray();
 
-  const userIds = [...new Set(files.map(f => f.uploaderId))];
-  const users = await (await db.collection(collections.users).find({ id: { $in: userIds } })).toArray();
-  const userMap = new Map(users.map(u => [u.id, u.name]));
+  const userIds = [...new Set(files.map((f) => f.uploaderId))];
+  const users = await (
+    await db.collection(collections.users).find({ id: { $in: userIds } })
+  ).toArray();
+  const userMap = new Map(users.map((u) => [u.id, u.name]));
 
   return NextResponse.json({
-    data: files.map(f => ({ ...f, uploaderName: userMap.get(f.uploaderId) || "Unknown" })),
+    data: files.map((f) => ({ ...f, uploaderName: userMap.get(f.uploaderId) || "Unknown" })),
   });
 }

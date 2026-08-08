@@ -1,24 +1,18 @@
-import * as React from "react"
-import { Select as SelectPrimitive } from "radix-ui"
+import { Select as SelectPrimitive } from "radix-ui";
+import type * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
-function SelectRoot({
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />
+function SelectRoot({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
+  return <SelectPrimitive.Root data-slot="select" {...props} />;
 }
 
-function SelectGroup({
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Group>) {
-  return <SelectPrimitive.Group data-slot="select-group" {...props} />
+function SelectGroup({ ...props }: React.ComponentProps<typeof SelectPrimitive.Group>) {
+  return <SelectPrimitive.Group data-slot="select-group" {...props} />;
 }
 
-function SelectValue({
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Value>) {
-  return <SelectPrimitive.Value data-slot="select-value" {...props} />
+function SelectValue({ ...props }: React.ComponentProps<typeof SelectPrimitive.Value>) {
+  return <SelectPrimitive.Value data-slot="select-value" {...props} />;
 }
 
 function SelectTrigger({
@@ -31,7 +25,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       className={cn(
         "flex h-8 w-full items-center justify-between gap-2 border border-gray-300 bg-background px-3 py-1 text-sm text-foreground outline-none transition-all focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-muted-foreground [&>svg]:shrink-0",
-        className
+        className,
       )}
       {...props}
     >
@@ -52,7 +46,7 @@ function SelectTrigger({
         <path d="m6 9 6 6 6-6" />
       </svg>
     </SelectPrimitive.Trigger>
-  )
+  );
 }
 
 function SelectContent({
@@ -67,9 +61,8 @@ function SelectContent({
         data-slot="select-content"
         className={cn(
           "relative z-[60] max-h-96 min-w-[8rem] overflow-hidden border border-gray-300 bg-background text-foreground rounded-md data-side=bottom:animate-in data-side=top:animate-out data-side=top:fade-out-0 data-side=bottom:fade-in-0 data-side=top:zoom-out-95 data-side=bottom:zoom-in-95",
-          position === "popper" &&
-            "data-side=bottom:translate-y-1 data-side=top:-translate-y-1",
-          className
+          position === "popper" && "data-side=bottom:translate-y-1 data-side=top:-translate-y-1",
+          className,
         )}
         position={position}
         {...props}
@@ -78,14 +71,14 @@ function SelectContent({
           className={cn(
             "p-1",
             position === "popper" &&
-              "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
+              "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
           )}
         >
           {children}
         </SelectPrimitive.Viewport>
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
-  )
+  );
 }
 
 function SelectItem({
@@ -98,7 +91,7 @@ function SelectItem({
       data-slot="select-item"
       className={cn(
         "relative flex w-full cursor-default select-none items-center px-2 py-3 sm:py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 min-h-[44px] sm:min-h-0 [&>svg]:size-4 [&>svg]:shrink-0",
-        className
+        className,
       )}
       {...props}
     >
@@ -120,28 +113,25 @@ function SelectItem({
       </SelectPrimitive.ItemIndicator>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
-  )
+  );
 }
 
-function SelectLabel({
-  className,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Label>) {
+function SelectLabel({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Label>) {
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
       className={cn("px-2 py-1.5 text-sm font-semibold", className)}
       {...props}
     />
-  )
+  );
 }
 
 export {
-  SelectRoot as Select,
-  SelectGroup,
-  SelectValue,
-  SelectTrigger,
   SelectContent,
-  SelectLabel,
+  SelectGroup,
   SelectItem,
-}
+  SelectLabel,
+  SelectRoot as Select,
+  SelectTrigger,
+  SelectValue,
+};

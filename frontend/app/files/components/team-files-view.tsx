@@ -1,11 +1,20 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { UsersIcon, FolderIcon, FileIcon, Loader2Icon, SearchIcon, FolderOpenIcon, UserIcon, DownloadIcon } from "@/lib/icons";
-import { Input } from "@/components/ui/input";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useFileSystemStore } from "@/lib/file-system/store";
 import { formatSize } from "@/lib/file-system/types";
+import {
+  DownloadIcon,
+  FileIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  Loader2Icon,
+  SearchIcon,
+  UserIcon,
+  UsersIcon,
+} from "@/lib/icons";
 
 type FolderRecord = {
   id: string;
@@ -35,18 +44,28 @@ export function TeamFilesView() {
   const setBreadcrumbs = useFileSystemStore((s) => s.setBreadcrumbs);
   const { orgId } = useFileSystemStore();
 
-  const openFolder = useCallback((folder: FolderRecord) => {
-    setBreadcrumbs([{ id: null, name: "My Files" }, { id: folder.id, name: folder.name }]);
-    setCurrentFolder(folder.id);
-    setCurrentNav("files");
-  }, [setBreadcrumbs, setCurrentFolder, setCurrentNav]);
+  const openFolder = useCallback(
+    (folder: FolderRecord) => {
+      setBreadcrumbs([
+        { id: null, name: "My Files" },
+        { id: folder.id, name: folder.name },
+      ]);
+      setCurrentFolder(folder.id);
+      setCurrentNav("files");
+    },
+    [setBreadcrumbs, setCurrentFolder, setCurrentNav],
+  );
 
   useEffect(() => {
     if (!orgId) return;
     setLoading(true);
     Promise.all([
-      fetch(`/api/folders?orgId=${encodeURIComponent(orgId)}`, { credentials: "include" }).then(r => r.json()),
-      fetch(`/api/files?orgId=${encodeURIComponent(orgId)}`, { credentials: "include" }).then(r => r.json()),
+      fetch(`/api/folders?orgId=${encodeURIComponent(orgId)}`, { credentials: "include" }).then(
+        (r) => r.json(),
+      ),
+      fetch(`/api/files?orgId=${encodeURIComponent(orgId)}`, { credentials: "include" }).then((r) =>
+        r.json(),
+      ),
     ])
       .then(([foldersRes, filesRes]) => {
         const allFolders: FolderRecord[] = foldersRes.data || foldersRes || [];
@@ -58,30 +77,45 @@ export function TeamFilesView() {
       .finally(() => setLoading(false));
   }, [orgId]);
 
-  const filteredFolders = folders.filter((f) =>
-    !search.trim() || f.name.toLowerCase().includes(search.toLowerCase())
+  const filteredFolders = folders.filter(
+    (f) => !search.trim() || f.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const filteredFiles = files.filter((f) =>
-    !search.trim() || f.originalName.toLowerCase().includes(search.toLowerCase()) || (f.uploaderName || "").toLowerCase().includes(search.toLowerCase())
+  const filteredFiles = files.filter(
+    (f) =>
+      !search.trim() ||
+      f.originalName.toLowerCase().includes(search.toLowerCase()) ||
+      (f.uploaderName || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   if (loading) {
-    return <div className="flex items-center justify-center py-12"><Loader2Icon className="size-6 animate-spin text-muted-foreground" /></div>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2"><UsersIcon className="size-4" /> Team Files</h2>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <UsersIcon className="size-4" /> Team Files
+          </h2>
           <p className="text-sm text-muted-foreground">
-            {folders.length} folder{folders.length !== 1 ? "s" : ""} &middot; {files.length} file{files.length !== 1 ? "s" : ""}
+            {folders.length} folder{folders.length !== 1 ? "s" : ""} &middot; {files.length} file
+            {files.length !== 1 ? "s" : ""}
           </p>
         </div>
         <div className="relative w-64">
           <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-          <Input placeholder="Search folders & files..." className="pl-8 h-9 text-sm bg-white" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input
+            placeholder="Search folders & files..."
+            className="pl-8 h-9 text-sm bg-white"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
       </div>
 

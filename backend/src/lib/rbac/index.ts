@@ -17,8 +17,22 @@ export const ROLES = {
 export type Role = (typeof ROLES)[keyof typeof ROLES];
 
 export const ROLE_HIERARCHY: Record<Role, Role[]> = {
-  [ROLES.ORG_ADMIN]: [ROLES.MEMBERS, ROLES.MANAGER, ROLES.STAFFS, ROLES.HR, ROLES.FINANCE, ROLES.CLIENTS],
-  [ROLES.MEMBERS]: [ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.HR, ROLES.FINANCE, ROLES.CLIENTS],
+  [ROLES.ORG_ADMIN]: [
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.STAFFS,
+    ROLES.HR,
+    ROLES.FINANCE,
+    ROLES.CLIENTS,
+  ],
+  [ROLES.MEMBERS]: [
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.HR,
+    ROLES.FINANCE,
+    ROLES.CLIENTS,
+  ],
   [ROLES.MANAGER]: [ROLES.TEAM_LEADER, ROLES.STAFFS],
   [ROLES.TEAM_LEADER]: [ROLES.STAFFS],
   [ROLES.STAFFS]: [],
@@ -49,26 +63,40 @@ export const ROLE_LABELS: Record<Role, string> = {
 };
 
 export const ROLE_DESCRIPTIONS: Record<Role, string> = {
-  [ROLES.ORG_ADMIN]: "Platform-level administrative access. Manages organizations, subscriptions, billing, security, and all platform resources.",
-  [ROLES.MEMBERS]: "Organization-level administrative access. Manages projects, workspaces, staff, HR, clients, billing, and company settings.",
-  [ROLES.MANAGER]: "Department or project management access. Manages team tasks, assignments, and reports within their scope.",
-  [ROLES.TEAM_LEADER]: "Team leadership access. Assigns tasks, reviews submissions, and manages team workflow.",
-  [ROLES.STAFFS]: "Standard staff access. Manages assigned tasks, uploads files, communicates, and collaborates.",
-  [ROLES.HR]: "Human resources access. Manages employees, attendance, leave, payroll, recruitment, and onboarding.",
+  [ROLES.ORG_ADMIN]:
+    "Platform-level administrative access. Manages organizations, subscriptions, billing, security, and all platform resources.",
+  [ROLES.MEMBERS]:
+    "Organization-level administrative access. Manages projects, workspaces, staff, HR, clients, billing, and company settings.",
+  [ROLES.MANAGER]:
+    "Department or project management access. Manages team tasks, assignments, and reports within their scope.",
+  [ROLES.TEAM_LEADER]:
+    "Team leadership access. Assigns tasks, reviews submissions, and manages team workflow.",
+  [ROLES.STAFFS]:
+    "Standard staff access. Manages assigned tasks, uploads files, communicates, and collaborates.",
+  [ROLES.HR]:
+    "Human resources access. Manages employees, attendance, leave, payroll, recruitment, and onboarding.",
   [ROLES.FINANCE]: "Finance access. Manages billing, invoices, expenses, and financial reports.",
   [ROLES.CONTRACTORS]: "External contractor access. Limited to assigned tasks and shared files.",
   [ROLES.CLIENTS]: "Client portal access. Views assigned projects, files, invoices, and messages.",
   [ROLES.GUEST]: "Guest access. View-only access to specifically shared resources.",
-  [ROLES.API_TOKEN]: "API token access. Scoped to specific API operations defined at token creation.",
+  [ROLES.API_TOKEN]:
+    "API token access. Scoped to specific API operations defined at token creation.",
   [ROLES.SERVICE_ACCOUNT]: "Service account access. Backend system access for internal services.",
-  [ROLES.AUTOMATION_BOT]: "Automation bot access. Automated process access for scheduled tasks and integrations.",
+  [ROLES.AUTOMATION_BOT]:
+    "Automation bot access. Automated process access for scheduled tasks and integrations.",
 };
 
 export const ADMIN_ROLES: Role[] = [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER];
 export const PLATFORM_ROLES: Role[] = [ROLES.ORG_ADMIN];
 export const TENANT_ROLES: Role[] = [
-  ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS,
-  ROLES.HR, ROLES.FINANCE, ROLES.CONTRACTORS, ROLES.CLIENTS,
+  ROLES.MEMBERS,
+  ROLES.MANAGER,
+  ROLES.TEAM_LEADER,
+  ROLES.STAFFS,
+  ROLES.HR,
+  ROLES.FINANCE,
+  ROLES.CONTRACTORS,
+  ROLES.CLIENTS,
 ];
 export const SYSTEM_ROLES: Role[] = [ROLES.API_TOKEN, ROLES.SERVICE_ACCOUNT, ROLES.AUTOMATION_BOT];
 
@@ -85,7 +113,9 @@ export function isPlatformRole(role: string): boolean {
 }
 
 export function isSystemRole(role: string): boolean {
-  return role === ROLES.API_TOKEN || role === ROLES.SERVICE_ACCOUNT || role === ROLES.AUTOMATION_BOT;
+  return (
+    role === ROLES.API_TOKEN || role === ROLES.SERVICE_ACCOUNT || role === ROLES.AUTOMATION_BOT
+  );
 }
 
 export function hasRole(userRole: string, targetRole: Role): boolean {
@@ -103,65 +133,124 @@ export function getEffectivePermissions(role: string): string[] {
     case ROLES.ORG_ADMIN:
       return [
         // All organization management permissions
-        "manage:workspaces", "manage:projects", "manage:staff", "manage:hr",
-        "manage:clients", "manage:billing", "manage:settings", "manage:files",
-        "manage:teams", "manage:approvals", "manage:reports", "manage:ai",
-        "manage:departments", "manage:permissions", "manage:calendar", "manage:blog",
+        "manage:workspaces",
+        "manage:projects",
+        "manage:staff",
+        "manage:hr",
+        "manage:clients",
+        "manage:billing",
+        "manage:settings",
+        "manage:files",
+        "manage:teams",
+        "manage:approvals",
+        "manage:reports",
+        "manage:ai",
+        "manage:departments",
+        "manage:permissions",
+        "manage:calendar",
+        "manage:blog",
         // Platform-level permissions
-        "manage:organizations", "manage:subscriptions", "manage:audit-logs",
-        "manage:platform-users", "manage:platform-settings", "manage:security",
-        "manage:api-keys", "manage:sso", "view:platform-analytics",
+        "manage:organizations",
+        "manage:subscriptions",
+        "manage:audit-logs",
+        "manage:platform-users",
+        "manage:platform-settings",
+        "manage:security",
+        "manage:api-keys",
+        "manage:sso",
+        "view:platform-analytics",
       ];
     case ROLES.MEMBERS:
       return [
-        "manage:workspaces", "manage:projects", "manage:staff", "manage:hr",
-        "manage:clients", "manage:billing", "manage:settings", "manage:files",
-        "manage:teams", "manage:approvals", "manage:reports", "manage:ai",
-        "manage:departments", "manage:permissions", "manage:calendar", "manage:blog",
+        "manage:workspaces",
+        "manage:projects",
+        "manage:staff",
+        "manage:hr",
+        "manage:clients",
+        "manage:billing",
+        "manage:settings",
+        "manage:files",
+        "manage:teams",
+        "manage:approvals",
+        "manage:reports",
+        "manage:ai",
+        "manage:departments",
+        "manage:permissions",
+        "manage:calendar",
+        "manage:blog",
       ];
     case ROLES.MANAGER:
       return [
-        "manage:projects", "manage:teams", "manage:tasks", "manage:approvals",
-        "view:reports", "manage:files", "access:calendar", "access:communications",
-        "access:ai", "manage:blog",
+        "manage:projects",
+        "manage:teams",
+        "manage:tasks",
+        "manage:approvals",
+        "view:reports",
+        "manage:files",
+        "access:calendar",
+        "access:communications",
+        "access:ai",
+        "manage:blog",
       ];
     case ROLES.TEAM_LEADER:
       return [
-        "manage:team-tasks", "assign:tasks", "view:team-reports",
-        "access:files", "access:communications", "access:approvals",
+        "manage:team-tasks",
+        "assign:tasks",
+        "view:team-reports",
+        "access:files",
+        "access:communications",
+        "access:approvals",
       ];
     case ROLES.STAFFS:
       return [
-        "access:tasks", "access:files", "access:communications",
-        "access:approvals", "access:collaboration", "access:ai",
+        "access:tasks",
+        "access:files",
+        "access:communications",
+        "access:approvals",
+        "access:collaboration",
+        "access:ai",
         "access:calendar",
       ];
     case ROLES.HR:
       return [
-        "manage:employees", "manage:attendance", "manage:leave",
-        "manage:payroll", "manage:recruitment", "manage:onboarding",
-        "manage:documents", "manage:performance", "access:reports",
+        "manage:employees",
+        "manage:attendance",
+        "manage:leave",
+        "manage:payroll",
+        "manage:recruitment",
+        "manage:onboarding",
+        "manage:documents",
+        "manage:performance",
+        "access:reports",
         "access:calendar",
       ];
     case ROLES.FINANCE:
       return [
-        "manage:billing", "manage:invoices", "manage:expenses",
-        "view:financial-reports", "manage:payments", "access:reports",
+        "manage:billing",
+        "manage:invoices",
+        "manage:expenses",
+        "view:financial-reports",
+        "manage:payments",
+        "access:reports",
       ];
     case ROLES.CONTRACTORS:
       return [
-        "access:assigned-tasks", "access:shared-files",
-        "access:communications", "submit:deliverables",
+        "access:assigned-tasks",
+        "access:shared-files",
+        "access:communications",
+        "submit:deliverables",
       ];
     case ROLES.CLIENTS:
       return [
-        "access:portal", "access:projects", "access:files",
-        "access:invoices", "access:messages", "access:approvals",
+        "access:portal",
+        "access:projects",
+        "access:files",
+        "access:invoices",
+        "access:messages",
+        "access:approvals",
       ];
     case ROLES.GUEST:
-      return [
-        "view:shared-resources", "download:shared-files",
-      ];
+      return ["view:shared-resources", "download:shared-files"];
     case ROLES.API_TOKEN:
       return [
         // API tokens have scope defined at creation time
@@ -169,13 +258,9 @@ export function getEffectivePermissions(role: string): string[] {
         "access:api",
       ];
     case ROLES.SERVICE_ACCOUNT:
-      return [
-        "system:internal", "system:integrations",
-      ];
+      return ["system:internal", "system:integrations"];
     case ROLES.AUTOMATION_BOT:
-      return [
-        "system:automation", "system:scheduled-tasks",
-      ];
+      return ["system:automation", "system:scheduled-tasks"];
     default:
       return [];
   }

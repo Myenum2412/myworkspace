@@ -8,7 +8,9 @@ export async function GET() {
   }
 
   const clientId = process.env.AUTH_GOOGLE_ID;
-  const redirectUri = process.env.GOOGLE_CALENDAR_REDIRECT_URI || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/calendar/google/callback`;
+  const redirectUri =
+    process.env.GOOGLE_CALENDAR_REDIRECT_URI ||
+    `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/calendar/google/callback`;
 
   if (!clientId) {
     return NextResponse.json({ error: "Google Calendar not configured" }, { status: 500 });
@@ -39,7 +41,5 @@ export async function GET() {
     state: Buffer.from(state).toString("base64"),
   });
 
-  return NextResponse.redirect(
-    `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
-  );
+  return NextResponse.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
 }

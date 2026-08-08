@@ -1,50 +1,130 @@
-"use client"
-import { useState, useEffect } from "react";
+"use client";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
-  SelectValue,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { apiFetch } from "@/lib/api";
 import { AlertCircle, Loader2, Plus, Trash2 } from "@/lib/icons";
 
 const CONTRACTOR_TYPES = ["Individual", "Company", "Subcontractor"];
 const MAIN_TRADES = [
-  "Civil", "Electrical", "Plumbing", "Carpentry", "Painting",
-  "Mason", "Steel", "HVAC", "Roofing", "Flooring", "Other",
+  "Civil",
+  "Electrical",
+  "Plumbing",
+  "Carpentry",
+  "Painting",
+  "Mason",
+  "Steel",
+  "HVAC",
+  "Roofing",
+  "Flooring",
+  "Other",
 ];
 const COUNTRIES = [
-  "India", "United States", "United Kingdom", "Canada", "Australia",
-  "Germany", "France", "UAE", "Saudi Arabia", "Qatar", "Kuwait", "Oman",
-  "Bahrain", "Singapore", "Malaysia", "Other",
+  "India",
+  "United States",
+  "United Kingdom",
+  "Canada",
+  "Australia",
+  "Germany",
+  "France",
+  "UAE",
+  "Saudi Arabia",
+  "Qatar",
+  "Kuwait",
+  "Oman",
+  "Bahrain",
+  "Singapore",
+  "Malaysia",
+  "Other",
 ];
-const CURRENCIES = ["USD", "EUR", "GBP", "INR", "AED", "SAR", "QAR", "KWD", "OMR", "BHD", "SGD", "MYR", "Other"];
+const CURRENCIES = [
+  "USD",
+  "EUR",
+  "GBP",
+  "INR",
+  "AED",
+  "SAR",
+  "QAR",
+  "KWD",
+  "OMR",
+  "BHD",
+  "SGD",
+  "MYR",
+  "Other",
+];
 const CITIES: Record<string, string[]> = {
-  "India": ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad", "Jaipur", "Lucknow", "Other"],
-  "United States": ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "Other"],
-  "United Kingdom": ["London", "Manchester", "Birmingham", "Glasgow", "Edinburgh", "Liverpool", "Bristol", "Other"],
-  "Canada": ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa", "Edmonton", "Other"],
-  "Australia": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Gold Coast", "Other"],
-  "UAE": ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Other"],
+  India: [
+    "Mumbai",
+    "Delhi",
+    "Bangalore",
+    "Hyderabad",
+    "Chennai",
+    "Kolkata",
+    "Pune",
+    "Ahmedabad",
+    "Jaipur",
+    "Lucknow",
+    "Other",
+  ],
+  "United States": [
+    "New York",
+    "Los Angeles",
+    "Chicago",
+    "Houston",
+    "Phoenix",
+    "Philadelphia",
+    "San Antonio",
+    "San Diego",
+    "Dallas",
+    "Other",
+  ],
+  "United Kingdom": [
+    "London",
+    "Manchester",
+    "Birmingham",
+    "Glasgow",
+    "Edinburgh",
+    "Liverpool",
+    "Bristol",
+    "Other",
+  ],
+  Canada: ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa", "Edmonton", "Other"],
+  Australia: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Gold Coast", "Other"],
+  UAE: ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Other"],
   "Saudi Arabia": ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Other"],
-  "Qatar": ["Doha", "Al Wakrah", "Other"],
-  "Kuwait": ["Kuwait City", "Al Ahmadi", "Other"],
-  "Oman": ["Muscat", "Salalah", "Other"],
-  "Bahrain": ["Manama", "Riffa", "Other"],
-  "Singapore": ["Singapore"],
-  "Malaysia": ["Kuala Lumpur", "Penang", "Johor Bahru", "Other"],
-  "Germany": ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne", "Other"],
-  "France": ["Paris", "Marseille", "Lyon", "Toulouse", "Other"],
+  Qatar: ["Doha", "Al Wakrah", "Other"],
+  Kuwait: ["Kuwait City", "Al Ahmadi", "Other"],
+  Oman: ["Muscat", "Salalah", "Other"],
+  Bahrain: ["Manama", "Riffa", "Other"],
+  Singapore: ["Singapore"],
+  Malaysia: ["Kuala Lumpur", "Penang", "Johor Bahru", "Other"],
+  Germany: ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne", "Other"],
+  France: ["Paris", "Marseille", "Lyon", "Toulouse", "Other"],
 };
 const YEARS_RANGES = ["0-1", "1-2", "2-3", "3-5", "5-10", "10+"];
 const WORKER_RANGES = ["1", "2-5", "6-10", "11-20", "21-50", "50+"];
-const WORK_AREAS = ["City Center", "Downtown", "Industrial Area", "Residential Area", "Commercial Zone", "Airport Area", "Port Area", "Suburbs", "Rural Area", "Multiple Locations", "Other"];
+const WORK_AREAS = [
+  "City Center",
+  "Downtown",
+  "Industrial Area",
+  "Residential Area",
+  "Commercial Zone",
+  "Airport Area",
+  "Port Area",
+  "Suburbs",
+  "Rural Area",
+  "Multiple Locations",
+  "Other",
+];
 
 type EmergencyContact = { id: string; name: string; phoneNumber: string; email: string };
 
@@ -110,7 +190,8 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
     if (!fullName.trim()) errors.fullName = "Full name is required";
     if (!mobileNumber.trim()) errors.mobileNumber = "Mobile number is required";
     if (!emailAddress.trim()) errors.emailAddress = "Email address is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress)) errors.emailAddress = "Invalid email format";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress))
+      errors.emailAddress = "Invalid email format";
     if (!country) errors.country = "Country is required";
     if (!city.trim()) errors.city = "City is required";
     if (!contractorType) errors.contractorType = "Contractor type is required";
@@ -126,7 +207,8 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
     if (!accountNumber.trim()) errors.accountNumber = "Account number is required";
     if (!currency) errors.currency = "Currency is required";
     const validContacts = emergencyContacts.filter((c) => c.name.trim() && c.phoneNumber.trim());
-    if (validContacts.length === 0) errors.emergencyContacts = "At least one emergency contact with name and phone is required";
+    if (validContacts.length === 0)
+      errors.emergencyContacts = "At least one emergency contact with name and phone is required";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -140,7 +222,10 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
   }
 
   function addContact() {
-    setEmergencyContacts((prev) => [...prev, { id: crypto.randomUUID(), name: "", phoneNumber: "", email: "" }]);
+    setEmergencyContacts((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), name: "", phoneNumber: "", email: "" },
+    ]);
   }
 
   function removeContact(id: string) {
@@ -195,9 +280,11 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
       onContractorAdded?.();
     } else {
       if (result.fields) setFormErrors(result.fields);
-      setApiError(result.fields && Object.keys(result.fields).length > 0
-        ? "Please correct the errors below"
-        : (result.error || "Failed to create contractor"));
+      setApiError(
+        result.fields && Object.keys(result.fields).length > 0
+          ? "Please correct the errors below"
+          : result.error || "Failed to create contractor",
+      );
     }
     setSaving(false);
   }
@@ -214,54 +301,94 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
       <div className="relative flex-1 overflow-hidden px-1">
         <ScrollArea className="h-full px-5">
           <div className="space-y-8 py-6 w-full">
-
             {/* 1. Basic Information */}
             <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">1. Basic Information</legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Full Name *</Label>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className={fieldClass("fullName")} />
-                  {fieldError("fullName") && <p className="text-xs text-red-500">{fieldError("fullName")}</p>}
+                  <Input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className={fieldClass("fullName")}
+                  />
+                  {fieldError("fullName") && (
+                    <p className="text-xs text-red-500">{fieldError("fullName")}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Company Name</Label>
                   <Select value={companyName} onValueChange={setCompanyName}>
-                    <SelectTrigger><SelectValue placeholder="Select or type" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select or type" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {clientCompanies.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                      {clientCompanies.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Mobile Number *</Label>
-                  <Input value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} className={fieldClass("mobileNumber")} />
-                  {fieldError("mobileNumber") && <p className="text-xs text-red-500">{fieldError("mobileNumber")}</p>}
+                  <Input
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value)}
+                    className={fieldClass("mobileNumber")}
+                  />
+                  {fieldError("mobileNumber") && (
+                    <p className="text-xs text-red-500">{fieldError("mobileNumber")}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Email Address *</Label>
-                  <Input type="email" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} className={fieldClass("emailAddress")} />
-                  {fieldError("emailAddress") && <p className="text-xs text-red-500">{fieldError("emailAddress")}</p>}
+                  <Input
+                    type="email"
+                    value={emailAddress}
+                    onChange={(e) => setEmailAddress(e.target.value)}
+                    className={fieldClass("emailAddress")}
+                  />
+                  {fieldError("emailAddress") && (
+                    <p className="text-xs text-red-500">{fieldError("emailAddress")}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Country *</Label>
                   <Select value={country} onValueChange={setCountry}>
-                    <SelectTrigger className={fieldClass("country")}><SelectValue placeholder="" /></SelectTrigger>
+                    <SelectTrigger className={fieldClass("country")}>
+                      <SelectValue placeholder="" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {COUNTRIES.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                      {COUNTRIES.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {fieldError("country") && <p className="text-xs text-red-500">{fieldError("country")}</p>}
+                  {fieldError("country") && (
+                    <p className="text-xs text-red-500">{fieldError("country")}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">City *</Label>
                   <Select value={city} onValueChange={setCity} disabled={!country}>
-                    <SelectTrigger className={fieldClass("city")}><SelectValue placeholder={country ? "Select city" : "Select country first"} /></SelectTrigger>
+                    <SelectTrigger className={fieldClass("city")}>
+                      <SelectValue placeholder={country ? "Select city" : "Select country first"} />
+                    </SelectTrigger>
                     <SelectContent>
-                      {(CITIES[country] || []).map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                      {(CITIES[country] || []).map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {fieldError("city") && <p className="text-xs text-red-500">{fieldError("city")}</p>}
+                  {fieldError("city") && (
+                    <p className="text-xs text-red-500">{fieldError("city")}</p>
+                  )}
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -277,22 +404,38 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Contractor Type *</Label>
                   <Select value={contractorType} onValueChange={setContractorType}>
-                    <SelectTrigger className={fieldClass("contractorType")}><SelectValue placeholder="" /></SelectTrigger>
+                    <SelectTrigger className={fieldClass("contractorType")}>
+                      <SelectValue placeholder="" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {CONTRACTOR_TYPES.map((t) => (<SelectItem key={t} value={t}>{t}</SelectItem>))}
+                      {CONTRACTOR_TYPES.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {fieldError("contractorType") && <p className="text-xs text-red-500">{fieldError("contractorType")}</p>}
+                  {fieldError("contractorType") && (
+                    <p className="text-xs text-red-500">{fieldError("contractorType")}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Main Trade *</Label>
                   <Select value={mainTrade} onValueChange={setMainTrade}>
-                    <SelectTrigger className={fieldClass("mainTrade")}><SelectValue placeholder="" /></SelectTrigger>
+                    <SelectTrigger className={fieldClass("mainTrade")}>
+                      <SelectValue placeholder="" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {MAIN_TRADES.map((t) => (<SelectItem key={t} value={t}>{t}</SelectItem>))}
+                      {MAIN_TRADES.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {fieldError("mainTrade") && <p className="text-xs text-red-500">{fieldError("mainTrade")}</p>}
+                  {fieldError("mainTrade") && (
+                    <p className="text-xs text-red-500">{fieldError("mainTrade")}</p>
+                  )}
                 </div>
                 {mainTrade === "Other" && (
                   <div className="space-y-1.5">
@@ -303,22 +446,38 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Years of Experience *</Label>
                   <Select value={yearsOfExperience} onValueChange={setYearsOfExperience}>
-                    <SelectTrigger className={fieldClass("yearsOfExperience")}><SelectValue placeholder="" /></SelectTrigger>
+                    <SelectTrigger className={fieldClass("yearsOfExperience")}>
+                      <SelectValue placeholder="" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {YEARS_RANGES.map((y) => (<SelectItem key={y} value={y}>{y} {y === "10+" ? "years" : "year"}</SelectItem>))}
+                      {YEARS_RANGES.map((y) => (
+                        <SelectItem key={y} value={y}>
+                          {y} {y === "10+" ? "years" : "year"}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {fieldError("yearsOfExperience") && <p className="text-xs text-red-500">{fieldError("yearsOfExperience")}</p>}
+                  {fieldError("yearsOfExperience") && (
+                    <p className="text-xs text-red-500">{fieldError("yearsOfExperience")}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Number of Workers *</Label>
                   <Select value={numberOfWorkers} onValueChange={setNumberOfWorkers}>
-                    <SelectTrigger className={fieldClass("numberOfWorkers")}><SelectValue placeholder="" /></SelectTrigger>
+                    <SelectTrigger className={fieldClass("numberOfWorkers")}>
+                      <SelectValue placeholder="" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {WORKER_RANGES.map((w) => (<SelectItem key={w} value={w}>{w} worker{w === "1" ? "" : "s"}</SelectItem>))}
+                      {WORKER_RANGES.map((w) => (
+                        <SelectItem key={w} value={w}>
+                          {w} worker{w === "1" ? "" : "s"}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {fieldError("numberOfWorkers") && <p className="text-xs text-red-500">{fieldError("numberOfWorkers")}</p>}
+                  {fieldError("numberOfWorkers") && (
+                    <p className="text-xs text-red-500">{fieldError("numberOfWorkers")}</p>
+                  )}
                 </div>
               </div>
             </fieldset>
@@ -333,18 +492,26 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">License Expiry</Label>
-                  <Input type="date" value={licenseExpiry} onChange={(e) => setLicenseExpiry(e.target.value)} />
+                  <Input
+                    type="date"
+                    value={licenseExpiry}
+                    onChange={(e) => setLicenseExpiry(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Insurance Available? *</Label>
                   <Select value={insuranceAvailable} onValueChange={setInsuranceAvailable}>
-                    <SelectTrigger className={fieldClass("insuranceAvailable")}><SelectValue placeholder="" /></SelectTrigger>
+                    <SelectTrigger className={fieldClass("insuranceAvailable")}>
+                      <SelectValue placeholder="" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Yes">Yes</SelectItem>
                       <SelectItem value="No">No</SelectItem>
                     </SelectContent>
                   </Select>
-                  {fieldError("insuranceAvailable") && <p className="text-xs text-red-500">{fieldError("insuranceAvailable")}</p>}
+                  {fieldError("insuranceAvailable") && (
+                    <p className="text-xs text-red-500">{fieldError("insuranceAvailable")}</p>
+                  )}
                 </div>
               </div>
             </fieldset>
@@ -355,29 +522,48 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Available From *</Label>
-                  <Input type="date" value={availableFrom} onChange={(e) => setAvailableFrom(e.target.value)} className={fieldClass("availableFrom")} />
-                  {fieldError("availableFrom") && <p className="text-xs text-red-500">{fieldError("availableFrom")}</p>}
+                  <Input
+                    type="date"
+                    value={availableFrom}
+                    onChange={(e) => setAvailableFrom(e.target.value)}
+                    className={fieldClass("availableFrom")}
+                  />
+                  {fieldError("availableFrom") && (
+                    <p className="text-xs text-red-500">{fieldError("availableFrom")}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Preferred Work Area *</Label>
                   <Select value={preferredWorkArea} onValueChange={setPreferredWorkArea}>
-                    <SelectTrigger className={fieldClass("preferredWorkArea")}><SelectValue placeholder="" /></SelectTrigger>
+                    <SelectTrigger className={fieldClass("preferredWorkArea")}>
+                      <SelectValue placeholder="" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {WORK_AREAS.map((a) => (<SelectItem key={a} value={a}>{a}</SelectItem>))}
+                      {WORK_AREAS.map((a) => (
+                        <SelectItem key={a} value={a}>
+                          {a}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {fieldError("preferredWorkArea") && <p className="text-xs text-red-500">{fieldError("preferredWorkArea")}</p>}
+                  {fieldError("preferredWorkArea") && (
+                    <p className="text-xs text-red-500">{fieldError("preferredWorkArea")}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Willing to Travel? *</Label>
                   <Select value={willingToTravel} onValueChange={setWillingToTravel}>
-                    <SelectTrigger className={fieldClass("willingToTravel")}><SelectValue placeholder="" /></SelectTrigger>
+                    <SelectTrigger className={fieldClass("willingToTravel")}>
+                      <SelectValue placeholder="" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Yes">Yes</SelectItem>
                       <SelectItem value="No">No</SelectItem>
                     </SelectContent>
                   </Select>
-                  {fieldError("willingToTravel") && <p className="text-xs text-red-500">{fieldError("willingToTravel")}</p>}
+                  {fieldError("willingToTravel") && (
+                    <p className="text-xs text-red-500">{fieldError("willingToTravel")}</p>
+                  )}
                 </div>
               </div>
             </fieldset>
@@ -388,18 +574,36 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Account Holder Name *</Label>
-                  <Input value={accountHolderName} onChange={(e) => setAccountHolderName(e.target.value)} className={fieldClass("accountHolderName")} />
-                  {fieldError("accountHolderName") && <p className="text-xs text-red-500">{fieldError("accountHolderName")}</p>}
+                  <Input
+                    value={accountHolderName}
+                    onChange={(e) => setAccountHolderName(e.target.value)}
+                    className={fieldClass("accountHolderName")}
+                  />
+                  {fieldError("accountHolderName") && (
+                    <p className="text-xs text-red-500">{fieldError("accountHolderName")}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Bank Name *</Label>
-                  <Input value={bankName} onChange={(e) => setBankName(e.target.value)} className={fieldClass("bankName")} />
-                  {fieldError("bankName") && <p className="text-xs text-red-500">{fieldError("bankName")}</p>}
+                  <Input
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    className={fieldClass("bankName")}
+                  />
+                  {fieldError("bankName") && (
+                    <p className="text-xs text-red-500">{fieldError("bankName")}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Account Number / IBAN *</Label>
-                  <Input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} className={fieldClass("accountNumber")} />
-                  {fieldError("accountNumber") && <p className="text-xs text-red-500">{fieldError("accountNumber")}</p>}
+                  <Input
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value)}
+                    className={fieldClass("accountNumber")}
+                  />
+                  {fieldError("accountNumber") && (
+                    <p className="text-xs text-red-500">{fieldError("accountNumber")}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">SWIFT / BIC</Label>
@@ -408,12 +612,20 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Currency *</Label>
                   <Select value={currency} onValueChange={setCurrency}>
-                    <SelectTrigger className={fieldClass("currency")}><SelectValue placeholder="" /></SelectTrigger>
+                    <SelectTrigger className={fieldClass("currency")}>
+                      <SelectValue placeholder="" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {CURRENCIES.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                      {CURRENCIES.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {fieldError("currency") && <p className="text-xs text-red-500">{fieldError("currency")}</p>}
+                  {fieldError("currency") && (
+                    <p className="text-xs text-red-500">{fieldError("currency")}</p>
+                  )}
                 </div>
               </div>
             </fieldset>
@@ -421,14 +633,22 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
             {/* 6. Emergency Contact */}
             <fieldset className="border p-4 space-y-4">
               <legend className="text-sm font-semibold px-2">6. Emergency Contact</legend>
-              {fieldError("emergencyContacts") && <p className="text-xs text-red-500">{fieldError("emergencyContacts")}</p>}
+              {fieldError("emergencyContacts") && (
+                <p className="text-xs text-red-500">{fieldError("emergencyContacts")}</p>
+              )}
               <div className="space-y-3">
                 {emergencyContacts.map((contact) => (
                   <div key={contact.id} className="rounded-sm border p-3 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Contact</span>
                       {emergencyContacts.length > 1 && (
-                        <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => removeContact(contact.id)}>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive"
+                          onClick={() => removeContact(contact.id)}
+                        >
                           <Trash2 className="size-4" />
                         </Button>
                       )}
@@ -436,15 +656,25 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div className="space-y-1.5">
                         <Label className="text-xs text-muted-foreground">Name *</Label>
-                        <Input value={contact.name} onChange={(e) => updateContact(contact.id, "name", e.target.value)} />
+                        <Input
+                          value={contact.name}
+                          onChange={(e) => updateContact(contact.id, "name", e.target.value)}
+                        />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs text-muted-foreground">Phone Number *</Label>
-                        <Input value={contact.phoneNumber} onChange={(e) => updateContact(contact.id, "phoneNumber", e.target.value)} />
+                        <Input
+                          value={contact.phoneNumber}
+                          onChange={(e) => updateContact(contact.id, "phoneNumber", e.target.value)}
+                        />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs text-muted-foreground">Email</Label>
-                        <Input type="email" value={contact.email} onChange={(e) => updateContact(contact.id, "email", e.target.value)} />
+                        <Input
+                          type="email"
+                          value={contact.email}
+                          onChange={(e) => updateContact(contact.id, "email", e.target.value)}
+                        />
                       </div>
                     </div>
                   </div>
@@ -455,15 +685,26 @@ export function ContractorForm({ onCancel, onContractorAdded }: ContractorFormPr
                 </Button>
               </div>
             </fieldset>
-
           </div>
         </ScrollArea>
       </div>
 
       <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/10">
-        <Button variant="ghost" onClick={onCancel} className="w-32 h-10">Cancel</Button>
-        <Button className="w-32 h-10 bg-primary hover:bg-primary/80" onClick={handleSubmit} disabled={saving}>
-          {saving ? <><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</> : "Save"}
+        <Button variant="ghost" onClick={onCancel} className="w-32 h-10">
+          Cancel
+        </Button>
+        <Button
+          className="w-32 h-10 bg-primary hover:bg-primary/80"
+          onClick={handleSubmit}
+          disabled={saving}
+        >
+          {saving ? (
+            <>
+              <Loader2 className="mr-2 size-4 animate-spin" /> Saving...
+            </>
+          ) : (
+            "Save"
+          )}
         </Button>
       </div>
     </div>

@@ -1,11 +1,11 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
-import { isAdminRole } from "../lib/rbac/index.js";
-import { requireString } from "../lib/validate.js";
-import { collections } from "../lib/db/collections.js";
+import { type Response, Router } from "express";
 import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
+import { collections } from "../lib/db/collections.js";
+import { isAdminRole } from "../lib/rbac/index.js";
+import { requireString } from "../lib/validate.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 
 const router = Router();
 
@@ -17,7 +17,10 @@ async function resolveOrgId(userId: string, email?: string, userOrgId?: string):
   const member = await OrgMember.findOne({ userId }).select("orgId").lean();
   if (member) return String(member.orgId);
   if (mongoose.connection.db) {
-    const nextAuthMember = await mongoose.connection.db.collection("org_members").findOne({ userId }, { projection: { orgId: 1 } }).catch(() => null);
+    const nextAuthMember = await mongoose.connection.db
+      .collection("org_members")
+      .findOne({ userId }, { projection: { orgId: 1 } })
+      .catch(() => null);
     if (nextAuthMember) return String(nextAuthMember.orgId);
   }
   throw new AppError(400, "User is not associated with any organization");
@@ -27,7 +30,35 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   const orgId = await resolveOrgId(req.user!.userId, req.user!.email, req.user!.orgId);
   const db = mongoose.connection.db;
   if (!db) throw new AppError(500, "Database connection unavailable");
-  const data = await db.collection(collections.stocks).find({ orgId }).sort({ createdAt: -1 }).project({ _id: 0, id: 1, orgId: 1, itemCode: 1, productName: 1, category: 1, brand: 1, unit: 1, openingStock: 1, stockIn: 1, stockOut: 1, availableStock: 1, reorderLevel: 1, purchasePrice: 1, sellingPrice: 1, supplier: 1, warehouse: 1, status: 1, image: 1, createdBy: 1, createdAt: 1, updatedAt: 1 }).toArray();
+  const data = await db
+    .collection(collections.stocks)
+    .find({ orgId })
+    .sort({ createdAt: -1 })
+    .project({
+      _id: 0,
+      id: 1,
+      orgId: 1,
+      itemCode: 1,
+      productName: 1,
+      category: 1,
+      brand: 1,
+      unit: 1,
+      openingStock: 1,
+      stockIn: 1,
+      stockOut: 1,
+      availableStock: 1,
+      reorderLevel: 1,
+      purchasePrice: 1,
+      sellingPrice: 1,
+      supplier: 1,
+      warehouse: 1,
+      status: 1,
+      image: 1,
+      createdBy: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    })
+    .toArray();
   res.json({ success: true, data });
 });
 
@@ -72,16 +103,22 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   const db = mongoose.connection.db;
   if (!db) throw new AppError(500, "Database connection unavailable");
 
-  const setFields: Record<string, unknown> = { ...req.body, updatedBy: req.user!.userId, updatedAt: new Date() };
+  const setFields: Record<string, unknown> = {
+    ...req.body,
+    updatedBy: req.user!.userId,
+    updatedAt: new Date(),
+  };
   delete setFields.id;
   delete setFields._id;
   delete setFields.orgId;
 
-  const result = await db.collection(collections.stocks).findOneAndUpdate(
-    { id: req.params.id, orgId },
-    { $set: setFields },
-    { returnDocument: "after" },
-  );
+  const result = await db
+    .collection(collections.stocks)
+    .findOneAndUpdate(
+      { id: req.params.id, orgId },
+      { $set: setFields },
+      { returnDocument: "after" },
+    );
 
   if (!result) throw new AppError(404, "Stock not found");
   res.json({ success: true, data: result });

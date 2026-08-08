@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 import { ROLES } from "@/lib/rbac";
 
@@ -19,7 +19,11 @@ async function requireOrgId(): Promise<string> {
     await db.collection(collections.organizations).insertOne({
       id: newOrgId,
       name: `${userName}'s Organization`,
-      slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
+      slug:
+        userName
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
       plan: "free",
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -38,14 +42,18 @@ async function requireOrgId(): Promise<string> {
 
 export async function createTask(formData: FormData) {
   let orgId: string;
-  try { orgId = await requireOrgId(); } catch { return { error: "Unauthorized" }; }
+  try {
+    orgId = await requireOrgId();
+  } catch {
+    return { error: "Unauthorized" };
+  }
 
   const session = await auth();
   if (!session?.user?.id) return { error: "Unauthorized" };
 
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
-  const priority = formData.get("priority") as string || "medium";
+  const priority = (formData.get("priority") as string) || "medium";
   const assigneeId = formData.get("assigneeId") as string;
   const teamId = formData.get("teamId") as string;
   const dueDate = formData.get("dueDate") as string;
@@ -76,8 +84,8 @@ export async function createTask(formData: FormData) {
     description: `Task "${title}" created`,
   });
 
-  revalidateTag(`tasks:${orgId}`, 'max');
-  revalidateTag('dashboard', 'max');
+  revalidateTag(`tasks:${orgId}`, "max");
+  revalidateTag("dashboard", "max");
   revalidatePath("/overview", "page");
   revalidatePath("/dashboard", "page");
 
@@ -86,7 +94,11 @@ export async function createTask(formData: FormData) {
 
 export async function updateTask(formData: FormData) {
   let orgId: string;
-  try { orgId = await requireOrgId(); } catch { return { error: "Unauthorized" }; }
+  try {
+    orgId = await requireOrgId();
+  } catch {
+    return { error: "Unauthorized" };
+  }
 
   const session = await auth();
   if (!session?.user?.id) return { error: "Unauthorized" };
@@ -111,10 +123,7 @@ export async function updateTask(formData: FormData) {
   if (isSaved !== null) updates.isSaved = isSaved === "true";
   if (isActive !== null) updates.isActive = isActive === "true";
 
-  await db.collection(collections.tasks).updateOne(
-    { id: taskId, orgId },
-    { $set: updates }
-  );
+  await db.collection(collections.tasks).updateOne({ id: taskId, orgId }, { $set: updates });
 
   await db.collection(collections.activityLogs).insertOne({
     id: uuid(),
@@ -126,8 +135,8 @@ export async function updateTask(formData: FormData) {
     description: `Task updated: ${status ? `status changed to ${status}` : title ? `title updated` : ""}`,
   });
 
-  revalidateTag(`tasks:${orgId}`, 'max');
-  revalidateTag('dashboard', 'max');
+  revalidateTag(`tasks:${orgId}`, "max");
+  revalidateTag("dashboard", "max");
   revalidatePath("/overview", "page");
   revalidatePath("/dashboard", "page");
 
@@ -136,15 +145,19 @@ export async function updateTask(formData: FormData) {
 
 export async function deleteTask(formData: FormData) {
   let orgId: string;
-  try { orgId = await requireOrgId(); } catch { return { error: "Unauthorized" }; }
+  try {
+    orgId = await requireOrgId();
+  } catch {
+    return { error: "Unauthorized" };
+  }
 
   const taskId = formData.get("id") as string;
   if (!taskId) return { error: "Task ID is required" };
 
   await db.collection(collections.tasks).deleteOne({ id: taskId, orgId });
 
-  revalidateTag(`tasks:${orgId}`, 'max');
-  revalidateTag('dashboard', 'max');
+  revalidateTag(`tasks:${orgId}`, "max");
+  revalidateTag("dashboard", "max");
   revalidatePath("/overview", "page");
   revalidatePath("/dashboard", "page");
 
@@ -153,14 +166,23 @@ export async function deleteTask(formData: FormData) {
 
 export async function updateTaskStatus(taskId: string, status: string) {
   let orgId: string;
-  try { orgId = await requireOrgId(); } catch { return { error: "Unauthorized" }; }
+  try {
+    orgId = await requireOrgId();
+  } catch {
+    return { error: "Unauthorized" };
+  }
 
   await db.collection(collections.tasks).updateOne(
     { id: taskId },
-    { $set: { status: status as "todo" | "in_progress" | "review" | "done" | "cancelled", updatedAt: new Date() } }
+    {
+      $set: {
+        status: status as "todo" | "in_progress" | "review" | "done" | "cancelled",
+        updatedAt: new Date(),
+      },
+    },
   );
 
-  revalidateTag(`tasks:${orgId}`, 'max');
-  revalidateTag('dashboard', 'max');
+  revalidateTag(`tasks:${orgId}`, "max");
+  revalidateTag("dashboard", "max");
   return { success: true };
 }

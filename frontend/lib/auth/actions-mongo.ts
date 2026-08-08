@@ -2,8 +2,8 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { signIn } from "./config";
 import { createUserWorkspace } from "@/actions/user-folder";
+import { signIn } from "./config";
 
 const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -40,7 +40,9 @@ export async function signupActionMongo(formData: FormData) {
   const body = await res.json().catch(() => ({ error: "Invalid response from server" }));
 
   if (!res.ok) {
-    redirect(`/signup-mongo?error=${encodeURIComponent(body.error || body.message || "Signup failed")}`);
+    redirect(
+      `/signup-mongo?error=${encodeURIComponent(body.error || body.message || "Signup failed")}`,
+    );
   }
 
   const userId = body.data?.user?.id as string | undefined;
@@ -58,6 +60,6 @@ export async function signupActionMongo(formData: FormData) {
   await signIn("credentials", { email, password, redirect: false });
   console.log(`[AUTH] signupActionMongo: ${email} signed up → redirecting to /dashboard`);
   revalidatePath("/dashboard");
-  revalidateTag('dashboard', 'max');
+  revalidateTag("dashboard", "max");
   redirect("/dashboard");
 }

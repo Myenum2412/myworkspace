@@ -1,13 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Search, File, Folder, CheckSquare, Projector, Users, Building2, UserCircle, Loader2 } from "@/lib/icons";
+import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Building2,
+  CheckSquare,
+  File,
+  Folder,
+  Loader2,
+  Projector,
+  Search,
+  UserCircle,
+  Users,
+} from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 interface SearchResult {
@@ -41,7 +51,13 @@ const GROUP_LABELS: Record<EntityKey, string> = {
 };
 
 const GROUP_ORDER: EntityKey[] = [
-  "files", "folders", "tasks", "projects", "employees", "clients", "teams",
+  "files",
+  "folders",
+  "tasks",
+  "projects",
+  "employees",
+  "clients",
+  "teams",
 ];
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -138,12 +154,19 @@ function buildResults(data: any): GroupedResults {
 }
 
 function flattenResults(results: GroupedResults): { key: EntityKey; items: SearchResult[] }[] {
-  return GROUP_ORDER
-    .filter(key => results[key].length > 0)
-    .map(key => ({ key, items: results[key] }));
+  return GROUP_ORDER.filter((key) => results[key].length > 0).map((key) => ({
+    key,
+    items: results[key],
+  }));
 }
 
-export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function GlobalSearch({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const router = useRouter();
   const { data: session } = useSession();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -178,8 +201,8 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
     });
 
     fetch(`/api/search?${params}`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         const built = buildResults(data.data || data);
         setResults(built);
       })
@@ -207,10 +230,10 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex(i => Math.min(i + 1, totalItems - 1));
+      setSelectedIndex((i) => Math.min(i + 1, totalItems - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex(i => Math.max(i - 1, 0));
+      setSelectedIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
       navigateToSelected();
@@ -230,7 +253,7 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
           <Input
             ref={inputRef}
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder=""
             className="border-none shadow-none focus-visible:ring-0 h-8 px-0 text-base bg-white"
           />
@@ -277,7 +300,7 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
                     <div className="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                       {GROUP_LABELS[key]}
                     </div>
-                    {items.map(item => {
+                    {items.map((item) => {
                       const idx = globalIdx++;
                       return (
                         <button
@@ -323,9 +346,15 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
         </ScrollArea>
 
         <div className="border-t px-4 py-2 text-[11px] text-muted-foreground flex items-center gap-4">
-          <span><kbd className="rounded-sm border bg-muted px-1 py-0.5 text-[10px]">↑↓</kbd> Navigate</span>
-          <span><kbd className="rounded-sm border bg-muted px-1 py-0.5 text-[10px]">↵</kbd> Open</span>
-          <span><kbd className="rounded-sm border bg-muted px-1 py-0.5 text-[10px]">Esc</kbd> Close</span>
+          <span>
+            <kbd className="rounded-sm border bg-muted px-1 py-0.5 text-[10px]">↑↓</kbd> Navigate
+          </span>
+          <span>
+            <kbd className="rounded-sm border bg-muted px-1 py-0.5 text-[10px]">↵</kbd> Open
+          </span>
+          <span>
+            <kbd className="rounded-sm border bg-muted px-1 py-0.5 text-[10px]">Esc</kbd> Close
+          </span>
         </div>
       </DialogContent>
     </Dialog>

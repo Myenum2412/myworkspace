@@ -1,10 +1,27 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
-import { logger } from "../logger/index.js";
 import { Notification } from "../db/models/Notification.js";
+import { logger } from "../logger/index.js";
 
-export type WorkflowTrigger = "task.created" | "task.updated" | "task.completed" | "file.uploaded" | "file.approved" | "project.created" | "project.completed" | "user.joined" | "schedule" | "webhook";
-export type WorkflowAction = "notification" | "email" | "webhook" | "status_change" | "assign" | "escalate" | "approval";
+export type WorkflowTrigger =
+  | "task.created"
+  | "task.updated"
+  | "task.completed"
+  | "file.uploaded"
+  | "file.approved"
+  | "project.created"
+  | "project.completed"
+  | "user.joined"
+  | "schedule"
+  | "webhook";
+export type WorkflowAction =
+  | "notification"
+  | "email"
+  | "webhook"
+  | "status_change"
+  | "assign"
+  | "escalate"
+  | "approval";
 
 export interface IWorkflow extends Document {
   id: string;
@@ -24,7 +41,14 @@ export interface IWorkflow extends Document {
 
 export interface WorkflowCondition {
   field: string;
-  operator: "equals" | "not_equals" | "contains" | "greater_than" | "less_than" | "before" | "after";
+  operator:
+    | "equals"
+    | "not_equals"
+    | "contains"
+    | "greater_than"
+    | "less_than"
+    | "before"
+    | "after";
   value: unknown;
 }
 
@@ -48,27 +72,56 @@ export interface IWorkflowExecution extends Document {
   completedAt?: Date;
 }
 
-const workflowSchema = new Schema<IWorkflow>({
-  id: { type: String, required: true, unique: true },
-  orgId: { type: String, required: true, index: true },
-  name: { type: String, required: true },
-  description: String,
-  trigger: { type: String, required: true, index: true },
-  triggerConfig: { type: Schema.Types.Mixed, default: {} },
-  conditions: [{
-    field: String,
-    operator: { type: String, enum: ["equals", "not_equals", "contains", "greater_than", "less_than", "before", "after"] },
-    value: Schema.Types.Mixed,
-  }],
-  actions: [{
-    type: { type: String, enum: ["notification", "email", "webhook", "status_change", "assign", "escalate", "approval"] },
-    config: { type: Schema.Types.Mixed, default: {} },
-    order: Number,
-  }],
-  isActive: { type: Boolean, default: true },
-  version: { type: Number, default: 1 },
-  createdBy: { type: String, required: true },
-}, { timestamps: true });
+const workflowSchema = new Schema<IWorkflow>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    name: { type: String, required: true },
+    description: String,
+    trigger: { type: String, required: true, index: true },
+    triggerConfig: { type: Schema.Types.Mixed, default: {} },
+    conditions: [
+      {
+        field: String,
+        operator: {
+          type: String,
+          enum: [
+            "equals",
+            "not_equals",
+            "contains",
+            "greater_than",
+            "less_than",
+            "before",
+            "after",
+          ],
+        },
+        value: Schema.Types.Mixed,
+      },
+    ],
+    actions: [
+      {
+        type: {
+          type: String,
+          enum: [
+            "notification",
+            "email",
+            "webhook",
+            "status_change",
+            "assign",
+            "escalate",
+            "approval",
+          ],
+        },
+        config: { type: Schema.Types.Mixed, default: {} },
+        order: Number,
+      },
+    ],
+    isActive: { type: Boolean, default: true },
+    version: { type: Number, default: 1 },
+    createdBy: { type: String, required: true },
+  },
+  { timestamps: true },
+);
 
 workflowSchema.index({ orgId: 1, trigger: 1, isActive: 1 });
 
@@ -78,7 +131,12 @@ const workflowExecutionSchema = new Schema<IWorkflowExecution>({
   orgId: { type: String, required: true, index: true },
   trigger: { type: String, required: true },
   context: { type: Schema.Types.Mixed, default: {} },
-  status: { type: String, enum: ["pending", "running", "completed", "failed", "skipped"], default: "pending", index: true },
+  status: {
+    type: String,
+    enum: ["pending", "running", "completed", "failed", "skipped"],
+    default: "pending",
+    index: true,
+  },
   actionsCompleted: { type: Number, default: 0 },
   actionsTotal: { type: Number, default: 0 },
   error: String,
@@ -87,20 +145,28 @@ const workflowExecutionSchema = new Schema<IWorkflowExecution>({
 });
 
 export const Workflow = model<IWorkflow>("Workflow", workflowSchema);
-export const WorkflowExecution = model<IWorkflowExecution>("WorkflowExecution", workflowExecutionSchema);
+export const WorkflowExecution = model<IWorkflowExecution>(
+  "WorkflowExecution",
+  workflowExecutionSchema,
+);
 
 export class WorkflowEngine {
   async createWorkflow(params: {
-    orgId: string; name: string; trigger: WorkflowTrigger;
+    orgId: string;
+    name: string;
+    trigger: WorkflowTrigger;
     triggerConfig?: Record<string, unknown>;
-    conditions?: WorkflowCondition[]; actions: WorkflowActionDef[];
+    conditions?: WorkflowCondition[];
+    actions: WorkflowActionDef[];
     createdBy: string;
   }): Promise<IWorkflow> {
     return Workflow.create({
-      id: uuid(), ...params,
+      id: uuid(),
+      ...params,
       triggerConfig: params.triggerConfig || {},
       conditions: params.conditions || [],
-      isActive: true, version: 1,
+      isActive: true,
+      version: 1,
     });
   }
 
@@ -134,7 +200,10 @@ export class WorkflowEngine {
               { $inc: { actionsCompleted: 1 } },
             );
           } catch (err) {
-            logger.error({ workflowId: wf.id, action: action.type, error: (err as Error).message }, "Workflow action failed");
+            logger.error(
+              { workflowId: wf.id, action: action.type, error: (err as Error).message },
+              "Workflow action failed",
+            );
             await WorkflowExecution.updateOne(
               { id: execution.id },
               { status: "failed", error: (err as Error).message, completedAt: new Date() },
@@ -148,7 +217,10 @@ export class WorkflowEngine {
           { status: "completed", completedAt: new Date() },
         );
       } catch (err) {
-        logger.error({ workflowId: wf.id, error: (err as Error).message }, "Workflow execution failed");
+        logger.error(
+          { workflowId: wf.id, error: (err as Error).message },
+          "Workflow execution failed",
+        );
       }
     }
   }
@@ -158,15 +230,21 @@ export class WorkflowEngine {
     context: Record<string, unknown>,
   ): boolean {
     if (!conditions.length) return true;
-    return conditions.every(c => {
+    return conditions.every((c) => {
       const value = context[c.field];
       switch (c.operator) {
-        case "equals": return value === c.value;
-        case "not_equals": return value !== c.value;
-        case "contains": return String(value).includes(String(c.value));
-        case "greater_than": return Number(value) > Number(c.value);
-        case "less_than": return Number(value) < Number(c.value);
-        default: return true;
+        case "equals":
+          return value === c.value;
+        case "not_equals":
+          return value !== c.value;
+        case "contains":
+          return String(value).includes(String(c.value));
+        case "greater_than":
+          return Number(value) > Number(c.value);
+        case "less_than":
+          return Number(value) < Number(c.value);
+        default:
+          return true;
       }
     });
   }
@@ -227,10 +305,7 @@ export class WorkflowEngine {
   }
 
   async getExecutionHistory(orgId: string, limit = 50): Promise<any[]> {
-    return WorkflowExecution.find({ orgId })
-      .sort({ startedAt: -1 })
-      .limit(limit)
-      .lean();
+    return WorkflowExecution.find({ orgId }).sort({ startedAt: -1 }).limit(limit).lean();
   }
 
   async getWorkflowStats(orgId: string): Promise<{
@@ -247,7 +322,9 @@ export class WorkflowEngine {
     ]);
 
     return {
-      total, active, executions,
+      total,
+      active,
+      executions,
       successRate: executions > 0 ? Math.round((succeeded / executions) * 100) : 0,
     };
   }

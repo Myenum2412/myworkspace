@@ -33,7 +33,13 @@ export function createCircuitBreaker(options: CircuitBreakerOptions) {
   const getState = (): CircuitBreakerState => {
     let state = circuits.get(name);
     if (!state) {
-      state = { state: "closed", failures: 0, successes: 0, lastFailureTime: 0, halfOpenRequests: 0 };
+      state = {
+        state: "closed",
+        failures: 0,
+        successes: 0,
+        lastFailureTime: 0,
+        halfOpenRequests: 0,
+      };
       circuits.set(name, state);
     }
     if (state.state === "open" && Date.now() - state.lastFailureTime >= timeoutMs) {
@@ -95,7 +101,13 @@ export function createCircuitBreaker(options: CircuitBreakerOptions) {
     },
 
     reset(): void {
-      circuits.set(name, { state: "closed", failures: 0, successes: 0, lastFailureTime: 0, halfOpenRequests: 0 });
+      circuits.set(name, {
+        state: "closed",
+        failures: 0,
+        successes: 0,
+        lastFailureTime: 0,
+        halfOpenRequests: 0,
+      });
       logger.info({ circuit: name }, "Circuit breaker manually reset");
     },
   };

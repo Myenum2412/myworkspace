@@ -6,7 +6,11 @@ const smtpUser = process.env.SMTP_USER || "";
 const smtpPass = process.env.SMTP_PASS || "";
 const mailFrom = process.env.MAIL_FROM || "MyWorkspace <noreply@myenum.in>";
 
-export type EmailSendResult = { success: boolean; emailStatus: "sent" | "failed" | "skipped"; error?: string };
+export type EmailSendResult = {
+  success: boolean;
+  emailStatus: "sent" | "failed" | "skipped";
+  error?: string;
+};
 
 let transporter: nodemailer.Transporter | null = null;
 
@@ -25,7 +29,11 @@ function getTransporter(): nodemailer.Transporter | null {
   return transporter;
 }
 
-export async function sendEmailDirect(to: string, subject: string, htmlBody: string): Promise<EmailSendResult> {
+export async function sendEmailDirect(
+  to: string,
+  subject: string,
+  htmlBody: string,
+): Promise<EmailSendResult> {
   const transport = getTransporter();
   if (!transport) {
     const msg = "CRITICAL: SMTP not configured (SMTP_HOST missing) — email delivery skipped";
@@ -54,7 +62,7 @@ export function buildEmployeeOnboardedHtml(
   email: string,
   workspaceName: string,
   loginUrl: string,
-  tempPassword: string
+  tempPassword: string,
 ): string {
   return `
 <!DOCTYPE html>

@@ -26,9 +26,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-4">
           {footerLinks.map((group) => (
             <div key={group.title}>
-              <h4 className="text-sm font-semibold text-brand-900">
-                {group.title}
-              </h4>
+              <h4 className="text-sm font-semibold text-brand-900">{group.title}</h4>
               <ul className="mt-4 space-y-2">
                 {group.links.map((link) => (
                   <li key={link}>
@@ -51,9 +49,7 @@ export function Footer() {
               <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-brand-800">
                 <span className="text-xs font-bold text-white">M</span>
               </div>
-              <span className="text-sm font-medium text-brand-900">
-                MyWorkSpace
-              </span>
+              <span className="text-sm font-medium text-brand-900">MyWorkSpace</span>
             </div>
             <p className="text-sm text-brand-400">
               &copy; {new Date().getFullYear()} MyWorkSpace. All rights reserved.

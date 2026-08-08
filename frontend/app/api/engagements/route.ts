@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
+import { type NextRequest, NextResponse } from "next/server";
 import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
 import { ensureUserOrg } from "@/lib/org";
 
 export async function GET() {
@@ -12,12 +12,12 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
 
-    const engagements = await db
+    const engagements = (await db
       .collection(collections.engagements)
       .find({ orgId }, { sort: { createdAt: -1 } })
-      .toArray() as Record<string, unknown>[];
+      .toArray()) as Record<string, unknown>[];
 
     return NextResponse.json({ success: true, data: engagements });
   } catch (err: any) {
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
     const body = await request.json();
 
     const engagement = {
@@ -68,18 +68,20 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
     const id = request.nextUrl.searchParams.get("id");
     if (!id) {
       return NextResponse.json({ error: "Engagement ID is required" }, { status: 400 });
     }
 
     const body = await request.json();
-    const result = await db.collection(collections.engagements).findOneAndUpdate(
-      { id, orgId },
-      { $set: { ...body, updatedBy: session.user.id, updatedAt: new Date() } },
-      { returnDocument: "after" }
-    );
+    const result = await db
+      .collection(collections.engagements)
+      .findOneAndUpdate(
+        { id, orgId },
+        { $set: { ...body, updatedBy: session.user.id, updatedAt: new Date() } },
+        { returnDocument: "after" },
+      );
 
     if (!result) {
       return NextResponse.json({ error: "Engagement not found" }, { status: 404 });
@@ -99,7 +101,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
     const id = request.nextUrl.searchParams.get("id");
     if (!id) {
       return NextResponse.json({ error: "Engagement ID is required" }, { status: 400 });

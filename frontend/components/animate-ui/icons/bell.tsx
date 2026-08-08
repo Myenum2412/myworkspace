@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { motion, type Variants } from 'motion/react';
+import { motion, type Variants } from "motion/react";
+import * as React from "react";
 
 import {
   getVariants,
-  useAnimateIconContext,
-  IconWrapper,
   type IconProps,
-} from '@/components/animate-ui/icons/icon';
+  IconWrapper,
+  useAnimateIconContext,
+} from "@/components/animate-ui/icons/icon";
 
 type BellProps = IconProps<keyof typeof animations>;
 
@@ -20,8 +20,8 @@ const animations = {
       },
       animate: {
         rotate: [0, 20, -10, 10, -5, 3, 0],
-        transformOrigin: 'top center',
-        transition: { duration: 0.9, ease: 'easeInOut' },
+        transformOrigin: "top center",
+        transition: { duration: 0.9, ease: "easeInOut" },
       },
     },
     path1: {
@@ -30,7 +30,7 @@ const animations = {
       },
       animate: {
         x: [0, -6, 5, -5, 4, -3, 2, 0],
-        transition: { duration: 1.1, ease: 'easeInOut' },
+        transition: { duration: 1.1, ease: "easeInOut" },
       },
     },
     path2: {},
@@ -77,10 +77,4 @@ function Bell(props: BellProps) {
   return <IconWrapper icon={IconComponent} {...props} />;
 }
 
-export {
-  animations,
-  Bell,
-  Bell as BellIcon,
-  type BellProps,
-  type BellProps as BellIconProps,
-};
+export { animations, Bell, Bell as BellIcon, type BellProps, type BellProps as BellIconProps };

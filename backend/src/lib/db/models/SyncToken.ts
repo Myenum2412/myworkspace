@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 
 export interface ISyncToken extends Document {
@@ -19,7 +19,7 @@ const syncTokenSchema = new Schema<ISyncToken>(
     calendarId: { type: String, required: true },
     syncToken: { type: String, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 syncTokenSchema.index({ connectionId: 1, calendarId: 1 }, { unique: true });

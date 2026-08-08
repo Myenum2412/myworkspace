@@ -1,7 +1,16 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { deleteOrganization, deleteRecentUser, updateRecentUser } from "@/actions/admin";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,17 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { AlertCircleIcon, PencilIcon, Trash2Icon } from "@/lib/icons";
 import { ROLES } from "@/lib/rbac";
-import { PencilIcon, Trash2Icon, AlertCircleIcon } from "@/lib/icons";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
-import { updateRecentUser, deleteRecentUser, deleteOrganization } from "@/actions/admin";
 
 interface SignupRow {
   name: string;
@@ -40,15 +40,12 @@ export function EditSignupDialog({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const [state, formAction, pending] = useActionState(
-    async (_prev: unknown, fd: FormData) => {
-      fd.set("userId", user.userId);
-      const result = await updateRecentUser(null, fd);
-      if (result?.success) setOpen(false);
-      return result;
-    },
-    null,
-  );
+  const [state, formAction, pending] = useActionState(async (_prev: unknown, fd: FormData) => {
+    fd.set("userId", user.userId);
+    const result = await updateRecentUser(null, fd);
+    if (result?.success) setOpen(false);
+    return result;
+  }, null);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -98,8 +95,17 @@ export function EditSignupDialog({
             </Select>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-32 h-10">Cancel</Button>
-            <Button type="submit" disabled={pending} className="w-32 h-10">{pending ? "Saving..." : "Save"}</Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="w-32 h-10"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={pending} className="w-32 h-10">
+              {pending ? "Saving..." : "Save"}
+            </Button>
           </div>
         </form>
       </DialogContent>

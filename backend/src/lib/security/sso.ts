@@ -1,5 +1,5 @@
-import { Schema, model, Document } from "mongoose";
 import crypto from "crypto";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 import { logger } from "../logger/index.js";
 
@@ -24,7 +24,8 @@ export interface ISSOConfig extends Document {
 const ssoConfigSchema = new Schema<ISSOConfig>({
   tenantId: { type: String, required: true, index: true },
   provider: {
-    type: String, enum: ["oidc", "saml", "google", "microsoft", "github"],
+    type: String,
+    enum: ["oidc", "saml", "google", "microsoft", "github"],
     required: true,
   },
   clientId: { type: String, required: true },
@@ -89,10 +90,7 @@ export class SSOManager {
     };
   }
 
-  async mapUser(
-    provider: ISSOConfig,
-    profile: Record<string, unknown>,
-  ): Promise<SSOUser> {
+  async mapUser(provider: ISSOConfig, profile: Record<string, unknown>): Promise<SSOUser> {
     const mapping = provider.attributeMapping;
     return {
       id: uuid(),
@@ -100,7 +98,7 @@ export class SSOManager {
       name: String(profile[mapping.name] || profile.name || ""),
       provider: provider.provider,
       providerAccountId: String(profile.sub || profile.id || ""),
-      avatar: profile.picture as string || profile.avatar as string,
+      avatar: (profile.picture as string) || (profile.avatar as string),
     };
   }
 }

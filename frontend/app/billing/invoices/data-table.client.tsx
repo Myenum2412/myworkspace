@@ -1,6 +1,6 @@
-"use client"
-import { DataTable as SharedDataTable } from "@/components/data-table";
+"use client";
 import type { ColumnDef } from "@tanstack/react-table";
+import { DataTable as SharedDataTable } from "@/components/data-table";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

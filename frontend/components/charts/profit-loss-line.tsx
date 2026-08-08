@@ -3,14 +3,10 @@
 import { curveLinear } from "@visx/curve";
 import { LinePath } from "@visx/shape";
 import { useCallback, useId, useMemo } from "react";
-import { useChart, useChartStable } from "./chart-context";
-import {
-  type FadeEdges,
-  fadeGradientStops,
-  resolveFadeSides,
-} from "./fade-edges";
-import { useProfitLossLegendHover } from "./profit-loss-legend-hover";
 import { splitProfitLossSegments } from "@/lib/profit-loss-segments";
+import { useChart, useChartStable } from "./chart-context";
+import { type FadeEdges, fadeGradientStops, resolveFadeSides } from "./fade-edges";
+import { useProfitLossLegendHover } from "./profit-loss-legend-hover";
 
 // CurveFactory type - simplified version compatible with visx
 // biome-ignore lint/suspicious/noExplicitAny: d3 curve factory type
@@ -62,8 +58,7 @@ export function ProfitLossLine({
 }: ProfitLossLineProps) {
   const { tooltipData } = useChart();
   const { hoveredIndex } = useProfitLossLegendHover();
-  const { renderData, xScale, yScale, xAccessor, innerWidth } =
-    useChartStable();
+  const { renderData, xScale, yScale, xAccessor, innerWidth } = useChartStable();
   const reactId = useId();
   const fadeSides = resolveFadeSides(fadeEdges);
   const fadeStops = fadeSides.any ? fadeGradientStops(fadeSides) : null;
@@ -92,12 +87,12 @@ export function ProfitLossLine({
         xDataKey,
         xAccessor,
       }),
-    [dataKey, renderData, xAccessor, xDataKey]
+    [dataKey, renderData, xAccessor, xDataKey],
   );
 
   const getX = useCallback(
     (d: Record<string, unknown>) => xScale(xAccessor(d)) ?? 0,
-    [xAccessor, xScale]
+    [xAccessor, xScale],
   );
 
   const getY = useCallback(
@@ -105,7 +100,7 @@ export function ProfitLossLine({
       const value = d[dataKey];
       return typeof value === "number" ? (yScale(value) ?? 0) : 0;
     },
-    [dataKey, yScale]
+    [dataKey, yScale],
   );
 
   return (

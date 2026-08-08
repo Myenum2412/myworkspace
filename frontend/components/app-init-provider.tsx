@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
-import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { useBootstrapStore } from "@/stores/bootstrap-store";
-import { fetchBootstrapData, getCachedBootstrap, invalidateBootstrapCache } from "@/lib/api/bootstrap";
+import { useSession } from "next-auth/react";
+import { type ReactNode, useEffect } from "react";
+import {
+  fetchBootstrapData,
+  getCachedBootstrap,
+  invalidateBootstrapCache,
+} from "@/lib/api/bootstrap";
 import { isAppPage } from "@/lib/app-context";
+import { useBootstrapStore } from "@/stores/bootstrap-store";
 
 export function AppInitProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();

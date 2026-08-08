@@ -1,42 +1,41 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import {
-  RiSearchLine,
-  RiQuestionLine,
-  RiBankCardLine,
-  RiShieldCheckLine,
-  RiCloseLine,
-} from "@/lib/icons"
-
+import { useState } from "react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+} from "@/components/ui/accordion";
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  RiBankCardLine,
+  RiCloseLine,
+  RiQuestionLine,
+  RiSearchLine,
+  RiShieldCheckLine,
+} from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 type Faq = {
-  q: string
-  a: string
-}
+  q: string;
+  a: string;
+};
 
 type FaqCategory = {
-  id: string
-  label: string
-  icon: typeof RiQuestionLine
-  items: Faq[]
-}
+  id: string;
+  label: string;
+  icon: typeof RiQuestionLine;
+  items: Faq[];
+};
 
 const categories: FaqCategory[] = [
   {
@@ -108,20 +107,19 @@ const categories: FaqCategory[] = [
       },
     ],
   },
-]
+];
 
 export default function FaqsBlock() {
-  const [query, setQuery] = useState("")
-  const normalized = query.trim().toLowerCase()
+  const [query, setQuery] = useState("");
+  const normalized = query.trim().toLowerCase();
 
   const filterItems = (items: Faq[]) =>
     normalized.length === 0
       ? items
       : items.filter(
           ({ q, a }) =>
-            q.toLowerCase().includes(normalized) ||
-            a.toLowerCase().includes(normalized)
-        )
+            q.toLowerCase().includes(normalized) || a.toLowerCase().includes(normalized),
+        );
 
   return (
     <section className="flex min-h-svh w-full items-start justify-center bg-muted/30 px-6 py-16 text-foreground">
@@ -130,12 +128,9 @@ export default function FaqsBlock() {
           <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
             Help center
           </span>
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            How can we help?
-          </h2>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">How can we help?</h2>
           <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-            Search across every topic or browse by category to find answers
-            about Acme.
+            Search across every topic or browse by category to find answers about Acme.
           </p>
         </div>
 
@@ -164,7 +159,7 @@ export default function FaqsBlock() {
         <Tabs defaultValue="general" className="w-full">
           <TabsList className="mx-auto flex h-auto flex-wrap justify-center gap-1">
             {categories.map(({ id, label, icon: Icon, items }) => {
-              const count = filterItems(items).length
+              const count = filterItems(items).length;
               return (
                 <TabsTrigger key={id} value={id} className="gap-1.5">
                   <Icon data-icon="inline-start" className="size-4" />
@@ -172,20 +167,18 @@ export default function FaqsBlock() {
                   <span
                     className={cn(
                       "ml-0.5 inline-flex min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums",
-                      count === 0
-                        ? "bg-muted text-muted-foreground"
-                        : "bg-primary/10 text-primary"
+                      count === 0 ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary",
                     )}
                   >
                     {count}
                   </span>
                 </TabsTrigger>
-              )
+              );
             })}
           </TabsList>
 
           {categories.map(({ id, items }) => {
-            const filtered = filterItems(items)
+            const filtered = filterItems(items);
             return (
               <TabsContent key={id} value={id} className="mt-4">
                 {filtered.length > 0 ? (
@@ -214,17 +207,17 @@ export default function FaqsBlock() {
                       </EmptyMedia>
                       <EmptyTitle>No matching questions</EmptyTitle>
                       <EmptyDescription>
-                        Nothing in this category matches &ldquo;{query}&rdquo;.
-                        Try a different search term.
+                        Nothing in this category matches &ldquo;{query}&rdquo;. Try a different
+                        search term.
                       </EmptyDescription>
                     </EmptyHeader>
                   </Empty>
                 )}
               </TabsContent>
-            )
+            );
           })}
         </Tabs>
       </div>
     </section>
-  )
+  );
 }

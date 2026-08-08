@@ -1,10 +1,14 @@
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { verifyEmailAction } from "@/lib/auth/actions";
 import { ArrowLeftIcon, CheckCircleIcon, XCircleIcon } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
-export function VerifyEmailForm({ className, searchParams, ...props }: React.ComponentProps<"div"> & { searchParams: Record<string, string> }) {
+export function VerifyEmailForm({
+  className,
+  searchParams,
+  ...props
+}: React.ComponentProps<"div"> & { searchParams: Record<string, string> }) {
   const token = searchParams.token;
   const email = searchParams.email;
   const error = searchParams.error;
@@ -22,7 +26,10 @@ export function VerifyEmailForm({ className, searchParams, ...props }: React.Com
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          <Link href="/login" className="font-medium text-sm text-foreground underline-offset-4 hover:underline">
+          <Link
+            href="/login"
+            className="font-medium text-sm text-foreground underline-offset-4 hover:underline"
+          >
             Back to sign in
           </Link>
         </div>
@@ -40,11 +47,15 @@ export function VerifyEmailForm({ className, searchParams, ...props }: React.Com
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold tracking-tight">Invalid link</h1>
             <p className="text-sm text-muted-foreground">
-              This verification link is missing required information. Please check the link and try again.
+              This verification link is missing required information. Please check the link and try
+              again.
             </p>
           </div>
         </div>
-        <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <Link
+          href="/login"
+          className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ArrowLeftIcon className="size-3.5" />
           Back to sign in
         </Link>
@@ -60,7 +71,8 @@ export function VerifyEmailForm({ className, searchParams, ...props }: React.Com
         </div>
         <h1 className="text-2xl font-bold tracking-tight">Verify your email</h1>
         <p className="text-sm text-muted-foreground">
-          Click the button below to verify <span className="font-medium text-foreground">{email}</span>
+          Click the button below to verify{" "}
+          <span className="font-medium text-foreground">{email}</span>
         </p>
       </div>
 
@@ -72,7 +84,10 @@ export function VerifyEmailForm({ className, searchParams, ...props }: React.Com
         </Button>
       </form>
 
-      <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link
+        href="/login"
+        className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
         <ArrowLeftIcon className="size-3.5" />
         Back to sign in
       </Link>

@@ -1,4 +1,4 @@
-import { Request } from "express";
+import type { Request } from "express";
 import { logger } from "./logger/index.js";
 
 export interface RegionConfig {
@@ -44,8 +44,10 @@ export function getAllRegions(): RegionConfig[] {
 export function getClosestRegion(clientIp: string): string {
   const ipPrefix = clientIp.split(".")[0];
   const regionMap: Record<string, string> = {
-    "13": "us-east-1", "52": "us-east-1",
-    "3": "eu-west-1", "63": "eu-west-1",
+    "13": "us-east-1",
+    "52": "us-east-1",
+    "3": "eu-west-1",
+    "63": "eu-west-1",
     "54": "ap-southeast-1",
   };
   return regionMap[ipPrefix] || currentRegion;
@@ -78,7 +80,10 @@ export async function checkCrossRegionSync(): Promise<{
       results[name] = { reachable: false, latencyMs: Date.now() - start };
     }
   }
-  const status = Object.values(results).every(r => r.reachable) ? "healthy"
-    : Object.values(results).some(r => r.reachable) ? "degraded" : "down";
+  const status = Object.values(results).every((r) => r.reachable)
+    ? "healthy"
+    : Object.values(results).some((r) => r.reachable)
+      ? "degraded"
+      : "down";
   return { status, regions: results };
 }

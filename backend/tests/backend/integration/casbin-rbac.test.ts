@@ -1,4 +1,9 @@
-import { enforce, buildFileResource, buildFolderResource, resetEnforcer } from "../../../src/config/casbin.js";
+import {
+  buildFileResource,
+  buildFolderResource,
+  enforce,
+  resetEnforcer,
+} from "../../../src/config/casbin.js";
 
 describe("Casbin RBAC", () => {
   beforeEach(async () => {

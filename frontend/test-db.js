@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient } = require("mongodb");
 
 async function run() {
   const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/myworkspace";
@@ -6,7 +6,7 @@ async function run() {
   try {
     await client.connect();
     const db = client.db();
-    
+
     console.log("--- Users ---");
     const user = await db.collection("users").findOne({ email: "myenumam@gmail.com" });
     console.log(user);

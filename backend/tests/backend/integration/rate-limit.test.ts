@@ -1,5 +1,5 @@
-import request from "supertest";
 import type { Server } from "http";
+import request from "supertest";
 import app from "../../../src/app.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 
@@ -29,7 +29,9 @@ describe("rate limiting", () => {
     let lastStatus = 200;
     let retryAfterHeader: string | undefined;
     for (let i = 0; i < 22; i++) {
-      const res = await agent().post("/api/auth/login").send({ email: `x${i}@example.com`, password: "p" });
+      const res = await agent()
+        .post("/api/auth/login")
+        .send({ email: `x${i}@example.com`, password: "p" });
       lastStatus = res.status;
       if (res.status === 429) {
         retryAfterHeader = res.headers["retry-after"] || res.headers["Retry-After"];

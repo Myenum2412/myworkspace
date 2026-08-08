@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { mkdir, writeFile } from "fs/promises";
+import { type NextRequest, NextResponse } from "next/server";
+import path from "path";
 import { auth } from "@/lib/auth/config";
-import { requireUserOrgId } from "@/lib/org";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { requireUserOrgId } from "@/lib/org";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -52,10 +52,9 @@ export async function POST(request: NextRequest) {
 
   await db.collection(collections.galleryImages).insertOne(image);
 
-  await db.collection(collections.qrGalleries).updateOne(
-    { id: galleryId },
-    { $inc: { imageCount: 1 } }
-  );
+  await db
+    .collection(collections.qrGalleries)
+    .updateOne({ id: galleryId }, { $inc: { imageCount: 1 } });
 
   return NextResponse.json({ image: { ...image, _id: id } });
 }
@@ -79,7 +78,9 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Image not found" }, { status: 404 });
   }
 
-  const gallery = await db.collection(collections.qrGalleries).findOne({ id: image.galleryId, orgId });
+  const gallery = await db
+    .collection(collections.qrGalleries)
+    .findOne({ id: image.galleryId, orgId });
   if (!gallery) {
     return NextResponse.json({ error: "Gallery not found" }, { status: 404 });
   }
@@ -87,10 +88,9 @@ export async function DELETE(request: NextRequest) {
   await db.collection(collections.galleryImages).deleteOne({ id });
   await db.collection(collections.faceToImageMapping).deleteMany({ imageId: id });
 
-  await db.collection(collections.qrGalleries).updateOne(
-    { id: image.galleryId },
-    { $inc: { imageCount: -1 } }
-  );
+  await db
+    .collection(collections.qrGalleries)
+    .updateOne({ id: image.galleryId }, { $inc: { imageCount: -1 } });
 
   return NextResponse.json({ success: true });
 }

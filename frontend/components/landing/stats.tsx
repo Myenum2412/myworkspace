@@ -12,12 +12,8 @@ export function Stats() {
         <div className="grid grid-cols-2 gap-6 sm:gap-8 lg:grid-cols-4">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
-              <p className="heading-responsive font-bold tracking-tight text-white">
-                {stat.value}
-              </p>
-              <p className="mt-2 text-responsive font-medium text-brand-300">
-                {stat.label}
-              </p>
+              <p className="heading-responsive font-bold tracking-tight text-white">{stat.value}</p>
+              <p className="mt-2 text-responsive font-medium text-brand-300">{stat.label}</p>
             </div>
           ))}
         </div>

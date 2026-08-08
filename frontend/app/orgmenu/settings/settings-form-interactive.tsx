@@ -1,1 +1,1 @@
-export { SettingsFormInteractive } from "./settings-form-interactive.client"
+export { SettingsFormInteractive } from "./settings-form-interactive.client";

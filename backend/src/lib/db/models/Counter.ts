@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface ICounter extends Document {
   name: string;
@@ -16,7 +16,7 @@ export async function getNextSequence(name: string): Promise<number> {
   const counter = await Counter.findOneAndUpdate(
     { name },
     { $inc: { seq: 1 } },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
   return counter!.seq;
 }

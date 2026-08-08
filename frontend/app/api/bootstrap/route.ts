@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
@@ -17,19 +17,38 @@ export async function GET(_req: NextRequest) {
     const role = session.user.role || "staffs";
 
     const [userDoc, orgDoc, notificationCount] = await Promise.all([
-      db.collection(collections.users).findOne({ id: userId }).catch(() => null),
-      orgId ? db.collection(collections.organizations).findOne({ id: orgId }).catch(() => null) : Promise.resolve(null),
-      db.collection(collections.notifications).countDocuments({ userId, read: false }).catch(() => 0),
+      db
+        .collection(collections.users)
+        .findOne({ id: userId })
+        .catch(() => null),
+      orgId
+        ? db
+            .collection(collections.organizations)
+            .findOne({ id: orgId })
+            .catch(() => null)
+        : Promise.resolve(null),
+      db
+        .collection(collections.notifications)
+        .countDocuments({ userId, read: false })
+        .catch(() => 0),
     ]);
 
     const memberDocs = orgId
-      ? await db.collection(collections.orgMembers).find({ orgId }).toArray().catch(() => [])
+      ? await db
+          .collection(collections.orgMembers)
+          .find({ orgId })
+          .toArray()
+          .catch(() => [])
       : [];
 
     const userIds = memberDocs.map((m: any) => m.userId).filter(Boolean);
     let members: any[] = [];
     if (userIds.length > 0) {
-      const users = await db.collection(collections.users).find({ id: { $in: userIds } }).toArray().catch(() => []);
+      const users = await db
+        .collection(collections.users)
+        .find({ id: { $in: userIds } })
+        .toArray()
+        .catch(() => []);
       const userMap = new Map(users.map((u: any) => [u.id, u]));
       members = memberDocs.map((m: any) => ({
         role: m.role,

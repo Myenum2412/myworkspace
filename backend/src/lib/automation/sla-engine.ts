@@ -1,9 +1,9 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
-import { logger } from "../logger/index.js";
-import { Task } from "../db/models/Task.js";
-import { Project } from "../db/models/Project.js";
 import { Notification } from "../db/models/Notification.js";
+import { Project } from "../db/models/Project.js";
+import { Task } from "../db/models/Task.js";
+import { logger } from "../logger/index.js";
 
 export type SLAPriority = "P0" | "P1" | "P2" | "P3";
 export type SLAPhase = "response" | "acknowledge" | "resolve" | "review";
@@ -57,59 +57,85 @@ export interface IApprovalRequest extends Document {
   updatedAt: Date;
 }
 
-const slaDefinitionSchema = new Schema<ISLADefinition>({
-  id: { type: String, required: true, unique: true },
-  orgId: { type: String, required: true, index: true },
-  name: { type: String, required: true },
-  priority: { type: String, enum: ["P0", "P1", "P2", "P3"], required: true },
-  targets: {
-    response: { type: Number, default: 15 },
-    acknowledge: { type: Number, default: 30 },
-    resolve: { type: Number, default: 240 },
-    review: { type: Number, default: 60 },
+const slaDefinitionSchema = new Schema<ISLADefinition>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    name: { type: String, required: true },
+    priority: { type: String, enum: ["P0", "P1", "P2", "P3"], required: true },
+    targets: {
+      response: { type: Number, default: 15 },
+      acknowledge: { type: Number, default: 30 },
+      resolve: { type: Number, default: 240 },
+      review: { type: Number, default: 60 },
+    },
+    calendar: { type: String, enum: ["24x7", "business_hours"], default: "24x7" },
+    escalationPath: [{ type: String }],
+    notifyOnBreach: { type: Boolean, default: true },
+    isActive: { type: Boolean, default: true },
   },
-  calendar: { type: String, enum: ["24x7", "business_hours"], default: "24x7" },
-  escalationPath: [{ type: String }],
-  notifyOnBreach: { type: Boolean, default: true },
-  isActive: { type: Boolean, default: true },
-}, { timestamps: true });
+  { timestamps: true },
+);
 
-const slaEntrySchema = new Schema<ISLAEntry>({
-  id: { type: String, required: true, unique: true },
-  orgId: { type: String, required: true, index: true },
-  slaId: { type: String, required: true },
-  taskId: { type: String, required: true, index: true },
-  priority: { type: String, enum: ["P0", "P1", "P2", "P3"], required: true },
-  status: { type: String, enum: ["active", "breached", "met", "cancelled"], default: "active" },
-  phases: {
-    response: {
-      targetMinutes: Number, startedAt: Date, completedAt: Date, breached: { type: Boolean, default: false },
+const slaEntrySchema = new Schema<ISLAEntry>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    slaId: { type: String, required: true },
+    taskId: { type: String, required: true, index: true },
+    priority: { type: String, enum: ["P0", "P1", "P2", "P3"], required: true },
+    status: { type: String, enum: ["active", "breached", "met", "cancelled"], default: "active" },
+    phases: {
+      response: {
+        targetMinutes: Number,
+        startedAt: Date,
+        completedAt: Date,
+        breached: { type: Boolean, default: false },
+      },
+      acknowledge: {
+        targetMinutes: Number,
+        startedAt: Date,
+        completedAt: Date,
+        breached: { type: Boolean, default: false },
+      },
+      resolve: {
+        targetMinutes: Number,
+        startedAt: Date,
+        completedAt: Date,
+        breached: { type: Boolean, default: false },
+      },
     },
-    acknowledge: {
-      targetMinutes: Number, startedAt: Date, completedAt: Date, breached: { type: Boolean, default: false },
-    },
-    resolve: {
-      targetMinutes: Number, startedAt: Date, completedAt: Date, breached: { type: Boolean, default: false },
-    },
+    breachedAt: Date,
+    escalatedTo: String,
   },
-  breachedAt: Date,
-  escalatedTo: String,
-}, { timestamps: true });
+  { timestamps: true },
+);
 
-const approvalRequestSchema = new Schema<IApprovalRequest>({
-  id: { type: String, required: true, unique: true },
-  orgId: { type: String, required: true, index: true },
-  entityType: { type: String, enum: ["task", "project", "file", "workflow", "membership"], required: true },
-  entityId: { type: String, required: true },
-  requestorId: { type: String, required: true },
-  approverIds: [{ type: String }],
-  approvedBy: [{ type: String }],
-  rejectedBy: [{ type: String }],
-  status: { type: String, enum: ["pending", "approved", "rejected", "cancelled"], default: "pending" },
-  comments: [{ userId: String, text: String, createdAt: { type: Date, default: Date.now } }],
-  requiredApprovals: { type: Number, default: 1 },
-  expiresAt: Date,
-}, { timestamps: true });
+const approvalRequestSchema = new Schema<IApprovalRequest>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    entityType: {
+      type: String,
+      enum: ["task", "project", "file", "workflow", "membership"],
+      required: true,
+    },
+    entityId: { type: String, required: true },
+    requestorId: { type: String, required: true },
+    approverIds: [{ type: String }],
+    approvedBy: [{ type: String }],
+    rejectedBy: [{ type: String }],
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected", "cancelled"],
+      default: "pending",
+    },
+    comments: [{ userId: String, text: String, createdAt: { type: Date, default: Date.now } }],
+    requiredApprovals: { type: Number, default: 1 },
+    expiresAt: Date,
+  },
+  { timestamps: true },
+);
 
 export const SLADefinition = model<ISLADefinition>("SLADefinition", slaDefinitionSchema);
 export const SLAEntry = model<ISLAEntry>("SLAEntry", slaEntrySchema);
@@ -117,11 +143,15 @@ export const ApprovalRequest = model<IApprovalRequest>("ApprovalRequest", approv
 
 export class SLAEngine {
   async defineSLA(params: {
-    orgId: string; name: string; priority: SLAPriority;
-    targets: Record<SLAPhase, number>; escalationPath?: string[];
+    orgId: string;
+    name: string;
+    priority: SLAPriority;
+    targets: Record<SLAPhase, number>;
+    escalationPath?: string[];
   }): Promise<ISLADefinition> {
     return SLADefinition.create({
-      id: uuid(), ...params,
+      id: uuid(),
+      ...params,
       escalationPath: params.escalationPath || [],
       calendar: "24x7",
       notifyOnBreach: true,
@@ -134,7 +164,10 @@ export class SLAEngine {
     if (!task) return null;
 
     const priorityMap: Record<string, SLAPriority> = {
-      urgent: "P0", high: "P1", medium: "P2", low: "P3",
+      urgent: "P0",
+      high: "P1",
+      medium: "P2",
+      low: "P3",
     };
     const priority = priorityMap[task.priority] || "P2";
 
@@ -149,7 +182,11 @@ export class SLAEngine {
       priority,
       status: "active",
       phases: {
-        response: { targetMinutes: slaDef.targets.response || 15, startedAt: new Date(), breached: false },
+        response: {
+          targetMinutes: slaDef.targets.response || 15,
+          startedAt: new Date(),
+          breached: false,
+        },
         acknowledge: { targetMinutes: slaDef.targets.acknowledge || 30, breached: false },
         resolve: { targetMinutes: slaDef.targets.resolve || 240, breached: false },
       },
@@ -223,7 +260,10 @@ export class SLAEngine {
   }
 
   async getSLAReport(orgId: string): Promise<{
-    total: number; active: number; breached: number; met: number;
+    total: number;
+    active: number;
+    breached: number;
+    met: number;
     byPriority: Record<string, number>;
     avgResponseMinutes: number;
   }> {
@@ -238,18 +278,28 @@ export class SLAEngine {
     const byPriority: Record<string, number> = {};
     for (const s of stats) byPriority[s._id] = s.count;
 
-    const completedResponse = entries.filter(e => e.phases.response.completedAt && e.phases.response.startedAt);
-    const avgResponseMinutes = completedResponse.length > 0
-      ? Math.round(completedResponse.reduce((s, e) => {
-          return s + (new Date(e.phases.response.completedAt!).getTime() - new Date(e.phases.response.startedAt!).getTime()) / 60000;
-        }, 0) / completedResponse.length)
-      : 0;
+    const completedResponse = entries.filter(
+      (e) => e.phases.response.completedAt && e.phases.response.startedAt,
+    );
+    const avgResponseMinutes =
+      completedResponse.length > 0
+        ? Math.round(
+            completedResponse.reduce((s, e) => {
+              return (
+                s +
+                (new Date(e.phases.response.completedAt!).getTime() -
+                  new Date(e.phases.response.startedAt!).getTime()) /
+                  60000
+              );
+            }, 0) / completedResponse.length,
+          )
+        : 0;
 
     return {
       total: entries.length,
-      active: entries.filter(e => e.status === "active").length,
-      breached: entries.filter(e => e.status === "breached").length,
-      met: entries.filter(e => e.status === "met").length,
+      active: entries.filter((e) => e.status === "active").length,
+      breached: entries.filter((e) => e.status === "breached").length,
+      met: entries.filter((e) => e.status === "met").length,
       byPriority,
       avgResponseMinutes,
     };
@@ -258,21 +308,32 @@ export class SLAEngine {
 
 export class ApprovalEngine {
   async createApprovalRequest(params: {
-    orgId: string; entityType: IApprovalRequest["entityType"]; entityId: string;
-    requestorId: string; approverIds: string[];
-    requiredApprovals?: number; expiresInHours?: number;
+    orgId: string;
+    entityType: IApprovalRequest["entityType"];
+    entityId: string;
+    requestorId: string;
+    approverIds: string[];
+    requiredApprovals?: number;
+    expiresInHours?: number;
   }): Promise<IApprovalRequest> {
     return ApprovalRequest.create({
-      id: uuid(), ...params,
+      id: uuid(),
+      ...params,
       requiredApprovals: params.requiredApprovals || 1,
       approvedBy: [],
       rejectedBy: [],
       comments: [],
-      expiresAt: params.expiresInHours ? new Date(Date.now() + params.expiresInHours * 3600000) : undefined,
+      expiresAt: params.expiresInHours
+        ? new Date(Date.now() + params.expiresInHours * 3600000)
+        : undefined,
     });
   }
 
-  async approve(approvalId: string, userId: string, comment?: string): Promise<IApprovalRequest | null> {
+  async approve(
+    approvalId: string,
+    userId: string,
+    comment?: string,
+  ): Promise<IApprovalRequest | null> {
     const request = await ApprovalRequest.findOne({ id: approvalId, status: "pending" });
     if (!request) return null;
 
@@ -295,7 +356,11 @@ export class ApprovalEngine {
     return request;
   }
 
-  async reject(approvalId: string, userId: string, reason: string): Promise<IApprovalRequest | null> {
+  async reject(
+    approvalId: string,
+    userId: string,
+    reason: string,
+  ): Promise<IApprovalRequest | null> {
     const request = await ApprovalRequest.findOne({ id: approvalId, status: "pending" });
     if (!request) return null;
 

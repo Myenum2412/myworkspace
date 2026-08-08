@@ -1,20 +1,24 @@
 /**
  * Unit tests for the input sanitizer middleware.
  */
-import { describe, it, expect } from "@jest/globals";
-import { sanitiseValue, inputSanitizer } from "../../../src/middleware/sanitize.js";
+import { describe, expect, it } from "@jest/globals";
+import { inputSanitizer, sanitiseValue } from "../../../src/middleware/sanitize.js";
 
 describe("sanitiseValue()", () => {
   it("removes <script> tags from strings", () => {
-    expect(sanitiseValue('hello <script>alert("xss")</script> world')).toBe('hello alert("xss") world');
+    expect(sanitiseValue('hello <script>alert("xss")</script> world')).toBe(
+      'hello alert("xss") world',
+    );
   });
 
   it("removes on* event handlers", () => {
-    expect(sanitiseValue('<img src=x onerror=alert(1)>')).toBe("<img src=x alert(1)>");
+    expect(sanitiseValue("<img src=x onerror=alert(1)>")).toBe("<img src=x alert(1)>");
   });
 
   it("removes javascript: URIs", () => {
-    expect(sanitiseValue('<a href="javascript:alert(1)">click</a>')).toBe('<a href="alert(1)">click</a>');
+    expect(sanitiseValue('<a href="javascript:alert(1)">click</a>')).toBe(
+      '<a href="alert(1)">click</a>',
+    );
   });
 
   it("removes data: URIs from script contexts", () => {
@@ -36,9 +40,9 @@ describe("sanitiseValue()", () => {
 describe("sanitiseValue() recursive", () => {
   it("recursively sanitizes nested objects", () => {
     const input = {
-      name: '<script>alert(1)</script>',
+      name: "<script>alert(1)</script>",
       nested: {
-        desc: '<img src=x onerror=alert(1)>',
+        desc: "<img src=x onerror=alert(1)>",
       },
       safe: "hello",
     };
@@ -49,7 +53,7 @@ describe("sanitiseValue() recursive", () => {
   });
 
   it("sanitizes all string values in an array", () => {
-    const input = ['<script>a</script>', 'safe', '<a href="javascript:void">link</a>'];
+    const input = ["<script>a</script>", "safe", '<a href="javascript:void">link</a>'];
     const result = sanitiseValue(input) as string[];
     expect(result[0]).toBe("a");
     expect(result[1]).toBe("safe");

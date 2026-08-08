@@ -55,13 +55,13 @@ export function evaluateCondition(condition: string, ctx: RequestContext): boole
   // Handle AND conditions
   const andParts = splitCondition(condition, " AND ");
   if (andParts.length > 1) {
-    return andParts.every(part => evaluateCondition(part.trim(), ctx));
+    return andParts.every((part) => evaluateCondition(part.trim(), ctx));
   }
 
   // Handle OR conditions
   const orParts = splitCondition(condition, " OR ");
   if (orParts.length > 1) {
-    return orParts.some(part => evaluateCondition(part.trim(), ctx));
+    return orParts.some((part) => evaluateCondition(part.trim(), ctx));
   }
 
   // Parse single condition
@@ -83,13 +83,17 @@ function splitCondition(condition: string, separator: string): string[] {
     if (char === '"' || char === "'") {
       inQuote = !inQuote;
       current += char;
-    } else if (char === '(' && !inQuote) {
+    } else if (char === "(" && !inQuote) {
       depth++;
       current += char;
-    } else if (char === ')' && !inQuote) {
+    } else if (char === ")" && !inQuote) {
       depth--;
       current += char;
-    } else if (condition.substring(i, i + separator.length) === separator && !inQuote && depth === 0) {
+    } else if (
+      condition.substring(i, i + separator.length) === separator &&
+      !inQuote &&
+      depth === 0
+    ) {
       parts.push(current);
       current = "";
       i += separator.length - 1;
@@ -217,13 +221,20 @@ function evaluateRiskCondition(condition: string, ctx: RequestContext): boolean 
   const value = parseInt(valueStr, 10);
 
   switch (operator) {
-    case ">": return riskScore > value;
-    case "<": return riskScore < value;
-    case ">=": return riskScore >= value;
-    case "<=": return riskScore <= value;
-    case "==": return riskScore === value;
-    case "!=": return riskScore !== value;
-    default: return true;
+    case ">":
+      return riskScore > value;
+    case "<":
+      return riskScore < value;
+    case ">=":
+      return riskScore >= value;
+    case "<=":
+      return riskScore <= value;
+    case "==":
+      return riskScore === value;
+    case "!=":
+      return riskScore !== value;
+    default:
+      return true;
   }
 }
 
@@ -249,14 +260,14 @@ function evaluateCountryCondition(condition: string, ctx: RequestContext): boole
   // In list
   match = condition.match(/country\s+in\s*\[([^\]]+)\]/);
   if (match) {
-    const countries = match[1].split(",").map(c => c.trim().replace(/"/g, ""));
+    const countries = match[1].split(",").map((c) => c.trim().replace(/"/g, ""));
     return countries.includes(country);
   }
 
   // Not in list
   match = condition.match(/country\s+not_in\s*\[([^\]]+)\]/);
   if (match) {
-    const countries = match[1].split(",").map(c => c.trim().replace(/"/g, ""));
+    const countries = match[1].split(",").map((c) => c.trim().replace(/"/g, ""));
     return !countries.includes(country);
   }
 
@@ -285,7 +296,7 @@ function evaluateRoleCondition(condition: string, ctx: RequestContext): boolean 
   // In list
   match = condition.match(/role\s+in\s*\[([^\]]+)\]/);
   if (match) {
-    const roles = match[1].split(",").map(r => r.trim().replace(/"/g, ""));
+    const roles = match[1].split(",").map((r) => r.trim().replace(/"/g, ""));
     return roles.includes(role);
   }
 
@@ -337,14 +348,14 @@ export function buildConditionString(conditions: {
     if (conditions.countries.length === 1) {
       parts.push(`country == "${conditions.countries[0]}"`);
     } else {
-      parts.push(`country in [${conditions.countries.map(c => `"${c}"`).join(", ")}]`);
+      parts.push(`country in [${conditions.countries.map((c) => `"${c}"`).join(", ")}]`);
     }
   }
   if (conditions.roles && conditions.roles.length > 0) {
     if (conditions.roles.length === 1) {
       parts.push(`role == "${conditions.roles[0]}"`);
     } else {
-      parts.push(`role in [${conditions.roles.map(r => `"${r}"`).join(", ")}]`);
+      parts.push(`role in [${conditions.roles.map((r) => `"${r}"`).join(", ")}]`);
     }
   }
   if (conditions.departments && conditions.departments.length > 0) {

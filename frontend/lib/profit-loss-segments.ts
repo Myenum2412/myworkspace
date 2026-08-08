@@ -15,10 +15,7 @@ function resolveSign(value: number, fallback: SegmentSign): SegmentSign {
   return fallback;
 }
 
-function findInitialSign(
-  data: Record<string, unknown>[],
-  dataKey: string
-): SegmentSign {
+function findInitialSign(data: Record<string, unknown>[], dataKey: string): SegmentSign {
   for (const row of data) {
     const value = row[dataKey];
     if (typeof value !== "number") {
@@ -39,7 +36,7 @@ function interpolateZeroCrossing(
   b: Record<string, unknown>,
   dataKey: string,
   xDataKey: string,
-  xAccessor: (d: Record<string, unknown>) => Date
+  xAccessor: (d: Record<string, unknown>) => Date,
 ): Record<string, unknown> {
   const ya = a[dataKey] as number;
   const yb = b[dataKey] as number;

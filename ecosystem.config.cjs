@@ -33,5 +33,5 @@ module.exports = {
       "post-deploy":
         "cp /var/www/myworkspace-backend/shared/.env /var/www/myworkspace-backend/current/backend/.env && cd backend && rm -rf node_modules dist && NODE_OPTIONS=--max-old-space-size=2048 npm ci --include=dev && NODE_OPTIONS=--max-old-space-size=2048 npm run build && cd /var/www/myworkspace-backend/current && pm2 delete myworkspace-backend 2>/dev/null; true && pm2 start ecosystem.config.cjs --only myworkspace-backend && pm2 save",
     },
-  }
+  },
 };

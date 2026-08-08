@@ -1,8 +1,16 @@
 "use client";
 
-import * as React from "react";
-import { alpha } from "@mui/material/styles";
+import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
+import Checkbox from "@mui/material/Checkbox";
+import Chip from "@mui/material/Chip";
+import IconButton from "@mui/material/IconButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import { alpha } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -12,26 +20,18 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
-import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import { DeleteIcon } from "@/lib/icons";
-import { FilterListIcon } from "@/lib/icons";
-import { MoreVertIcon } from "@/lib/icons";
-import { EditIcon } from "@/lib/icons";
-import { PersonOffIcon } from "@/lib/icons";
-import Avatar from "@mui/material/Avatar";
-import Chip from "@mui/material/Chip";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
+import Typography from "@mui/material/Typography";
 import { visuallyHidden } from "@mui/utils";
+import * as React from "react";
+import { DeleteIcon, EditIcon, FilterListIcon, MoreVertIcon, PersonOffIcon } from "@/lib/icons";
 import type { Employee } from "./columns";
 
-function descendingComparator(a: Record<string, unknown>, b: Record<string, unknown>, orderBy: string) {
+function descendingComparator(
+  a: Record<string, unknown>,
+  b: Record<string, unknown>,
+  orderBy: string,
+) {
   const aVal = a[orderBy] ?? "";
   const bVal = b[orderBy] ?? "";
   if (bVal < aVal) return -1;
@@ -130,13 +130,18 @@ interface EnhancedTableToolbarProps {
   selectedIds: readonly number[];
 }
 
-function EnhancedTableToolbar({ numSelected, onDeleteSelected, selectedIds }: EnhancedTableToolbarProps) {
+function EnhancedTableToolbar({
+  numSelected,
+  onDeleteSelected,
+  selectedIds,
+}: EnhancedTableToolbarProps) {
   return (
     <Toolbar
       sx={[
         { pl: { sm: 2 }, pr: { xs: 1, sm: 1 } },
         numSelected > 0 && {
-          bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
+          bgcolor: (theme) =>
+            alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
         },
       ]}
     >
@@ -192,7 +197,12 @@ interface EmployeesMuiTableProps {
   onTerminate: (emp: Employee) => void;
 }
 
-export default function EmployeesMuiTable({ employees, onRowClick, onEdit, onTerminate }: EmployeesMuiTableProps) {
+export default function EmployeesMuiTable({
+  employees,
+  onRowClick,
+  onEdit,
+  onTerminate,
+}: EmployeesMuiTableProps) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof Employee>("name");
   const [selected, setSelected] = React.useState<readonly number[]>([]);
@@ -268,7 +278,9 @@ export default function EmployeesMuiTable({ employees, onRowClick, onEdit, onTer
 
   const visibleRows = React.useMemo(
     () =>
-      [...rows].sort(getComparator(order, orderBy)).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+      [...rows]
+        .sort(getComparator(order, orderBy))
+        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
     [order, orderBy, page, rowsPerPage, rows],
   );
 
@@ -299,7 +311,11 @@ export default function EmployeesMuiTable({ employees, onRowClick, onEdit, onTer
                     hover
                     onClick={(event) => {
                       const target = event.target as HTMLElement;
-                      if (target.closest(".MuiIconButton-root") || target.closest(".MuiCheckbox-root")) return;
+                      if (
+                        target.closest(".MuiIconButton-root") ||
+                        target.closest(".MuiCheckbox-root")
+                      )
+                        return;
                       onRowClick(row);
                     }}
                     role="checkbox"
@@ -322,7 +338,10 @@ export default function EmployeesMuiTable({ employees, onRowClick, onEdit, onTer
                     </TableCell>
                     <TableCell component="th" id={labelId} scope="row" padding="none">
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                        <Avatar src={row.avatar || undefined} sx={{ width: 32, height: 32, fontSize: 13 }}>
+                        <Avatar
+                          src={row.avatar || undefined}
+                          sx={{ width: 32, height: 32, fontSize: 13 }}
+                        >
                           {!row.avatar && getInitials(row.name)}
                         </Avatar>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -331,7 +350,11 @@ export default function EmployeesMuiTable({ employees, onRowClick, onEdit, onTer
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" sx={{ fontFamily: "monospace" }} color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        sx={{ fontFamily: "monospace" }}
+                        color="text.secondary"
+                      >
                         {row.displayId || "—"}
                       </Typography>
                     </TableCell>
@@ -353,7 +376,13 @@ export default function EmployeesMuiTable({ employees, onRowClick, onEdit, onTer
                       <Typography variant="body2">{row.designation || "—"}</Typography>
                     </TableCell>
                     <TableCell>
-                      <Chip label={row.role} size="small" color="primary" variant="outlined" sx={{ textTransform: "capitalize" }} />
+                      <Chip
+                        label={row.role}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ textTransform: "capitalize" }}
+                      />
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">{row.employmentType || "—"}</Typography>
@@ -363,9 +392,7 @@ export default function EmployeesMuiTable({ employees, onRowClick, onEdit, onTer
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {row.joiningDate
-                          ? new Date(row.joiningDate).toLocaleDateString()
-                          : "—"}
+                        {row.joiningDate ? new Date(row.joiningDate).toLocaleDateString() : "—"}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -377,10 +404,7 @@ export default function EmployeesMuiTable({ employees, onRowClick, onEdit, onTer
                       />
                     </TableCell>
                     <TableCell padding="normal">
-                      <IconButton
-                        size="small"
-                        onClick={(event) => handleMenuOpen(event, row)}
-                      >
+                      <IconButton size="small" onClick={(event) => handleMenuOpen(event, row)}>
                         <MoreVertIcon />
                       </IconButton>
                       <Menu
@@ -426,7 +450,6 @@ export default function EmployeesMuiTable({ employees, onRowClick, onEdit, onTer
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
-
     </Box>
   );
 }

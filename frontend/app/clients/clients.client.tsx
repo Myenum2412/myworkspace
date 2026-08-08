@@ -1,17 +1,30 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  EditClientFormFields,
+  EMPTY_VALUES,
+  payloadFromValues,
+  valuesFromClient,
+} from "@/app/clients/client-form-fields.client";
+import type { Client } from "@/app/clients/columns";
+import { ClientSuccessDialog } from "@/components/clients/client-details";
+import { ClientForm } from "@/components/clients/client-form";
+import { ClientList } from "@/components/clients/client-list";
+import type { Credentials } from "@/components/clients/client-types";
+import { ClientViewDialog } from "@/components/clients/client-view-dialog";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusIcon, Loader2, ChevronLeftIcon, SaveIcon, SearchIcon, XIcon, UsersIcon } from "@/lib/icons";
-import { PageHeader } from "@/components/page-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Client } from "@/app/clients/columns";
-import type { Credentials } from "@/components/clients/client-types";
-import { ClientList } from "@/components/clients/client-list";
-import { ClientForm } from "@/components/clients/client-form";
-import { ClientSuccessDialog } from "@/components/clients/client-details";
-import { ClientViewDialog } from "@/components/clients/client-view-dialog";
-import { EditClientFormFields, EMPTY_VALUES, valuesFromClient, payloadFromValues } from "@/app/clients/client-form-fields.client";
+import {
+  ChevronLeftIcon,
+  Loader2,
+  PlusIcon,
+  SaveIcon,
+  SearchIcon,
+  UsersIcon,
+  XIcon,
+} from "@/lib/icons";
 
 type SessionUser = {
   id?: string;
@@ -30,14 +43,19 @@ type ClientsProps = {
 
 function getCsrfHeaders(): Record<string, string> {
   if (typeof document === "undefined") return {};
-  const match = document.cookie.match(new RegExp("(?:^|;\\s*)csrf-token=([^;]*)"));
+  const match = document.cookie.match(/(?:^|;\s*)csrf-token=([^;]*)/);
   const token = match ? decodeURIComponent(match[1]) : undefined;
   if (token) return { "x-csrf-token": token };
   return {};
 }
 const CSRF_HEADERS = getCsrfHeaders();
 
-export default function Clients({ initialClients, user: sessionUser, searchQuery: externalSearchQuery, onSearchChange }: ClientsProps) {
+export default function Clients({
+  initialClients,
+  user: sessionUser,
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+}: ClientsProps) {
   const [user, setUser] = useState(sessionUser);
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [loading] = useState(false);
@@ -58,7 +76,7 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
       (c) =>
         c.name.toLowerCase().includes(q) ||
         c.email.toLowerCase().includes(q) ||
-        (c.company && c.company.toLowerCase().includes(q))
+        (c.company && c.company.toLowerCase().includes(q)),
     );
   }, [clients, externalSearchQuery]);
 
@@ -66,7 +84,9 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
     Promise.all([
       fetch("/api/user/me", { credentials: "include" })
         .then((r) => r.json())
-        .then((u) => setUser({ name: u.name || "User", email: u.email || "", image: u.image || "" }))
+        .then((u) =>
+          setUser({ name: u.name || "User", email: u.email || "", image: u.image || "" }),
+        )
         .catch(() => {}),
       fetch("/api/employees", { credentials: "include" })
         .then((r) => r.json())
@@ -207,15 +227,24 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
           <h1 className="text-lg font-semibold text-black">Edit Client — {editingClient.name}</h1>
         </div>
         {editErrors._api && (
-          <div className="px-3 sm:px-4 md:px-6 py-2 bg-destructive/10 text-destructive text-sm">{editErrors._api}</div>
+          <div className="px-3 sm:px-4 md:px-6 py-2 bg-destructive/10 text-destructive text-sm">
+            {editErrors._api}
+          </div>
         )}
         <div className="flex-1 overflow-auto bg-white">
           <div className="w-full py-6 bg-white my-6 px-3 sm:px-4 md:px-6">
-            <EditClientFormFields v={editValues} set={setEdit} errors={editErrors} members={members} />
+            <EditClientFormFields
+              v={editValues}
+              set={setEdit}
+              errors={editErrors}
+              members={members}
+            />
           </div>
         </div>
         <div className="flex items-center justify-end gap-2 px-3 sm:px-4 md:px-6 py-4 border-t bg-muted/10 shrink-0">
-          <Button variant="ghost" onClick={handleBack} disabled={saving}>Cancel</Button>
+          <Button variant="ghost" onClick={handleBack} disabled={saving}>
+            Cancel
+          </Button>
           <Button onClick={handleSaveEdit} disabled={saving} className="gap-1.5">
             {saving ? <Loader2 className="size-4 animate-spin" /> : <SaveIcon className="size-4" />}
             Save Changes
@@ -231,7 +260,11 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
         <PageHeader
           icon={<UsersIcon className="size-6" />}
           title={<h1 data-tour-step-id="step-clients">Clients</h1>}
-          subtitle={<p>{filteredClients.length} {filteredClients.length === 1 ? "client" : "clients"}</p>}
+          subtitle={
+            <p>
+              {filteredClients.length} {filteredClients.length === 1 ? "client" : "clients"}
+            </p>
+          }
           search={
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -242,7 +275,10 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
                 className="pl-9 h-9"
               />
               {externalSearchQuery && (
-                <button onClick={() => onSearchChange?.("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1">
+                <button
+                  onClick={() => onSearchChange?.("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                >
                   <XIcon className="size-4" />
                 </button>
               )}
@@ -268,7 +304,9 @@ export default function Clients({ initialClients, user: sessionUser, searchQuery
       <ClientViewDialog
         client={viewingClient}
         open={!!viewingClient}
-        onOpenChange={(open) => { if (!open) setViewingClient(null); }}
+        onOpenChange={(open) => {
+          if (!open) setViewingClient(null);
+        }}
       />
     </>
   );

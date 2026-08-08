@@ -1,10 +1,13 @@
 import { v4 as uuid } from "uuid";
-import { ConsentRecord, IConsentRecord } from "../../lib/db/models/ConsentRecord.js";
 import { ConsentAuditLog } from "../../lib/db/models/ConsentAuditLog.js";
-import { RegionInfo } from "./region-detector.js";
+import { ConsentRecord, IConsentRecord } from "../../lib/db/models/ConsentRecord.js";
 import { logger } from "../../lib/logger/index.js";
+import type { RegionInfo } from "./region-detector.js";
 
-export type ConsentCategories = Record<"essential" | "functional" | "analytics" | "performance" | "personalization" | "marketing", boolean>;
+export type ConsentCategories = Record<
+  "essential" | "functional" | "analytics" | "performance" | "personalization" | "marketing",
+  boolean
+>;
 
 export interface ConsentInput {
   userId?: string;
@@ -34,15 +37,18 @@ export interface ConsentPreference {
 export class ConsentService {
   private readonly DEFAULT_EXPIRY_DAYS = 365;
 
-  async getCurrentConsent(identifier: { userId?: string; anonymousId?: string }): Promise<ConsentPreference | null> {
+  async getCurrentConsent(identifier: {
+    userId?: string;
+    anonymousId?: string;
+  }): Promise<ConsentPreference | null> {
     const query: Record<string, unknown> = {};
     if (identifier.userId) query.userId = identifier.userId;
     else if (identifier.anonymousId) query.anonymousId = identifier.anonymousId;
     else return null;
 
-    const record = await ConsentRecord.findOne(query)
+    const record = (await ConsentRecord.findOne(query)
       .sort({ consentVersion: -1 })
-      .lean() as Record<string, unknown> | null;
+      .lean()) as Record<string, unknown> | null;
 
     if (!record) return null;
 
@@ -104,14 +110,22 @@ export class ConsentService {
     });
 
     logger.info(
-      { userId: input.userId, version: record.consentVersion, categories: input.categories, source: input.source },
-      "Consent saved"
+      {
+        userId: input.userId,
+        version: record.consentVersion,
+        categories: input.categories,
+        source: input.source,
+      },
+      "Consent saved",
     );
 
     return this.toPreference(record)!;
   }
 
-  async withdrawConsent(identifier: { userId?: string; anonymousId?: string }, source: string): Promise<void> {
+  async withdrawConsent(
+    identifier: { userId?: string; anonymousId?: string },
+    source: string,
+  ): Promise<void> {
     const current = await this.getCurrentConsent(identifier);
     if (!current) return;
 
@@ -157,17 +171,22 @@ export class ConsentService {
     });
   }
 
-  async getConsentHistory(identifier: { userId?: string; anonymousId?: string }, limit = 50): Promise<ConsentPreference[]> {
+  async getConsentHistory(
+    identifier: { userId?: string; anonymousId?: string },
+    limit = 50,
+  ): Promise<ConsentPreference[]> {
     const query: Record<string, unknown> = {};
     if (identifier.userId) query.userId = identifier.userId;
     else if (identifier.anonymousId) query.anonymousId = identifier.anonymousId;
 
-    const records = await ConsentRecord.find(query)
+    const records = (await ConsentRecord.find(query)
       .sort({ consentVersion: -1 })
       .limit(limit)
-      .lean() as Record<string, unknown>[];
+      .lean()) as Record<string, unknown>[];
 
-    return records.map(r => this.toPreference(r)).filter((p): p is ConsentPreference => p !== null);
+    return records
+      .map((r) => this.toPreference(r))
+      .filter((p): p is ConsentPreference => p !== null);
   }
 
   async getAuditLogs(filters: {
@@ -235,7 +254,15 @@ export class ConsentService {
       { $group: { _id: "$source", count: { $sum: 1 } } },
     ]);
 
-    const data = stats[0] || { total: 0, essential: 0, functional: 0, analytics: 0, performance: 0, personalization: 0, marketing: 0 };
+    const data = stats[0] || {
+      total: 0,
+      essential: 0,
+      functional: 0,
+      analytics: 0,
+      performance: 0,
+      personalization: 0,
+      marketing: 0,
+    };
 
     return {
       totalConsent: data.total,
@@ -247,15 +274,15 @@ export class ConsentService {
         personalization: data.total ? Math.round((data.personalization / data.total) * 100) : 0,
         marketing: data.total ? Math.round((data.marketing / data.total) * 100) : 0,
       },
-      regionBreakdown: regionBreakdown.map(r => ({ region: r._id, count: r.count })),
-      sourceBreakdown: sourceBreakdown.map(s => ({ source: s._id, count: s.count })),
+      regionBreakdown: regionBreakdown.map((r) => ({ region: r._id, count: r.count })),
+      sourceBreakdown: sourceBreakdown.map((s) => ({ source: s._id, count: s.count })),
     };
   }
 
   async rotatePolicyVersion(newVersion: number): Promise<number> {
     const result = await ConsentRecord.updateMany(
       { policyVersion: { $lt: newVersion } },
-      { $set: { policyVersion: newVersion } }
+      { $set: { policyVersion: newVersion } },
     );
     return result.modifiedCount;
   }

@@ -1,21 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeftIcon,
-  PlusIcon,
-  QrCodeIcon,
+  CheckCircle2Icon,
   CopyIcon,
-  Trash2Icon,
   ImageIcon,
   Loader2Icon,
-  CheckCircle2Icon,
+  PlusIcon,
+  QrCodeIcon,
+  Trash2Icon,
 } from "@/lib/icons";
 
 interface Gallery {
@@ -134,27 +134,50 @@ export function GalleryDetailClient({
 
       <Tabs defaultValue="images">
         <TabsList>
-          <TabsTrigger value="images"><ImageIcon className="size-4 mr-1" /> Images</TabsTrigger>
-          <TabsTrigger value="qr"><QrCodeIcon className="size-4 mr-1" /> QR Codes</TabsTrigger>
+          <TabsTrigger value="images">
+            <ImageIcon className="size-4 mr-1" /> Images
+          </TabsTrigger>
+          <TabsTrigger value="qr">
+            <QrCodeIcon className="size-4 mr-1" /> QR Codes
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="images" className="space-y-4">
           <div className="flex items-center gap-2">
             <Label className="text-xs text-muted-foreground cursor-pointer">
               <div className="inline-flex items-center justify-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-                {uploading ? <Loader2Icon className="size-4 animate-spin mr-1" /> : <PlusIcon className="size-4 mr-1" />}
+                {uploading ? (
+                  <Loader2Icon className="size-4 animate-spin mr-1" />
+                ) : (
+                  <PlusIcon className="size-4 mr-1" />
+                )}
                 {uploading ? "Uploading..." : "Upload Image"}
               </div>
-              <input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleUpload}
+                disabled={uploading}
+              />
             </Label>
           </div>
 
           <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {images.map((img) => (
-              <div key={img.id} className="group relative aspect-square rounded-sm border overflow-hidden bg-muted">
+              <div
+                key={img.id}
+                className="group relative aspect-square rounded-sm border overflow-hidden bg-muted"
+              >
                 <img src={img.url} alt={img.filename} className="size-full object-cover" />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
-                  <Button size="icon" variant="ghost" className="text-white" onClick={() => handleDeleteImage(img.id)}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-white"
+                    onClick={() => handleDeleteImage(img.id)}
+                  >
                     <Trash2Icon className="size-3" />
                   </Button>
                 </div>
@@ -171,7 +194,11 @@ export function GalleryDetailClient({
 
         <TabsContent value="qr" className="space-y-4">
           <Button onClick={handleGenerateToken} disabled={generatingToken}>
-            {generatingToken ? <Loader2Icon className="animate-spin mr-1" /> : <QrCodeIcon className="size-4 mr-1" />}
+            {generatingToken ? (
+              <Loader2Icon className="animate-spin mr-1" />
+            ) : (
+              <QrCodeIcon className="size-4 mr-1" />
+            )}
             {generatingToken ? "Generating..." : "Generate Access Token"}
           </Button>
 
@@ -182,7 +209,13 @@ export function GalleryDetailClient({
                 <CardDescription>Scan to access the gallery</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col items-center gap-3">
-                <img src={qrImageUrl} alt="QR Code" className="rounded-sm border" width={300} height={300} />
+                <img
+                  src={qrImageUrl}
+                  alt="QR Code"
+                  className="rounded-sm border"
+                  width={300}
+                  height={300}
+                />
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => copyToken(selectedToken)}>
                     <CopyIcon className="mr-1" /> Copy Link
@@ -196,7 +229,9 @@ export function GalleryDetailClient({
             {tokens.map((t) => (
               <div key={t.id} className="flex items-center justify-between rounded-sm border p-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <code className="rounded-sm bg-muted px-2 py-0.5 font-mono text-xs">{t.token.slice(0, 16)}...</code>
+                  <code className="rounded-sm bg-muted px-2 py-0.5 font-mono text-xs">
+                    {t.token.slice(0, 16)}...
+                  </code>
                   <span className={t.active ? "text-green-600" : "text-muted-foreground"}>
                     {t.active ? "Active" : "Expired"}
                   </span>
@@ -212,7 +247,9 @@ export function GalleryDetailClient({
               </div>
             ))}
             {tokens.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-8">No tokens generated yet.</p>
+              <p className="text-sm text-muted-foreground text-center py-8">
+                No tokens generated yet.
+              </p>
             )}
           </div>
         </TabsContent>

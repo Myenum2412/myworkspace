@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { TaskDataTable, type TaskRow } from "@/components/task-data-table";
 import { TaskDetailedView } from "@/components/task-detailed-view";
 
@@ -45,7 +45,7 @@ export function StaffTasksView({
         creatorName: t.creatorName,
         createdAt: t.createdAt,
       })),
-    [localTasks]
+    [localTasks],
   );
 
   return (
@@ -74,9 +74,7 @@ export function StaffTasksView({
               editable
               onTaskUpdate={(updated) => {
                 setLocalTasks((prev) =>
-                  prev.map((t) =>
-                    t._id === (updated as Task)._id ? (updated as Task) : t
-                  )
+                  prev.map((t) => (t._id === (updated as Task)._id ? (updated as Task) : t)),
                 );
               }}
               onClose={() => {

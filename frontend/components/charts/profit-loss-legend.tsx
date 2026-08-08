@@ -2,10 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Legend, LegendItem, LegendLabel, LegendMarker } from "./legend/index";
-import {
-  PROFIT_LOSS_NEGATIVE_COLOR,
-  PROFIT_LOSS_POSITIVE_COLOR,
-} from "./profit-loss-line";
+import { PROFIT_LOSS_NEGATIVE_COLOR, PROFIT_LOSS_POSITIVE_COLOR } from "./profit-loss-line";
 
 export const PROFIT_LOSS_LEGEND_ITEMS = [
   { label: "Profit", value: 0, color: PROFIT_LOSS_POSITIVE_COLOR },
@@ -19,10 +16,7 @@ export interface ProfitLossLegendProps {
   className?: string;
 }
 
-const LEGEND_ALIGN_CLASSES: Record<
-  NonNullable<ProfitLossLegendProps["align"]>,
-  string
-> = {
+const LEGEND_ALIGN_CLASSES: Record<NonNullable<ProfitLossLegendProps["align"]>, string> = {
   start: "justify-start",
   center: "justify-center",
   end: "justify-end",
@@ -35,13 +29,7 @@ export function ProfitLossLegend({
   className,
 }: ProfitLossLegendProps) {
   return (
-    <div
-      className={cn(
-        "flex w-full shrink-0 px-1 py-2",
-        LEGEND_ALIGN_CLASSES[align],
-        className
-      )}
-    >
+    <div className={cn("flex w-full shrink-0 px-1 py-2", LEGEND_ALIGN_CLASSES[align], className)}>
       <Legend
         className="flex-row flex-wrap gap-4"
         hoveredIndex={hoveredIndex}

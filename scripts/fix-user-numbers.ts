@@ -1,7 +1,9 @@
 import { MongoClient } from "mongodb";
 
 async function migrate() {
-  const client = new MongoClient(process.env.MONGODB_URI || "mongodb://localhost:27017/myworkspace");
+  const client = new MongoClient(
+    process.env.MONGODB_URI || "mongodb://localhost:27017/myworkspace",
+  );
 
   try {
     await client.connect();
@@ -24,20 +26,17 @@ async function migrate() {
     let nextNumber = (maxUser?.userNumber || 0) + 1;
 
     for (const user of usersWithoutNumber) {
-      await db.collection("users").updateOne(
-        { _id: user._id },
-        { $set: { userNumber: nextNumber } }
-      );
+      await db
+        .collection("users")
+        .updateOne({ _id: user._id }, { $set: { userNumber: nextNumber } });
       console.log(`Updated user ${user.email} with userNumber ${nextNumber}`);
       nextNumber++;
     }
 
     // Update the counter to reflect the new max
-    await db.collection("counters").updateOne(
-      { name: "userNumber" },
-      { $set: { seq: nextNumber - 1 } },
-      { upsert: true }
-    );
+    await db
+      .collection("counters")
+      .updateOne({ name: "userNumber" }, { $set: { seq: nextNumber - 1 } }, { upsert: true });
 
     console.log(`Migration complete. Next userNumber will be ${nextNumber}`);
   } finally {

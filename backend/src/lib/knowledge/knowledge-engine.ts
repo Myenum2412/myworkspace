@@ -1,10 +1,10 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
-import { logger } from "../logger/index.js";
 import { FileAttachment } from "../db/models/FileAttachment.js";
-import { Task } from "../db/models/Task.js";
-import { Project } from "../db/models/Project.js";
 import { Message } from "../db/models/Message.js";
+import { Project } from "../db/models/Project.js";
+import { Task } from "../db/models/Task.js";
+import { logger } from "../logger/index.js";
 
 export interface I索引Entry extends Document {
   id: string;
@@ -45,8 +45,13 @@ export const KnowledgeIndex = model<I索引Entry>("KnowledgeIndex", indexEntrySc
 
 export class EnterpriseKnowledgeEngine {
   async indexDocument(params: {
-    orgId: string; sourceType: I索引Entry["sourceType"]; sourceId: string;
-    title: string; content: string; tags?: string[]; metadata?: Record<string, unknown>;
+    orgId: string;
+    sourceType: I索引Entry["sourceType"];
+    sourceId: string;
+    title: string;
+    content: string;
+    tags?: string[];
+    metadata?: Record<string, unknown>;
   }): Promise<void> {
     await KnowledgeIndex.findOneAndUpdate(
       { orgId: params.orgId, sourceId: params.sourceId },
@@ -134,9 +139,7 @@ export class EnterpriseKnowledgeEngine {
     const related = await KnowledgeIndex.find({
       orgId,
       _id: { $ne: entry._id },
-      $or: [
-        { tags: { $in: tags } },
-      ],
+      $or: [{ tags: { $in: tags } }],
     })
       .limit(10)
       .select("id sourceType sourceId title summary tags")
@@ -180,7 +183,7 @@ export class EnterpriseKnowledgeEngine {
       totalDocuments: total,
       byType,
       recentDocuments: recent,
-      topTags: tagsAgg.map(t => t._id as string),
+      topTags: tagsAgg.map((t) => t._id as string),
     };
   }
 
@@ -190,7 +193,9 @@ export class EnterpriseKnowledgeEngine {
     const tasks = await Task.find({ orgId }).lean();
     for (const task of tasks) {
       await this.indexDocument({
-        orgId, sourceType: "task", sourceId: task.id,
+        orgId,
+        sourceType: "task",
+        sourceId: task.id,
         title: task.title,
         content: task.description || "",
         tags: ["task", task.status],
@@ -202,7 +207,9 @@ export class EnterpriseKnowledgeEngine {
     const projects = await Project.find({ orgId }).lean();
     for (const project of projects) {
       await this.indexDocument({
-        orgId, sourceType: "project", sourceId: project.id,
+        orgId,
+        sourceType: "project",
+        sourceId: project.id,
         title: project.name,
         content: project.description || "",
         tags: ["project"],
@@ -213,7 +220,9 @@ export class EnterpriseKnowledgeEngine {
     const files = await FileAttachment.find({ orgId, deletedAt: null }).lean();
     for (const file of files) {
       await this.indexDocument({
-        orgId, sourceType: "file", sourceId: file.id,
+        orgId,
+        sourceType: "file",
+        sourceId: file.id,
         title: file.originalName || file.name,
         content: file.name || "",
         tags: ["file", file.mimeType?.split("/")[0] || "unknown"],

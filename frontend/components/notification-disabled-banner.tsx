@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { BellOffIcon, XIcon } from "@/lib/icons";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { BellOffIcon, XIcon } from "@/lib/icons";
 
 export function NotificationDisabledBanner() {
   const [show, setShow] = useState(false);
@@ -24,8 +24,8 @@ export function NotificationDisabledBanner() {
       <div className="flex-1">
         <p className="font-medium">Notifications are disabled</p>
         <p className="mt-0.5 text-amber-700">
-          You&apos;re missing important updates. To enable notifications, go to your
-          browser or device settings and allow notifications for this site.
+          You&apos;re missing important updates. To enable notifications, go to your browser or
+          device settings and allow notifications for this site.
         </p>
         <div className="mt-2 flex gap-2">
           <Button
@@ -39,7 +39,7 @@ export function NotificationDisabledBanner() {
                     : /Firefox/i.test(navigator.userAgent)
                       ? "about:preferences#privacy"
                       : "/settings/notifications",
-                  "_blank"
+                  "_blank",
                 );
               }
             }}

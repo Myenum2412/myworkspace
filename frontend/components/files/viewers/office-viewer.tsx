@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import {
-  DownloadIcon,
-  FileTextIcon,
-  TableIcon,
-  PresentationIcon,
-  ExternalLinkIcon,
-} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { getFileExtension } from "@/lib/file-system/types";
+import {
+  DownloadIcon,
+  ExternalLinkIcon,
+  FileTextIcon,
+  PresentationIcon,
+  TableIcon,
+} from "@/lib/icons";
 
 interface OfficeViewerProps {
   src: string;
@@ -39,11 +39,21 @@ export function OfficeViewer({ src, fileName, mimeType }: OfficeViewerProps) {
           <span className="text-xs font-medium text-muted-foreground uppercase">{ext}</span>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" className="text-xs" onClick={() => setUseGoogleViewer(!useGoogleViewer)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            onClick={() => setUseGoogleViewer(!useGoogleViewer)}
+          >
             <ExternalLinkIcon className="size-3 mr-1" />
             {useGoogleViewer ? "Raw" : "Google Docs"}
           </Button>
-          <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(src, "_blank")}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-0"
+            onClick={() => window.open(src, "_blank")}
+          >
             <DownloadIcon className="size-3.5" />
           </Button>
         </div>
@@ -69,10 +79,15 @@ export function OfficeViewer({ src, fileName, mimeType }: OfficeViewerProps) {
 
       <div className="px-4 py-2 border-t shrink-0 flex items-center justify-between bg-muted/10">
         <span className="text-xs text-muted-foreground">
-          {isWord && "Word Document"} {isExcel && "Spreadsheet"} {isPowerPoint && "Presentation"}
-          {" "}&mdash; Read-only preview
+          {isWord && "Word Document"} {isExcel && "Spreadsheet"} {isPowerPoint && "Presentation"}{" "}
+          &mdash; Read-only preview
         </span>
-        <Button variant="outline" size="sm" className="text-xs" onClick={() => window.open(src, "_blank")}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-xs"
+          onClick={() => window.open(src, "_blank")}
+        >
           <DownloadIcon className="size-3 mr-1" /> Download
         </Button>
       </div>

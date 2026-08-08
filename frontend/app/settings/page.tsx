@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { SettingsPageClient } from "./settings-interactive";
 
 export default function SettingsPage() {
-  const [data, setData] = useState<{ orgId: string; user: any; initialSettings: Record<string, unknown> | null } | null>(null);
+  const [data, setData] = useState<{
+    orgId: string;
+    user: any;
+    initialSettings: Record<string, unknown> | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,5 +27,11 @@ export default function SettingsPage() {
     );
   }
 
-  return <SettingsPageClient orgId={data.orgId} user={data.user} initialSettings={data.initialSettings} />;
+  return (
+    <SettingsPageClient
+      orgId={data.orgId}
+      user={data.user}
+      initialSettings={data.initialSettings}
+    />
+  );
 }

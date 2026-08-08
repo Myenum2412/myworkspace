@@ -1,15 +1,15 @@
-"use client"
+"use client";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { FileIcon, Calendar, User, HardDrive, Tag, Clock } from "@/lib/icons";
+import { Calendar, Clock, FileIcon, HardDrive, Tag, User } from "@/lib/icons";
 
 type RecycledFile = {
   id: string;
@@ -33,12 +33,22 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: string }>; label: string; value?: string | number | null }) {
+function Field({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon?: React.FC<{ className?: string }>;
+  label: string;
+  value?: string | number | null;
+}) {
   return (
     <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
       {Icon && <Icon className="size-4 text-muted-foreground shrink-0 mt-0.5" />}
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          {label}
+        </p>
         <p className="text-sm font-medium mt-0.5 break-words">{value ?? "\u2014"}</p>
       </div>
     </div>
@@ -61,7 +71,9 @@ export function FileViewDialog({ file, open, onOpenChange }: FileViewDialogProps
             <div className="min-w-0 flex-1">
               <DialogTitle className="text-lg truncate">{file.originalName}</DialogTitle>
               <DialogDescription>
-                <Badge variant="outline" className="text-[10px]">{fileExt}</Badge>
+                <Badge variant="outline" className="text-[10px]">
+                  {fileExt}
+                </Badge>
               </DialogDescription>
             </div>
           </div>
@@ -73,15 +85,25 @@ export function FileViewDialog({ file, open, onOpenChange }: FileViewDialogProps
             <Field icon={Tag} label="File Type" value={fileExt} />
             <Field icon={HardDrive} label="Size" value={formatSize(file.size)} />
             <Field icon={User} label="Uploaded By" value={file.uploaderName} />
-            <Field icon={Calendar} label="Uploaded Date" value={file.createdAt ? new Date(file.createdAt).toLocaleDateString() : null} />
-            <Field icon={Clock} label="Deleted Date" value={file.deletedAt ? new Date(file.deletedAt).toLocaleDateString() : null} />
+            <Field
+              icon={Calendar}
+              label="Uploaded Date"
+              value={file.createdAt ? new Date(file.createdAt).toLocaleDateString() : null}
+            />
+            <Field
+              icon={Clock}
+              label="Deleted Date"
+              value={file.deletedAt ? new Date(file.deletedAt).toLocaleDateString() : null}
+            />
             <Field icon={Tag} label="File ID" value={file.id} />
             <Field icon={Tag} label="MIME Type" value={file.mimeType} />
           </div>
         </div>
 
         <DialogFooter className="shrink-0 border-t px-6 py-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

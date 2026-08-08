@@ -1,13 +1,13 @@
-import { createGzip, createGunzip } from "zlib";
 import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync } from "fs";
-import { readFile, writeFile, readdir, unlink } from "fs/promises";
-import { resolve, basename, extname } from "path";
-import { pipeline } from "stream/promises";
+import { readdir, readFile, unlink, writeFile } from "fs/promises";
+import type { Cluster, Redis } from "ioredis";
 import NodeCache from "node-cache";
-import { Redis, Cluster } from "ioredis";
-import { cacheService } from "./cache-service.js";
-import { getValkey, isValkeyConnected } from "../valkey.js";
+import { basename, extname, resolve } from "path";
+import { pipeline } from "stream/promises";
+import { createGunzip, createGzip } from "zlib";
 import { logger } from "../logger/index.js";
+import { getValkey, isValkeyConnected } from "../valkey.js";
+import { cacheService } from "./cache-service.js";
 
 interface BackupEntry {
   key: string;
@@ -62,7 +62,7 @@ function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
   const units = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
+  return `${(bytes / 1024 ** i).toFixed(1)} ${units[i]}`;
 }
 
 function generateBackupFilename(namespace?: string): string {
@@ -126,7 +126,10 @@ async function exportL1Keys(keys: string[], onProgress?: ProgressCallback): Prom
   const now = Date.now();
   let errors = 0;
 
-  const cs = cacheService as unknown as { local: { getTtl(key: string): number | undefined }; version: number };
+  const cs = cacheService as unknown as {
+    local: { getTtl(key: string): number | undefined };
+    version: number;
+  };
 
   for (let i = 0; i < keys.length; i++) {
     try {
@@ -247,7 +250,7 @@ export async function exportBackup(
     namespace: filters.namespace,
   };
 
-  let entries: BackupEntry[] = [];
+  const entries: BackupEntry[] = [];
 
   if (source === "L1" || source === "combined") {
     const keys = await scanL1Keys(filters);
@@ -266,7 +269,13 @@ export async function exportBackup(
   manifest.entryCount = entries.length;
 
   if (onProgress) {
-    onProgress({ processed: entries.length, total: entries.length, bytesWritten: 0, errors: 0, phase: "compress" });
+    onProgress({
+      processed: entries.length,
+      total: entries.length,
+      bytesWritten: 0,
+      errors: 0,
+      phase: "compress",
+    });
   }
 
   const backupData = JSON.stringify({ manifest, entries });
@@ -275,11 +284,7 @@ export async function exportBackup(
   if (compress) {
     const gzip = createGzip({ level: 6 });
     const dest = createWriteStream(outputPath);
-    await pipeline(
-      Buffer.from(backupData),
-      gzip,
-      dest,
-    );
+    await pipeline(Buffer.from(backupData), gzip, dest);
     finalSize = (await readFile(outputPath)).length;
   } else {
     const uncompressedPath = outputPath.replace(/\.gz$/, "");
@@ -288,10 +293,19 @@ export async function exportBackup(
   }
 
   if (onProgress) {
-    onProgress({ processed: entries.length, total: entries.length, bytesWritten: finalSize, errors: 0, phase: "complete" });
+    onProgress({
+      processed: entries.length,
+      total: entries.length,
+      bytesWritten: finalSize,
+      errors: 0,
+      phase: "complete",
+    });
   }
 
-  logger.info({ entryCount: entries.length, size: formatBytes(finalSize), path: outputPath }, "Backup export complete");
+  logger.info(
+    { entryCount: entries.length, size: formatBytes(finalSize), path: outputPath },
+    "Backup export complete",
+  );
 
   return { path: outputPath, entryCount: entries.length, size: finalSize };
 }
@@ -324,15 +338,11 @@ export async function importBackup(
     const gunzip = createGunzip();
     const src = createReadStream(filePath);
 
-    await pipeline(
-      src,
-      gunzip,
-      async function* (source: AsyncIterable<Buffer>) {
-        for await (const chunk of source) {
-          chunks.push(chunk);
-        }
-      } as unknown as NodeJS.ReadWriteStream,
-    ).catch(() => {
+    await pipeline(src, gunzip, async function* (source: AsyncIterable<Buffer>) {
+      for await (const chunk of source) {
+        chunks.push(chunk);
+      }
+    } as unknown as NodeJS.ReadWriteStream).catch(() => {
       // fallback: read entire file
     });
 
@@ -341,7 +351,10 @@ export async function importBackup(
     raw = await readFile(filePath, "utf-8");
   }
 
-  const { manifest, entries } = JSON.parse(raw) as { manifest: BackupManifest; entries: BackupEntry[] };
+  const { manifest, entries } = JSON.parse(raw) as {
+    manifest: BackupManifest;
+    entries: BackupEntry[];
+  };
 
   if (!manifest || !Array.isArray(entries)) {
     throw new Error("Invalid backup format");
@@ -350,7 +363,13 @@ export async function importBackup(
   logger.info({ entryCount: entries.length, createdAt: manifest.createdAt }, "Importing backup");
 
   if (onProgress) {
-    onProgress({ processed: 0, total: entries.length, bytesWritten: 0, errors: 0, phase: "import" });
+    onProgress({
+      processed: 0,
+      total: entries.length,
+      bytesWritten: 0,
+      errors: 0,
+      phase: "import",
+    });
   }
 
   let imported = 0;
@@ -383,7 +402,13 @@ export async function importBackup(
       }
 
       if (onProgress && (i % 100 === 0 || i === entries.length - 1)) {
-        onProgress({ processed: i + 1, total: entries.length, bytesWritten: 0, errors, phase: "import" });
+        onProgress({
+          processed: i + 1,
+          total: entries.length,
+          bytesWritten: 0,
+          errors,
+          phase: "import",
+        });
       }
     }
   }
@@ -435,7 +460,13 @@ export async function importBackup(
   }
 
   if (onProgress) {
-    onProgress({ processed: entries.length, total: entries.length, bytesWritten: 0, errors, phase: "complete" });
+    onProgress({
+      processed: entries.length,
+      total: entries.length,
+      bytesWritten: 0,
+      errors,
+      phase: "complete",
+    });
   }
 
   logger.info({ imported, skipped, errors }, "Backup import complete");
@@ -444,7 +475,9 @@ export async function importBackup(
 
 export async function listBackups(
   backupDir?: string,
-): Promise<{ path: string; size: number; createdAt: Date | null; source: string; entryCount: number }[]> {
+): Promise<
+  { path: string; size: number; createdAt: Date | null; source: string; entryCount: number }[]
+> {
   const dir = backupDir || DEFAULT_BACKUP_DIR;
 
   if (!existsSync(dir)) {
@@ -452,7 +485,13 @@ export async function listBackups(
   }
 
   const files = await readdir(dir);
-  const backups: { path: string; size: number; createdAt: Date | null; source: string; entryCount: number }[] = [];
+  const backups: {
+    path: string;
+    size: number;
+    createdAt: Date | null;
+    source: string;
+    entryCount: number;
+  }[] = [];
 
   for (const file of files) {
     if (!file.startsWith("cache-backup") || file.endsWith(".tmp")) continue;
@@ -506,11 +545,16 @@ export async function deleteBackup(filePath: string): Promise<boolean> {
   return true;
 }
 
-export async function getBackupInfo(filePath: string): Promise<BackupManifest & { entryCount: number; fileSize: number } | null> {
+export async function getBackupInfo(
+  filePath: string,
+): Promise<(BackupManifest & { entryCount: number; fileSize: number }) | null> {
   if (!existsSync(filePath)) return null;
 
   try {
-    const stat = await readFile(filePath).then((b) => ({ size: b.length }), () => ({ size: 0 }));
+    const stat = await readFile(filePath).then(
+      (b) => ({ size: b.length }),
+      () => ({ size: 0 }),
+    );
 
     let raw: string;
     if (filePath.endsWith(".gz")) {

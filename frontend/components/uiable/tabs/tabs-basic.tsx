@@ -28,14 +28,13 @@ export function TabsBasic() {
       <div className="mt-4">
         <TabsContent value="home">
           <p className="text-base text-muted-foreground">
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry.
+            Lorem Ipsum is simply dummy text of the printing and typesetting industry.
           </p>
         </TabsContent>
         <TabsContent value="profile">
           <p className="text-base text-muted-foreground">
-            It is a long established fact that a reader will be distracted by
-            the readable content of a page.
+            It is a long established fact that a reader will be distracted by the readable content
+            of a page.
           </p>
         </TabsContent>
         <TabsContent value="contact">

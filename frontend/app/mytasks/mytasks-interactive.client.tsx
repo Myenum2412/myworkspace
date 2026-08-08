@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusIcon, SearchIcon, LayoutGridIcon, CalendarIcon } from "@/lib/icons";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskDataTable } from "@/components/task-data-table";
-import TaskGanttView from "@/components/task-gantt-view";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/api";
 import Stats07 from "@/components/stats-07";
+import { TaskDataTable } from "@/components/task-data-table";
+import { TaskDetailedView } from "@/components/task-detailed-view";
+import TaskGanttView from "@/components/task-gantt-view";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { apiFetch } from "@/lib/api";
+import { CalendarIcon, LayoutGridIcon, PlusIcon, SearchIcon } from "@/lib/icons";
 
 type UiTask = {
   _id: string;
@@ -62,11 +62,15 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
     queryFn: async () => {
       if (!orgId) return [];
       try {
-        const res = await apiFetch(`/api/tasks?orgId=${orgId}&type=individual${userId ? `&assigneeId=${userId}` : ""}`);
+        const res = await apiFetch(
+          `/api/tasks?orgId=${orgId}&type=individual${userId ? `&assigneeId=${userId}` : ""}`,
+        );
         if (!res.ok) return [];
         const d = await res.json();
         return d.data || [];
-      } catch { return []; }
+      } catch {
+        return [];
+      }
     },
     staleTime: 30_000,
     gcTime: 5 * 60_000,
@@ -110,9 +114,12 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
     return summary;
   }, [myTasks]);
 
-  const handleTaskUpdate = useCallback((updated: UiTask) => {
-    setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
-  }, [setTasks]);
+  const handleTaskUpdate = useCallback(
+    (updated: UiTask) => {
+      setTasks((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
+    },
+    [setTasks],
+  );
 
   return (
     <>
@@ -121,7 +128,7 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <h1 className="text-xl sm:text-2xl font-bold">My Tasks</h1>
           </div>
-          <Button onClick={() => router.push('/createtask')} className="touch-target">
+          <Button onClick={() => router.push("/createtask")} className="touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
@@ -130,70 +137,84 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
         {/* Stats Overview */}
         <Stats07
           items={[
-            { name: 'My Tasks', value: myTasks.length, subtitle: 'Assigned to you' },
-            ...Object.entries(stats).slice(0, 5).map(([status, count]) => ({
-              name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-              value: count,
-              subtitle: `${status.replace(/_/g, ' ')} tasks`,
-            })),
+            { name: "My Tasks", value: myTasks.length, subtitle: "Assigned to you" },
+            ...Object.entries(stats)
+              .slice(0, 5)
+              .map(([status, count]) => ({
+                name: status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+                value: count,
+                subtitle: `${status.replace(/_/g, " ")} tasks`,
+              })),
           ]}
         />
 
         <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex items-center gap-4 mb-4">
-              <h2 className="text-lg font-semibold shrink-0">Assigned to me</h2>
-              <div className="flex-1 flex justify-center">
-                <div className="relative w-full max-w-md">
-                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search my tasks..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 h-9 bg-white"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={viewMode === "table" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("table")}
-                >
-                  <LayoutGridIcon className="mr-2" />
-                  Table
-                </Button>
-                <Button
-                  variant={viewMode === "gantt" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("gantt")}
-                >
-                  <CalendarIcon className="mr-2" />
-                  Gantt
-                </Button>
-              </div>
-              <span className="text-sm text-muted-foreground shrink-0">{myTasks.length} tasks</span>
-            </div>
-            <div className="flex-1 min-h-0">
-              {viewMode === "table" ? (
-                <TaskDataTable
-                  data={myTasks}
-                  onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
-                  onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(true); }}
-                  searchPlaceholder="Search my tasks..."
-                  emptyMessage="No tasks assigned to you."
-                  label="task"
-                  hideSearchBar
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
+          <div className="flex items-center gap-4 mb-4">
+            <h2 className="text-lg font-semibold shrink-0">Assigned to me</h2>
+            <div className="flex-1 flex justify-center">
+              <div className="relative w-full max-w-md">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search my tasks..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-9 bg-white"
                 />
-              ) : (
-                <TaskGanttView
-                  tasks={myTasks}
-                  onViewTask={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); setEditMode(false); }}
-                />
-              )}
+              </div>
             </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === "table" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("table")}
+              >
+                <LayoutGridIcon className="mr-2" />
+                Table
+              </Button>
+              <Button
+                variant={viewMode === "gantt" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("gantt")}
+              >
+                <CalendarIcon className="mr-2" />
+                Gantt
+              </Button>
+            </div>
+            <span className="text-sm text-muted-foreground shrink-0">{myTasks.length} tasks</span>
           </div>
+          <div className="flex-1 min-h-0">
+            {viewMode === "table" ? (
+              <TaskDataTable
+                data={myTasks}
+                onView={(t) => {
+                  setSelectedTask(t as unknown as UiTask);
+                  setViewOpen(true);
+                  setEditMode(false);
+                }}
+                onEdit={(t) => {
+                  setSelectedTask(t as unknown as UiTask);
+                  setViewOpen(true);
+                  setEditMode(true);
+                }}
+                searchPlaceholder="Search my tasks..."
+                emptyMessage="No tasks assigned to you."
+                label="task"
+                hideSearchBar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              />
+            ) : (
+              <TaskGanttView
+                tasks={myTasks}
+                onViewTask={(t) => {
+                  setSelectedTask(t as unknown as UiTask);
+                  setViewOpen(true);
+                  setEditMode(false);
+                }}
+              />
+            )}
+          </div>
+        </div>
 
         {viewOpen && selectedTask && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -202,12 +223,14 @@ export default function MyTasksInteractive({ initialTasks, orgId, userId }: MyTa
                 task={selectedTask}
                 editable
                 onTaskUpdate={handleTaskUpdate}
-                onClose={() => { setViewOpen(false); setSelectedTask(null); }}
+                onClose={() => {
+                  setViewOpen(false);
+                  setSelectedTask(null);
+                }}
               />
             </div>
           </div>
         )}
-
       </main>
     </>
   );

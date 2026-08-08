@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 import { logger } from "./logger/index.js";
 
@@ -26,8 +26,10 @@ const sagaSchema = new Schema<ISagaExecution>({
   sagaType: { type: String, required: true, index: true },
   context: { type: Schema.Types.Mixed, default: {} },
   status: {
-    type: String, enum: ["running", "completed", "compensating", "compensated", "failed"],
-    default: "running", index: true,
+    type: String,
+    enum: ["running", "completed", "compensating", "compensated", "failed"],
+    default: "running",
+    index: true,
   },
   currentStep: { type: String, default: "" },
   completedSteps: { type: [String], default: [] },
@@ -42,9 +44,7 @@ export const SagaExecution = model<ISagaExecution>("SagaExecution", sagaSchema);
 export class SagaOrchestrator<TContext = Record<string, unknown>> {
   private steps: ISagaStep<TContext>[] = [];
 
-  constructor(
-    private readonly sagaType: string,
-  ) {}
+  constructor(private readonly sagaType: string) {}
 
   addStep(step: ISagaStep<TContext>): this {
     this.steps.push(step);
@@ -81,17 +81,23 @@ export class SagaOrchestrator<TContext = Record<string, unknown>> {
         execution.error = errorMsg;
         await execution.save();
 
-        logger.error({ sagaId, step: step.name, error: errorMsg }, "Saga step failed, starting compensation");
+        logger.error(
+          { sagaId, step: step.name, error: errorMsg },
+          "Saga step failed, starting compensation",
+        );
 
         const compensatedSteps = [...execution.completedSteps].reverse();
         for (const completedStep of compensatedSteps) {
-          const stepDef = this.steps.find(s => s.name === completedStep);
+          const stepDef = this.steps.find((s) => s.name === completedStep);
           if (stepDef?.compensate) {
             try {
               await stepDef.compensate(context as TContext);
               logger.debug({ sagaId, step: completedStep }, "Compensation step completed");
             } catch (compErr) {
-              logger.error({ sagaId, step: completedStep, error: (compErr as Error).message }, "Compensation step failed");
+              logger.error(
+                { sagaId, step: completedStep, error: (compErr as Error).message },
+                "Compensation step failed",
+              );
             }
           }
         }

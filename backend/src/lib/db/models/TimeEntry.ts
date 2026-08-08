@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface ITimeEntry extends Document {
   orgId: string;
@@ -30,7 +30,7 @@ const timeEntrySchema = new Schema<ITimeEntry>(
     billable: { type: Boolean, default: true },
     status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
   },
-  { collection: "time_entries", timestamps: true }
+  { collection: "time_entries", timestamps: true },
 );
 
 timeEntrySchema.index({ orgId: 1, userId: 1, date: -1 });

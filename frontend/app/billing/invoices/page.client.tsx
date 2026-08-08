@@ -1,31 +1,53 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  PlusIcon, ReceiptIcon, CheckCircleIcon, ClockIcon, IndianRupee,
-  MoreHorizontalIcon, PencilIcon, Trash2Icon, DownloadIcon, ExternalLinkIcon, FileTextIcon,
-} from "@/lib/icons";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Link from "next/link";
-import { DataTable } from "./data-table";
-import { columns, type Invoice } from "./columns";
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  DownloadIcon,
+  ExternalLinkIcon,
+  FileTextIcon,
+  IndianRupee,
+  MoreHorizontalIcon,
+  PencilIcon,
+  PlusIcon,
+  ReceiptIcon,
+  Trash2Icon,
+} from "@/lib/icons";
 import { generateInvoicePDF } from "@/lib/pdf";
 import { useBootstrapStore } from "@/stores/bootstrap-store";
+import { columns, type Invoice } from "./columns";
+import { DataTable } from "./data-table";
 
-function InvoiceStatsCard({ icon, label, value, valueClassName, subtitle }: { icon: React.ReactNode; label: string; value: string | number; valueClassName?: string; subtitle?: React.ReactNode }) {
+function InvoiceStatsCard({
+  icon,
+  label,
+  value,
+  valueClassName,
+  subtitle,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  valueClassName?: string;
+  subtitle?: React.ReactNode;
+}) {
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-          {icon}{label}
+          {icon}
+          {label}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -43,7 +65,10 @@ export default function BillingInvoicesPage() {
   const orgId = useBootstrapStore((s) => s.data?.orgId);
 
   useEffect(() => {
-    if (!orgId) { setLoading(false); return; }
+    if (!orgId) {
+      setLoading(false);
+      return;
+    }
     const controller = new AbortController();
 
     (async () => {
@@ -52,7 +77,11 @@ export default function BillingInvoicesPage() {
           credentials: "include",
           signal: controller.signal,
         });
-        if (!res.ok) { setLoading(false); setError("Failed to load invoices"); return; }
+        if (!res.ok) {
+          setLoading(false);
+          setError("Failed to load invoices");
+          return;
+        }
         const data = await res.json();
         setInvoices(data.data?.invoices || []);
       } catch (err) {
@@ -72,9 +101,7 @@ export default function BillingInvoicesPage() {
 
   if (error) {
     return (
-      <div className="flex flex-1 items-center justify-center p-4 text-destructive">
-        {error}
-      </div>
+      <div className="flex flex-1 items-center justify-center p-4 text-destructive">{error}</div>
     );
   }
 
@@ -110,14 +137,22 @@ export default function BillingInvoicesPage() {
           label="Paid Invoices"
           value={paidInvoices.length}
           valueClassName="text-emerald-500"
-          subtitle={<span className="text-emerald-600 font-medium">₹{(totalPaid / 100).toFixed(2)} collected</span>}
+          subtitle={
+            <span className="text-emerald-600 font-medium">
+              ₹{(totalPaid / 100).toFixed(2)} collected
+            </span>
+          }
         />
         <InvoiceStatsCard
           icon={<ClockIcon className="size-4" />}
           label="Pending Payment"
           value={openInvoices.length}
           valueClassName="text-blue-500"
-          subtitle={<span className="text-blue-600 font-medium">₹{(totalPending / 100).toFixed(2)} pending</span>}
+          subtitle={
+            <span className="text-blue-600 font-medium">
+              ₹{(totalPending / 100).toFixed(2)} pending
+            </span>
+          }
         />
         <InvoiceStatsCard
           icon={<IndianRupee className="size-4" />}
@@ -126,10 +161,7 @@ export default function BillingInvoicesPage() {
         />
       </div>
 
-      <DataTable
-        columns={columns}
-        data={invoices}
-      />
+      <DataTable columns={columns} data={invoices} />
     </div>
   );
 }

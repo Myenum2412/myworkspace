@@ -1,1 +1,1 @@
-export { ResetPasswordForm } from "./form.client"
+export { ResetPasswordForm } from "./form.client";

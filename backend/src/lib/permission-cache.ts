@@ -1,5 +1,5 @@
-import { getEffectivePermissions, type Role } from "./rbac/index.js";
 import { logger } from "./logger/index.js";
+import { getEffectivePermissions, type Role } from "./rbac/index.js";
 
 /**
  * Permission caching layer for enterprise authorization performance.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface FileQueryParams {
   orgId: string;
@@ -12,7 +12,14 @@ interface FileQueryParams {
 
 export function useFiles(params: FileQueryParams) {
   const queryClient = useQueryClient();
-  const queryKey = ["files", params.orgId, params.folderId || "", params.clientId || "", params.search || "", params.sort || "-createdAt"];
+  const queryKey = [
+    "files",
+    params.orgId,
+    params.folderId || "",
+    params.clientId || "",
+    params.search || "",
+    params.sort || "-createdAt",
+  ];
 
   const filesQuery = useQuery({
     queryKey,
@@ -82,7 +89,15 @@ export function useFileMutations(orgId: string) {
   });
 
   const renameItem = useMutation({
-    mutationFn: async ({ id, name, type }: { id: string; name: string; type: "file" | "folder" }) => {
+    mutationFn: async ({
+      id,
+      name,
+      type,
+    }: {
+      id: string;
+      name: string;
+      type: "file" | "folder";
+    }) => {
       const endpoint = type === "file" ? `/api/files/${id}` : `/api/folders/${id}`;
       const res = await fetch(endpoint, {
         method: "PATCH",

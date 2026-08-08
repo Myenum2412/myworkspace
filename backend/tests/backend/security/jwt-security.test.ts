@@ -1,9 +1,14 @@
-import request from "supertest";
+import type { Server } from "http";
 import jwt from "jsonwebtoken";
+import request from "supertest";
 import app from "../../../src/app.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
-import { seedOrgWithAdmin, tamperedJWT, algorithmNoneJWT, expiredJWT } from "../../__helpers__/fixtures.js";
-import type { Server } from "http";
+import {
+  algorithmNoneJWT,
+  expiredJWT,
+  seedOrgWithAdmin,
+  tamperedJWT,
+} from "../../__helpers__/fixtures.js";
 
 let server: Server;
 
@@ -34,7 +39,9 @@ describe("JWT security", () => {
       const { headers } = await seedOrgWithAdmin({ email: "test@example.com" });
       const original = headers["Authorization"].replace("Bearer ", "");
       const badToken = tamperedJWT(original);
-      const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${badToken}`);
+      const res = await request(server)
+        .get("/api/tasks")
+        .set("Authorization", `Bearer ${badToken}`);
       expect(res.status).toBe(401);
     });
 
@@ -88,14 +95,10 @@ describe("JWT security", () => {
       const user1 = await seedOrgWithAdmin({ email: "user1@example.com" });
       const user2 = await seedOrgWithAdmin({ email: "user2@example.com" });
 
-      const res1 = await request(server)
-        .get("/api/tasks")
-        .set(user1.headers);
+      const res1 = await request(server).get("/api/tasks").set(user1.headers);
       expect(res1.status).toBe(200);
 
-      const res2 = await request(server)
-        .get("/api/tasks")
-        .set(user2.headers);
+      const res2 = await request(server).get("/api/tasks").set(user2.headers);
       expect(res2.status).toBe(200);
     });
   });
@@ -130,9 +133,7 @@ describe("Helmet/CORS security headers", () => {
   });
 
   it("CORS restricts origin when configured", async () => {
-    const res = await request(server)
-      .get("/api/health")
-      .set("Origin", "https://evil.com");
+    const res = await request(server).get("/api/health").set("Origin", "https://evil.com");
     const acao = res.headers["access-control-allow-origin"];
     if (acao) {
       expect(acao).not.toBe("https://evil.com");
@@ -144,9 +145,7 @@ describe("Rate limiting enforcement", () => {
   it("auth endpoint rate limits after threshold", async () => {
     const email = `ratelimit-${Date.now()}@example.com`;
     const promises = Array.from({ length: 25 }, (_, i) =>
-      request(server)
-        .post("/api/auth/login")
-        .send({ email, password: "wrong" }),
+      request(server).post("/api/auth/login").send({ email, password: "wrong" }),
     );
     const results = await Promise.all(promises);
     const rateLimited = results.filter((r) => r.status === 429);

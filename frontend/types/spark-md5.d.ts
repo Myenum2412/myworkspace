@@ -12,7 +12,7 @@ declare module "spark-md5" {
   }
 
   interface SparkMD5ArrayBufferStatic {
-    new(): SparkMD5ArrayBufferInstance;
+    new (): SparkMD5ArrayBufferInstance;
     hash(arr: ArrayBuffer, raw?: boolean): string;
   }
 
@@ -22,7 +22,11 @@ declare module "spark-md5" {
     destroy(): void;
     reset(): SparkMD5ArrayBufferInstance;
     getState(): { buff: Uint8Array; hash: number[]; length: number };
-    setState(state: { buff: Uint8Array; hash: number[]; length: number }): SparkMD5ArrayBufferInstance;
+    setState(state: {
+      buff: Uint8Array;
+      hash: number[];
+      length: number;
+    }): SparkMD5ArrayBufferInstance;
   }
 
   export default SparkMD5;

@@ -10,16 +10,22 @@ export async function POST(req: Request) {
   const { fileIds, targetFolderId } = await req.json();
   if (!fileIds?.length) return NextResponse.json({ error: "fileIds is required" }, { status: 400 });
 
-  const files = await (await db.collection(collections.fileAttachments).find({ id: { $in: fileIds }, deletedAt: null })).toArray();
+  const files = await (
+    await db.collection(collections.fileAttachments).find({ id: { $in: fileIds }, deletedAt: null })
+  ).toArray();
   if (!files.length) return NextResponse.json({ error: "No files found" }, { status: 404 });
 
-  const member = await db.collection(collections.orgMembers).findOne({ userId: session.user.id, orgId: files[0].orgId });
+  const member = await db
+    .collection(collections.orgMembers)
+    .findOne({ userId: session.user.id, orgId: files[0].orgId });
   if (!member) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
 
-  await db.collection(collections.fileAttachments).updateMany(
-    { id: { $in: fileIds }, deletedAt: null },
-    { $set: { folderId: targetFolderId || null } }
-  );
+  await db
+    .collection(collections.fileAttachments)
+    .updateMany(
+      { id: { $in: fileIds }, deletedAt: null },
+      { $set: { folderId: targetFolderId || null } },
+    );
 
   return NextResponse.json({ success: true, moved: fileIds.length });
 }

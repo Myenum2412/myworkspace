@@ -1,8 +1,8 @@
 import http from "http";
-import { Server as IOServer } from "socket.io";
-import { io as ioClient, Socket as ClientSocket } from "socket.io-client";
 import jwt from "jsonwebtoken";
 import type { AddressInfo } from "net";
+import { Server as IOServer } from "socket.io";
+import { type Socket as ClientSocket, io as ioClient } from "socket.io-client";
 
 const JWT_SECRET = process.env.JWT_SECRET || "test-secret";
 
@@ -14,7 +14,11 @@ interface TestServer {
 }
 
 function createToken(userId: string, orgId: string): string {
-  return jwt.sign({ userId, email: "t@e.com", role: "members", permissions: [], orgId }, JWT_SECRET, { expiresIn: "10m" });
+  return jwt.sign(
+    { userId, email: "t@e.com", role: "members", permissions: [], orgId },
+    JWT_SECRET,
+    { expiresIn: "10m" },
+  );
 }
 
 async function startServer(): Promise<TestServer> {
@@ -105,13 +109,18 @@ describe("Socket.IO multi-client real-time tests", () => {
         transports: ["websocket"],
         forceNew: true,
       });
-      await expect(new Promise<void>((_, reject) => {
-        client.on("connect_error", (err) => {
-          reject(err);
-          client.close();
-        });
-        setTimeout(() => { client.close(); reject(new Error("timeout")); }, 3000);
-      })).rejects.toBeDefined();
+      await expect(
+        new Promise<void>((_, reject) => {
+          client.on("connect_error", (err) => {
+            reject(err);
+            client.close();
+          });
+          setTimeout(() => {
+            client.close();
+            reject(new Error("timeout"));
+          }, 3000);
+        }),
+      ).rejects.toBeDefined();
     });
 
     it("rejects connection with invalid token", async () => {
@@ -122,13 +131,18 @@ describe("Socket.IO multi-client real-time tests", () => {
         transports: ["websocket"],
         forceNew: true,
       });
-      await expect(new Promise<void>((_, reject) => {
-        client.on("connect_error", (err) => {
-          reject(err);
-          client.close();
-        });
-        setTimeout(() => { client.close(); reject(new Error("timeout")); }, 3000);
-      })).rejects.toBeDefined();
+      await expect(
+        new Promise<void>((_, reject) => {
+          client.on("connect_error", (err) => {
+            reject(err);
+            client.close();
+          });
+          setTimeout(() => {
+            client.close();
+            reject(new Error("timeout"));
+          }, 3000);
+        }),
+      ).rejects.toBeDefined();
     });
   });
 

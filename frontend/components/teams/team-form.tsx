@@ -1,13 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import {
-  UsersIcon, XIcon, Loader2Icon, AlertCircleIcon, CrownIcon, SearchIcon, UserPlusIcon,
-} from "@/lib/icons";
+import type { Team } from "@/app/teams/columns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -15,8 +12,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { type Team } from "@/app/teams/columns";
-import { type OrgMember, getInitials } from "./team-types";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertCircleIcon,
+  CrownIcon,
+  Loader2Icon,
+  SearchIcon,
+  UserPlusIcon,
+  UsersIcon,
+  XIcon,
+} from "@/lib/icons";
+import { getInitials, type OrgMember } from "./team-types";
 
 type TeamFormProps = {
   open: boolean;
@@ -39,10 +45,23 @@ type TeamFormProps = {
 };
 
 export function TeamForm({
-  open, editingTeam, teamName, onTeamNameChange,
-  teamDescription, onTeamDescriptionChange, teamHeadId, onTeamHeadChange,
-  selectedMemberIds, onSelectedMemberIdsChange, memberSearch, onMemberSearchChange,
-  submitting, formError, onSubmit, onCancel, members,
+  open,
+  editingTeam,
+  teamName,
+  onTeamNameChange,
+  teamDescription,
+  onTeamDescriptionChange,
+  teamHeadId,
+  onTeamHeadChange,
+  selectedMemberIds,
+  onSelectedMemberIdsChange,
+  memberSearch,
+  onMemberSearchChange,
+  submitting,
+  formError,
+  onSubmit,
+  onCancel,
+  members,
 }: TeamFormProps) {
   const [memberPickerOpen, setMemberPickerOpen] = useState(false);
 
@@ -51,7 +70,7 @@ export function TeamForm({
       m.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
       m.email.toLowerCase().includes(memberSearch.toLowerCase()) ||
       (m.department || "").toLowerCase().includes(memberSearch.toLowerCase()) ||
-      (m.designation || "").toLowerCase().includes(memberSearch.toLowerCase())
+      (m.designation || "").toLowerCase().includes(memberSearch.toLowerCase()),
   );
 
   const availableMembers = filteredMembers.filter((m) => !selectedMemberIds.includes(m.userId));
@@ -70,7 +89,9 @@ export function TeamForm({
             <div>
               <h2 className="text-lg font-bold">{editingTeam ? "Edit Team" : "New Team"}</h2>
               <p className="text-sm text-muted-foreground">
-                {editingTeam ? "Update the team details." : "Create a new team with name, description, head, and members."}
+                {editingTeam
+                  ? "Update the team details."
+                  : "Create a new team with name, description, head, and members."}
               </p>
             </div>
           </div>
@@ -81,7 +102,8 @@ export function TeamForm({
 
         {formError && (
           <div className="mx-6 mt-4 flex items-center gap-2 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            <AlertCircleIcon className="size-4 shrink-0" />{formError}
+            <AlertCircleIcon className="size-4 shrink-0" />
+            {formError}
           </div>
         )}
 
@@ -103,13 +125,24 @@ export function TeamForm({
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Team Head</Label>
-                <Select value={teamHeadId} onValueChange={(v) => { const m = members.find((x) => x.userId === v); onTeamHeadChange(v, m?.name || ""); }} disabled={submitting}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Select team head" /></SelectTrigger>
+                <Select
+                  value={teamHeadId}
+                  onValueChange={(v) => {
+                    const m = members.find((x) => x.userId === v);
+                    onTeamHeadChange(v, m?.name || "");
+                  }}
+                  disabled={submitting}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select team head" />
+                  </SelectTrigger>
                   <SelectContent>
                     {members.map((m) => (
                       <SelectItem key={m.userId} value={m.userId}>
                         <div className="flex items-center gap-2">
-                          <div className="size-5 flex items-center justify-center bg-muted text-[9px] font-medium">{getInitials(m.name)}</div>
+                          <div className="size-5 flex items-center justify-center bg-muted text-[9px] font-medium">
+                            {getInitials(m.name)}
+                          </div>
                           <span>{m.name}</span>
                         </div>
                       </SelectItem>
@@ -120,7 +153,9 @@ export function TeamForm({
               <div>
                 <Label className="text-xs text-muted-foreground">Department</Label>
                 <Select disabled={submitting}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Select department" /></SelectTrigger>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="engineering">Engineering</SelectItem>
                     <SelectItem value="marketing">Marketing</SelectItem>
@@ -152,7 +187,8 @@ export function TeamForm({
 
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                {selectedMemberIds.length} member{selectedMemberIds.length !== 1 ? "s" : ""} selected
+                {selectedMemberIds.length} member{selectedMemberIds.length !== 1 ? "s" : ""}{" "}
+                selected
               </p>
               <div className="flex items-center gap-3">
                 <div className="relative">
@@ -183,35 +219,49 @@ export function TeamForm({
                   <p className="text-sm text-muted-foreground py-4 text-center">
                     {memberSearch ? "No matching members" : "All members already selected"}
                   </p>
-                ) : availableMembers.map((m) => {
-                  const isLead = m.userId === teamHeadId;
-                  return (
-                    <label key={m.userId} className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-muted">
-                      <div
-                        className="size-8 flex items-center justify-center bg-muted text-xs font-medium shrink-0 cursor-pointer"
-                        onClick={() => { onSelectedMemberIdsChange((prev) => [...prev, m.userId]); }}
+                ) : (
+                  availableMembers.map((m) => {
+                    const isLead = m.userId === teamHeadId;
+                    return (
+                      <label
+                        key={m.userId}
+                        className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-muted"
                       >
-                        {m.avatar ? (
-                          <img src={m.avatar} alt={m.name} className="size-full object-cover" />
-                        ) : getInitials(m.name)}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate flex items-center gap-1">
-                          {m.name}{isLead && <CrownIcon className="size-3 text-primary shrink-0" />}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">{m.designation || m.email}</p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => { onSelectedMemberIdsChange((prev) => [...prev, m.userId]); }}
-                      >
-                        + Add
-                      </Button>
-                    </label>
-                  );
-                })}
+                        <div
+                          className="size-8 flex items-center justify-center bg-muted text-xs font-medium shrink-0 cursor-pointer"
+                          onClick={() => {
+                            onSelectedMemberIdsChange((prev) => [...prev, m.userId]);
+                          }}
+                        >
+                          {m.avatar ? (
+                            <img src={m.avatar} alt={m.name} className="size-full object-cover" />
+                          ) : (
+                            getInitials(m.name)
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate flex items-center gap-1">
+                            {m.name}
+                            {isLead && <CrownIcon className="size-3 text-primary shrink-0" />}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {m.designation || m.email}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => {
+                            onSelectedMemberIdsChange((prev) => [...prev, m.userId]);
+                          }}
+                        >
+                          + Add
+                        </Button>
+                      </label>
+                    );
+                  })
+                )}
               </div>
             )}
 
@@ -228,21 +278,28 @@ export function TeamForm({
                         {m.avatar ? (
                           <img src={m.avatar} alt={m.name} className="size-full object-cover" />
                         ) : (
-                          <span className="text-xs font-bold text-muted-foreground">{getInitials(m.name)}</span>
+                          <span className="text-xs font-bold text-muted-foreground">
+                            {getInitials(m.name)}
+                          </span>
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate flex items-center gap-1">
-                          {m.name}{isLead && <CrownIcon className="size-3.5 text-primary shrink-0" />}
+                          {m.name}
+                          {isLead && <CrownIcon className="size-3.5 text-primary shrink-0" />}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">{m.email}</p>
                       </div>
                       {isLead ? (
-                        <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5">Lead</span>
+                        <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5">
+                          Lead
+                        </span>
                       ) : (
                         <button
                           type="button"
-                          onClick={() => onSelectedMemberIdsChange((prev) => prev.filter((p) => p !== id))}
+                          onClick={() =>
+                            onSelectedMemberIdsChange((prev) => prev.filter((p) => p !== id))
+                          }
                           className="p-1 text-muted-foreground hover:text-destructive shrink-0"
                         >
                           <XIcon className="size-3.5" />
@@ -267,8 +324,18 @@ export function TeamForm({
           <Button variant="outline" onClick={onCancel} disabled={submitting} className="w-32 h-10">
             Cancel
           </Button>
-          <Button disabled={!teamName.trim() || submitting} onClick={onSubmit} className="w-32 h-10">
-            {submitting ? <Loader2Icon className="animate-spin" /> : editingTeam ? "Save Changes" : "Create Team"}
+          <Button
+            disabled={!teamName.trim() || submitting}
+            onClick={onSubmit}
+            className="w-32 h-10"
+          >
+            {submitting ? (
+              <Loader2Icon className="animate-spin" />
+            ) : editingTeam ? (
+              "Save Changes"
+            ) : (
+              "Create Team"
+            )}
           </Button>
         </div>
       </div>

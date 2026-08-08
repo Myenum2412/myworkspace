@@ -23,7 +23,7 @@ export async function subscribeUser(
   userId: string,
   orgId: string,
   subscription: { endpoint: string; keys: { p256dh: string; auth: string } },
-  userAgent?: string
+  userAgent?: string,
 ) {
   await PushSubscription.findOneAndUpdate(
     { userId, endpoint: subscription.endpoint },
@@ -36,15 +36,12 @@ export async function subscribeUser(
       enabled: true,
       updatedAt: new Date(),
     },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 }
 
 export async function unsubscribeUser(userId: string, endpoint: string) {
-  await PushSubscription.findOneAndUpdate(
-    { userId, endpoint },
-    { enabled: false }
-  );
+  await PushSubscription.findOneAndUpdate({ userId, endpoint }, { enabled: false });
 }
 
 export async function getUserSubscriptions(userId: string) {
@@ -63,7 +60,7 @@ export async function sendPushNotification(
     tag?: string;
     priority?: string;
     type?: string;
-  }
+  },
 ) {
   if (!isNtfyConfigured()) return { success: false, reason: "ntfy not configured" };
   return publishToUser(userId, payload);

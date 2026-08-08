@@ -1,12 +1,12 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
+import { type Response, Router } from "express";
 import { isAdminRole } from "../lib/rbac/index.js";
 import { requireString } from "../lib/validate.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 import {
   createStaffAccount,
-  listStaffAccounts,
   getStaffAccount,
+  listStaffAccounts,
   setStaffAccountStatus,
   terminateStaffAccount,
 } from "../services/account.service.js";
@@ -40,7 +40,8 @@ function actor(req: AuthRequest) {
 // ── Create a staff account (Workspace Member only, own org) ──
 router.post("/staffs", async (req: AuthRequest, res: Response) => {
   if (!req.user!.orgId) throw new AppError(403, "You are not part of an organization");
-  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only workspace members can create staff accounts");
+  if (!isAdminRole(req.user!.role))
+    throw new AppError(403, "Only workspace members can create staff accounts");
 
   assertNoOrgOverride(req);
 
@@ -78,7 +79,8 @@ router.get("/staffs/:userId", async (req: AuthRequest, res: Response) => {
 // ── Deactivate a staff account (revokes all access) ──
 router.post("/staffs/:userId/deactivate", async (req: AuthRequest, res: Response) => {
   if (!req.user!.orgId) throw new AppError(403, "You are not part of an organization");
-  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only workspace members can deactivate accounts");
+  if (!isAdminRole(req.user!.role))
+    throw new AppError(403, "Only workspace members can deactivate accounts");
   assertNoOrgOverride(req);
 
   const userId = requireString(req.params.userId, "userId", { min: 1, max: 128 });
@@ -89,7 +91,8 @@ router.post("/staffs/:userId/deactivate", async (req: AuthRequest, res: Response
 // ── Reactivate a staff account ──
 router.post("/staffs/:userId/reactivate", async (req: AuthRequest, res: Response) => {
   if (!req.user!.orgId) throw new AppError(403, "You are not part of an organization");
-  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only workspace members can reactivate accounts");
+  if (!isAdminRole(req.user!.role))
+    throw new AppError(403, "Only workspace members can reactivate accounts");
   assertNoOrgOverride(req);
 
   const userId = requireString(req.params.userId, "userId", { min: 1, max: 128 });
@@ -100,7 +103,8 @@ router.post("/staffs/:userId/reactivate", async (req: AuthRequest, res: Response
 // ── Terminate (permanently remove) a staff account ──
 router.delete("/staffs/:userId", async (req: AuthRequest, res: Response) => {
   if (!req.user!.orgId) throw new AppError(403, "You are not part of an organization");
-  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only workspace members can terminate accounts");
+  if (!isAdminRole(req.user!.role))
+    throw new AppError(403, "Only workspace members can terminate accounts");
   assertNoOrgOverride(req);
 
   const userId = requireString(req.params.userId, "userId", { min: 1, max: 128 });

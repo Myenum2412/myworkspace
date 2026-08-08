@@ -1,5 +1,5 @@
-import { logger } from "../logger/index.js";
 import { env } from "../../config/env.js";
+import { logger } from "../logger/index.js";
 
 interface MetricLabels {
   [key: string]: string;
@@ -26,7 +26,11 @@ class MetricsRegistry {
     const current = this.counters.get(key) || 0;
     this.counters.set(key, current + value);
     this.metrics.set(key, {
-      name, help: `Counter ${name}`, type: "counter", labels, value: current + value,
+      name,
+      help: `Counter ${name}`,
+      type: "counter",
+      labels,
+      value: current + value,
     });
   }
 
@@ -34,7 +38,11 @@ class MetricsRegistry {
     const key = `${name}:${JSON.stringify(labels)}`;
     this.gauges.set(key, value);
     this.metrics.set(key, {
-      name, help: `Gauge ${name}`, type: "gauge", labels, value,
+      name,
+      help: `Gauge ${name}`,
+      type: "gauge",
+      labels,
+      value,
     });
   }
 
@@ -58,7 +66,11 @@ class MetricsRegistry {
 
     const avg = hist.sum / hist.count;
     this.metrics.set(key, {
-      name, help: `Histogram ${name}`, type: "histogram", labels, value: Math.round(avg * 100) / 100,
+      name,
+      help: `Histogram ${name}`,
+      type: "histogram",
+      labels,
+      value: Math.round(avg * 100) / 100,
     });
   }
 
@@ -116,12 +128,20 @@ export function trackUploadComplete(orgId: string, fileSize: number, durationMs:
   metricsRegistry.incrementCounter("upload_completions_total", { orgId });
   metricsRegistry.observeHistogram("upload_duration_ms", { orgId }, durationMs);
   metricsRegistry.observeHistogram("upload_file_size_bytes", { orgId }, fileSize);
-  metricsRegistry.setGauge("active_uploads", { orgId }, Math.max(0, getActiveUploadCount(orgId) - 1));
+  metricsRegistry.setGauge(
+    "active_uploads",
+    { orgId },
+    Math.max(0, getActiveUploadCount(orgId) - 1),
+  );
 }
 
 export function trackUploadFailed(orgId: string, errorType: string) {
   metricsRegistry.incrementCounter("upload_failures_total", { orgId, errorType });
-  metricsRegistry.setGauge("active_uploads", { orgId }, Math.max(0, getActiveUploadCount(orgId) - 1));
+  metricsRegistry.setGauge(
+    "active_uploads",
+    { orgId },
+    Math.max(0, getActiveUploadCount(orgId) - 1),
+  );
 }
 
 export function trackQueueDepth(queueName: string, depth: number) {
@@ -133,13 +153,26 @@ export function trackStorageLatency(operation: string, durationMs: number) {
 }
 
 // ── API Tracking ──
-export function trackApiRequest(method: string, path: string, statusCode: number, durationMs: number) {
-  metricsRegistry.incrementCounter("api_requests_total", { method, path, status: String(statusCode) });
+export function trackApiRequest(
+  method: string,
+  path: string,
+  statusCode: number,
+  durationMs: number,
+) {
+  metricsRegistry.incrementCounter("api_requests_total", {
+    method,
+    path,
+    status: String(statusCode),
+  });
   metricsRegistry.observeHistogram("api_request_duration_ms", { method, path }, durationMs);
 }
 
 export function trackApiError(method: string, path: string, statusCode: number) {
-  metricsRegistry.incrementCounter("api_errors_total", { method, path, status: String(statusCode) });
+  metricsRegistry.incrementCounter("api_errors_total", {
+    method,
+    path,
+    status: String(statusCode),
+  });
 }
 
 // ── Cache Tracking ──
@@ -228,8 +261,16 @@ export function trackProcessMetrics() {
 /**
  * Track authentication event.
  */
-export function trackAuthEvent(event: "success" | "failure" | "mfa_challenge" | "mfa_success" | "mfa_failure", method: string, orgId?: string) {
-  metricsRegistry.incrementCounter("auth_events_total", { event, method, orgId: orgId || "unknown" });
+export function trackAuthEvent(
+  event: "success" | "failure" | "mfa_challenge" | "mfa_success" | "mfa_failure",
+  method: string,
+  orgId?: string,
+) {
+  metricsRegistry.incrementCounter("auth_events_total", {
+    event,
+    method,
+    orgId: orgId || "unknown",
+  });
   if (event === "failure") {
     metricsRegistry.incrementCounter("auth_failures_total", { method, orgId: orgId || "unknown" });
   }
@@ -238,8 +279,18 @@ export function trackAuthEvent(event: "success" | "failure" | "mfa_challenge" | 
 /**
  * Track authorization decision.
  */
-export function trackAuthDecision(decision: "allowed" | "denied", role: string, resource: string, action: string) {
-  metricsRegistry.incrementCounter("authorization_decisions_total", { decision, role, resource, action });
+export function trackAuthDecision(
+  decision: "allowed" | "denied",
+  role: string,
+  resource: string,
+  action: string,
+) {
+  metricsRegistry.incrementCounter("authorization_decisions_total", {
+    decision,
+    role,
+    resource,
+    action,
+  });
   if (decision === "denied") {
     metricsRegistry.incrementCounter("authorization_denials_total", { role, resource, action });
   }
@@ -249,7 +300,11 @@ export function trackAuthDecision(decision: "allowed" | "denied", role: string, 
  * Track authorization latency.
  */
 export function trackAuthLatency(durationMs: number, role?: string) {
-  metricsRegistry.observeHistogram("authorization_latency_ms", { role: role || "unknown" }, durationMs);
+  metricsRegistry.observeHistogram(
+    "authorization_latency_ms",
+    { role: role || "unknown" },
+    durationMs,
+  );
 }
 
 /**
@@ -263,9 +318,14 @@ export function trackPermissionCache(hit: boolean) {
  * Track tenant isolation events.
  */
 export function trackTenantIsolation(event: "violation" | "enforced", orgId?: string) {
-  metricsRegistry.incrementCounter("tenant_isolation_events_total", { event, orgId: orgId || "unknown" });
+  metricsRegistry.incrementCounter("tenant_isolation_events_total", {
+    event,
+    orgId: orgId || "unknown",
+  });
   if (event === "violation") {
-    metricsRegistry.incrementCounter("tenant_isolation_violations_total", { orgId: orgId || "unknown" });
+    metricsRegistry.incrementCounter("tenant_isolation_violations_total", {
+      orgId: orgId || "unknown",
+    });
   }
 }
 
@@ -273,13 +333,18 @@ export function trackTenantIsolation(event: "violation" | "enforced", orgId?: st
  * Track suspicious activity.
  */
 export function trackSuspiciousActivity(type: string, orgId?: string) {
-  metricsRegistry.incrementCounter("suspicious_activity_total", { type, orgId: orgId || "unknown" });
+  metricsRegistry.incrementCounter("suspicious_activity_total", {
+    type,
+    orgId: orgId || "unknown",
+  });
 }
 
 /**
  * Track session events.
  */
-export function trackSessionEvent(event: "created" | "expired" | "terminated" | "concurrent_limit") {
+export function trackSessionEvent(
+  event: "created" | "expired" | "terminated" | "concurrent_limit",
+) {
   metricsRegistry.incrementCounter("session_events_total", { event });
 }
 
@@ -294,7 +359,10 @@ export function trackDeviceTrust(event: "new_device" | "trusted" | "revoked" | "
  * Track rate limiting events.
  */
 export function trackRateLimitExceeded(endpoint: string, orgId?: string) {
-  metricsRegistry.incrementCounter("rate_limit_exceeded_total", { endpoint, orgId: orgId || "unknown" });
+  metricsRegistry.incrementCounter("rate_limit_exceeded_total", {
+    endpoint,
+    orgId: orgId || "unknown",
+  });
 }
 
 /**
@@ -309,7 +377,9 @@ export function trackAuditLog(event: "written" | "failed" | "chain_broken") {
  */
 export function trackCasbinEvaluation(durationMs: number, allowed: boolean) {
   metricsRegistry.observeHistogram("casbin_evaluation_duration_ms", {}, durationMs);
-  metricsRegistry.incrementCounter("casbin_evaluations_total", { allowed: allowed ? "allowed" : "denied" });
+  metricsRegistry.incrementCounter("casbin_evaluations_total", {
+    allowed: allowed ? "allowed" : "denied",
+  });
 }
 
 /**
@@ -324,9 +394,9 @@ export function getSecurityHealthScore(): {
   let score = 100;
 
   // Check authorization denials
-  const denialMetrics = metricsRegistry.getMetrics().filter(m =>
-    m.name === "authorization_denials_total"
-  );
+  const denialMetrics = metricsRegistry
+    .getMetrics()
+    .filter((m) => m.name === "authorization_denials_total");
   const totalDenials = denialMetrics.reduce((sum, m) => sum + m.value, 0);
   if (totalDenials > 100) {
     const impact = Math.min(30, totalDenials / 100);
@@ -339,9 +409,9 @@ export function getSecurityHealthScore(): {
   }
 
   // Check tenant isolation violations
-  const violationMetrics = metricsRegistry.getMetrics().filter(m =>
-    m.name === "tenant_isolation_violations_total"
-  );
+  const violationMetrics = metricsRegistry
+    .getMetrics()
+    .filter((m) => m.name === "tenant_isolation_violations_total");
   const totalViolations = violationMetrics.reduce((sum, m) => sum + m.value, 0);
   if (totalViolations > 0) {
     const impact = Math.min(40, totalViolations * 10);
@@ -354,9 +424,9 @@ export function getSecurityHealthScore(): {
   }
 
   // Check suspicious activity
-  const suspiciousMetrics = metricsRegistry.getMetrics().filter(m =>
-    m.name === "suspicious_activity_total"
-  );
+  const suspiciousMetrics = metricsRegistry
+    .getMetrics()
+    .filter((m) => m.name === "suspicious_activity_total");
   const totalSuspicious = suspiciousMetrics.reduce((sum, m) => sum + m.value, 0);
   if (totalSuspicious > 0) {
     const impact = Math.min(25, totalSuspicious * 5);
@@ -369,9 +439,9 @@ export function getSecurityHealthScore(): {
   }
 
   // Check rate limit hits
-  const rateLimitMetrics = metricsRegistry.getMetrics().filter(m =>
-    m.name === "rate_limit_exceeded_total"
-  );
+  const rateLimitMetrics = metricsRegistry
+    .getMetrics()
+    .filter((m) => m.name === "rate_limit_exceeded_total");
   const totalRateLimits = rateLimitMetrics.reduce((sum, m) => sum + m.value, 0);
   if (totalRateLimits > 50) {
     const impact = Math.min(15, totalRateLimits / 50);
@@ -384,9 +454,9 @@ export function getSecurityHealthScore(): {
   }
 
   // Positive factors
-  const cacheHitRate = metricsRegistry.getMetrics().find(m =>
-    m.name === "permission_cache_total" && m.labels.hit === "hit"
-  );
+  const cacheHitRate = metricsRegistry
+    .getMetrics()
+    .find((m) => m.name === "permission_cache_total" && m.labels.hit === "hit");
   if (cacheHitRate && cacheHitRate.value > 1000) {
     factors.push({
       factor: "high_cache_hit_rate",

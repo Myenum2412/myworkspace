@@ -1,21 +1,15 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MuiFolderIcon } from "@/lib/icons";
-import {
-  Loader2Icon, LockIcon, MoreHorizontalIcon,
-  Trash2Icon,
-} from "@/lib/icons";
-import { FileItem, FolderItem, ViewMode, formatSize } from "./types";
-import { getFileIcon } from "./utils";
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Loader2Icon, LockIcon, MoreHorizontalIcon, MuiFolderIcon, Trash2Icon } from "@/lib/icons";
 import { FileContextMenu } from "./file-context-menu";
+import { type FileItem, type FolderItem, formatSize, type ViewMode } from "./types";
+import { getFileIcon } from "./utils";
 
 interface FileListProps {
   loading: boolean;
@@ -45,17 +39,34 @@ interface FileListProps {
 }
 
 function fileTypeCount(files: FileItem[], type: string) {
-  return files.filter(f => f.mimeType?.startsWith(type)).length;
+  return files.filter((f) => f.mimeType?.startsWith(type)).length;
 }
 
 export function FileList({
-  loading, viewMode, folders, files, selectedIds,
-  onToggleSelect, onSelectAll, onNavigateToFolder,
-  onPreviewFile, onDownloadFile, onDuplicateFile, onShareFile,
-  onToggleLock, onConfirmDelete, onFolderProperties, onRenameStart,
-  onBulkDelete, onClearSelection,
-  inlineRenamingId, inlineRenameValue, onInlineRenameChange,
-  onStartInlineRename, onSubmitInlineRename, onCancelInlineRename,
+  loading,
+  viewMode,
+  folders,
+  files,
+  selectedIds,
+  onToggleSelect,
+  onSelectAll,
+  onNavigateToFolder,
+  onPreviewFile,
+  onDownloadFile,
+  onDuplicateFile,
+  onShareFile,
+  onToggleLock,
+  onConfirmDelete,
+  onFolderProperties,
+  onRenameStart,
+  onBulkDelete,
+  onClearSelection,
+  inlineRenamingId,
+  inlineRenameValue,
+  onInlineRenameChange,
+  onStartInlineRename,
+  onSubmitInlineRename,
+  onCancelInlineRename,
 }: FileListProps) {
   if (loading) {
     return (
@@ -68,11 +79,27 @@ export function FileList({
   return (
     <>
       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        <span>{files.length} file{files.length !== 1 ? "s" : ""}</span>
-        <span>{folders.length} folder{folders.length !== 1 ? "s" : ""}</span>
-        {fileTypeCount(files, "image/") > 0 && <Badge variant="outline" className="text-xs">{fileTypeCount(files, "image/")} images</Badge>}
-        {fileTypeCount(files, "video/") > 0 && <Badge variant="outline" className="text-xs">{fileTypeCount(files, "video/")} videos</Badge>}
-        {fileTypeCount(files, "audio/") > 0 && <Badge variant="outline" className="text-xs">{fileTypeCount(files, "audio/")} audio</Badge>}
+        <span>
+          {files.length} file{files.length !== 1 ? "s" : ""}
+        </span>
+        <span>
+          {folders.length} folder{folders.length !== 1 ? "s" : ""}
+        </span>
+        {fileTypeCount(files, "image/") > 0 && (
+          <Badge variant="outline" className="text-xs">
+            {fileTypeCount(files, "image/")} images
+          </Badge>
+        )}
+        {fileTypeCount(files, "video/") > 0 && (
+          <Badge variant="outline" className="text-xs">
+            {fileTypeCount(files, "video/")} videos
+          </Badge>
+        )}
+        {fileTypeCount(files, "audio/") > 0 && (
+          <Badge variant="outline" className="text-xs">
+            {fileTypeCount(files, "audio/")} audio
+          </Badge>
+        )}
       </div>
 
       {selectedIds.size > 0 && (
@@ -91,27 +118,42 @@ export function FileList({
         <div className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {folders.map((folder) => (
-              <Card key={folder.id} className="group cursor-pointer hover:border-primary/50 transition-colors relative">
-                <CardContent className="p-3" onClick={() => onNavigateToFolder(folder.id, folder.name)}>
+              <Card
+                key={folder.id}
+                className="group cursor-pointer hover:border-primary/50 transition-colors relative"
+              >
+                <CardContent
+                  className="p-3"
+                  onClick={() => onNavigateToFolder(folder.id, folder.name)}
+                >
                   <div className="flex flex-col items-center gap-2 py-2">
                     <MuiFolderIcon className="size-10 text-muted-foreground" />
                     {inlineRenamingId === folder.id ? (
                       <Input
                         value={inlineRenameValue}
-                        onChange={e => onInlineRenameChange(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === "Enter") { e.stopPropagation(); onSubmitInlineRename(folder.id); }
-                          if (e.key === "Escape") { e.stopPropagation(); onCancelInlineRename(); }
+                        onChange={(e) => onInlineRenameChange(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.stopPropagation();
+                            onSubmitInlineRename(folder.id);
+                          }
+                          if (e.key === "Escape") {
+                            e.stopPropagation();
+                            onCancelInlineRename();
+                          }
                         }}
                         onBlur={() => onSubmitInlineRename(folder.id)}
-                        onClick={e => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                         className="h-6 text-xs"
                         autoFocus
                       />
                     ) : (
                       <p
                         className="text-xs font-medium text-center truncate w-full"
-                        onDoubleClick={e => { e.stopPropagation(); onStartInlineRename(folder.id, folder.name); }}
+                        onDoubleClick={(e) => {
+                          e.stopPropagation();
+                          onStartInlineRename(folder.id, folder.name);
+                        }}
                       >
                         {folder.name}
                       </p>
@@ -119,8 +161,12 @@ export function FileList({
                   </div>
                 </CardContent>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                    <Button variant="ghost" size="sm" className="absolute top-1 right-1 opacity-0 group-hover:opacity-100">
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100"
+                    >
                       <MoreHorizontalIcon className="size-3" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -137,7 +183,7 @@ export function FileList({
           {files.map((file) => (
             <Card
               key={file.id}
-              className={`group cursor-pointer hover:border-primary/50 transition-colors relative ${ selectedIds.has(file.id) ? "ring-2 ring-primary" : "" }`}
+              className={`group cursor-pointer hover:border-primary/50 transition-colors relative ${selectedIds.has(file.id) ? "ring-2 ring-primary" : ""}`}
             >
               <CardContent className="p-3">
                 <div className="absolute top-2 left-2 z-10">
@@ -146,28 +192,44 @@ export function FileList({
                     checked={selectedIds.has(file.id)}
                     onChange={() => onToggleSelect(file.id)}
                     className="size-4 opacity-0 group-hover:opacity-100 checked:opacity-100"
-                    onClick={e => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
                   />
                 </div>
-                <div className="flex flex-col items-center gap-2 py-2" onClick={() => { if (inlineRenamingId !== file.id) { onPreviewFile(file); } }}>
+                <div
+                  className="flex flex-col items-center gap-2 py-2"
+                  onClick={() => {
+                    if (inlineRenamingId !== file.id) {
+                      onPreviewFile(file);
+                    }
+                  }}
+                >
                   {getFileIcon(file.mimeType)}
                   {inlineRenamingId === file.id ? (
                     <Input
                       value={inlineRenameValue}
-                      onChange={e => onInlineRenameChange(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === "Enter") { e.stopPropagation(); onSubmitInlineRename(file.id); }
-                        if (e.key === "Escape") { e.stopPropagation(); onCancelInlineRename(); }
+                      onChange={(e) => onInlineRenameChange(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.stopPropagation();
+                          onSubmitInlineRename(file.id);
+                        }
+                        if (e.key === "Escape") {
+                          e.stopPropagation();
+                          onCancelInlineRename();
+                        }
                       }}
                       onBlur={() => onSubmitInlineRename(file.id)}
-                      onClick={e => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
                       className="h-6 text-xs"
                       autoFocus
                     />
                   ) : (
                     <p
                       className="text-xs font-medium text-center truncate w-full"
-                      onDoubleClick={e => { e.stopPropagation(); onStartInlineRename(file.id, file.originalName); }}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        onStartInlineRename(file.id, file.originalName);
+                      }}
                     >
                       {file.originalName}
                     </p>
@@ -177,7 +239,11 @@ export function FileList({
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="absolute top-1 right-1 opacity-0 group-hover:opacity-100">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100"
+                    >
                       <MoreHorizontalIcon className="size-3" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -213,22 +279,41 @@ export function FileList({
                 <th className="px-4 py-3.5 text-left font-semibold hidden sm:table-cell">Type</th>
                 <th className="px-4 py-3.5 text-left font-semibold hidden md:table-cell">Owner</th>
                 <th className="px-4 py-3.5 text-right font-semibold">Size</th>
-                <th className="px-4 py-3.5 text-right font-semibold hidden lg:table-cell">Modified</th>
+                <th className="px-4 py-3.5 text-right font-semibold hidden lg:table-cell">
+                  Modified
+                </th>
                 <th className="px-4 py-3.5 text-right font-semibold w-20">Actions</th>
               </tr>
             </thead>
             <tbody>
               {folders.map((folder) => (
-                <tr key={folder.id} className="border-b last:border-0 hover:bg-slate-50 bg-white cursor-pointer" onClick={() => { if (inlineRenamingId !== folder.id) onNavigateToFolder(folder.id, folder.name); }}>
-                  <td className="px-4 py-3"><MuiFolderIcon className="size-4 text-muted-foreground" /></td>
-                  <td className="px-4 py-3 text-sm font-medium" onDoubleClick={() => onStartInlineRename(folder.id, folder.name)}>
+                <tr
+                  key={folder.id}
+                  className="border-b last:border-0 hover:bg-slate-50 bg-white cursor-pointer"
+                  onClick={() => {
+                    if (inlineRenamingId !== folder.id) onNavigateToFolder(folder.id, folder.name);
+                  }}
+                >
+                  <td className="px-4 py-3">
+                    <MuiFolderIcon className="size-4 text-muted-foreground" />
+                  </td>
+                  <td
+                    className="px-4 py-3 text-sm font-medium"
+                    onDoubleClick={() => onStartInlineRename(folder.id, folder.name)}
+                  >
                     {inlineRenamingId === folder.id ? (
                       <Input
                         value={inlineRenameValue}
-                        onChange={e => onInlineRenameChange(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === "Enter") { e.stopPropagation(); onSubmitInlineRename(folder.id); }
-                          if (e.key === "Escape") { e.stopPropagation(); onCancelInlineRename(); }
+                        onChange={(e) => onInlineRenameChange(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.stopPropagation();
+                            onSubmitInlineRename(folder.id);
+                          }
+                          if (e.key === "Escape") {
+                            e.stopPropagation();
+                            onCancelInlineRename();
+                          }
                         }}
                         onBlur={() => onSubmitInlineRename(folder.id)}
                         className="h-6 text-xs"
@@ -238,14 +323,22 @@ export function FileList({
                       folder.name
                     )}
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell">Folder</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">—</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell">
+                    Folder
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">
+                    —
+                  </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground text-right">—</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground text-right hidden lg:table-cell">—</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground text-right hidden lg:table-cell">
+                    —
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" className=""><MoreHorizontalIcon className="size-3" /></Button>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="sm" className="">
+                          <MoreHorizontalIcon className="size-3" />
+                        </Button>
                       </DropdownMenuTrigger>
                       <FileContextMenu
                         type="folder"
@@ -266,16 +359,32 @@ export function FileList({
                       aria-label={`Select ${file.originalName}`}
                     />
                   </td>
-                  <td className="px-4 py-3 text-sm cursor-pointer" onClick={() => { if (inlineRenamingId !== file.id) { onPreviewFile(file); } }}>
-                    <span className="flex items-center gap-2" onDoubleClick={() => onStartInlineRename(file.id, file.originalName)}>
+                  <td
+                    className="px-4 py-3 text-sm cursor-pointer"
+                    onClick={() => {
+                      if (inlineRenamingId !== file.id) {
+                        onPreviewFile(file);
+                      }
+                    }}
+                  >
+                    <span
+                      className="flex items-center gap-2"
+                      onDoubleClick={() => onStartInlineRename(file.id, file.originalName)}
+                    >
                       {getFileIcon(file.mimeType)}
                       {inlineRenamingId === file.id ? (
                         <Input
                           value={inlineRenameValue}
-                          onChange={e => onInlineRenameChange(e.target.value)}
-                          onKeyDown={e => {
-                            if (e.key === "Enter") { e.stopPropagation(); onSubmitInlineRename(file.id); }
-                            if (e.key === "Escape") { e.stopPropagation(); onCancelInlineRename(); }
+                          onChange={(e) => onInlineRenameChange(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.stopPropagation();
+                              onSubmitInlineRename(file.id);
+                            }
+                            if (e.key === "Escape") {
+                              e.stopPropagation();
+                              onCancelInlineRename();
+                            }
                           }}
                           onBlur={() => onSubmitInlineRename(file.id)}
                           className="h-6 text-xs"
@@ -284,19 +393,29 @@ export function FileList({
                       ) : (
                         <span className="truncate max-w-[200px]">{file.originalName}</span>
                       )}
-                      {file.isLocked && <LockIcon className="size-3 text-muted-foreground shrink-0" />}
+                      {file.isLocked && (
+                        <LockIcon className="size-3 text-muted-foreground shrink-0" />
+                      )}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell">{file.mimeType.split("/")[1]?.toUpperCase() || file.mimeType}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">{file.uploaderName || "Unknown"}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground text-right">{formatSize(file.size)}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell">
+                    {file.mimeType.split("/")[1]?.toUpperCase() || file.mimeType}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">
+                    {file.uploaderName || "Unknown"}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground text-right">
+                    {formatSize(file.size)}
+                  </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground text-right hidden lg:table-cell">
                     {file.updatedAt ? new Date(file.updatedAt).toLocaleDateString() : ""}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className=""><MoreHorizontalIcon className="size-3" /></Button>
+                        <Button variant="ghost" size="sm" className="">
+                          <MoreHorizontalIcon className="size-3" />
+                        </Button>
                       </DropdownMenuTrigger>
                       <FileContextMenu
                         type="file"

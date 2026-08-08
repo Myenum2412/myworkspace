@@ -1,16 +1,19 @@
-import sharp from "sharp";
-import path from "path";
 import fs from "fs/promises";
-import { getStorageProvider } from "../lib/storage/providers.js";
+import path from "path";
+import sharp from "sharp";
 import { logger } from "../lib/logger/index.js";
-import { generateThumbnail } from "./thumbnail.service.js";
+import { getStorageProvider } from "../lib/storage/providers.js";
 import { convertTo, getConvertedFile } from "./conversion.service.js";
+import { generateThumbnail } from "./thumbnail.service.js";
 
 const PREVIEW_DIR = path.resolve(process.cwd(), "data", "previews");
 
 async function ensureDir(dir: string) {
-  try { await fs.mkdir(dir, { recursive: true }); }
-  catch (err: any) { if (err.code !== "EEXIST") throw err; }
+  try {
+    await fs.mkdir(dir, { recursive: true });
+  } catch (err: any) {
+    if (err.code !== "EEXIST") throw err;
+  }
 }
 
 export interface PreviewResult {
@@ -20,8 +23,16 @@ export interface PreviewResult {
 }
 
 const IMAGE_PREVIEWABLE = new Set([
-  "image/jpeg", "image/png", "image/webp", "image/avif", "image/tiff",
-  "image/gif", "image/bmp", "image/svg+xml", "image/heic", "image/heif",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+  "image/tiff",
+  "image/gif",
+  "image/bmp",
+  "image/svg+xml",
+  "image/heic",
+  "image/heif",
 ]);
 
 const PREVIEWABLE_DOCUMENT_TYPES = new Set([
@@ -36,11 +47,27 @@ const PREVIEWABLE_DOCUMENT_TYPES = new Set([
 ]);
 
 const RAW_PREVIEWABLE = new Set([
-  "text/plain", "text/csv", "text/markdown", "text/html", "text/css",
-  "text/javascript", "text/xml", "application/json", "application/xml",
-  "text/x-scss", "text/x-typescript", "text/x-java", "text/x-python",
-  "text/x-go", "text/x-rust", "text/x-c", "text/x-cpp", "text/x-csharp",
-  "text/x-php", "text/x-yaml", "application/x-yaml",
+  "text/plain",
+  "text/csv",
+  "text/markdown",
+  "text/html",
+  "text/css",
+  "text/javascript",
+  "text/xml",
+  "application/json",
+  "application/xml",
+  "text/x-scss",
+  "text/x-typescript",
+  "text/x-java",
+  "text/x-python",
+  "text/x-go",
+  "text/x-rust",
+  "text/x-c",
+  "text/x-cpp",
+  "text/x-csharp",
+  "text/x-php",
+  "text/x-yaml",
+  "application/x-yaml",
 ]);
 
 export async function generatePreview(fileId: string): Promise<PreviewResult> {
@@ -87,7 +114,11 @@ export async function generatePreview(fileId: string): Promise<PreviewResult> {
     if (PREVIEWABLE_DOCUMENT_TYPES.has(mimeType)) {
       const convertedKey = await convertTo(fileId, "pdf");
       if (convertedKey) {
-        return { url: `/api/conversion/${orgId}/${encodeURIComponent(convertedKey)}`, mimeType: "application/pdf", type: "pdf" };
+        return {
+          url: `/api/conversion/${orgId}/${encodeURIComponent(convertedKey)}`,
+          mimeType: "application/pdf",
+          type: "pdf",
+        };
       }
       return { url: `/api/files/${fileId}/download?preview=true`, mimeType, type: "raw" };
     }

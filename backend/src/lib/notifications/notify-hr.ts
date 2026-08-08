@@ -1,10 +1,18 @@
 import { createNotification } from "../../services/notification.service.js";
 
 export const notifyHR = {
-  async employeeOnboarded(userId: string, orgId: string, onboardedBy: string, employeeName: string) {
+  async employeeOnboarded(
+    userId: string,
+    orgId: string,
+    onboardedBy: string,
+    employeeName: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "employee_onboarded", category: "hr",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "employee_onboarded",
+      category: "hr",
       title: "Employee Onboarded",
       message: `${employeeName} has been onboarded by ${onboardedBy}`,
       link: "/employees",
@@ -12,10 +20,20 @@ export const notifyHR = {
     });
   },
 
-  async employeeTerminated(userId: string, orgId: string, terminatedBy: string, employeeName: string, reason: string) {
+  async employeeTerminated(
+    userId: string,
+    orgId: string,
+    terminatedBy: string,
+    employeeName: string,
+    reason: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "employee_terminated", category: "hr", priority: "high",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "employee_terminated",
+      category: "hr",
+      priority: "high",
       title: "Employee Terminated",
       message: `${employeeName} has been terminated${reason ? `: ${reason}` : ""}`,
       link: "/employees",
@@ -23,10 +41,22 @@ export const notifyHR = {
     });
   },
 
-  async leaveRequestSubmitted(userId: string, orgId: string, employeeName: string, leaveType: string, startDate: string, endDate: string, duration: string, link?: string) {
+  async leaveRequestSubmitted(
+    userId: string,
+    orgId: string,
+    employeeName: string,
+    leaveType: string,
+    startDate: string,
+    endDate: string,
+    duration: string,
+    link?: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "leave_request_submitted", category: "hr",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "leave_request_submitted",
+      category: "hr",
       title: "Leave Request Submitted",
       message: `${employeeName} requested ${leaveType} leave (${duration}): ${startDate} - ${endDate}`,
       link: link || "/employees/leave",
@@ -39,10 +69,21 @@ export const notifyHR = {
     });
   },
 
-  async leaveApproved(userId: string, orgId: string, approvedBy: string, leaveType: string, startDate: string, endDate: string, duration: string) {
+  async leaveApproved(
+    userId: string,
+    orgId: string,
+    approvedBy: string,
+    leaveType: string,
+    startDate: string,
+    endDate: string,
+    duration: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "leave_approved", category: "hr",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "leave_approved",
+      category: "hr",
       title: "Leave Approved",
       message: `Your ${leaveType} leave (${duration}) from ${startDate} to ${endDate} was approved by ${approvedBy}`,
       link: "/employees/leave",
@@ -50,10 +91,21 @@ export const notifyHR = {
     });
   },
 
-  async leaveRejected(userId: string, orgId: string, rejectedBy: string, leaveType: string, startDate: string, endDate: string, reason?: string) {
+  async leaveRejected(
+    userId: string,
+    orgId: string,
+    rejectedBy: string,
+    leaveType: string,
+    startDate: string,
+    endDate: string,
+    reason?: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "leave_rejected", category: "hr",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "leave_rejected",
+      category: "hr",
       title: "Leave Rejected",
       message: `Your ${leaveType} leave request was rejected by ${rejectedBy}${reason ? `: ${reason}` : ""}`,
       link: "/employees/leave",
@@ -63,8 +115,12 @@ export const notifyHR = {
 
   async attendanceAnomaly(userId: string, orgId: string, employeeName: string, anomaly: string) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "attendance_anomaly", category: "hr", priority: "high",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "attendance_anomaly",
+      category: "hr",
+      priority: "high",
       title: "Attendance Anomaly Detected",
       message: `${employeeName}: ${anomaly}`,
       link: "/employees/attendance",
@@ -74,8 +130,11 @@ export const notifyHR = {
 
   async payrollProcessed(userId: string, orgId: string, processedBy: string, period: string) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "payroll_processed", category: "hr",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "payroll_processed",
+      category: "hr",
       title: "Payroll Processed",
       message: `Payroll for ${period} has been processed by ${processedBy}`,
       link: "/employees/payroll",
@@ -85,8 +144,11 @@ export const notifyHR = {
 
   async salaryCredited(userId: string, orgId: string, amount: string) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "salary_credited", category: "hr",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "salary_credited",
+      category: "hr",
       title: "Salary Credited",
       message: `Your salary of ${amount} has been credited.`,
       link: "/employees/payroll",
@@ -94,10 +156,18 @@ export const notifyHR = {
     });
   },
 
-  async performanceReviewScheduled(userId: string, orgId: string, scheduledBy: string, reviewDate: string) {
+  async performanceReviewScheduled(
+    userId: string,
+    orgId: string,
+    scheduledBy: string,
+    reviewDate: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "performance_review_scheduled", category: "hr",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "performance_review_scheduled",
+      category: "hr",
       title: "Performance Review Scheduled",
       message: `A performance review has been scheduled for ${reviewDate} by ${scheduledBy}`,
       link: "/employees/reviews",
@@ -105,10 +175,18 @@ export const notifyHR = {
     });
   },
 
-  async performanceReviewCompleted(userId: string, orgId: string, completedBy: string, rating?: string) {
+  async performanceReviewCompleted(
+    userId: string,
+    orgId: string,
+    completedBy: string,
+    rating?: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "performance_review_completed", category: "hr",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "performance_review_completed",
+      category: "hr",
       title: "Performance Review Completed",
       message: `Your performance review has been completed${rating ? ` (Rating: ${rating})` : ""}`,
       link: "/employees/reviews",
@@ -116,26 +194,43 @@ export const notifyHR = {
     });
   },
 
-  async trainingAssigned(userId: string, orgId: string, assignedBy: string, trainingName: string, dueDate: string) {
+  async trainingAssigned(
+    userId: string,
+    orgId: string,
+    assignedBy: string,
+    trainingName: string,
+    dueDate: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "training_assigned", category: "hr",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "training_assigned",
+      category: "hr",
       title: "Training Assigned",
       message: `${assignedBy} assigned "${trainingName}" training (due: ${dueDate})`,
       link: "/employees/training",
-      actions: [{ label: "Start Training", action: "view", url: "/employees/training", primary: true }],
+      actions: [
+        { label: "Start Training", action: "view", url: "/employees/training", primary: true },
+      ],
       metadata: { trainingName, dueDate },
     });
   },
 
   async certificationExpired(userId: string, orgId: string, certName: string, expiredDate: string) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "certification_expired", category: "hr", priority: "high",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "certification_expired",
+      category: "hr",
+      priority: "high",
       title: "Certification Expired",
       message: `Your "${certName}" certification expired on ${expiredDate}`,
       link: "/employees/certifications",
-      actions: [{ label: "Renew Now", action: "view", url: "/employees/certifications", primary: true }],
+      actions: [
+        { label: "Renew Now", action: "view", url: "/employees/certifications", primary: true },
+      ],
       metadata: { certName, expiredDate },
     });
   },

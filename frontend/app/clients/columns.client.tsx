@@ -1,8 +1,7 @@
-"use client"
-import { ColumnDef } from "@tanstack/react-table";
+"use client";
+import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { FolderIcon } from "@/lib/icons";
-import { BarChart3, MoreHorizontal, Pencil, Settings, Trash2, Workflow, FileText, Eye } from "@/lib/icons";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,7 +9,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+import {
+  BarChart3,
+  Eye,
+  FileText,
+  FolderIcon,
+  MoreHorizontal,
+  Pencil,
+  Settings,
+  Trash2,
+  Workflow,
+} from "@/lib/icons";
 
 export type Client = {
   id: string;
@@ -88,7 +97,11 @@ export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "username",
     header: "Username",
-    cell: ({ row }) => <span className="text-muted-foreground font-mono text-xs">{row.getValue("username") || "—"}</span>,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground font-mono text-xs">
+        {row.getValue("username") || "—"}
+      </span>
+    ),
   },
   {
     accessorKey: "company",
@@ -98,7 +111,9 @@ export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "mobileNumber",
     header: "Phone",
-    cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("mobileNumber") || "—"}</span>,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.getValue("mobileNumber") || "—"}</span>
+    ),
   },
   {
     accessorKey: "city",
@@ -108,7 +123,9 @@ export const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "serviceRequired",
     header: "Service",
-    cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("serviceRequired") || "—"}</span>,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.getValue("serviceRequired") || "—"}</span>
+    ),
   },
   {
     accessorKey: "status",
@@ -116,14 +133,16 @@ export const columns: ColumnDef<Client>[] = [
     cell: ({ row }) => {
       const status = row.getValue<string>("status");
       const colorMap: Record<string, string> = {
-        "Lead": "bg-gray-200 text-gray-700 dark:bg-gray-700/30 dark:text-gray-600",
-        "Prospect": "bg-gray-700 text-gray-700 dark:bg-[#1e2d1d]/30 dark:text-[#7d9474]",
+        Lead: "bg-gray-200 text-gray-700 dark:bg-gray-700/30 dark:text-gray-600",
+        Prospect: "bg-gray-700 text-gray-700 dark:bg-[#1e2d1d]/30 dark:text-[#7d9474]",
         "Active Client": "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
         "Inactive Client": "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-600",
-        "Completed": "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+        Completed: "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
       };
       return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${colorMap[status] || "bg-gray-100 text-gray-700"}`}>
+        <span
+          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${colorMap[status] || "bg-gray-100 text-gray-700"}`}
+        >
           {status}
         </span>
       );
@@ -193,7 +212,11 @@ export function makeActionsCell(
             )}
             <DeleteConfirmDialog
               title="Delete Client"
-              description={client ? `Are you sure you want to permanently remove ${client.name} (${client.company})?` : "Are you sure you want to permanently remove this client?"}
+              description={
+                client
+                  ? `Are you sure you want to permanently remove ${client.name} (${client.company})?`
+                  : "Are you sure you want to permanently remove this client?"
+              }
               onConfirm={() => onDelete(client)}
             >
               <DropdownMenuItem className="text-destructive focus:text-destructive">

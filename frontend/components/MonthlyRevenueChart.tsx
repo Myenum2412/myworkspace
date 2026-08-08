@@ -1,30 +1,24 @@
-"use client"
+"use client";
 
-import { CSSProperties } from "react"
-import { Badge } from "@/components/reui/badge"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import type { CSSProperties } from "react";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { Badge } from "@/components/reui/badge";
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart"
-import { TrendingUpIcon } from "@/lib/icons"
+} from "@/components/ui/chart";
+import { TrendingUpIcon } from "@/lib/icons";
 
 const chartConfig = {
   revenue: {
     label: "Revenue",
     color: "var(--chart-2)",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -32,16 +26,12 @@ function formatCurrency(value: number) {
     currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value)
+  }).format(value);
 }
 
-export function MonthlyRevenueChart({
-  data,
-}: {
-  data: { month: string; revenue: number }[]
-}) {
-  const total = data.reduce((sum, d) => sum + d.revenue, 0)
-  const avg = data.length ? Math.round(total / data.length) : 0
+export function MonthlyRevenueChart({ data }: { data: { month: string; revenue: number }[] }) {
+  const total = data.reduce((sum, d) => sum + d.revenue, 0);
+  const avg = data.length ? Math.round(total / data.length) : 0;
 
   return (
     <Card>
@@ -53,9 +43,7 @@ export function MonthlyRevenueChart({
               <TrendingUpIcon aria-hidden="true" />
               {data[data.length - 1].revenue > data[0].revenue ? "+" : ""}
               {Math.round(
-                ((data[data.length - 1].revenue - data[0].revenue) /
-                  data[0].revenue) *
-                  100,
+                ((data[data.length - 1].revenue - data[0].revenue) / data[0].revenue) * 100,
               )}
               %
             </Badge>
@@ -74,45 +62,20 @@ export function MonthlyRevenueChart({
           >
             <defs>
               <linearGradient id="chart16-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-revenue)"
-                  stopOpacity={0.35}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-revenue)"
-                  stopOpacity={0}
-                />
+                <stop offset="5%" stopColor="var(--color-revenue)" stopOpacity={0.35} />
+                <stop offset="95%" stopColor="var(--color-revenue)" stopOpacity={0} />
               </linearGradient>
-              <filter
-                id="chart16-dot-glow"
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
-              >
+              <filter id="chart16-dot-glow" x="-50%" y="-50%" width="200%" height="200%">
                 <feGaussianBlur stdDeviation="3" result="blur" />
                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
-              <filter
-                id="chart16-line-glow"
-                x="-10%"
-                y="-20%"
-                width="120%"
-                height="140%"
-              >
+              <filter id="chart16-line-glow" x="-10%" y="-20%" width="120%" height="140%">
                 <feGaussianBlur stdDeviation="8" result="blur" />
                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
             </defs>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <XAxis
-              dataKey="month"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
+            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
             <ChartTooltip
               cursor={false}
               content={
@@ -131,8 +94,7 @@ export function MonthlyRevenueChart({
                           }
                         />
                         <span className="text-muted-foreground">
-                          {chartConfig[name as keyof typeof chartConfig]
-                            ?.label || name}
+                          {chartConfig[name as keyof typeof chartConfig]?.label || name}
                         </span>
                       </div>
                       <span className="text-foreground font-semibold tabular-nums">
@@ -163,5 +125,5 @@ export function MonthlyRevenueChart({
         </ChartContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
-import { JOB_STATUSES, JobStatus } from "../types.js";
+import { JOB_STATUSES, type JobStatus } from "../types.js";
 
 export interface IJobExecution extends Document {
   id: string;
@@ -47,7 +47,7 @@ const jobExecutionSchema = new Schema<IJobExecution>(
     attemptNumber: { type: Number, default: 1 },
     metadata: { type: Schema.Types.Mixed },
   },
-  { timestamps: { createdAt: true, updatedAt: false } }
+  { timestamps: { createdAt: true, updatedAt: false } },
 );
 
 jobExecutionSchema.index({ jobId: 1, createdAt: -1 });

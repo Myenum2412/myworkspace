@@ -1,6 +1,6 @@
 "use client";
 
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircleIcon } from "@/lib/icons";
 
@@ -17,7 +17,13 @@ const COLORS: Record<string, string> = {
   unassigned: "#e5e7eb", // gray-200
 };
 
-export function PriorityBreakdownChart({ data, className }: { data: PriorityData[]; className?: string }) {
+export function PriorityBreakdownChart({
+  data,
+  className,
+}: {
+  data: PriorityData[];
+  className?: string;
+}) {
   if (!data || data.length === 0) {
     return (
       <Card className={className}>
@@ -33,10 +39,10 @@ export function PriorityBreakdownChart({ data, className }: { data: PriorityData
     );
   }
 
-  const formattedData = data.map(d => ({
+  const formattedData = data.map((d) => ({
     name: d.name.charAt(0).toUpperCase() + d.name.slice(1),
     value: d.value,
-    originalName: d.name
+    originalName: d.name,
   }));
 
   return (
@@ -59,12 +65,13 @@ export function PriorityBreakdownChart({ data, className }: { data: PriorityData
               dataKey="value"
             >
               {formattedData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[entry.originalName.toLowerCase()] || COLORS.unassigned} />
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[entry.originalName.toLowerCase()] || COLORS.unassigned}
+                />
               ))}
             </Pie>
-            <Tooltip
-              contentStyle={{ border: '1px solid #e2e8f0' }}
-            />
+            <Tooltip contentStyle={{ border: "1px solid #e2e8f0" }} />
             <Legend verticalAlign="bottom" height={36} />
           </PieChart>
         </ResponsiveContainer>

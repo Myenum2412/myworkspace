@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { requireUserOrgId } from "@/lib/org";
-import crypto from "crypto";
 
 export async function GET() {
   const session = await auth();
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   if (!integration || !webhookUrl) {
     return NextResponse.json(
       { error: "Missing required fields: integration, webhookUrl" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
           enabled: true,
           updatedAt: new Date(),
         },
-      }
+      },
     );
     return NextResponse.json({ success: true, id: existing.id || existing._id?.toString() });
   }

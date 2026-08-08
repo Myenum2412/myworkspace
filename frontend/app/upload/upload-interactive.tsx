@@ -1,1 +1,1 @@
-export { default } from "./upload-interactive.client"
+export { default } from "./upload-interactive.client";

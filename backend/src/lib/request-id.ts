@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import crypto from "crypto";
 import { AsyncLocalStorage } from "async_hooks";
+import crypto from "crypto";
+import type { NextFunction, Request, Response } from "express";
 
 export interface CorrelationContext {
   requestId: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Option = {
   value: string;
@@ -35,10 +35,7 @@ export function ViewToggle<T extends string>({
   }, [activeIndex]);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative flex items-center bg-muted rounded-sm p-0.5 gap-0"
-    >
+    <div ref={containerRef} className="relative flex items-center bg-muted rounded-sm p-0.5 gap-0">
       <div
         className="absolute top-0.5 bottom-0.5 z-0 rounded-sm bg-background shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
         style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
@@ -49,9 +46,7 @@ export function ViewToggle<T extends string>({
           type="button"
           onClick={() => onChange(opt.value as T)}
           className={`relative z-10 px-3 py-1.5 text-xs font-medium rounded-sm transition-colors duration-200 ${
-            value === opt.value
-              ? "text-foreground"
-              : "text-muted-foreground hover:text-foreground"
+            value === opt.value ? "text-foreground" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           {opt.label}

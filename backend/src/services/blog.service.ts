@@ -1,9 +1,9 @@
 import { v4 as uuid } from "uuid";
-import { BlogPost, IBlogPost } from "../lib/db/models/BlogPost.js";
-import { BlogCategory, IBlogCategory } from "../lib/db/models/BlogCategory.js";
+import { BlogCategory, type IBlogCategory } from "../lib/db/models/BlogCategory.js";
+import { BlogPost, type IBlogPost } from "../lib/db/models/BlogPost.js";
+import { logger } from "../lib/logger/index.js";
 import { AppError } from "../middleware/error.js";
 import { recordAuditLog } from "./audit.service.js";
-import { logger } from "../lib/logger/index.js";
 
 // ── Types ──
 
@@ -46,13 +46,16 @@ export interface PostListOptions {
 // ── Helpers ──
 
 function calculateReadingTime(content: string): number {
-  const text = content.replace(/<[^>]*>/g, "").replace(/[#*`>\-\[\]()]/g, "");
+  const text = content.replace(/<[^>]*>/g, "").replace(/[#*`>\-[\]()]/g, "");
   const words = text.split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(words / 200));
 }
 
 function autoGenerateExcerpt(content: string, maxLength = 160): string {
-  const text = content.replace(/<[^>]*>/g, "").replace(/[#*`>\-\[\]()]/g, "").trim();
+  const text = content
+    .replace(/<[^>]*>/g, "")
+    .replace(/[#*`>\-[\]()]/g, "")
+    .trim();
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength).replace(/\s+\S*$/, "") + "...";
 }
@@ -112,12 +115,14 @@ export async function createPost(input: CreatePostInput): Promise<IBlogPost> {
     readingTime,
     featured: input.featured || false,
     version: 1,
-    versions: [{
-      content: input.content,
-      title: input.title,
-      savedAt: new Date(),
-      savedBy: input.userId,
-    }],
+    versions: [
+      {
+        content: input.content,
+        title: input.title,
+        savedAt: new Date(),
+        savedBy: input.userId,
+      },
+    ],
     createdBy: input.userId,
   });
 
@@ -182,8 +187,8 @@ export async function updatePost(
     // Update category counts
     const oldCategories = post.categories || [];
     const newCategories = input.categories;
-    const removed = oldCategories.filter(c => !newCategories.includes(c));
-    const added = newCategories.filter(c => !oldCategories.includes(c));
+    const removed = oldCategories.filter((c) => !newCategories.includes(c));
+    const added = newCategories.filter((c) => !oldCategories.includes(c));
 
     if (removed.length > 0) {
       await BlogCategory.updateMany(
@@ -247,7 +252,11 @@ export async function deletePost(postId: string, orgId: string, userId: string):
   });
 }
 
-export async function permanentDeletePost(postId: string, orgId: string, userId: string): Promise<void> {
+export async function permanentDeletePost(
+  postId: string,
+  orgId: string,
+  userId: string,
+): Promise<void> {
   const post = await BlogPost.findOneAndDelete({ id: postId, orgId }).exec();
   if (!post) throw new AppError(404, "Blog post not found");
 
@@ -270,7 +279,11 @@ export async function permanentDeletePost(postId: string, orgId: string, userId:
   });
 }
 
-export async function restorePost(postId: string, orgId: string, userId: string): Promise<IBlogPost> {
+export async function restorePost(
+  postId: string,
+  orgId: string,
+  userId: string,
+): Promise<IBlogPost> {
   const post = await BlogPost.findOne({ id: postId, orgId }).exec();
   if (!post) throw new AppError(404, "Blog post not found");
   if (post.status !== "archived") throw new AppError(400, "Post is not archived");
@@ -292,7 +305,11 @@ export async function restorePost(postId: string, orgId: string, userId: string)
   return post;
 }
 
-export async function publishPost(postId: string, orgId: string, userId: string): Promise<IBlogPost> {
+export async function publishPost(
+  postId: string,
+  orgId: string,
+  userId: string,
+): Promise<IBlogPost> {
   const post = await BlogPost.findOne({ id: postId, orgId }).exec();
   if (!post) throw new AppError(404, "Blog post not found");
 
@@ -314,7 +331,11 @@ export async function publishPost(postId: string, orgId: string, userId: string)
   return post;
 }
 
-export async function unpublishPost(postId: string, orgId: string, userId: string): Promise<IBlogPost> {
+export async function unpublishPost(
+  postId: string,
+  orgId: string,
+  userId: string,
+): Promise<IBlogPost> {
   const post = await BlogPost.findOne({ id: postId, orgId }).exec();
   if (!post) throw new AppError(404, "Blog post not found");
 
@@ -392,7 +413,16 @@ export async function getFeaturedPosts(orgId: string, limit = 3): Promise<any[]>
 }
 
 export async function getAdminPosts(options: PostListOptions) {
-  const { orgId, page = 1, limit = 20, status, category, search, sortBy = "createdAt", sortOrder = "desc" } = options;
+  const {
+    orgId,
+    page = 1,
+    limit = 20,
+    status,
+    category,
+    search,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+  } = options;
 
   const filter: Record<string, any> = { orgId };
   if (status) filter.status = status;
@@ -408,13 +438,7 @@ export async function getAdminPosts(options: PostListOptions) {
   const sort: Record<string, 1 | -1> = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
 
   const [posts, total] = await Promise.all([
-    BlogPost.find(filter)
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .select("-versions")
-      .lean()
-      .exec(),
+    BlogPost.find(filter).sort(sort).skip(skip).limit(limit).select("-versions").lean().exec(),
     BlogPost.countDocuments(filter).exec(),
   ]);
 
@@ -499,7 +523,7 @@ export async function getSitemapData(orgId: string) {
     .lean()
     .exec();
 
-  return posts.map(p => ({
+  return posts.map((p) => ({
     slug: p.slug,
     lastModified: p.updatedAt,
     publishedAt: p.publishedAt,

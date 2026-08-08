@@ -1,4 +1,3 @@
-
 import ChangelogBlock from "@/components/changelog-block";
 
 export default function NewUpdatePage() {

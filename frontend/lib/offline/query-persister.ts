@@ -1,5 +1,5 @@
 import type { PersistedClient, Persister } from "@tanstack/react-query-persist-client";
-import { openDB, type IDBPDatabase } from "idb";
+import { type IDBPDatabase, openDB } from "idb";
 
 const DB_NAME = "myworkspace-react-query";
 const DB_VERSION = 2;

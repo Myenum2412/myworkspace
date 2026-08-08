@@ -2,13 +2,13 @@
 
 import {
   createContext,
-  useContext,
+  type MouseEvent,
+  type ReactNode,
   useCallback,
+  useContext,
+  useEffect,
   useRef,
   useState,
-  useEffect,
-  type ReactNode,
-  type MouseEvent,
 } from "react";
 
 export interface ContextMenuAction {
@@ -32,7 +32,11 @@ interface ContextMenuState {
 }
 
 interface ContextMenuContextValue {
-  show: (e: MouseEvent | { clientX: number; clientY: number; target?: HTMLElement }, actions: ContextMenuAction[], data?: unknown) => void;
+  show: (
+    e: MouseEvent | { clientX: number; clientY: number; target?: HTMLElement },
+    actions: ContextMenuAction[],
+    data?: unknown,
+  ) => void;
   hide: () => void;
   visible: boolean;
 }
@@ -59,7 +63,11 @@ function useContextMenuState() {
   }, []);
 
   const show = useCallback(
-    (e: MouseEvent | { clientX: number; clientY: number; target?: HTMLElement }, actions: ContextMenuAction[], data?: unknown) => {
+    (
+      e: MouseEvent | { clientX: number; clientY: number; target?: HTMLElement },
+      actions: ContextMenuAction[],
+      data?: unknown,
+    ) => {
       if ("preventDefault" in e) {
         e.preventDefault();
         e.stopPropagation();
@@ -176,9 +184,15 @@ function ContextMenuItem({
         }
       }}
     >
-      {action.icon && <span className="w-4 h-4 flex items-center justify-center text-muted-foreground shrink-0">{action.icon}</span>}
+      {action.icon && (
+        <span className="w-4 h-4 flex items-center justify-center text-muted-foreground shrink-0">
+          {action.icon}
+        </span>
+      )}
       <span className="flex-1 truncate">{action.label}</span>
-      {action.shortcut && <span className="text-xs text-muted-foreground ml-4 shrink-0">{action.shortcut}</span>}
+      {action.shortcut && (
+        <span className="text-xs text-muted-foreground ml-4 shrink-0">{action.shortcut}</span>
+      )}
       {hasSubmenu && <span className="text-muted-foreground ml-2">{">"}</span>}
 
       {hasSubmenu && isSubmenuOpen && (
@@ -215,7 +229,9 @@ export function ContextMenuLayer() {
   const { state, submenuOpen, setSubmenuOpen, menuRef, hide, show } = useContextMenuState();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!mounted || !state) return null;
 
@@ -248,7 +264,9 @@ export function ContextMenuProvider({ children }: { children: ReactNode }) {
   const { state, submenuOpen, setSubmenuOpen, menuRef, show, hide } = useContextMenuState();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handler = (e: globalThis.MouseEvent) => {

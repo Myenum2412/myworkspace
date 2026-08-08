@@ -1,28 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useAuditLogs } from "@/hooks/file-system/use-file-data";
-import { type AuditLogEntry } from "@/lib/file-system/types";
-import {
-  HistoryIcon,
-  SearchIcon,
-  DownloadIcon,
-  FilterIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  FileIcon,
-  FolderIcon,
-  Trash2Icon,
-  Share2Icon,
-  UploadIcon,
-  RotateCcwIcon,
-  PencilIcon,
-  UserIcon,
-  LockIcon,
-} from "@/lib/icons";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -38,19 +19,38 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuditLogs } from "@/hooks/file-system/use-file-data";
+import type { AuditLogEntry } from "@/lib/file-system/types";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  DownloadIcon,
+  FileIcon,
+  FilterIcon,
+  FolderIcon,
+  HistoryIcon,
+  LockIcon,
+  PencilIcon,
+  RotateCcwIcon,
+  SearchIcon,
+  Share2Icon,
+  Trash2Icon,
+  UploadIcon,
+  UserIcon,
+} from "@/lib/icons";
 
 const actionIcons: Record<string, React.ReactNode> = {
-  "folder_created": <FolderIcon className="size-3.5 text-blue-500" />,
-  "folder_renamed": <PencilIcon className="size-3.5 text-yellow-500" />,
-  "folder_deleted": <Trash2Icon className="size-3.5 text-red-500" />,
-  "folder_restored": <RotateCcwIcon className="size-3.5 text-green-500" />,
-  "file_uploaded": <UploadIcon className="size-3.5 text-green-500" />,
-  "file_downloaded": <DownloadIcon className="size-3.5 text-blue-500" />,
-  "file_shared": <Share2Icon className="size-3.5 text-purple-500" />,
-  "file_deleted": <Trash2Icon className="size-3.5 text-red-500" />,
-  "file_restored": <RotateCcwIcon className="size-3.5 text-green-500" />,
-  "file_renamed": <PencilIcon className="size-3.5 text-yellow-500" />,
-  "permission_changed": <LockIcon className="size-3.5 text-orange-500" />,
+  folder_created: <FolderIcon className="size-3.5 text-blue-500" />,
+  folder_renamed: <PencilIcon className="size-3.5 text-yellow-500" />,
+  folder_deleted: <Trash2Icon className="size-3.5 text-red-500" />,
+  folder_restored: <RotateCcwIcon className="size-3.5 text-green-500" />,
+  file_uploaded: <UploadIcon className="size-3.5 text-green-500" />,
+  file_downloaded: <DownloadIcon className="size-3.5 text-blue-500" />,
+  file_shared: <Share2Icon className="size-3.5 text-purple-500" />,
+  file_deleted: <Trash2Icon className="size-3.5 text-red-500" />,
+  file_restored: <RotateCcwIcon className="size-3.5 text-green-500" />,
+  file_renamed: <PencilIcon className="size-3.5 text-yellow-500" />,
+  permission_changed: <LockIcon className="size-3.5 text-orange-500" />,
 };
 
 function getActionLabel(action: string): string {
@@ -65,7 +65,12 @@ export function AuditLogView() {
   const perPage = 25;
 
   const filtered = (logs || []).filter((log) => {
-    if (search && !log.description?.toLowerCase().includes(search.toLowerCase()) && !log.userName?.toLowerCase().includes(search.toLowerCase())) return false;
+    if (
+      search &&
+      !log.description?.toLowerCase().includes(search.toLowerCase()) &&
+      !log.userName?.toLowerCase().includes(search.toLowerCase())
+    )
+      return false;
     if (actionFilter !== "all" && log.action !== actionFilter) return false;
     return true;
   });
@@ -86,7 +91,10 @@ export function AuditLogView() {
     }));
     if (format === "csv") {
       const headers = Object.keys(rows[0]);
-      const csv = [headers.join(","), ...rows.map((r) => headers.map((h) => `"${(r as Record<string, string>)[h]}"`).join(","))].join("\n");
+      const csv = [
+        headers.join(","),
+        ...rows.map((r) => headers.map((h) => `"${(r as Record<string, string>)[h]}"`).join(",")),
+      ].join("\n");
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       window.open(url);
@@ -103,7 +111,7 @@ export function AuditLogView() {
           </h2>
           <p className="text-sm text-muted-foreground">
             {filtered.length} event{filtered.length !== 1 ? "s" : ""}
-            {filtered.length !== (logs?.length || 0) && <> (filtered from {(logs?.length || 0)})</>}
+            {filtered.length !== (logs?.length || 0) && <> (filtered from {logs?.length || 0})</>}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -120,17 +128,28 @@ export function AuditLogView() {
             placeholder="Search audit log..."
             className="pl-8 h-9 bg-white"
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
-        <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v); setPage(1); }}>
+        <Select
+          value={actionFilter}
+          onValueChange={(v) => {
+            setActionFilter(v);
+            setPage(1);
+          }}
+        >
           <SelectTrigger className="w-44 h-9">
             <SelectValue placeholder="All actions" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Actions</SelectItem>
             {actionTypes.map((action) => (
-              <SelectItem key={action} value={action}>{getActionLabel(action)}</SelectItem>
+              <SelectItem key={action} value={action}>
+                {getActionLabel(action)}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -163,11 +182,21 @@ export function AuditLogView() {
               <TableBody>
                 {paged.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell>{actionIcons[log.action] || <FileIcon className="size-3.5 text-muted-foreground" />}</TableCell>
-                    <TableCell className="text-xs font-medium">{getActionLabel(log.action)}</TableCell>
+                    <TableCell>
+                      {actionIcons[log.action] || (
+                        <FileIcon className="size-3.5 text-muted-foreground" />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs font-medium">
+                      {getActionLabel(log.action)}
+                    </TableCell>
                     <TableCell className="hidden sm:table-cell text-xs text-muted-foreground">
                       {log.userName || log.userId}
-                      {log.userRole && <Badge variant="outline" className="ml-1.5 text-[9px]">{log.userRole}</Badge>}
+                      {log.userRole && (
+                        <Badge variant="outline" className="ml-1.5 text-[9px]">
+                          {log.userRole}
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="hidden md:table-cell text-xs text-muted-foreground max-w-[300px] truncate">
                       {log.description}
@@ -176,7 +205,10 @@ export function AuditLogView() {
                       {new Date(log.createdAt).toLocaleString()}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={log.status === "failed" ? "destructive" : "secondary"} className="text-[9px]">
+                      <Badge
+                        variant={log.status === "failed" ? "destructive" : "secondary"}
+                        className="text-[9px]"
+                      >
                         {log.status || "success"}
                       </Badge>
                     </TableCell>
@@ -188,13 +220,23 @@ export function AuditLogView() {
 
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+              >
                 <ChevronLeftIcon className="" />
               </Button>
               <span className="text-xs text-muted-foreground">
                 Page {page} of {totalPages}
               </span>
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+              >
                 <ChevronRightIcon className="" />
               </Button>
             </div>

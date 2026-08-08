@@ -1,7 +1,6 @@
-"use client"
+"use client";
 
-import { TrendingUp } from "@/lib/icons"
-import { Bar, BarChart, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import {
   Card,
   CardContent,
@@ -9,26 +8,23 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart"
+} from "@/components/ui/chart";
+import { TrendingUp } from "@/lib/icons";
 
 const chartConfig = {
   users: {
     label: "Users",
     color: "var(--chart-1)",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
-export function NewUsersChart({
-  data,
-}: {
-  data: { state: string; users: number }[]
-}) {
+export function NewUsersChart({ data }: { data: { state: string; users: number }[] }) {
   return (
     <Card>
       <CardHeader>
@@ -37,12 +33,7 @@ export function NewUsersChart({
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <BarChart
-            accessibilityLayer
-            data={data}
-            layout="vertical"
-            margin={{ left: -20 }}
-          >
+          <BarChart accessibilityLayer data={data} layout="vertical" margin={{ left: -20 }}>
             <XAxis type="number" dataKey="users" hide />
             <YAxis
               dataKey="state"
@@ -52,10 +43,7 @@ export function NewUsersChart({
               axisLine={false}
               width={80}
             />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
             <Bar dataKey="users" fill="var(--color-users)" radius={5} />
           </BarChart>
         </ChartContainer>
@@ -67,5 +55,5 @@ export function NewUsersChart({
         </div>
       </CardFooter>
     </Card>
-  )
+  );
 }

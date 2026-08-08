@@ -1,6 +1,6 @@
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { Serwist, CacheFirst, NetworkFirst, StaleWhileRevalidate } from "serwist";
+import { CacheFirst, NetworkFirst, Serwist, StaleWhileRevalidate } from "serwist";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -114,7 +114,9 @@ function isApiRequest(url: URL): boolean {
 }
 
 function isStaticAsset(url: URL): boolean {
-  return /\.(js|css|svg|png|jpg|jpeg|gif|ico|webp|avif|woff2?|ttf|eot|otf|pdf|json)$/i.test(url.pathname);
+  return /\.(js|css|svg|png|jpg|jpeg|gif|ico|webp|avif|woff2?|ttf|eot|otf|pdf|json)$/i.test(
+    url.pathname,
+  );
 }
 
 function isImageRequest(url: URL): boolean {
@@ -132,7 +134,8 @@ function isNavigationRequest(request: Request): boolean {
 function shouldUseNetworkFirst(url: URL): boolean {
   if (!isApiRequest(url)) return false;
   const writeMethods = /^\/(api\/(auth|billing\/webhook|chat|settings))/i;
-  const freshEndpoints = /^\/(api\/(dashboard|tasks|projects|sessions|time-entries|teams|notifications|activity|search))/i;
+  const freshEndpoints =
+    /^\/(api\/(dashboard|tasks|projects|sessions|time-entries|teams|notifications|activity|search))/i;
   if (writeMethods.test(url.pathname)) return true;
   if (freshEndpoints.test(url.pathname)) return true;
   return false;
@@ -140,7 +143,8 @@ function shouldUseNetworkFirst(url: URL): boolean {
 
 function shouldUseStaleWhileRevalidate(url: URL): boolean {
   if (!isApiRequest(url)) return false;
-  const staleEndpoints = /^\/(api\/(user|users|profile|organizations|clients|folders|shares|settings|admin|billing|reports|file-approval|calendar))/i;
+  const staleEndpoints =
+    /^\/(api\/(user|users|profile|organizations|clients|folders|shares|settings|admin|billing|reports|file-approval|calendar))/i;
   if (staleEndpoints.test(url.pathname)) return true;
   return false;
 }
@@ -190,10 +194,7 @@ self.addEventListener("fetch", (event: any) => {
       event.respondWith(handleOfflineFallback(request));
       return;
     }
-    event.respondWith(
-      fetch(request)
-        .catch(() => handleOfflineFallback(request)),
-    );
+    event.respondWith(fetch(request).catch(() => handleOfflineFallback(request)));
   }
 });
 

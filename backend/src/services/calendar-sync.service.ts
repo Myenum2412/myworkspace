@@ -1,9 +1,10 @@
-import { mongoose } from "../lib/db/index.js";
 import { collections } from "../lib/db/collections.js";
+import { mongoose } from "../lib/db/index.js";
 
 const db = mongoose.connection.db!;
-import { logger } from "../lib/logger/index.js";
+
 import crypto from "crypto";
+import { logger } from "../lib/logger/index.js";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -104,7 +105,7 @@ async function refreshGoogleToken(refreshToken: string): Promise<string | null> 
 }
 
 async function ensureValidToken(connection: CalendarConnection): Promise<string | null> {
-  let accessToken = getDecryptedToken(connection.accessToken);
+  const accessToken = getDecryptedToken(connection.accessToken);
 
   // Check if token is expired
   if (new Date(connection.tokenExpiry) < new Date()) {
@@ -115,10 +116,12 @@ async function ensureValidToken(connection: CalendarConnection): Promise<string 
         // Store encrypted token
         const { encryptToken } = await import("../lib/security/token-encryption.js");
         const encryptedToken = encryptToken(newToken);
-        await db.collection(collections.calendarConnections).updateOne(
-          { id: connection.id },
-          { $set: { accessToken: encryptedToken, updatedAt: new Date() } }
-        );
+        await db
+          .collection(collections.calendarConnections)
+          .updateOne(
+            { id: connection.id },
+            { $set: { accessToken: encryptedToken, updatedAt: new Date() } },
+          );
         return newToken;
       }
       return null;
@@ -132,10 +135,9 @@ async function ensureValidToken(connection: CalendarConnection): Promise<string 
 // ── Google Calendar API ──────────────────────────────────────────────
 
 async function getGoogleCalendarList(accessToken: string) {
-  const res = await fetch(
-    "https://www.googleapis.com/calendar/v3/users/me/calendarList",
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
+  const res = await fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
   if (!res.ok) return [];
   const data = await res.json();
   return data.items || [];
@@ -144,7 +146,7 @@ async function getGoogleCalendarList(accessToken: string) {
 async function getGoogleCalendarEvents(
   accessToken: string,
   calendarId: string,
-  syncToken?: string
+  syncToken?: string,
 ) {
   const params = new URLSearchParams({
     maxResults: "250",
@@ -165,7 +167,7 @@ async function getGoogleCalendarEvents(
 
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
+    { headers: { Authorization: `Bearer ${accessToken}` } },
   );
 
   if (!res.ok) {
@@ -184,7 +186,7 @@ async function watchGoogleCalendar(
   accessToken: string,
   calendarId: string,
   webhookUrl: string,
-  channelId: string
+  channelId: string,
 ) {
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/watch`,
@@ -201,7 +203,7 @@ async function watchGoogleCalendar(
         token: process.env.GOOGLE_CALENDAR_WEBHOOK_SECRET,
         expiration: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
       }),
-    }
+    },
   );
 
   if (!res.ok) {
@@ -248,7 +250,7 @@ export async function syncUserCalendars(userId: string): Promise<SyncResult> {
 
 async function syncGoogleCalendar(
   connection: CalendarConnection,
-  accessToken: string
+  accessToken: string,
 ): Promise<SyncResult> {
   const result: SyncResult = { synced: 0, updated: 0, deleted: 0, errors: 0 };
 
@@ -263,7 +265,7 @@ async function syncGoogleCalendar(
         connection,
         accessToken,
         cal.id,
-        connection.syncToken
+        connection.syncToken,
       );
       result.synced += calResult.synced;
       result.updated += calResult.updated;
@@ -271,10 +273,12 @@ async function syncGoogleCalendar(
 
       // Update sync token
       if (calResult.nextSyncToken) {
-        await db.collection(collections.calendarConnections).updateOne(
-          { id: connection.id },
-          { $set: { syncToken: calResult.nextSyncToken, lastSyncAt: new Date() } }
-        );
+        await db
+          .collection(collections.calendarConnections)
+          .updateOne(
+            { id: connection.id },
+            { $set: { syncToken: calResult.nextSyncToken, lastSyncAt: new Date() } },
+          );
       }
     } catch (err: any) {
       logger.error(`Error syncing calendar ${cal.id}:`, err);
@@ -289,7 +293,7 @@ async function syncGoogleCalendarEvents(
   connection: CalendarConnection,
   accessToken: string,
   calendarId: string,
-  syncToken: string | null
+  syncToken: string | null,
 ): Promise<SyncResult & { nextSyncToken?: string }> {
   const result: SyncResult & { nextSyncToken?: string } = {
     synced: 0,
@@ -347,14 +351,17 @@ async function syncGoogleCalendarEvents(
             organizer: !!a.organizer,
           })),
           organizer: event.organizer || { email: connection.calendarEmail },
-          conferenceData: event.conferenceData ? {
-            type: event.conferenceData.conferenceSolution?.name || "Google Meet",
-            uri: event.conferenceData.entryPoints?.[0]?.uri || "",
-          } : null,
-          reminders: event.reminders?.overrides?.map((r: any) => ({
-            method: r.method,
-            minutes: r.minutes,
-          })) || [],
+          conferenceData: event.conferenceData
+            ? {
+                type: event.conferenceData.conferenceSolution?.name || "Google Meet",
+                uri: event.conferenceData.entryPoints?.[0]?.uri || "",
+              }
+            : null,
+          reminders:
+            event.reminders?.overrides?.map((r: any) => ({
+              method: r.method,
+              minutes: r.minutes,
+            })) || [],
           color: event.colorId || null,
           etag: event.etag || "",
           version: existing ? (existing.version || 0) + 1 : 1,
@@ -363,10 +370,9 @@ async function syncGoogleCalendarEvents(
         };
 
         if (existing) {
-          await db.collection(collections.calendarEvents).updateOne(
-            { _id: existing._id },
-            { $set: eventData }
-          );
+          await db
+            .collection(collections.calendarEvents)
+            .updateOne({ _id: existing._id }, { $set: eventData });
           result.updated++;
         } else {
           await db.collection(collections.calendarEvents).insertOne({
@@ -392,7 +398,7 @@ async function syncGoogleCalendarEvents(
 
 export async function setupCalendarWebhook(
   connectionId: string,
-  calendarId: string
+  calendarId: string,
 ): Promise<boolean> {
   const connection = await db
     .collection(collections.calendarConnections)
@@ -413,12 +419,7 @@ export async function setupCalendarWebhook(
   const channelId = `calendar-${connectionId}-${Date.now()}`;
 
   try {
-    const result = await watchGoogleCalendar(
-      accessToken,
-      calendarId,
-      webhookUrl,
-      channelId
-    );
+    const result = await watchGoogleCalendar(accessToken, calendarId, webhookUrl, channelId);
 
     // Store webhook info
     await db.collection(collections.calendarConnections).updateOne(
@@ -429,7 +430,7 @@ export async function setupCalendarWebhook(
           webhookExpiration: new Date(result.expiration),
           updatedAt: new Date(),
         },
-      }
+      },
     );
 
     logger.info(`Webhook set up for calendar ${calendarId}, channel ${channelId}`);
@@ -469,9 +470,7 @@ export async function renewExpiringWebhooks(): Promise<number> {
 
 // ── Webhook Handler ──────────────────────────────────────────────────
 
-export async function handleCalendarWebhook(
-  headers: Record<string, string>
-): Promise<boolean> {
+export async function handleCalendarWebhook(headers: Record<string, string>): Promise<boolean> {
   const channelId = headers["x-goog-channel-id"];
   const resourceState = headers["x-goog-resource-state"];
   const resourceId = headers["x-goog-resource-id"];

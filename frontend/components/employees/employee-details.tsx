@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { ChevronLeftIcon } from "@/lib/icons";
 import type { Employee } from "@/app/employees/columns";
 import { EmployeeEditForm } from "@/app/employees/employee-edit-form";
+import { Button } from "@/components/ui/button";
+import { ChevronLeftIcon } from "@/lib/icons";
 
 type EmployeeDetailsProps = {
   employee: Employee;
@@ -14,7 +14,14 @@ type EmployeeDetailsProps = {
   onCancel: () => void;
 };
 
-export function EmployeeDetails({ employee, isViewMode, onBack, onSwitchToEdit, onSave, onCancel }: EmployeeDetailsProps) {
+export function EmployeeDetails({
+  employee,
+  isViewMode,
+  onBack,
+  onSwitchToEdit,
+  onSave,
+  onCancel,
+}: EmployeeDetailsProps) {
   return (
     <main className="flex flex-1 flex-col h-full bg-white">
       <div className="flex items-center gap-3 px-6 py-4 border-b bg-white sticky top-0 z-10 shrink-0">
@@ -23,7 +30,9 @@ export function EmployeeDetails({ employee, isViewMode, onBack, onSwitchToEdit, 
           Back
         </Button>
         <div className="h-5 w-px bg-border" />
-        <h1 className="text-lg font-semibold text-black">{isViewMode ? "Employee Details" : "Edit Employee"}</h1>
+        <h1 className="text-lg font-semibold text-black">
+          {isViewMode ? "Employee Details" : "Edit Employee"}
+        </h1>
       </div>
       <div className="flex-1 overflow-auto bg-white">
         <div className="w-full py-6 bg-white my-6">

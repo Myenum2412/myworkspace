@@ -1,5 +1,5 @@
-import { socketIOManager } from "../lib/socketio/index.js";
 import { logger } from "../lib/logger/index.js";
+import { socketIOManager } from "../lib/socketio/index.js";
 
 export interface SocketNotificationEvent {
   type: string;

@@ -1,6 +1,14 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { NotificationBell } from "@/components/notification-bell";
+import { GlobalSearch } from "@/components/search/global-search";
+import { SessionTracker } from "@/components/session-tracker";
+import { StaffStatusForm } from "@/components/staff-status-form";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,27 +17,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ROLES } from "@/lib/rbac";
-import { NotificationBell } from "@/components/notification-bell";
-import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { MenuOpenIcon } from "@/lib/icons";
-import { CalendarIcon, Search } from "@/lib/icons";
-import { useSidebar } from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { useUserStatus } from "@/hooks/use-user-status";
-import { SessionTracker } from "@/components/session-tracker";
-import { GlobalSearch } from "@/components/search/global-search";
-import { StaffStatusForm } from "@/components/staff-status-form";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Fragment, useEffect, useMemo, useState } from "react";
-import { getAppContext, type AppContextType } from "@/lib/app-context";
+import { type AppContextType, getAppContext } from "@/lib/app-context";
+import { CalendarIcon, MenuOpenIcon, Search } from "@/lib/icons";
+import { ROLES } from "@/lib/rbac";
 
 const CONTEXT_LABELS: Record<AppContextType, string> = {
   origin: "Origin Menu",
@@ -40,13 +34,23 @@ const CONTEXT_LABELS: Record<AppContextType, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  available: "bg-green-500", online: "bg-green-500", busy: "bg-red-500",
-  break: "bg-amber-500", meeting: "bg-purple-500", offline: "bg-gray-400", remote: "bg-blue-500",
+  available: "bg-green-500",
+  online: "bg-green-500",
+  busy: "bg-red-500",
+  break: "bg-amber-500",
+  meeting: "bg-purple-500",
+  offline: "bg-gray-400",
+  remote: "bg-blue-500",
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  available: "Available", online: "Available", busy: "Busy",
-  break: "On Break", meeting: "In Meeting", offline: "Offline", remote: "Remote",
+  available: "Available",
+  online: "Available",
+  busy: "Busy",
+  break: "On Break",
+  meeting: "In Meeting",
+  offline: "Offline",
+  remote: "Remote",
 };
 
 export function Header({ context }: { context?: AppContextType }) {
@@ -61,13 +65,12 @@ export function Header({ context }: { context?: AppContextType }) {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setSearchOpen(o => !o);
+        setSearchOpen((o) => !o);
       }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, []);
-
 
   function handleStatusUpdateFromForm(newStatus: string) {
     const wsStatus = newStatus === "available" ? "online" : newStatus;
@@ -80,7 +83,10 @@ export function Header({ context }: { context?: AppContextType }) {
   return (
     <header className="sticky top-0 z-30 flex w-full h-14 sm:h-16 md:h-20 shrink-0 border-b items-center justify-between gap-2 px-2 sm:px-3 md:px-4 transition-[width,height] ease-linear safe-paddings glass-surface">
       <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
-        <Separator orientation="vertical" className="mr-1 sm:mr-2 data-vertical:h-4 data-vertical:self-auto hidden sm:block" />
+        <Separator
+          orientation="vertical"
+          className="mr-1 sm:mr-2 data-vertical:h-4 data-vertical:self-auto hidden sm:block"
+        />
         <button
           onClick={toggleSidebar}
           className="flex items-center justify-center size-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 touch-target-sm"
@@ -97,9 +103,7 @@ export function Header({ context }: { context?: AppContextType }) {
                     {contextLabel}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
-                {segments.length >= 1 && (
-                  <BreadcrumbSeparator className="hidden md:block" />
-                )}
+                {segments.length >= 1 && <BreadcrumbSeparator className="hidden md:block" />}
               </Fragment>
             )}
             {segments.length > 1 ? (
@@ -109,9 +113,15 @@ export function Header({ context }: { context?: AppContextType }) {
                 const title = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
                 return (
                   <Fragment key={href}>
-                    <BreadcrumbItem className={!isLast ? "hidden md:block" : "truncate max-w-[100px] sm:max-w-[180px]"}>
+                    <BreadcrumbItem
+                      className={
+                        !isLast ? "hidden md:block" : "truncate max-w-[100px] sm:max-w-[180px]"
+                      }
+                    >
                       {!isLast ? (
-                        <BreadcrumbLink href={href} className="text-sm">{title}</BreadcrumbLink>
+                        <BreadcrumbLink href={href} className="text-sm">
+                          {title}
+                        </BreadcrumbLink>
                       ) : (
                         <BreadcrumbPage className="text-sm truncate">{title}</BreadcrumbPage>
                       )}
@@ -150,7 +160,9 @@ export function Header({ context }: { context?: AppContextType }) {
         >
           <Search className="size-4" />
           <span className="flex-1 text-left text-sm">Search</span>
-          <kbd className="rounded-md border bg-muted/70 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground group-hover:border-ring/40">⌘K</kbd>
+          <kbd className="rounded-md border bg-muted/70 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground group-hover:border-ring/40">
+            ⌘K
+          </kbd>
         </button>
 
         <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
@@ -187,7 +199,9 @@ export function Header({ context }: { context?: AppContextType }) {
                     className={`relative inline-flex size-2 rounded-sm ${STATUS_COLORS[status] || "bg-gray-400"}`}
                   />
                 </span>
-                <span className="hidden sm:inline">{STATUS_LABELS[status] || status.charAt(0).toUpperCase() + status.slice(1)}</span>
+                <span className="hidden sm:inline">
+                  {STATUS_LABELS[status] || status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
               </Badge>
             </PopoverTrigger>
             <PopoverContent align="end" sideOffset={8} className="w-[280px] sm:w-[320px] p-0">

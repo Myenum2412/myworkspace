@@ -1,19 +1,8 @@
-"use client"
-import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+"use client";
+import { useMemo, useState } from "react";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
+import { UploadThingDropzone } from "@/components/elements/uploadthing-dropzone";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -22,23 +11,31 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { FolderIcon } from "@/lib/icons";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-  FileIcon,
-  ImageIcon,
-  FileTextIcon,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
   ArchiveIcon,
-  DownloadIcon,
-  Trash2Icon,
-  SearchIcon,
+  BarChart3Icon,
   Building2Icon,
   ChevronLeftIcon,
-  UserIcon,
-  BarChart3Icon,
+  DownloadIcon,
+  FileIcon,
   FilesIcon,
+  FileTextIcon,
+  FolderIcon,
+  ImageIcon,
+  SearchIcon,
+  Trash2Icon,
+  UserIcon,
 } from "@/lib/icons";
-import { UploadThingDropzone } from "@/components/elements/uploadthing-dropzone";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 type FileCategory = "profile" | "report" | "general";
 
@@ -75,9 +72,12 @@ function formatSize(bytes: number) {
 function getFileIcon(mimeType: string) {
   if (mimeType.startsWith("image/")) return <ImageIcon className="size-4 text-muted-foreground" />;
   if (mimeType.includes("pdf")) return <FileTextIcon className="size-4 text-muted-foreground" />;
-  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar")) return <ArchiveIcon className="size-4 text-muted-foreground" />;
-  if (mimeType.includes("sheet") || mimeType.includes("excel")) return <FileTextIcon className="size-4 text-muted-foreground" />;
-  if (mimeType.includes("document") || mimeType.includes("word")) return <FileTextIcon className="size-4 text-muted-foreground" />;
+  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar"))
+    return <ArchiveIcon className="size-4 text-muted-foreground" />;
+  if (mimeType.includes("sheet") || mimeType.includes("excel"))
+    return <FileTextIcon className="size-4 text-muted-foreground" />;
+  if (mimeType.includes("document") || mimeType.includes("word"))
+    return <FileTextIcon className="size-4 text-muted-foreground" />;
   return <FileIcon className="size-4 text-muted-foreground" />;
 }
 
@@ -89,7 +89,9 @@ function DeleteFileButton({ file, onDeleted }: { file: FileItem; onDeleted: () =
         credentials: "include",
       });
       if (res.ok) onDeleted();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   return (
@@ -128,16 +130,14 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
   );
 
   const categoryFiles = useMemo(
-    () => activeCategory === "all"
-      ? fileList
-      : fileList.filter((f) => f.category === activeCategory),
+    () =>
+      activeCategory === "all" ? fileList : fileList.filter((f) => f.category === activeCategory),
     [fileList, activeCategory],
   );
 
   const memberFiles = useMemo(
-    () => selectedMember
-      ? categoryFiles.filter((f) => f.uploaderEmail === selectedMember.email)
-      : [],
+    () =>
+      selectedMember ? categoryFiles.filter((f) => f.uploaderEmail === selectedMember.email) : [],
     [categoryFiles, selectedMember],
   );
 
@@ -145,9 +145,7 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
     if (!search.trim()) return memberFiles;
     const q = search.toLowerCase();
     return memberFiles.filter(
-      (f) =>
-        f.originalName.toLowerCase().includes(q) ||
-        f.uploaderName.toLowerCase().includes(q),
+      (f) => f.originalName.toLowerCase().includes(q) || f.uploaderName.toLowerCase().includes(q),
     );
   }, [memberFiles, search]);
 
@@ -202,26 +200,41 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
 
         <div className="flex items-center gap-2 flex-wrap">
           {(["all", "profile", "report", "general"] as const).map((cat) => {
-            const count = cat === "all"
-              ? fileList.length
-              : fileList.filter((f) => f.category === cat).length;
-            const icon = cat === "all" ? <FolderIcon className="size-3.5" />
-              : cat === "profile" ? <UserIcon className="size-3.5" />
-              : cat === "report" ? <BarChart3Icon className="size-3.5" />
-              : <FilesIcon className="size-3.5" />;
-            const label = cat === "all" ? "All Files"
-              : cat === "profile" ? "Profile"
-              : cat === "report" ? "Report"
-              : "General";
+            const count =
+              cat === "all" ? fileList.length : fileList.filter((f) => f.category === cat).length;
+            const icon =
+              cat === "all" ? (
+                <FolderIcon className="size-3.5" />
+              ) : cat === "profile" ? (
+                <UserIcon className="size-3.5" />
+              ) : cat === "report" ? (
+                <BarChart3Icon className="size-3.5" />
+              ) : (
+                <FilesIcon className="size-3.5" />
+              );
+            const label =
+              cat === "all"
+                ? "All Files"
+                : cat === "profile"
+                  ? "Profile"
+                  : cat === "report"
+                    ? "Report"
+                    : "General";
             return (
               <button
                 key={cat}
-                onClick={() => { setActiveCategory(cat); setSelectedUserId(null); setSearch(""); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${ activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground" }`}
+                onClick={() => {
+                  setActiveCategory(cat);
+                  setSelectedUserId(null);
+                  setSearch("");
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
               >
                 {icon}
                 {label}
-                <span className={`text-xs ml-0.5 ${activeCategory === cat ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
+                <span
+                  className={`text-xs ml-0.5 ${activeCategory === cat ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}
+                >
                   {count}
                 </span>
               </button>
@@ -253,9 +266,16 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
         ) : (
           <div className="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {members
-              .filter((m) => !search.trim() || m.name.toLowerCase().includes(search.toLowerCase()) || m.orgName.toLowerCase().includes(search.toLowerCase()))
+              .filter(
+                (m) =>
+                  !search.trim() ||
+                  m.name.toLowerCase().includes(search.toLowerCase()) ||
+                  m.orgName.toLowerCase().includes(search.toLowerCase()),
+              )
               .map((m) => {
-                const userFileCount = categoryFiles.filter((f) => f.uploaderEmail === m.email).length;
+                const userFileCount = categoryFiles.filter(
+                  (f) => f.uploaderEmail === m.email,
+                ).length;
                 return (
                   <button
                     key={m.userId}
@@ -302,7 +322,13 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink onClick={() => { setSelectedUserId(null); setSearch(""); }} className="cursor-pointer">
+                <BreadcrumbLink
+                  onClick={() => {
+                    setSelectedUserId(null);
+                    setSearch("");
+                  }}
+                  className="cursor-pointer"
+                >
                   All Folders
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -321,19 +347,29 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 flex-1">
           {(["all", "profile", "report", "general"] as const).map((cat) => {
-            const icon = cat === "all" ? <FolderIcon className="size-3.5" />
-              : cat === "profile" ? <UserIcon className="size-3.5" />
-              : cat === "report" ? <BarChart3Icon className="size-3.5" />
-              : <FilesIcon className="size-3.5" />;
-            const label = cat === "all" ? "All"
-              : cat === "profile" ? "Profile"
-              : cat === "report" ? "Report"
-              : "General";
+            const icon =
+              cat === "all" ? (
+                <FolderIcon className="size-3.5" />
+              ) : cat === "profile" ? (
+                <UserIcon className="size-3.5" />
+              ) : cat === "report" ? (
+                <BarChart3Icon className="size-3.5" />
+              ) : (
+                <FilesIcon className="size-3.5" />
+              );
+            const label =
+              cat === "all"
+                ? "All"
+                : cat === "profile"
+                  ? "Profile"
+                  : cat === "report"
+                    ? "Report"
+                    : "General";
             return (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${ activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground" }`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
               >
                 {icon}
                 {label}
@@ -406,9 +442,12 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
                       >
                         <DownloadIcon className="size-3.5" />
                       </Button>
-                      <DeleteFileButton file={f} onDeleted={() => {
-                        setFileList((prev) => prev.filter((x) => x.id !== f.id));
-                      }} />
+                      <DeleteFileButton
+                        file={f}
+                        onDeleted={() => {
+                          setFileList((prev) => prev.filter((x) => x.id !== f.id));
+                        }}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -418,7 +457,12 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
         </div>
       )}
 
-      <Dialog open={!!previewFile} onOpenChange={(o) => { if (!o) setPreviewFile(null); }}>
+      <Dialog
+        open={!!previewFile}
+        onOpenChange={(o) => {
+          if (!o) setPreviewFile(null);
+        }}
+      >
         <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
           {previewFile && (
             <>
@@ -430,11 +474,15 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
                 <DialogDescription>
                   {formatSize(previewFile.size)}
                   {" · "}
-                  Uploaded {new Date(previewFile.createdAt).toLocaleDateString()} by {previewFile.uploaderName}
+                  Uploaded {new Date(previewFile.createdAt).toLocaleDateString()} by{" "}
+                  {previewFile.uploaderName}
                 </DialogDescription>
               </DialogHeader>
               <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
-                {/^(image|text|video|audio)\//.test(previewFile.mimeType) || previewFile.mimeType.includes("pdf") || previewFile.mimeType === "application/json" || previewFile.mimeType === "application/xml" ? (
+                {/^(image|text|video|audio)\//.test(previewFile.mimeType) ||
+                previewFile.mimeType.includes("pdf") ||
+                previewFile.mimeType === "application/json" ||
+                previewFile.mimeType === "application/xml" ? (
                   <iframe
                     src={`/api/files/${previewFile.id}`}
                     className="w-full h-full border rounded-sm"
@@ -444,7 +492,12 @@ export function AdminFileManager({ files: allFiles, members }: AdminFileManagerP
                   <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
                     <FileIcon className="size-12" />
                     <p className="text-sm">Preview not available for this file type</p>
-                    <Button variant="outline" onClick={() => window.open(`/api/files/${previewFile.id}?download=true`, "_blank")}>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        window.open(`/api/files/${previewFile.id}?download=true`, "_blank")
+                      }
+                    >
                       <DownloadIcon className="mr-2" />
                       Download to view
                     </Button>

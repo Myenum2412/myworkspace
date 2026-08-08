@@ -1,10 +1,19 @@
 import { createNotification } from "../../services/notification.service.js";
 
 export const notifyCommunication = {
-  async newComment(userId: string, orgId: string, commentAuthor: string, context: string, link?: string) {
+  async newComment(
+    userId: string,
+    orgId: string,
+    commentAuthor: string,
+    context: string,
+    link?: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "new_comment", category: "messages",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "new_comment",
+      category: "messages",
       title: "New Comment",
       message: `${commentAuthor} commented on ${context}`,
       link,
@@ -13,10 +22,20 @@ export const notifyCommunication = {
     });
   },
 
-  async mention(userId: string, orgId: string, mentionedByName: string, context: string, link?: string) {
+  async mention(
+    userId: string,
+    orgId: string,
+    mentionedByName: string,
+    context: string,
+    link?: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "mention", category: "messages", priority: "high",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "mention",
+      category: "messages",
+      priority: "high",
       title: `You were mentioned by ${mentionedByName}`,
       message: context,
       link,
@@ -25,10 +44,19 @@ export const notifyCommunication = {
     });
   },
 
-  async replyReceived(userId: string, orgId: string, replierName: string, context: string, link?: string) {
+  async replyReceived(
+    userId: string,
+    orgId: string,
+    replierName: string,
+    context: string,
+    link?: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "reply_received", category: "messages",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "reply_received",
+      category: "messages",
       title: "Reply Received",
       message: `${replierName} replied to your ${context}`,
       link,
@@ -37,22 +65,49 @@ export const notifyCommunication = {
     });
   },
 
-  async chatMessage(userId: string, orgId: string, fromName: string, messagePreview: string, conversationId: string) {
+  async chatMessage(
+    userId: string,
+    orgId: string,
+    fromName: string,
+    messagePreview: string,
+    conversationId: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "chat_message", category: "messages",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "chat_message",
+      category: "messages",
       title: `Message from ${fromName}`,
       message: messagePreview,
       link: `/chat?conversation=${conversationId}`,
-      actions: [{ label: "Reply", action: "reply", url: `/chat?conversation=${conversationId}`, primary: true }],
+      actions: [
+        {
+          label: "Reply",
+          action: "reply",
+          url: `/chat?conversation=${conversationId}`,
+          primary: true,
+        },
+      ],
       metadata: { conversationId, fromName },
     });
   },
 
-  async teamAnnouncement(userId: string, orgId: string, announcedBy: string, title: string, message: string, link?: string) {
+  async teamAnnouncement(
+    userId: string,
+    orgId: string,
+    announcedBy: string,
+    title: string,
+    message: string,
+    link?: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "team_announcement", category: "messages", priority: "high",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "team_announcement",
+      category: "messages",
+      priority: "high",
       title: `Announcement: ${title}`,
       message: `${announcedBy}: ${message}`,
       link,
@@ -61,10 +116,20 @@ export const notifyCommunication = {
     });
   },
 
-  async broadcastMessage(userId: string, orgId: string, title: string, message: string, link?: string) {
+  async broadcastMessage(
+    userId: string,
+    orgId: string,
+    title: string,
+    message: string,
+    link?: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "broadcast_message", category: "messages", priority: "high",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "broadcast_message",
+      category: "messages",
+      priority: "high",
       title,
       message,
       link,
@@ -72,10 +137,20 @@ export const notifyCommunication = {
     });
   },
 
-  async meetingScheduled(userId: string, orgId: string, scheduledBy: string, meetingTitle: string, startTime: string, link?: string) {
+  async meetingScheduled(
+    userId: string,
+    orgId: string,
+    scheduledBy: string,
+    meetingTitle: string,
+    startTime: string,
+    link?: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "meeting_scheduled", category: "messages",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "meeting_scheduled",
+      category: "messages",
       title: "Meeting Scheduled",
       message: `${scheduledBy} scheduled "${meetingTitle}" at ${startTime}`,
       link: link || "/calendar",
@@ -86,10 +161,19 @@ export const notifyCommunication = {
     });
   },
 
-  async meetingReminder(userId: string, orgId: string, meetingTitle: string, startTime: string, link?: string) {
+  async meetingReminder(
+    userId: string,
+    orgId: string,
+    meetingTitle: string,
+    startTime: string,
+    link?: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "meeting_reminder", category: "messages",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "meeting_reminder",
+      category: "messages",
       title: "Meeting Reminder",
       message: `"${meetingTitle}" starts at ${startTime}`,
       link: link || "/calendar",
@@ -100,8 +184,11 @@ export const notifyCommunication = {
 
   async meetingCancelled(userId: string, orgId: string, cancelledBy: string, meetingTitle: string) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "meeting_cancelled", category: "messages",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "meeting_cancelled",
+      category: "messages",
       title: "Meeting Cancelled",
       message: `${cancelledBy} cancelled "${meetingTitle}"`,
       link: "/calendar",
@@ -109,10 +196,20 @@ export const notifyCommunication = {
     });
   },
 
-  async calendarInvitation(userId: string, orgId: string, invitedBy: string, eventTitle: string, eventDate: string, link?: string) {
+  async calendarInvitation(
+    userId: string,
+    orgId: string,
+    invitedBy: string,
+    eventTitle: string,
+    eventDate: string,
+    link?: string,
+  ) {
     return createNotification({
-      userId, orgId, createdBy: userId,
-      type: "calendar_invitation", category: "messages",
+      userId,
+      orgId,
+      createdBy: userId,
+      type: "calendar_invitation",
+      category: "messages",
       title: "Calendar Invitation",
       message: `${invitedBy} invited you to "${eventTitle}" on ${eventDate}`,
       link: link || "/calendar",

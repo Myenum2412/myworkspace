@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 
 export interface IUser extends Document {
@@ -11,7 +11,18 @@ export interface IUser extends Document {
   image?: string;
   password?: string;
   status: "online" | "offline" | "break";
-  role: "org_admin" | "members" | "manager" | "team_leader" | "staffs" | "team_staff" | "hr" | "finance" | "contractors" | "clients" | "guest";
+  role:
+    | "org_admin"
+    | "members"
+    | "manager"
+    | "team_leader"
+    | "staffs"
+    | "team_staff"
+    | "hr"
+    | "finance"
+    | "contractors"
+    | "clients"
+    | "guest";
   permissions: string[];
   isActive: boolean;
   isWorkflowStaff?: boolean;
@@ -54,7 +65,23 @@ const userSchema = new Schema<IUser>(
     image: String,
     password: String,
     status: { type: String, enum: ["online", "offline", "break"], default: "offline" },
-    role: { type: String, enum: ["org_admin", "members", "manager", "team_leader", "staffs", "team_staff", "hr", "finance", "contractors", "clients", "guest"], default: "staffs" },
+    role: {
+      type: String,
+      enum: [
+        "org_admin",
+        "members",
+        "manager",
+        "team_leader",
+        "staffs",
+        "team_staff",
+        "hr",
+        "finance",
+        "contractors",
+        "clients",
+        "guest",
+      ],
+      default: "staffs",
+    },
     permissions: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
     isWorkflowStaff: { type: Boolean, default: false },
@@ -83,7 +110,7 @@ const userSchema = new Schema<IUser>(
     emailVerificationToken: { type: String, index: true },
     emailVerificationExpires: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 userSchema.index({ status: 1 });

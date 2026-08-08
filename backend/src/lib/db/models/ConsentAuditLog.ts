@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { model, Schema } from "mongoose";
 
 export interface IConsentAuditLog {
   id: string;
@@ -39,7 +39,7 @@ const consentAuditLogSchema = new Schema<IConsentAuditLog>(
     policyVersion: { type: Number, required: true },
     performedBy: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 consentAuditLogSchema.index({ userId: 1, createdAt: -1 });
@@ -47,4 +47,5 @@ consentAuditLogSchema.index({ createdAt: -1 });
 consentAuditLogSchema.index({ action: 1, createdAt: -1 });
 
 export const ConsentAuditLog =
-  mongoose.models.ConsentAuditLog || model("ConsentAuditLog", consentAuditLogSchema, "consent_audit_logs");
+  mongoose.models.ConsentAuditLog ||
+  model("ConsentAuditLog", consentAuditLogSchema, "consent_audit_logs");

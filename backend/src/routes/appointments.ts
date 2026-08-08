@@ -1,12 +1,12 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
-import { isAdminRole } from "../lib/rbac/index.js";
-import { requireOrgMembership } from "../lib/org-utils.js";
-import { Appointment, IAppointment } from "../lib/db/models/Appointment.js";
-import { socketIOManager } from "../lib/socketio/index.js";
+import { type Response, Router } from "express";
 import { v4 as uuid } from "uuid";
+import { Appointment, IAppointment } from "../lib/db/models/Appointment.js";
 import { logger } from "../lib/logger/index.js";
+import { requireOrgMembership } from "../lib/org-utils.js";
+import { isAdminRole } from "../lib/rbac/index.js";
+import { socketIOManager } from "../lib/socketio/index.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
@@ -21,8 +21,21 @@ function generateAppointmentId(): string {
 }
 
 router.get("/", async (req: AuthRequest, res: Response) => {
-  const orgId = req.user!.orgId || (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
-  const { status, doctorId, dateFrom, dateTo, search, sort, order, page: pageStr, limit: limitStr } = req.query as Record<string, string>;
+  const orgId =
+    req.user!.orgId ||
+    (req.query.orgId as string) ||
+    (await requireOrgMembership(req.user!.userId));
+  const {
+    status,
+    doctorId,
+    dateFrom,
+    dateTo,
+    search,
+    sort,
+    order,
+    page: pageStr,
+    limit: limitStr,
+  } = req.query as Record<string, string>;
 
   const filter: Record<string, unknown> = { orgId };
 
@@ -54,7 +67,9 @@ router.get("/", async (req: AuthRequest, res: Response) => {
       .sort({ [sortField]: sortOrder })
       .skip(skip)
       .limit(limit)
-      .select("id orgId appointmentId patientName mobileNumber email doctorId doctorName appointmentDate preferredTime reasonForVisit notes status bookingDatetime createdBy source createdAt updatedAt")
+      .select(
+        "id orgId appointmentId patientName mobileNumber email doctorId doctorName appointmentDate preferredTime reasonForVisit notes status bookingDatetime createdBy source createdAt updatedAt",
+      )
       .lean(),
     Appointment.countDocuments(filter),
   ]);
@@ -75,7 +90,10 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/stats", async (req: AuthRequest, res: Response) => {
-  const orgId = req.user!.orgId || (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
+  const orgId =
+    req.user!.orgId ||
+    (req.query.orgId as string) ||
+    (await requireOrgMembership(req.user!.userId));
   const today = new Date().toISOString().split("T")[0];
 
   const [total, todayCount, pending, confirmed, completed, cancelled] = await Promise.all([
@@ -94,8 +112,12 @@ router.get("/stats", async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
-  const orgId = req.user!.orgId || await requireOrgMembership(req.user!.userId);
-  const appointment = await Appointment.findOne({ id: req.params.id, orgId }).select("id orgId appointmentId patientName mobileNumber email doctorId doctorName appointmentDate preferredTime reasonForVisit notes status bookingDatetime createdBy source createdAt updatedAt").lean();
+  const orgId = req.user!.orgId || (await requireOrgMembership(req.user!.userId));
+  const appointment = await Appointment.findOne({ id: req.params.id, orgId })
+    .select(
+      "id orgId appointmentId patientName mobileNumber email doctorId doctorName appointmentDate preferredTime reasonForVisit notes status bookingDatetime createdBy source createdAt updatedAt",
+    )
+    .lean();
   if (!appointment) throw new AppError(404, "Appointment not found");
   const { _id, __v, ...rest } = appointment as any;
   res.json({ success: true, data: { ...rest, id: rest.id } });
@@ -103,7 +125,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 
 router.post("/", async (req: AuthRequest, res: Response) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create appointments");
-  const orgId = req.user!.orgId || await requireOrgMembership(req.user!.userId);
+  const orgId = req.user!.orgId || (await requireOrgMembership(req.user!.userId));
   const userId = req.user!.userId;
   const body = req.body;
 
@@ -124,7 +146,9 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     appointmentDate: body.appointmentDate,
     preferredTime: body.preferredTime,
     status: { $ne: "Cancelled" },
-  }).select("_id").lean();
+  })
+    .select("_id")
+    .lean();
 
   if (duplicate) {
     throw new AppError(409, "This time slot is already booked for this doctor");
@@ -154,7 +178,10 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 
   socketIOManager.emitToUser(userId, "appointment:created", { ...rest, id: rest.id });
 
-  socketIOManager.getIO()?.to(`org:${orgId}`).emit("appointment:created", { ...rest, id: rest.id });
+  socketIOManager
+    .getIO()
+    ?.to(`org:${orgId}`)
+    .emit("appointment:created", { ...rest, id: rest.id });
 
   processEvent({
     userId,
@@ -173,13 +200,24 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 
 router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update appointments");
-  const orgId = req.user!.orgId || await requireOrgMembership(req.user!.userId);
+  const orgId = req.user!.orgId || (await requireOrgMembership(req.user!.userId));
   const userId = req.user!.userId;
 
   const existing = await Appointment.findOne({ id: req.params.id, orgId }).lean();
   if (!existing) throw new AppError(404, "Appointment not found");
 
-  const allowed = ["patientName", "mobileNumber", "email", "doctorId", "doctorName", "appointmentDate", "preferredTime", "reasonForVisit", "notes", "status"];
+  const allowed = [
+    "patientName",
+    "mobileNumber",
+    "email",
+    "doctorId",
+    "doctorName",
+    "appointmentDate",
+    "preferredTime",
+    "reasonForVisit",
+    "notes",
+    "status",
+  ];
   const updates: Record<string, unknown> = {};
   for (const field of allowed) {
     if (req.body[field] !== undefined) updates[field] = req.body[field];
@@ -189,14 +227,17 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   const updated = await Appointment.findOneAndUpdate(
     { id: req.params.id, orgId },
     { $set: updates },
-    { returnDocument: "after" }
+    { returnDocument: "after" },
   ).lean();
 
   if (!updated) throw new AppError(500, "Failed to update appointment");
   const { _id, __v, ...rest } = updated as any;
 
   socketIOManager.emitToUser(userId, "appointment:updated", { ...rest, id: rest.id });
-  socketIOManager.getIO()?.to(`org:${orgId}`).emit("appointment:updated", { ...rest, id: rest.id });
+  socketIOManager
+    .getIO()
+    ?.to(`org:${orgId}`)
+    .emit("appointment:updated", { ...rest, id: rest.id });
 
   processEvent({
     userId,
@@ -213,7 +254,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete appointments");
-  const orgId = req.user!.orgId || await requireOrgMembership(req.user!.userId);
+  const orgId = req.user!.orgId || (await requireOrgMembership(req.user!.userId));
   const userId = req.user!.userId;
 
   const deleted = await Appointment.findOneAndDelete({ id: req.params.id, orgId });

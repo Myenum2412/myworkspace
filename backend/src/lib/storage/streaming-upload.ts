@@ -1,8 +1,8 @@
 import { Request } from "express";
-import multer, { FileFilterCallback } from "multer";
-import path from "path";
-import fs from "fs/promises";
 import { createWriteStream, existsSync, mkdirSync } from "fs";
+import fs from "fs/promises";
+import multer, { type FileFilterCallback } from "multer";
+import path from "path";
 import { env } from "../../config/env.js";
 import { logger } from "../logger/index.js";
 

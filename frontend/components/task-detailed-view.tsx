@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { FilePreviewDialog } from "@/components/file-preview-dialog";
+import { TaskChat } from "@/components/task-chat";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import { DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -15,23 +17,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-} from "@/components/ui/avatar";
-import {
-  PencilIcon, AlignLeftIcon, UserIcon, CalendarIcon, HashIcon,
-  ListTodoIcon, CheckCircleIcon, XCircleIcon, PaperclipIcon,
-  ActivityIcon, AlertCircleIcon, ClockIcon, Loader2Icon,
-  CircleIcon, CircleDashedIcon, FileTextIcon, UserCheckIcon,
-  SaveIcon, UsersIcon, DownloadIcon,
-} from "@/lib/icons";
-import { FolderIcon } from "@/lib/icons";
-import { TaskChat } from "@/components/task-chat";
-import { FilePreviewDialog } from "@/components/file-preview-dialog";
-import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
+import {
+  ActivityIcon,
+  AlertCircleIcon,
+  AlignLeftIcon,
+  CalendarIcon,
+  CheckCircleIcon,
+  CircleDashedIcon,
+  CircleIcon,
+  ClockIcon,
+  DownloadIcon,
+  FileTextIcon,
+  FolderIcon,
+  HashIcon,
+  ListTodoIcon,
+  Loader2Icon,
+  PaperclipIcon,
+  PencilIcon,
+  SaveIcon,
+  UserCheckIcon,
+  UserIcon,
+  UsersIcon,
+  XCircleIcon,
+} from "@/lib/icons";
 
 type Employee = {
   id: string;
@@ -78,7 +89,10 @@ export type Task = {
   memberStatuses?: { userId: string; status: string; updatedAt: string }[];
 };
 
-const STATUS_OPTIONS_BY_TYPE: Record<string, { value: string; label: string; icon: any; color: string }[]> = {
+const STATUS_OPTIONS_BY_TYPE: Record<
+  string,
+  { value: string; label: string; icon: any; color: string }[]
+> = {
   individual: [
     { value: "assigned", label: "Assigned", icon: UserCheckIcon, color: "text-blue-500" },
     { value: "pending", label: "Pending", icon: ClockIcon, color: "text-yellow-500" },
@@ -127,9 +141,11 @@ const priorityOptions = [
 
 const priorityStyles: Record<string, string> = {
   low: "bg-slate-50 text-slate-600 border-slate-200/60 dark:bg-slate-900/40 dark:text-slate-400 dark:border-slate-800/50",
-  medium: "bg-blue-50/50 text-blue-600 border-blue-200/60 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800/50",
+  medium:
+    "bg-blue-50/50 text-blue-600 border-blue-200/60 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800/50",
   high: "bg-amber-50/60 text-amber-700 border-amber-200/60 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/50",
-  urgent: "bg-red-50/60 text-red-650 border-red-200/60 font-semibold dark:bg-red-950/30 dark:text-red-450 dark:border-red-800/50",
+  urgent:
+    "bg-red-50/60 text-red-650 border-red-200/60 font-semibold dark:bg-red-950/30 dark:text-red-450 dark:border-red-800/50",
 };
 
 const priorityIcons: Record<string, React.FC<any>> = {
@@ -144,7 +160,7 @@ function formatBytes(bytes: number, decimals = 2) {
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(decimals))} ${sizes[i]}`;
+  return `${parseFloat((bytes / k ** i).toFixed(decimals))} ${sizes[i]}`;
 }
 
 function formatDate(value?: string | null, withTime = false) {
@@ -159,21 +175,44 @@ function formatDate(value?: string | null, withTime = false) {
   });
 }
 
-function DetailItem({ icon: Icon, label, value, className }: { icon?: any; label: string; value?: React.ReactNode; className?: string }) {
+function DetailItem({
+  icon: Icon,
+  label,
+  value,
+  className,
+}: {
+  icon?: any;
+  label: string;
+  value?: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div className={`flex flex-col gap-1 ${className || ""}`}>
       <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
         {Icon && <Icon className="size-3 shrink-0" />}
         {label}
       </dt>
-      <dd className="text-sm font-medium text-foreground min-w-0 truncate" title={typeof value === "string" ? value : undefined}>
+      <dd
+        className="text-sm font-medium text-foreground min-w-0 truncate"
+        title={typeof value === "string" ? value : undefined}
+      >
         {value ?? "—"}
       </dd>
     </div>
   );
 }
 
-function Section({ icon: Icon, title, children, rightAction }: { icon: any; title: string; children: React.ReactNode, rightAction?: React.ReactNode }) {
+function Section({
+  icon: Icon,
+  title,
+  children,
+  rightAction,
+}: {
+  icon: any;
+  title: string;
+  children: React.ReactNode;
+  rightAction?: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between pb-2 border-b border-border">
@@ -206,8 +245,12 @@ function PersonBadge({ name, avatar, role }: { name?: string; avatar?: string; r
         </AvatarFallback>
       </Avatar>
       <div className="flex flex-col min-w-0">
-        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1.5">{role}</span>
-        <span className="text-sm font-semibold text-foreground truncate">{name || "Unassigned"}</span>
+        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1.5">
+          {role}
+        </span>
+        <span className="text-sm font-semibold text-foreground truncate">
+          {name || "Unassigned"}
+        </span>
       </div>
     </div>
   );
@@ -240,9 +283,17 @@ export function TaskDetailedView({
   const [task, setTask] = useState<Task>(initialTask);
   const [updating, setUpdating] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const [taskAttachments, setTaskAttachments] = useState<Array<{ id: string; originalName: string; size: number; mimeType: string; createdAt: string }>>([]);
+  const [taskAttachments, setTaskAttachments] = useState<
+    Array<{ id: string; originalName: string; size: number; mimeType: string; createdAt: string }>
+  >([]);
   const [attachmentsLoading, setAttachmentsLoading] = useState(true);
-  const [previewFile, setPreviewFile] = useState<{ id: string; originalName: string; mimeType: string; size: number; createdAt: string } | null>(null);
+  const [previewFile, setPreviewFile] = useState<{
+    id: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+    createdAt: string;
+  } | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
 
@@ -253,35 +304,62 @@ export function TaskDetailedView({
       .then((data) => {
         if (!active) return;
         const employeesList = data.employees || data.data || data || [];
-        setEmployees(employeesList.map((e: any) => ({
-          id: e.id,
-          firstName: e.firstName || e.name || "Unknown",
-          lastName: e.lastName || "",
-          avatar: e.avatar || "",
-          role: e.designation || e.role || "",
-        })));
+        setEmployees(
+          employeesList.map((e: any) => ({
+            id: e.id,
+            firstName: e.firstName || e.name || "Unknown",
+            lastName: e.lastName || "",
+            avatar: e.avatar || "",
+            role: e.designation || e.role || "",
+          })),
+        );
       })
       .catch(() => {});
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
     let active = true;
     const taskId = (task as any)._id || (task as any).id || "";
     setAttachmentsLoading(true);
-    fetch(`/api/files?orgId=${encodeURIComponent((task as any).orgId || "")}&taskId=${encodeURIComponent(taskId)}`, { credentials: "include" })
+    fetch(
+      `/api/files?orgId=${encodeURIComponent((task as any).orgId || "")}&taskId=${encodeURIComponent(taskId)}`,
+      { credentials: "include" },
+    )
       .then((r) => r.json())
       .then((d) => {
         if (!active) return;
         const files = Array.isArray(d?.data) ? d.data : [];
-        setTaskAttachments(files.map((f: any) => ({ id: f.id, originalName: f.originalName || f.name || "", size: f.size || 0, mimeType: f.mimeType || "application/octet-stream", createdAt: f.createdAt || "" })));
+        setTaskAttachments(
+          files.map((f: any) => ({
+            id: f.id,
+            originalName: f.originalName || f.name || "",
+            size: f.size || 0,
+            mimeType: f.mimeType || "application/octet-stream",
+            createdAt: f.createdAt || "",
+          })),
+        );
       })
-      .catch(() => { if (active) setTaskAttachments([]); })
-      .finally(() => { if (active) setAttachmentsLoading(false); });
-    return () => { active = false; };
+      .catch(() => {
+        if (active) setTaskAttachments([]);
+      })
+      .finally(() => {
+        if (active) setAttachmentsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [task._id, (task as any).orgId]);
 
-  const openPreview = (att: { id: string; originalName: string; size: number; mimeType: string; createdAt: string }) => {
+  const openPreview = (att: {
+    id: string;
+    originalName: string;
+    size: number;
+    mimeType: string;
+    createdAt: string;
+  }) => {
     setPreviewFile(att);
     setPreviewOpen(true);
   };
@@ -290,10 +368,21 @@ export function TaskDetailedView({
   const typeOptions = STATUS_OPTIONS_BY_TYPE[taskType] || STATUS_OPTIONS_BY_TYPE.individual;
 
   const progressMap: Record<string, number> = {
-    assigned: 10, pending: 20, in_progress: 40,
-    submitted: 60, approved: 80, completed: 100, closed: 100,
-    published: 50, accepted: 80, scheduled: 20, activated: 40,
-    hold: 20, cancelled: 100, rejected: 100, reopened: 20,
+    assigned: 10,
+    pending: 20,
+    in_progress: 40,
+    submitted: 60,
+    approved: 80,
+    completed: 100,
+    closed: 100,
+    published: 50,
+    accepted: 80,
+    scheduled: 20,
+    activated: 40,
+    hold: 20,
+    cancelled: 100,
+    rejected: 100,
+    reopened: 20,
   };
   const progress = progressMap[task.status] ?? 0;
 
@@ -310,7 +399,9 @@ export function TaskDetailedView({
       }
 
       const resData = await res.json();
-      const finalTask = resData.data ? { ...task, ...resData.data } : { ...task, status: newStatus };
+      const finalTask = resData.data
+        ? { ...task, ...resData.data }
+        : { ...task, status: newStatus };
       setTask(finalTask);
       onTaskUpdate?.(finalTask);
       toast.success("Task status updated");
@@ -333,8 +424,36 @@ export function TaskDetailedView({
         throw new Error(err.error || `Failed to ${action}`);
       }
       toast.success(`Task ${action.replace("-", " ")}d successfully`);
-      onTaskUpdate?.({ ...task, status: action === "approve" ? "approved" : action === "reject" ? "rejected" : action === "submit-verification" ? "submitted" : action === "publish" ? "published" : action === "activate" ? "activated" : task.status });
-      setTask((prev) => ({ ...prev, status: action === "approve" ? "approved" : action === "reject" ? "rejected" : action === "submit-verification" ? "submitted" : action === "publish" ? "published" : action === "activate" ? "activated" : prev.status }));
+      onTaskUpdate?.({
+        ...task,
+        status:
+          action === "approve"
+            ? "approved"
+            : action === "reject"
+              ? "rejected"
+              : action === "submit-verification"
+                ? "submitted"
+                : action === "publish"
+                  ? "published"
+                  : action === "activate"
+                    ? "activated"
+                    : task.status,
+      });
+      setTask((prev) => ({
+        ...prev,
+        status:
+          action === "approve"
+            ? "approved"
+            : action === "reject"
+              ? "rejected"
+              : action === "submit-verification"
+                ? "submitted"
+                : action === "publish"
+                  ? "published"
+                  : action === "activate"
+                    ? "activated"
+                    : prev.status,
+      }));
     } catch (err: any) {
       toast.error(err.message || `Failed to ${action}`);
     } finally {
@@ -342,7 +461,7 @@ export function TaskDetailedView({
     }
   };
 
-  const activeStatusOpt = typeOptions.find(o => o.value === task.status);
+  const activeStatusOpt = typeOptions.find((o) => o.value === task.status);
   const StatusIcon = activeStatusOpt?.icon || CircleDashedIcon;
   const PriorityIcon = priorityIcons[task.priority] || CircleIcon;
   const typeBadge = TYPE_BADGES[taskType] || TYPE_BADGES.individual;
@@ -361,7 +480,6 @@ export function TaskDetailedView({
   return (
     <div className="flex flex-col sm:flex-row w-full h-full overflow-hidden bg-background">
       <div className="flex-1 min-w-0 overflow-y-auto">
-
         {/* Header */}
         <div className="px-6 py-5 border-b border-border bg-background/95 backdrop-blur sticky top-0 z-10">
           <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -372,43 +490,50 @@ export function TaskDetailedView({
             <Badge variant="secondary" className="text-xs px-2.5 py-1 font-medium rounded-md">
               {typeBadge.label}
             </Badge>
-            <Badge className={`${priorityStyles[task.priority.toLowerCase()] || "bg-muted text-muted-foreground"} text-xs px-2.5 py-1 font-semibold rounded-md flex items-center gap-1 border`}>
+            <Badge
+              className={`${priorityStyles[task.priority.toLowerCase()] || "bg-muted text-muted-foreground"} text-xs px-2.5 py-1 font-semibold rounded-md flex items-center gap-1 border`}
+            >
               <PriorityIcon className="size-3 shrink-0" />
               <span className="capitalize">{task.priority} Priority</span>
             </Badge>
-            {task.dueDate && (() => {
-              const now = new Date();
-              const due = new Date(task.dueDate!);
-              const diffMs = due.getTime() - now.getTime();
-              const COMPLETED = new Set(["completed", "done", "cancelled", "closed"]);
-              const isOverdue = diffMs < 0 && !COMPLETED.has(task.status);
-              const isDueSoon = diffMs > 0 && diffMs <= 86400000 && !COMPLETED.has(task.status);
-              return (
-                <span className="text-xs text-muted-foreground flex items-center gap-1.5 ml-1">
-                  <CalendarIcon className="size-3.5" />
-                  Due {new Date(task.dueDate!).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                  {isOverdue && (
-                    <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[10px] px-2 py-0 gap-1 rounded-md">
-                      <AlertCircleIcon className="size-2.5" /> Overdue
-                    </Badge>
-                  )}
-                  {isDueSoon && (
-                    <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] px-2 py-0 gap-1 rounded-md">
-                      <ClockIcon className="size-2.5" /> Due Soon
-                    </Badge>
-                  )}
-                </span>
-              );
-            })()}
+            {task.dueDate &&
+              (() => {
+                const now = new Date();
+                const due = new Date(task.dueDate!);
+                const diffMs = due.getTime() - now.getTime();
+                const COMPLETED = new Set(["completed", "done", "cancelled", "closed"]);
+                const isOverdue = diffMs < 0 && !COMPLETED.has(task.status);
+                const isDueSoon = diffMs > 0 && diffMs <= 86400000 && !COMPLETED.has(task.status);
+                return (
+                  <span className="text-xs text-muted-foreground flex items-center gap-1.5 ml-1">
+                    <CalendarIcon className="size-3.5" />
+                    Due{" "}
+                    {new Date(task.dueDate!).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                    {isOverdue && (
+                      <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[10px] px-2 py-0 gap-1 rounded-md">
+                        <AlertCircleIcon className="size-2.5" /> Overdue
+                      </Badge>
+                    )}
+                    {isDueSoon && (
+                      <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] px-2 py-0 gap-1 rounded-md">
+                        <ClockIcon className="size-2.5" /> Due Soon
+                      </Badge>
+                    )}
+                  </span>
+                );
+              })()}
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-5">
-            {task.title}
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-5">{task.title}</h1>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 bg-muted/40 p-4 rounded-xl border border-border">
             <div className="flex flex-col gap-1.5 shrink-0">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Status</label>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                Status
+              </label>
               <Select value={task.status} onValueChange={handleStatusChange} disabled={updating}>
                 <SelectTrigger className="w-full sm:w-[180px] h-10 rounded-lg bg-card font-semibold text-sm shadow-sm">
                   {updating ? (
@@ -446,8 +571,13 @@ export function TaskDetailedView({
               <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden border border-border/50">
                 <div
                   className={`h-full rounded-full transition-all duration-500 bg-gradient-to-r ${
-                    task.status === "completed" || task.status === "approved" || task.status === "closed" ? "from-emerald-400 to-green-500" :
-                    task.status === "rejected" || task.status === "cancelled" ? "from-orange-400 to-red-500" : "from-primary to-indigo-600"
+                    task.status === "completed" ||
+                    task.status === "approved" ||
+                    task.status === "closed"
+                      ? "from-emerald-400 to-green-500"
+                      : task.status === "rejected" || task.status === "cancelled"
+                        ? "from-orange-400 to-red-500"
+                        : "from-primary to-indigo-600"
                   }`}
                   style={{ width: `${progress}%` }}
                 />
@@ -456,32 +586,64 @@ export function TaskDetailedView({
 
             <div className="flex flex-wrap items-center gap-2 sm:ml-4">
               {taskType === "team" && task.status === "in_progress" && (
-                <Button size="sm" variant="default" className="px-4 rounded-lg text-xs font-semibold shadow-sm" onClick={() => handleAction("submit-verification")} disabled={actionLoading}>
-                  {actionLoading ? <Loader2Icon className="size-3.5 animate-spin mr-1.5" /> : <AlertCircleIcon className="size-3.5 mr-1.5" />}
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="px-4 rounded-lg text-xs font-semibold shadow-sm"
+                  onClick={() => handleAction("submit-verification")}
+                  disabled={actionLoading}
+                >
+                  {actionLoading ? (
+                    <Loader2Icon className="size-3.5 animate-spin mr-1.5" />
+                  ) : (
+                    <AlertCircleIcon className="size-3.5 mr-1.5" />
+                  )}
                   Submit for Verification
                 </Button>
               )}
               {taskType === "team" && task.status === "submitted" && (
                 <div className="flex items-center gap-2">
-                  <Button size="sm" variant="default" className="px-4 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 shadow-sm" onClick={() => {
-                    const note = prompt("Approval note (optional):");
-                    handleAction("approve", { note });
-                  }} disabled={actionLoading}>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="px-4 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 shadow-sm"
+                    onClick={() => {
+                      const note = prompt("Approval note (optional):");
+                      handleAction("approve", { note });
+                    }}
+                    disabled={actionLoading}
+                  >
                     <CheckCircleIcon className="size-3.5 mr-1.5" />
                     Approve
                   </Button>
-                  <Button size="sm" variant="destructive" className="px-4 rounded-lg text-xs font-semibold shadow-sm" onClick={() => {
-                    const reason = prompt("Rejection reason (required):");
-                    if (reason) handleAction("reject", { reason });
-                  }} disabled={actionLoading}>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="px-4 rounded-lg text-xs font-semibold shadow-sm"
+                    onClick={() => {
+                      const reason = prompt("Rejection reason (required):");
+                      if (reason) handleAction("reject", { reason });
+                    }}
+                    disabled={actionLoading}
+                  >
                     <XCircleIcon className="size-3.5 mr-1.5" />
                     Reject
                   </Button>
                 </div>
               )}
               {taskType === "upcoming" && task.status === "scheduled" && (
-                <Button size="sm" variant="default" className="px-4 rounded-lg text-xs font-semibold shadow-sm" onClick={() => handleAction("activate")} disabled={actionLoading}>
-                  {actionLoading ? <Loader2Icon className="size-3.5 animate-spin mr-1.5" /> : <ClockIcon className="size-3.5 mr-1.5" />}
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="px-4 rounded-lg text-xs font-semibold shadow-sm"
+                  onClick={() => handleAction("activate")}
+                  disabled={actionLoading}
+                >
+                  {actionLoading ? (
+                    <Loader2Icon className="size-3.5 animate-spin mr-1.5" />
+                  ) : (
+                    <ClockIcon className="size-3.5 mr-1.5" />
+                  )}
                   Activate Now
                 </Button>
               )}
@@ -491,11 +653,13 @@ export function TaskDetailedView({
 
         {/* Content Body */}
         <div className="px-6 py-6 space-y-7">
-
           <Section icon={AlignLeftIcon} title="Description">
             <div className="rounded-lg border border-border bg-card shadow-sm p-4 sm:p-5">
               {task.description ? (
-                <div className="text-sm leading-relaxed text-foreground" dangerouslySetInnerHTML={{ __html: task.description }} />
+                <div
+                  className="text-sm leading-relaxed text-foreground"
+                  dangerouslySetInnerHTML={{ __html: task.description }}
+                />
               ) : (
                 <div className="flex flex-col items-center justify-center py-6 text-muted-foreground opacity-60">
                   <AlignLeftIcon className="size-6 mb-2" />
@@ -508,30 +672,72 @@ export function TaskDetailedView({
           <Section icon={FileTextIcon} title="Details">
             <div className="rounded-lg border border-border bg-card shadow-sm p-5">
               <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
-                <DetailItem icon={HashIcon} label="Task ID" value={<code className="text-xs text-muted-foreground">{task._id}</code>} />
+                <DetailItem
+                  icon={HashIcon}
+                  label="Task ID"
+                  value={<code className="text-xs text-muted-foreground">{task._id}</code>}
+                />
                 <DetailItem icon={UserIcon} label="Created By" value={task.creatorName} />
-                <DetailItem icon={UserCheckIcon} label="Assigned To" value={taskType === "team" ? (task.teamName || "Team") : task.assigneeName} />
+                <DetailItem
+                  icon={UserCheckIcon}
+                  label="Assigned To"
+                  value={taskType === "team" ? task.teamName || "Team" : task.assigneeName}
+                />
                 {taskType === "team" && task.teamName && (
                   <DetailItem icon={UsersIcon} label="Team" value={task.teamName} />
                 )}
-                <DetailItem icon={CalendarIcon} label="Start Date" value={formatDate(task.startDate)} />
+                <DetailItem
+                  icon={CalendarIcon}
+                  label="Start Date"
+                  value={formatDate(task.startDate)}
+                />
                 <DetailItem icon={CalendarIcon} label="Due Date" value={formatDate(task.dueDate)} />
                 {task.scheduledDate && (
-                  <DetailItem icon={CalendarIcon} label="Scheduled" value={formatDate(task.scheduledDate)} />
+                  <DetailItem
+                    icon={CalendarIcon}
+                    label="Scheduled"
+                    value={formatDate(task.scheduledDate)}
+                  />
                 )}
                 {task.activatedAt && (
-                  <DetailItem icon={ActivityIcon} label="Activated" value={formatDate(task.activatedAt)} />
+                  <DetailItem
+                    icon={ActivityIcon}
+                    label="Activated"
+                    value={formatDate(task.activatedAt)}
+                  />
                 )}
                 {task.submittedAt && (
-                  <DetailItem icon={ClockIcon} label="Submitted" value={formatDate(task.submittedAt, true)} />
+                  <DetailItem
+                    icon={ClockIcon}
+                    label="Submitted"
+                    value={formatDate(task.submittedAt, true)}
+                  />
                 )}
-                <DetailItem icon={ClockIcon} label="Created" value={formatDate(task.createdAt, true)} />
-                <DetailItem icon={ClockIcon} label="Last Updated" value={formatDate(task.updatedAt, true)} />
+                <DetailItem
+                  icon={ClockIcon}
+                  label="Created"
+                  value={formatDate(task.createdAt, true)}
+                />
+                <DetailItem
+                  icon={ClockIcon}
+                  label="Last Updated"
+                  value={formatDate(task.updatedAt, true)}
+                />
                 {task.assignmentMode && (
-                  <DetailItem icon={UserIcon} label="Assignment Mode" value={<span className="capitalize">{task.assignmentMode.replace(/_/g, " ")}</span>} />
+                  <DetailItem
+                    icon={UserIcon}
+                    label="Assignment Mode"
+                    value={
+                      <span className="capitalize">{task.assignmentMode.replace(/_/g, " ")}</span>
+                    }
+                  />
                 )}
                 {task.assigneeIds && task.assigneeIds.length > 0 && (
-                  <DetailItem icon={UsersIcon} label="Members" value={`${task.assigneeIds.length}`} />
+                  <DetailItem
+                    icon={UsersIcon}
+                    label="Members"
+                    value={`${task.assigneeIds.length}`}
+                  />
                 )}
                 {task.project && (
                   <DetailItem icon={FolderIcon} label="Project" value={task.project} />
@@ -542,16 +748,30 @@ export function TaskDetailedView({
 
           <Section icon={UserIcon} title="People">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-4">
-              <PersonBadge name={task.assigneeName} avatar={task.assigneeAvatar} role="Assigned To" />
-              <PersonBadge name={task.creatorName} avatar={creatorEmployee?.avatar || ""} role="Created By" />
+              <PersonBadge
+                name={task.assigneeName}
+                avatar={task.assigneeAvatar}
+                role="Assigned To"
+              />
+              <PersonBadge
+                name={task.creatorName}
+                avatar={creatorEmployee?.avatar || ""}
+                role="Created By"
+              />
               {task.teamHeadName && (
-                <PersonBadge name={task.teamHeadName} avatar={teamHeadEmployee?.avatar || ""} role="Team Head" />
+                <PersonBadge
+                  name={task.teamHeadName}
+                  avatar={teamHeadEmployee?.avatar || ""}
+                  role="Team Head"
+                />
               )}
             </div>
 
             {task.memberStatuses && task.memberStatuses.length > 0 && (
               <div className="mt-4 border-t border-border pt-4">
-                <h4 className="text-sm font-semibold text-foreground mb-3">Team Assignment Progress</h4>
+                <h4 className="text-sm font-semibold text-foreground mb-3">
+                  Team Assignment Progress
+                </h4>
                 <div className="space-y-3">
                   {task.memberStatuses.map((member) => {
                     const emp = employees.find((e) => e.id === member.userId);
@@ -597,7 +817,12 @@ export function TaskDetailedView({
                               </SelectContent>
                             </Select>
                           ) : (
-                            <Badge className="capitalize text-xs px-2.5 py-0.5" variant={member.status === "completed" ? "success" as any : "secondary"}>
+                            <Badge
+                              className="capitalize text-xs px-2.5 py-0.5"
+                              variant={
+                                member.status === "completed" ? ("success" as any) : "secondary"
+                              }
+                            >
                               {member.status.replace("_", " ")}
                             </Badge>
                           )}
@@ -637,8 +862,12 @@ export function TaskDetailedView({
                       >
                         <FileTextIcon className="size-5 text-primary shrink-0" />
                         <div className="flex flex-col min-w-0 flex-1">
-                          <span className="text-sm font-medium text-foreground truncate">{att.originalName}</span>
-                          <span className="text-[11px] text-muted-foreground">{formatBytes(att.size)}</span>
+                          <span className="text-sm font-medium text-foreground truncate">
+                            {att.originalName}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground">
+                            {formatBytes(att.size)}
+                          </span>
                         </div>
                       </button>
                       <a
@@ -665,23 +894,37 @@ export function TaskDetailedView({
                     <span className="font-semibold text-sm">Task Approved</span>
                   </div>
                   <span className="text-[10px] font-medium opacity-80 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 rounded-md sm:ml-auto">
-                    {task.approvedAt ? new Date(task.approvedAt).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" }) : ""}
+                    {task.approvedAt
+                      ? new Date(task.approvedAt).toLocaleDateString(undefined, {
+                          weekday: "short",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : ""}
                   </span>
                 </div>
                 {task.approvalNote && (
                   <div className="bg-card rounded-lg p-3 text-sm text-foreground border border-border">
-                    <span className="font-bold block text-[9px] uppercase tracking-widest text-emerald-600 opacity-70 mb-1">Note</span>
+                    <span className="font-bold block text-[9px] uppercase tracking-widest text-emerald-600 opacity-70 mb-1">
+                      Note
+                    </span>
                     {task.approvalNote}
                   </div>
                 )}
                 {task.approverName && (
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-3 font-medium">Approved by <strong className="text-emerald-900 dark:text-emerald-200">{task.approverName}</strong></p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-3 font-medium">
+                    Approved by{" "}
+                    <strong className="text-emerald-900 dark:text-emerald-200">
+                      {task.approverName}
+                    </strong>
+                  </p>
                 )}
               </div>
             </Section>
           )}
 
-          {(task.status === "rejected" && task.rejectionReason) && (
+          {task.status === "rejected" && task.rejectionReason && (
             <Section icon={XCircleIcon} title="Rejection Details">
               <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-5 shadow-sm">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-3 text-rose-700 dark:text-rose-300">
@@ -690,12 +933,21 @@ export function TaskDetailedView({
                     <span className="font-semibold text-sm">Task Rejected</span>
                   </div>
                   <span className="text-[10px] font-medium opacity-80 bg-rose-500/15 text-rose-700 dark:text-rose-300 px-2.5 py-0.5 rounded-md sm:ml-auto">
-                    {task.rejectedAt ? new Date(task.rejectedAt).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" }) : ""}
+                    {task.rejectedAt
+                      ? new Date(task.rejectedAt).toLocaleDateString(undefined, {
+                          weekday: "short",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : ""}
                   </span>
                 </div>
                 {task.rejectionReason && (
                   <div className="bg-card rounded-lg p-3 text-sm text-foreground border border-border">
-                    <span className="font-bold block text-[9px] uppercase tracking-widest text-rose-600 opacity-70 mb-1">Reason</span>
+                    <span className="font-bold block text-[9px] uppercase tracking-widest text-rose-600 opacity-70 mb-1">
+                      Reason
+                    </span>
                     {task.rejectionReason}
                   </div>
                 )}
@@ -710,12 +962,17 @@ export function TaskDetailedView({
                   <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-primary ring-4 ring-background shadow-sm" />
                   <p className="text-sm font-semibold text-foreground">Task Created</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {new Date(task.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                    {new Date(task.createdAt).toLocaleString(undefined, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
                   </p>
                 </div>
                 <div className="relative pl-6">
                   <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-muted-foreground ring-4 ring-background shadow-sm" />
-                  <p className="text-sm font-semibold text-foreground">Assigned to {task.assigneeName || "Someone"}</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    Assigned to {task.assigneeName || "Someone"}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-0.5">By {task.creatorName}</p>
                 </div>
                 {task.updatedAt && (
@@ -723,14 +980,16 @@ export function TaskDetailedView({
                     <span className="absolute -left-[7px] top-1 size-3 rounded-full bg-amber-500 ring-4 ring-background shadow-sm" />
                     <p className="text-sm font-semibold text-foreground">Last Activity</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {new Date(task.updatedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                      {new Date(task.updatedAt).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
                     </p>
                   </div>
                 )}
               </div>
             </div>
           </Section>
-
         </div>
       </div>
 

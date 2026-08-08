@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { v4 as uuid } from "uuid";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { v4 as uuid } from "uuid";
 import { encryptToken } from "@/lib/services/calendar-service";
 
 export async function GET(req: NextRequest) {
@@ -11,15 +11,11 @@ export async function GET(req: NextRequest) {
   const error = searchParams.get("error");
 
   if (error) {
-    return NextResponse.redirect(
-      new URL(`/?error=${error}`, req.url)
-    );
+    return NextResponse.redirect(new URL(`/?error=${error}`, req.url));
   }
 
   if (!code || !stateParam) {
-    return NextResponse.redirect(
-      new URL("/?error=missing_params", req.url)
-    );
+    return NextResponse.redirect(new URL("/?error=missing_params", req.url));
   }
 
   try {
@@ -29,9 +25,7 @@ export async function GET(req: NextRequest) {
 
     // Validate state freshness (5 minutes max)
     if (Date.now() - state.timestamp > 5 * 60 * 1000) {
-      return NextResponse.redirect(
-        new URL("/?error=state_expired", req.url)
-      );
+      return NextResponse.redirect(new URL("/?error=state_expired", req.url));
     }
 
     // Exchange code for tokens
@@ -42,7 +36,9 @@ export async function GET(req: NextRequest) {
         code,
         client_id: process.env.AUTH_GOOGLE_ID!,
         client_secret: process.env.AUTH_GOOGLE_SECRET!,
-        redirect_uri: process.env.GOOGLE_CALENDAR_REDIRECT_URI || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/calendar/google/callback`,
+        redirect_uri:
+          process.env.GOOGLE_CALENDAR_REDIRECT_URI ||
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/calendar/google/callback`,
         grant_type: "authorization_code",
       }),
     });
@@ -50,9 +46,7 @@ export async function GET(req: NextRequest) {
     const tokenData = await tokenRes.json();
 
     if (!tokenData.access_token) {
-      return NextResponse.redirect(
-        new URL("/?error=token_exchange_failed", req.url)
-      );
+      return NextResponse.redirect(new URL("/?error=token_exchange_failed", req.url));
     }
 
     // Get user info to store email
@@ -103,13 +97,9 @@ export async function GET(req: NextRequest) {
       updatedAt: new Date(),
     });
 
-    return NextResponse.redirect(
-      new URL("/?success=google_connected", req.url)
-    );
+    return NextResponse.redirect(new URL("/?success=google_connected", req.url));
   } catch (err) {
     console.error("[Google Calendar Callback]", err);
-    return NextResponse.redirect(
-      new URL("/?error=callback_failed", req.url)
-    );
+    return NextResponse.redirect(new URL("/?error=callback_failed", req.url));
   }
 }

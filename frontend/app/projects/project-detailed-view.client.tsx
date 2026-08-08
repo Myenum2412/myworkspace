@@ -1,20 +1,36 @@
-"use client"
-import { useState, useEffect, useRef, useMemo } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+"use client";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { DataTable } from "@/components/data-table";
+import type { Project } from "@/components/projects/project-types";
+import { TaskDataTable } from "@/components/task-data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  InfoIcon, UsersIcon, ActivityIcon, FileTextIcon, BarChart3Icon,
-  CalendarIcon, ClockIcon, TargetIcon, AlertCircleIcon,
-  CheckCircle2Icon, ArrowUpIcon, ArrowDownIcon, CircleIcon,
-  DownloadIcon, EyeIcon, FileIcon, FileSpreadsheetIcon, FileImageIcon, FileArchiveIcon,
-  TimerIcon, ListChecksIcon,
+  ActivityIcon,
+  AlertCircleIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
+  BarChart3Icon,
+  CalendarIcon,
+  CheckCircle2Icon,
+  CircleIcon,
+  ClockIcon,
+  DownloadIcon,
+  EyeIcon,
+  FileArchiveIcon,
+  FileIcon,
+  FileImageIcon,
+  FileSpreadsheetIcon,
+  FileTextIcon,
+  InfoIcon,
+  ListChecksIcon,
+  TargetIcon,
+  TimerIcon,
+  UsersIcon,
 } from "@/lib/icons";
-import type { Project } from "@/components/projects/project-types";
-import { DataTable } from "@/components/data-table";
-import { TaskDataTable } from "@/components/task-data-table";
-import { type ColumnDef } from "@tanstack/react-table";
+import { cn } from "@/lib/utils";
 
 const TABS = [
   { id: "overview", label: "Overview", icon: InfoIcon },
@@ -53,14 +69,28 @@ function PriorityBadge({ priority }: { priority?: string }) {
 }
 
 interface TimeEntry {
-  id: string; userId: string; date: string;
-  startTime?: string; endTime?: string; duration: number;
-  description: string; projectId?: string; projectName?: string;
+  id: string;
+  userId: string;
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  duration: number;
+  description: string;
+  projectId?: string;
+  projectName?: string;
 }
 
-export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Project; orgId?: string }) {
+export function ProjectDetailedView({
+  project,
+  orgId: orgIdProp,
+}: {
+  project: Project;
+  orgId?: string;
+}) {
   const [tab, setTab] = useState(0);
-  const [memberNames, setMemberNames] = useState<{ id: string; name: string; image?: string }[]>([]);
+  const [memberNames, setMemberNames] = useState<{ id: string; name: string; image?: string }[]>(
+    [],
+  );
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [userMap, setUserMap] = useState<Record<string, string>>({});
   const [projectTasks, setProjectTasks] = useState<any[]>([]);
@@ -73,11 +103,20 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
     fetch("/api/employees", { credentials: "include", signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
-        const all = (d?.employees || []) as { id?: string; _id?: string; name: string; image?: string }[];
+        const all = (d?.employees || []) as {
+          id?: string;
+          _id?: string;
+          name: string;
+          image?: string;
+        }[];
         const filtered = all.filter((e) => project.members!.includes(e.id || e._id || ""));
-        setMemberNames(filtered.map((e) => ({ id: e.id || e._id || "", name: e.name, image: e.image })));
+        setMemberNames(
+          filtered.map((e) => ({ id: e.id || e._id || "", name: e.name, image: e.image })),
+        );
         const map: Record<string, string> = {};
-        all.forEach((u) => { if (u.id || u._id) map[u.id || u._id!] = u.name; });
+        all.forEach((u) => {
+          if (u.id || u._id) map[u.id || u._id!] = u.name;
+        });
         setUserMap(map);
       })
       .catch(() => {});
@@ -89,7 +128,10 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
     if (!orgIdProp) return;
     const controller = new AbortController();
 
-    fetch(`/api/time-entries?orgId=${orgIdProp}&projectId=${project.id}`, { credentials: "include", signal: controller.signal })
+    fetch(`/api/time-entries?orgId=${orgIdProp}&projectId=${project.id}`, {
+      credentials: "include",
+      signal: controller.signal,
+    })
       .then((r) => r.json())
       .then((d) => setTimeEntries(d.data || []))
       .catch(() => {});
@@ -105,12 +147,14 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
       .then((r) => r.json())
       .then((d) => {
         const all = d.data || [];
-        setProjectTasks(all.filter((t: any) => {
-          const taskProject = t.project?.trim().toLowerCase();
-          const projName = project.name?.trim().toLowerCase();
-          const projId = project.id?.trim().toLowerCase();
-          return taskProject && (taskProject === projName || taskProject === projId);
-        }));
+        setProjectTasks(
+          all.filter((t: any) => {
+            const taskProject = t.project?.trim().toLowerCase();
+            const projName = project.name?.trim().toLowerCase();
+            const projId = project.id?.trim().toLowerCase();
+            return taskProject && (taskProject === projName || taskProject === projId);
+          }),
+        );
       })
       .catch(() => {});
 
@@ -121,12 +165,17 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
     if (!orgIdProp) return;
     const controller = new AbortController();
 
-    fetch(`/api/billing/invoices?orgId=${orgIdProp}`, { credentials: "include", signal: controller.signal })
+    fetch(`/api/billing/invoices?orgId=${orgIdProp}`, {
+      credentials: "include",
+      signal: controller.signal,
+    })
       .then((r) => r.json())
       .then((d) => {
         const allInvoices = d.data || [];
         const clientName = project.client?.trim().toLowerCase();
-        setInvoices(allInvoices.filter((inv: any) => inv.customerName?.trim().toLowerCase() === clientName));
+        setInvoices(
+          allInvoices.filter((inv: any) => inv.customerName?.trim().toLowerCase() === clientName),
+        );
       })
       .catch(() => {});
 
@@ -134,7 +183,13 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
   }, [orgIdProp, project.client]);
 
   const progressColor =
-    project.progress >= 100 ? "bg-green-500" : project.progress >= 50 ? "bg-blue-500" : project.progress > 0 ? "bg-amber-500" : "bg-muted-foreground/30";
+    project.progress >= 100
+      ? "bg-green-500"
+      : project.progress >= 50
+        ? "bg-blue-500"
+        : project.progress > 0
+          ? "bg-amber-500"
+          : "bg-muted-foreground/30";
 
   const activityTimestamp = useRef(new Date().toISOString()).current;
 
@@ -164,7 +219,7 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                 "flex items-center gap-1.5 rounded-sm px-3.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap",
                 tab === i
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted"
+                  : "text-muted-foreground hover:bg-muted",
               )}
             >
               <Icon className="size-3.5" />
@@ -191,50 +246,101 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                 </div>
                 <p className="text-sm text-muted-foreground">{project.client}</p>
                 {project.category && (
-                  <Badge variant="outline" className="mt-1 text-[10px] capitalize">{project.category}</Badge>
+                  <Badge variant="outline" className="mt-1 text-[10px] capitalize">
+                    {project.category}
+                  </Badge>
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-start sm:justify-end">
-                <Badge variant={project.access === "Public" ? "default" : "secondary"}>{project.access}</Badge>
-                <Badge variant={project.status === "Active" ? "default" : "outline"}>{project.status}</Badge>
+                <Badge variant={project.access === "Public" ? "default" : "secondary"}>
+                  {project.access}
+                </Badge>
+                <Badge variant={project.status === "Active" ? "default" : "outline"}>
+                  {project.status}
+                </Badge>
               </div>
             </div>
 
             <div className="rounded-sm border p-4 space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Details</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Details
+              </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <FieldRow label="Project ID" value={project.id} />
                 <FieldRow label="Progress" value={`${project.progress}%`} />
                 <FieldRow label="Tracked Hours" value={`${project.tracked}h`} />
-                <FieldRow label="Health" value={health === "on-track" ? "On Track" : health === "at-risk" ? "At Risk" : "Delayed"} />
+                <FieldRow
+                  label="Health"
+                  value={
+                    health === "on-track"
+                      ? "On Track"
+                      : health === "at-risk"
+                        ? "At Risk"
+                        : "Delayed"
+                  }
+                />
                 <FieldRow label="Priority" value={project.priority || "medium"} />
                 <FieldRow label="Category" value={project.category || "\u2014"} />
-                <FieldRow label="Deadline" value={project.deadline ? new Date(project.deadline).toLocaleDateString() : "No deadline"} />
-                <FieldRow label="Start Date" value={project.startDate ? new Date(project.startDate).toLocaleDateString() : "\u2014"} />
+                <FieldRow
+                  label="Deadline"
+                  value={
+                    project.deadline
+                      ? new Date(project.deadline).toLocaleDateString()
+                      : "No deadline"
+                  }
+                />
+                <FieldRow
+                  label="Start Date"
+                  value={
+                    project.startDate ? new Date(project.startDate).toLocaleDateString() : "\u2014"
+                  }
+                />
               </div>
             </div>
 
             <div className="rounded-sm border p-4 space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Progress</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Progress
+              </h3>
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-2.5 rounded-sm bg-muted overflow-hidden">
-                  <div className={cn("h-full rounded-full transition-all", progressColor)} style={{ width: `${project.progress}%` }} />
+                  <div
+                    className={cn("h-full rounded-full transition-all", progressColor)}
+                    style={{ width: `${project.progress}%` }}
+                  />
                 </div>
                 <span className="text-sm font-medium whitespace-nowrap">{project.progress}%</span>
               </div>
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><ClockIcon className="size-3" /> {daysLeft !== null ? (daysLeft < 0 ? "Overdue" : `${daysLeft} days left`) : "No deadline"}</span>
                 <span className="flex items-center gap-1">
-                  {health === "on-track" ? <CheckCircle2Icon className="size-3 text-green-500" /> :
-                   health === "at-risk" ? <AlertCircleIcon className="size-3 text-amber-500" /> :
-                   <ArrowDownIcon className="size-3 text-red-500" />}
-                  {health === "on-track" ? "On Track" : health === "at-risk" ? "At Risk" : "Delayed"}
+                  <ClockIcon className="size-3" />{" "}
+                  {daysLeft !== null
+                    ? daysLeft < 0
+                      ? "Overdue"
+                      : `${daysLeft} days left`
+                    : "No deadline"}
+                </span>
+                <span className="flex items-center gap-1">
+                  {health === "on-track" ? (
+                    <CheckCircle2Icon className="size-3 text-green-500" />
+                  ) : health === "at-risk" ? (
+                    <AlertCircleIcon className="size-3 text-amber-500" />
+                  ) : (
+                    <ArrowDownIcon className="size-3 text-red-500" />
+                  )}
+                  {health === "on-track"
+                    ? "On Track"
+                    : health === "at-risk"
+                      ? "At Risk"
+                      : "Delayed"}
                 </span>
               </div>
             </div>
 
             <div className="rounded-sm border p-4 space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Description
+              </h3>
               <div className="h-24 overflow-y-auto text-sm text-muted-foreground">
                 {project.description || "No description"}
               </div>
@@ -244,7 +350,9 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
 
         {tab === 1 && (
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Team Members ({memberNames.length})</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Team Members ({memberNames.length})
+            </h3>
             {memberNames.length === 0 ? (
               <div className="flex items-center justify-center py-12">
                 <p className="text-sm text-muted-foreground">No team members assigned</p>
@@ -257,7 +365,14 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                       {m.image ? (
                         <img src={m.image} alt={m.name} className="size-full object-cover" />
                       ) : (
-                        <span>{m.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}</span>
+                        <span>
+                          {m.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .toUpperCase()
+                            .slice(0, 2)}
+                        </span>
                       )}
                     </div>
                     <div>
@@ -273,11 +388,14 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
         {tab === 2 && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Time Entries ({timeEntries.length})</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Time Entries ({timeEntries.length})
+              </h3>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <TimerIcon className="size-3.5" />
                 <span className="font-medium">
-                  {Math.floor(timeEntries.reduce((s, e) => s + e.duration, 0) / 60)}h {timeEntries.reduce((s, e) => s + e.duration, 0) % 60}m
+                  {Math.floor(timeEntries.reduce((s, e) => s + e.duration, 0) / 60)}h{" "}
+                  {timeEntries.reduce((s, e) => s + e.duration, 0) % 60}m
                 </span>
               </div>
             </div>
@@ -296,12 +414,30 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
 
         {tab === 3 && (
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recent Activity</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Recent Activity
+            </h3>
             <div className="space-y-3">
               {[
                 { action: "Project created", user: "System", time: activityTimestamp },
-                ...(project.status === "Active" ? [{ action: "Project marked as active", user: "System", time: activityTimestamp }] : []),
-                ...(memberNames.length > 0 ? [{ action: `${memberNames.length} team member(s) assigned`, user: "System", time: activityTimestamp }] : []),
+                ...(project.status === "Active"
+                  ? [
+                      {
+                        action: "Project marked as active",
+                        user: "System",
+                        time: activityTimestamp,
+                      },
+                    ]
+                  : []),
+                ...(memberNames.length > 0
+                  ? [
+                      {
+                        action: `${memberNames.length} team member(s) assigned`,
+                        user: "System",
+                        time: activityTimestamp,
+                      },
+                    ]
+                  : []),
               ].map((activity, i) => (
                 <div key={i} className="flex items-start gap-3 rounded-sm border p-3">
                   <div className="size-7 rounded-sm bg-muted flex items-center justify-center shrink-0 mt-0.5">
@@ -313,7 +449,11 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
                       <span className="text-[11px] text-muted-foreground">{activity.user}</span>
                       <span className="text-[11px] text-muted-foreground">\u2022</span>
                       <span className="text-[11px] text-muted-foreground">
-                        {new Date(activity.time).toLocaleDateString()} {new Date(activity.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(activity.time).toLocaleDateString()}{" "}
+                        {new Date(activity.time).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                     </div>
                   </div>
@@ -323,13 +463,13 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
           </div>
         )}
 
-        {tab === 4 && (
-          <ProjectFiles projectId={project.id} orgId={orgIdProp || ""} />
-        )}
+        {tab === 4 && <ProjectFiles projectId={project.id} orgId={orgIdProp || ""} />}
 
         {tab === 5 && (
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Tasks ({projectTasks.length})</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Project Tasks ({projectTasks.length})
+            </h3>
             {projectTasks.length === 0 ? (
               <div className="flex items-center justify-center py-12 rounded-sm border border-dashed">
                 <div className="text-center space-y-2">
@@ -352,7 +492,9 @@ export function ProjectDetailedView({ project, orgId: orgIdProp }: { project: Pr
 
         {tab === 6 && (
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Invoices ({invoices.length})</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Invoices ({invoices.length})
+            </h3>
             {invoices.length === 0 ? (
               <div className="flex items-center justify-center py-12 rounded-sm border border-dashed">
                 <div className="text-center space-y-2">
@@ -379,58 +521,80 @@ interface ProjectFile {
   createdAt: string;
 }
 
-function TimeEntriesTable({ timeEntries, userMap }: { timeEntries: TimeEntry[]; userMap: Record<string, string> }) {
-  const columns = useMemo<ColumnDef<TimeEntry>[]>(() => [
-    {
-      id: "index",
-      header: "#",
-      cell: ({ row }) => (
-        <span className="font-mono text-xs text-muted-foreground">
-          #{row.index + 1}
-        </span>
-      ),
-      size: 70,
-    },
-    {
-      accessorKey: "userId",
-      header: "User",
-      cell: ({ row }) => (
-        <span className="font-medium">{userMap[row.original.userId] || row.original.userId.slice(0, 8)}</span>
-      ),
-    },
-    {
-      accessorKey: "description",
-      header: "Description",
-      cell: ({ row }) => <span className="text-sm">{row.original.description}</span>,
-    },
-    {
-      accessorKey: "date",
-      header: "Date",
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">{new Date(row.original.date).toLocaleDateString()}</span>
-      ),
-    },
-    {
-      id: "time",
-      header: "Time",
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
-          {row.original.startTime && row.original.endTime ? `${row.original.startTime} - ${row.original.endTime}` : "\u2014"}
-        </span>
-      ),
-    },
-    {
-      id: "duration",
-      header: "Duration",
-      cell: ({ row }) => {
-        const entry = row.original;
-        const dur = entry.startTime && entry.endTime
-          ? (() => { const [sh, sm] = entry.startTime.split(":").map(Number); const [eh, em] = entry.endTime.split(":").map(Number); return Math.max(0, (eh * 60 + em) - (sh * 60 + sm)); })()
-          : entry.duration;
-        return <span className="text-sm font-mono font-medium">{Math.floor(dur / 60)}h {dur % 60}m</span>;
+function TimeEntriesTable({
+  timeEntries,
+  userMap,
+}: {
+  timeEntries: TimeEntry[];
+  userMap: Record<string, string>;
+}) {
+  const columns = useMemo<ColumnDef<TimeEntry>[]>(
+    () => [
+      {
+        id: "index",
+        header: "#",
+        cell: ({ row }) => (
+          <span className="font-mono text-xs text-muted-foreground">#{row.index + 1}</span>
+        ),
+        size: 70,
       },
-    },
-  ], [userMap]);
+      {
+        accessorKey: "userId",
+        header: "User",
+        cell: ({ row }) => (
+          <span className="font-medium">
+            {userMap[row.original.userId] || row.original.userId.slice(0, 8)}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "description",
+        header: "Description",
+        cell: ({ row }) => <span className="text-sm">{row.original.description}</span>,
+      },
+      {
+        accessorKey: "date",
+        header: "Date",
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {new Date(row.original.date).toLocaleDateString()}
+          </span>
+        ),
+      },
+      {
+        id: "time",
+        header: "Time",
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {row.original.startTime && row.original.endTime
+              ? `${row.original.startTime} - ${row.original.endTime}`
+              : "\u2014"}
+          </span>
+        ),
+      },
+      {
+        id: "duration",
+        header: "Duration",
+        cell: ({ row }) => {
+          const entry = row.original;
+          const dur =
+            entry.startTime && entry.endTime
+              ? (() => {
+                  const [sh, sm] = entry.startTime.split(":").map(Number);
+                  const [eh, em] = entry.endTime.split(":").map(Number);
+                  return Math.max(0, eh * 60 + em - (sh * 60 + sm));
+                })()
+              : entry.duration;
+          return (
+            <span className="text-sm font-mono font-medium">
+              {Math.floor(dur / 60)}h {dur % 60}m
+            </span>
+          );
+        },
+      },
+    ],
+    [userMap],
+  );
 
   return (
     <DataTable
@@ -445,41 +609,60 @@ function TimeEntriesTable({ timeEntries, userMap }: { timeEntries: TimeEntry[]; 
 }
 
 function InvoicesTable({ invoices }: { invoices: any[] }) {
-  const columns = useMemo<ColumnDef<any>[]>(() => [
-    {
-      accessorKey: "number",
-      header: "Invoice",
-      cell: ({ row }) => <span className="font-medium">{row.original.number}</span>,
-    },
-    {
-      accessorKey: "customerName",
-      header: "Customer",
-      cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.customerName || "\u2014"}</span>,
-    },
-    {
-      accessorKey: "amountPaid",
-      header: "Amount",
-      cell: ({ row }) => <span className="text-sm font-mono font-medium">${(row.original.amountPaid || 0).toLocaleString()}</span>,
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => (
-        <Badge className={row.original.status === "paid" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}>
-          <span className="capitalize">{row.original.status || "pending"}</span>
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "createdAt",
-      header: "Date",
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
-          {row.original.createdAt ? new Date(row.original.createdAt).toLocaleDateString() : "\u2014"}
-        </span>
-      ),
-    },
-  ], []);
+  const columns = useMemo<ColumnDef<any>[]>(
+    () => [
+      {
+        accessorKey: "number",
+        header: "Invoice",
+        cell: ({ row }) => <span className="font-medium">{row.original.number}</span>,
+      },
+      {
+        accessorKey: "customerName",
+        header: "Customer",
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {row.original.customerName || "\u2014"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "amountPaid",
+        header: "Amount",
+        cell: ({ row }) => (
+          <span className="text-sm font-mono font-medium">
+            ${(row.original.amountPaid || 0).toLocaleString()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => (
+          <Badge
+            className={
+              row.original.status === "paid"
+                ? "bg-green-100 text-green-700"
+                : "bg-yellow-100 text-yellow-700"
+            }
+          >
+            <span className="capitalize">{row.original.status || "pending"}</span>
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "createdAt",
+        header: "Date",
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {row.original.createdAt
+              ? new Date(row.original.createdAt).toLocaleDateString()
+              : "\u2014"}
+          </span>
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
     <DataTable
@@ -499,19 +682,30 @@ function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch(`/api/files?projectId=${projectId}&orgId=${orgId}`, { credentials: "include", signal: controller.signal })
+    fetch(`/api/files?projectId=${projectId}&orgId=${orgId}`, {
+      credentials: "include",
+      signal: controller.signal,
+    })
       .then((r) => r.json())
       .then((d) => {
         setFiles(d.data || []);
       })
       .catch(() => {})
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
     return () => controller.abort();
   }, [projectId]);
 
   function fileIcon(mimeType: string) {
-    if (mimeType.startsWith("image/")) return <FileImageIcon className="size-4 text-muted-foreground" />;
-    if (mimeType.includes("pdf") || mimeType.includes("document") || mimeType.includes("sheet") || mimeType.includes("presentation"))
+    if (mimeType.startsWith("image/"))
+      return <FileImageIcon className="size-4 text-muted-foreground" />;
+    if (
+      mimeType.includes("pdf") ||
+      mimeType.includes("document") ||
+      mimeType.includes("sheet") ||
+      mimeType.includes("presentation")
+    )
       return <FileSpreadsheetIcon className="size-4 text-muted-foreground" />;
     if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar"))
       return <FileArchiveIcon className="size-4 text-muted-foreground" />;
@@ -525,12 +719,20 @@ function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }
   }
 
   if (loading) {
-    return <div className="space-y-3"><h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Files</h3></div>;
+    return (
+      <div className="space-y-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Project Files
+        </h3>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Files ({files.length})</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Project Files ({files.length})
+      </h3>
       {files.length === 0 ? (
         <div className="flex items-center justify-center py-12 rounded-sm border border-dashed">
           <div className="text-center space-y-2">
@@ -541,7 +743,10 @@ function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }
       ) : (
         <div className="space-y-2">
           {files.map((file) => (
-            <div key={file.id} className="flex items-center gap-3 rounded-sm border p-3 hover:bg-muted/50 transition-colors">
+            <div
+              key={file.id}
+              className="flex items-center gap-3 rounded-sm border p-3 hover:bg-muted/50 transition-colors"
+            >
               <div className="size-9 rounded-sm bg-muted flex items-center justify-center shrink-0">
                 {fileIcon(file.mimeType)}
               </div>
@@ -556,7 +761,9 @@ function ProjectFiles({ projectId, orgId }: { projectId: string; orgId: string }
                   variant="ghost"
                   size="icon"
                   className=""
-                  onClick={() => window.open(`/api/files/${file.id}/download?preview=true`, "_blank")}
+                  onClick={() =>
+                    window.open(`/api/files/${file.id}/download?preview=true`, "_blank")
+                  }
                   title="View"
                 >
                   <EyeIcon className="size-3.5" />

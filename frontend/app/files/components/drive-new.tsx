@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { PlusIcon, UploadIcon, FolderPlusIcon, FolderIcon } from "@/lib/icons";
-import { ROLES } from "@/lib/rbac";
-import { useFileSystemStore } from "@/lib/file-system/store";
 import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
+import { useFileSystemStore } from "@/lib/file-system/store";
+import { FolderIcon, FolderPlusIcon, PlusIcon, UploadIcon } from "@/lib/icons";
+import { ROLES } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 
 /**
@@ -25,8 +25,18 @@ function FloatingMenu({ onNew }: { onNew: (action: "upload" | "folder") => void 
   const [open, setOpen] = useState(false);
 
   const actions = [
-    { id: "upload" as const, label: "Upload files", icon: <UploadIcon className="size-5" />, tint: "text-sky-600" },
-    { id: "folder" as const, label: "New folder", icon: <FolderIcon className="size-5" />, tint: "text-amber-600" },
+    {
+      id: "upload" as const,
+      label: "Upload files",
+      icon: <UploadIcon className="size-5" />,
+      tint: "text-sky-600",
+    },
+    {
+      id: "folder" as const,
+      label: "New folder",
+      icon: <FolderIcon className="size-5" />,
+      tint: "text-amber-600",
+    },
   ];
 
   return (
@@ -51,10 +61,14 @@ function FloatingMenu({ onNew }: { onNew: (action: "upload" | "folder") => void 
                   setOpen(false);
                 }}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-popover-foreground transition-colors hover:bg-accent"
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-popover-foreground transition-colors hover:bg-accent",
                 )}
               >
-                <span className={cn("grid size-9 place-items-center rounded-full bg-muted", a.tint)}>{a.icon}</span>
+                <span
+                  className={cn("grid size-9 place-items-center rounded-full bg-muted", a.tint)}
+                >
+                  {a.icon}
+                </span>
                 {a.label}
               </button>
             ))}
@@ -67,7 +81,7 @@ function FloatingMenu({ onNew }: { onNew: (action: "upload" | "folder") => void 
         aria-label="Create"
         className={cn(
           "grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl active:scale-95",
-          open && "rotate-45"
+          open && "rotate-45",
         )}
       >
         <PlusIcon className="size-6" />

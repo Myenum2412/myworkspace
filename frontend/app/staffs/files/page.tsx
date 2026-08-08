@@ -17,7 +17,9 @@ export default function StaffFilesPage() {
   if (!session?.user?.id) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
-        <p className="text-sm text-muted-foreground">You must be signed in to access the file manager.</p>
+        <p className="text-sm text-muted-foreground">
+          You must be signed in to access the file manager.
+        </p>
       </div>
     );
   }

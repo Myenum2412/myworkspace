@@ -1,8 +1,8 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import LinkedIn from "next-auth/providers/linkedin";
-import GitHub from "next-auth/providers/github";
 import { ROLES } from "@/lib/rbac";
 
 declare module "next-auth" {
@@ -52,7 +52,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
       if (token.id) {
         const now = Date.now();
         const lastVerified = (token as any).lastVerified as number | undefined;
-        if (lastVerified && (now - lastVerified) < 900_000) {
+        if (lastVerified && now - lastVerified < 900_000) {
           return token;
         }
 
@@ -67,9 +67,15 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             return token;
           }
 
-          let dbUser = await db.collection("users").findOne({ id: userId }).catch(() => null);
+          let dbUser = await db
+            .collection("users")
+            .findOne({ id: userId })
+            .catch(() => null);
           if (!dbUser) {
-            dbUser = await db.collection(collections.clientUsers).findOne({ id: userId }).catch(() => null);
+            dbUser = await db
+              .collection(collections.clientUsers)
+              .findOne({ id: userId })
+              .catch(() => null);
           }
 
           // Terminated / deactivated / suspended accounts must be signed out
@@ -88,7 +94,10 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
 
           const [org] = await Promise.all([
             token.orgId
-              ? db.collection("organizations").findOne({ id: token.orgId as string }).catch(() => null)
+              ? db
+                  .collection("organizations")
+                  .findOne({ id: token.orgId as string })
+                  .catch(() => null)
               : Promise.resolve(null),
           ]);
 
@@ -112,7 +121,10 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           if (org || (!token.orgId && dbUser)) {
             const resolvedOrgId = token.orgId || dbUser?.orgId || "";
             if (!org && resolvedOrgId) {
-              const fetchedOrg = await db.collection("organizations").findOne({ id: resolvedOrgId }).catch(() => null);
+              const fetchedOrg = await db
+                .collection("organizations")
+                .findOne({ id: resolvedOrgId })
+                .catch(() => null);
               if (fetchedOrg) {
                 token.onboardingCompleted = fetchedOrg.onboardingCompleted === true;
                 (token as any).plan = "enterprise";
@@ -208,10 +220,12 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
       if (!user.id) return;
       try {
         const { db } = await import("@/lib/db");
-        await db.collection("users").updateOne(
-          { id: user.id },
-          { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } }
-        );
+        await db
+          .collection("users")
+          .updateOne(
+            { id: user.id },
+            { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } },
+          );
       } catch {
         // MongoDB connection may not be available
       }
@@ -221,10 +235,9 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
       if (!userId) return;
       try {
         const { db } = await import("@/lib/db");
-        await db.collection("users").updateOne(
-          { id: userId },
-          { $set: { status: "offline", updatedAt: new Date() } }
-        );
+        await db
+          .collection("users")
+          .updateOne({ id: userId }, { $set: { status: "offline", updatedAt: new Date() } });
       } catch {
         // MongoDB connection may not be available
       }
@@ -266,7 +279,9 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
 
           let user = await db.collection(collections.users).findOne({ email: email.toLowerCase() });
           if (!user) {
-            user = await db.collection(collections.clientUsers).findOne({ email: email.toLowerCase() });
+            user = await db
+              .collection(collections.clientUsers)
+              .findOne({ email: email.toLowerCase() });
           }
           if (!user) return null;
 

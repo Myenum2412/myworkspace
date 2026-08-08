@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IUploadApproval extends Document {
   uploadId: string;
@@ -29,7 +29,11 @@ const uploadApprovalSchema = new Schema<IUploadApproval>(
     tusId: { type: String, required: true, index: true },
     orgId: { type: String, required: true, index: true },
     uploaderId: { type: String, required: true, index: true },
-    uploaderRole: { type: String, enum: ["org_admin", "members", "staffs", "hr", "clients"], required: true },
+    uploaderRole: {
+      type: String,
+      enum: ["org_admin", "members", "staffs", "hr", "clients"],
+      required: true,
+    },
     approvedBy: { type: String, default: null },
     status: {
       type: String,

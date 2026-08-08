@@ -1,18 +1,21 @@
 import { ConsumeMessage } from "amqplib";
-import { registerHandler, startConsumers, MAX_RETRIES } from "./consumer.js";
-import { QUEUES, isRabbitMQConfigured } from "./connection.js";
-import { logger } from "../logger/index.js";
-import { FileAttachment } from "../db/models/FileAttachment.js";
-import { ActivityLog } from "../db/models/ActivityLog.js";
-import { Notification } from "../db/models/Notification.js";
+import fs from "fs";
+import path from "path";
 import { env } from "../../config/env.js";
 import { generatePreview } from "../../services/preview.service.js";
 import { scanFile } from "../../services/virus-scan.service.js";
-import path from "path";
-import fs from "fs";
+import { ActivityLog } from "../db/models/ActivityLog.js";
+import { FileAttachment } from "../db/models/FileAttachment.js";
+import { Notification } from "../db/models/Notification.js";
+import { logger } from "../logger/index.js";
+import { isRabbitMQConfigured, QUEUES } from "./connection.js";
+import { MAX_RETRIES, registerHandler, startConsumers } from "./consumer.js";
 
 registerHandler(QUEUES.UPLOAD_PROCESSING, async (_msg, data) => {
-  const { uploadId, orgId, userId, fileName, fileSize, mimeType, checksum } = data as Record<string, any>;
+  const { uploadId, orgId, userId, fileName, fileSize, mimeType, checksum } = data as Record<
+    string,
+    any
+  >;
   logger.info({ uploadId, orgId, fileName }, "Processing upload completion");
   try {
     const { eventProducer } = await import("./producer.js");
@@ -105,7 +108,15 @@ registerHandler(QUEUES.FILE_PROCESSING, async (_msg, data) => {
 registerHandler(QUEUES.NOTIFICATIONS, async (_msg, data) => {
   const { userId, orgId, type, title, message, link } = data as Record<string, any>;
   try {
-    await Notification.create({ userId, orgId, type, title, message, link: link || null, read: false });
+    await Notification.create({
+      userId,
+      orgId,
+      type,
+      title,
+      message,
+      link: link || null,
+      read: false,
+    });
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -113,13 +124,19 @@ registerHandler(QUEUES.NOTIFICATIONS, async (_msg, data) => {
 });
 
 registerHandler(QUEUES.AUDIT_LOG, async (_msg, data) => {
-  const { orgId, userId, action, entityType, entityId, description, metadata } = data as Record<string, any>;
+  const { orgId, userId, action, entityType, entityId, description, metadata } = data as Record<
+    string,
+    any
+  >;
   try {
     await ActivityLog.create({
       orgId,
       userId: userId || "system",
       createdBy: userId || "system",
-      action, entityType, entityId, description,
+      action,
+      entityType,
+      entityId,
+      description,
       metadata: metadata || "",
     });
     return { success: true };

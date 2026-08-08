@@ -1,6 +1,6 @@
+import crypto from "crypto";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import crypto from "crypto";
 
 // ── Token Encryption ─────────────────────────────────────────────────
 
@@ -157,10 +157,9 @@ export async function refreshGoogleToken(refreshToken: string): Promise<string |
 }
 
 export async function getGoogleCalendarList(accessToken: string): Promise<CalendarInfo[]> {
-  const res = await fetch(
-    "https://www.googleapis.com/calendar/v3/users/me/calendarList",
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
+  const res = await fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
 
   if (!res.ok) return [];
 
@@ -185,7 +184,7 @@ export async function getGoogleCalendarEvents(
   timeMin: string,
   timeMax: string,
   calendarId: string = "primary",
-  syncToken?: string
+  syncToken?: string,
 ): Promise<{ events: CalendarEvent[]; nextSyncToken?: string }> {
   const params = new URLSearchParams({
     timeMin,
@@ -205,7 +204,7 @@ export async function getGoogleCalendarEvents(
 
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
+    { headers: { Authorization: `Bearer ${accessToken}` } },
   );
 
   if (!res.ok) return { events: [] };
@@ -215,8 +214,14 @@ export async function getGoogleCalendarEvents(
     id: item.id as string,
     externalId: item.id as string,
     title: (item.summary as string) || "Untitled",
-    start: (item.start as { dateTime?: string; date?: string })?.dateTime || (item.start as { date?: string })?.date || "",
-    end: (item.end as { dateTime?: string; date?: string })?.dateTime || (item.end as { date?: string })?.date || "",
+    start:
+      (item.start as { dateTime?: string; date?: string })?.dateTime ||
+      (item.start as { date?: string })?.date ||
+      "",
+    end:
+      (item.end as { dateTime?: string; date?: string })?.dateTime ||
+      (item.end as { date?: string })?.date ||
+      "",
     allDay: !!(item.start as { date?: string })?.date,
     provider: "google" as const,
     calendarEmail: "",
@@ -228,12 +233,19 @@ export async function getGoogleCalendarEvents(
     attendees: ((item.attendees as Array<Record<string, unknown>>) || []).map((a) => ({
       email: a.email as string,
       name: a.displayName as string | undefined,
-      status: (a.responseStatus as "needsAction" | "declined" | "tentative" | "accepted") || "needsAction",
+      status:
+        (a.responseStatus as "needsAction" | "declined" | "tentative" | "accepted") ||
+        "needsAction",
       organizer: !!a.organizer,
     })),
     organizer: item.organizer as { email: string; name?: string } | undefined,
     conferenceData: item.conferenceData as { type: string; uri: string } | undefined,
-    reminders: (item.reminders as { useDefault?: boolean; overrides?: Array<{ method: string; minutes: number }> })?.overrides?.map((r) => ({
+    reminders: (
+      item.reminders as {
+        useDefault?: boolean;
+        overrides?: Array<{ method: string; minutes: number }>;
+      }
+    )?.overrides?.map((r) => ({
       method: r.method as "email" | "popup",
       minutes: r.minutes,
     })),
@@ -251,7 +263,7 @@ export async function getGoogleCalendarEvents(
 export async function createGoogleCalendarEvent(
   accessToken: string,
   calendarId: string,
-  event: Partial<CalendarEvent>
+  event: Partial<CalendarEvent>,
 ): Promise<CalendarEvent | null> {
   const body: Record<string, unknown> = {
     summary: event.title,
@@ -291,7 +303,7 @@ export async function createGoogleCalendarEvent(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    }
+    },
   );
 
   if (!res.ok) return null;
@@ -320,7 +332,7 @@ export async function updateGoogleCalendarEvent(
   accessToken: string,
   calendarId: string,
   eventId: string,
-  event: Partial<CalendarEvent>
+  event: Partial<CalendarEvent>,
 ): Promise<CalendarEvent | null> {
   const body: Record<string, unknown> = {
     summary: event.title,
@@ -348,7 +360,7 @@ export async function updateGoogleCalendarEvent(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    }
+    },
   );
 
   if (!res.ok) return null;
@@ -376,14 +388,14 @@ export async function updateGoogleCalendarEvent(
 export async function deleteGoogleCalendarEvent(
   accessToken: string,
   calendarId: string,
-  eventId: string
+  eventId: string,
 ): Promise<boolean> {
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
     {
       method: "DELETE",
       headers: { Authorization: `Bearer ${accessToken}` },
-    }
+    },
   );
 
   return res.ok;
@@ -394,20 +406,17 @@ export async function deleteGoogleCalendarEvent(
 export async function refreshMicrosoftToken(refreshToken: string): Promise<string | null> {
   const tenantId = process.env.MICROSOFT_TENANT_ID || "common";
   try {
-    const res = await fetch(
-      `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          client_id: process.env.MICROSOFT_CLIENT_ID!,
-          client_secret: process.env.MICROSOFT_CLIENT_SECRET!,
-          refresh_token: refreshToken,
-          grant_type: "refresh_token",
-          scope: "Calendars.Read Calendars.ReadWrite offline_access",
-        }),
-      }
-    );
+    const res = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: process.env.MICROSOFT_CLIENT_ID!,
+        client_secret: process.env.MICROSOFT_CLIENT_SECRET!,
+        refresh_token: refreshToken,
+        grant_type: "refresh_token",
+        scope: "Calendars.Read Calendars.ReadWrite offline_access",
+      }),
+    });
     const data = await res.json();
     return data.access_token || null;
   } catch {
@@ -416,12 +425,9 @@ export async function refreshMicrosoftToken(refreshToken: string): Promise<strin
 }
 
 export async function getMicrosoftCalendarList(accessToken: string): Promise<CalendarInfo[]> {
-  const res = await fetch(
-    "https://graph.microsoft.com/v1.0/me/calendars",
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }
-  );
+  const res = await fetch("https://graph.microsoft.com/v1.0/me/calendars", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
 
   if (!res.ok) return [];
 
@@ -438,7 +444,7 @@ export async function getMicrosoftCalendarList(accessToken: string): Promise<Cal
 export async function getMicrosoftCalendarEvents(
   accessToken: string,
   timeMin: string,
-  timeMax: string
+  timeMax: string,
 ): Promise<CalendarEvent[]> {
   const params = new URLSearchParams({
     startDateTime: timeMin,
@@ -447,15 +453,12 @@ export async function getMicrosoftCalendarEvents(
     $orderby: "start/dateTime",
   });
 
-  const res = await fetch(
-    `https://graph.microsoft.com/v1.0/me/calendarView?${params}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Prefer: 'outlook.timezone="UTC"',
-      },
-    }
-  );
+  const res = await fetch(`https://graph.microsoft.com/v1.0/me/calendarView?${params}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Prefer: 'outlook.timezone="UTC"',
+    },
+  });
 
   if (!res.ok) return [];
 
@@ -466,7 +469,7 @@ export async function getMicrosoftCalendarEvents(
     title: (item.subject as string) || "Untitled",
     start: (item.start as { dateTime?: string })?.dateTime || "",
     end: (item.end as { dateTime?: string })?.dateTime || "",
-    allDay: !!(item.isAllDay),
+    allDay: !!item.isAllDay,
     provider: "microsoft" as const,
     calendarEmail: "",
     htmlLink: item.webLink as string,
@@ -479,10 +482,7 @@ export async function getMicrosoftCalendarEvents(
 // ── Shared Functions ─────────────────────────────────────────────────
 
 export async function getUserConnections(userId: string): Promise<CalendarConnection[]> {
-  const docs = await db
-    .collection(collections.calendarConnections)
-    .find({ userId })
-    .toArray();
+  const docs = await db.collection(collections.calendarConnections).find({ userId }).toArray();
 
   return docs.map((doc) => {
     // Decrypt tokens if encrypted
@@ -518,7 +518,10 @@ export async function getUserConnections(userId: string): Promise<CalendarConnec
   });
 }
 
-export async function getUserConnection(userId: string, connectionId: string): Promise<CalendarConnection | null> {
+export async function getUserConnection(
+  userId: string,
+  connectionId: string,
+): Promise<CalendarConnection | null> {
   const docs = await getUserConnections(userId);
   return docs.find((c) => c.id === connectionId) || null;
 }
@@ -550,7 +553,7 @@ export async function getCalendarEvents(
   userId: string,
   timeMin: string,
   timeMax: string,
-  calendarId?: string
+  calendarId?: string,
 ): Promise<CalendarEvent[]> {
   const connections = await getUserConnections(userId);
   const events: CalendarEvent[] = [];
@@ -573,10 +576,12 @@ export async function getCalendarEvents(
           accessToken = newToken;
           // Store encrypted token
           const encryptedToken = encryptToken(newToken);
-          await db.collection(collections.calendarConnections).updateOne(
-            { id: conn.id },
-            { $set: { accessToken: encryptedToken, updatedAt: new Date() } }
-          );
+          await db
+            .collection(collections.calendarConnections)
+            .updateOne(
+              { id: conn.id },
+              { $set: { accessToken: encryptedToken, updatedAt: new Date() } },
+            );
         } else {
           continue; // Token refresh failed, skip this connection
         }
@@ -603,10 +608,9 @@ export async function getCalendarEvents(
       events.push(...providerEvents);
 
       // Update lastSyncAt
-      await db.collection(collections.calendarConnections).updateOne(
-        { id: conn.id },
-        { $set: { lastSyncAt: new Date() } }
-      );
+      await db
+        .collection(collections.calendarConnections)
+        .updateOne({ id: conn.id }, { $set: { lastSyncAt: new Date() } });
     } catch (err) {
       console.error(`[Calendar] Error fetching ${conn.provider} events:`, err);
     }
@@ -618,7 +622,7 @@ export async function getCalendarEvents(
 export async function createCalendarEvent(
   userId: string,
   connectionId: string,
-  event: Partial<CalendarEvent>
+  event: Partial<CalendarEvent>,
 ): Promise<CalendarEvent | null> {
   const conn = await getUserConnection(userId, connectionId);
   if (!conn) return null;
@@ -637,10 +641,12 @@ export async function createCalendarEvent(
       if (newToken) {
         accessToken = newToken;
         const encryptedToken = encryptToken(newToken);
-        await db.collection(collections.calendarConnections).updateOne(
-          { id: conn.id },
-          { $set: { accessToken: encryptedToken, updatedAt: new Date() } }
-        );
+        await db
+          .collection(collections.calendarConnections)
+          .updateOne(
+            { id: conn.id },
+            { $set: { accessToken: encryptedToken, updatedAt: new Date() } },
+          );
       } else {
         return null;
       }
@@ -665,7 +671,7 @@ export async function updateCalendarEvent(
   userId: string,
   connectionId: string,
   eventId: string,
-  event: Partial<CalendarEvent>
+  event: Partial<CalendarEvent>,
 ): Promise<CalendarEvent | null> {
   const conn = await getUserConnection(userId, connectionId);
   if (!conn) return null;
@@ -684,10 +690,12 @@ export async function updateCalendarEvent(
       if (newToken) {
         accessToken = newToken;
         const encryptedToken = encryptToken(newToken);
-        await db.collection(collections.calendarConnections).updateOne(
-          { id: conn.id },
-          { $set: { accessToken: encryptedToken, updatedAt: new Date() } }
-        );
+        await db
+          .collection(collections.calendarConnections)
+          .updateOne(
+            { id: conn.id },
+            { $set: { accessToken: encryptedToken, updatedAt: new Date() } },
+          );
       } else {
         return null;
       }
@@ -712,7 +720,7 @@ export async function deleteCalendarEvent(
   userId: string,
   connectionId: string,
   eventId: string,
-  calendarId: string = "primary"
+  calendarId: string = "primary",
 ): Promise<boolean> {
   const conn = await getUserConnection(userId, connectionId);
   if (!conn) return false;
@@ -731,10 +739,12 @@ export async function deleteCalendarEvent(
       if (newToken) {
         accessToken = newToken;
         const encryptedToken = encryptToken(newToken);
-        await db.collection(collections.calendarConnections).updateOne(
-          { id: conn.id },
-          { $set: { accessToken: encryptedToken, updatedAt: new Date() } }
-        );
+        await db
+          .collection(collections.calendarConnections)
+          .updateOne(
+            { id: conn.id },
+            { $set: { accessToken: encryptedToken, updatedAt: new Date() } },
+          );
       } else {
         return false;
       }
@@ -752,7 +762,7 @@ export async function deleteCalendarEvent(
 
 export async function syncCalendarEvents(
   userId: string,
-  connectionId: string
+  connectionId: string,
 ): Promise<{ synced: number; errors: number }> {
   const conn = await getUserConnection(userId, connectionId);
   if (!conn) return { synced: 0, errors: 1 };
@@ -771,10 +781,12 @@ export async function syncCalendarEvents(
       if (newToken) {
         accessToken = newToken;
         const encryptedToken = encryptToken(newToken);
-        await db.collection(collections.calendarConnections).updateOne(
-          { id: conn.id },
-          { $set: { accessToken: encryptedToken, updatedAt: new Date() } }
-        );
+        await db
+          .collection(collections.calendarConnections)
+          .updateOne(
+            { id: conn.id },
+            { $set: { accessToken: encryptedToken, updatedAt: new Date() } },
+          );
       } else {
         return { synced: 0, errors: 1 };
       }
@@ -795,7 +807,7 @@ export async function syncCalendarEvents(
       oneWeekAgo.toISOString(),
       oneWeekLater.toISOString(),
       "primary",
-      syncToken || undefined
+      syncToken || undefined,
     );
 
     // Store events in database
@@ -836,7 +848,7 @@ export async function syncCalendarEvents(
               createdAt: new Date(),
             },
           },
-          { upsert: true }
+          { upsert: true },
         );
         synced++;
       } catch (err) {
@@ -855,7 +867,7 @@ export async function syncCalendarEvents(
             lastSyncAt: new Date(),
             updatedAt: new Date(),
           },
-        }
+        },
       );
     }
 

@@ -1,6 +1,6 @@
-"use client"
+"use client";
+import { type Client, columns, makeActionsCell } from "@/app/clients/columns";
 import { DataTable } from "@/app/clients/data-table";
-import { columns, makeActionsCell, type Client } from "@/app/clients/columns";
 
 type ClientListProps = {
   clients: Client[];

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, AlertCircleIcon, FileText, LayoutDashboardIcon } from "@/lib/icons";
-import { PageHeader } from "@/components/page-header";
+import { AlertCircleIcon, FileText, LayoutDashboardIcon, Loader2 } from "@/lib/icons";
 
 type RecentFile = {
   id: string;
@@ -39,16 +39,19 @@ export default function ClientDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") { router.push("/login"); return; }
+    if (status === "unauthenticated") {
+      router.push("/login");
+      return;
+    }
     if (status !== "authenticated") return;
 
     const controller = new AbortController();
     const opts = { signal: controller.signal };
 
     Promise.all([
-      fetch("/api/client-auth/me", opts).then(r => r.json()),
-      fetch("/api/client-auth/billing-status", opts).then(r => r.json()),
-      fetch("/api/client-auth/workspace-stats", opts).then(r => r.json()),
+      fetch("/api/client-auth/me", opts).then((r) => r.json()),
+      fetch("/api/client-auth/billing-status", opts).then((r) => r.json()),
+      fetch("/api/client-auth/workspace-stats", opts).then((r) => r.json()),
     ])
       .then(([me, bill, stats]) => {
         if (me.success) setName(me.data?.user?.name || "");
@@ -56,7 +59,9 @@ export default function ClientDashboardPage() {
         if (stats.success && stats.data?.recentFiles) setRecentFiles(stats.data.recentFiles);
       })
       .catch(() => {})
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
 
     return () => controller.abort();
   }, [router, status]);
@@ -73,7 +78,11 @@ export default function ClientDashboardPage() {
     <div className="min-h-screen p-6 space-y-6">
       <PageHeader
         icon={<LayoutDashboardIcon className="size-6" />}
-        title={<h1>Welcome{name ? `, ${name}` : ""}. {getGreeting()}!</h1>}
+        title={
+          <h1>
+            Welcome{name ? `, ${name}` : ""}. {getGreeting()}!
+          </h1>
+        }
       />
 
       {billing && billing.pendingCount > 0 && (
@@ -81,7 +90,8 @@ export default function ClientDashboardPage() {
           <AlertCircleIcon className="size-6 text-amber-600 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-amber-900 text-base">
-              ₹{(billing.totalDue / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })} pending
+              ₹{(billing.totalDue / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}{" "}
+              pending
             </p>
             <p className="text-sm text-amber-700">
               {billing.pendingCount} invoice{billing.pendingCount > 1 ? "s" : ""} due
@@ -108,7 +118,9 @@ export default function ClientDashboardPage() {
                     <FileText className="size-4 text-muted-foreground shrink-0" />
                     <span className="truncate">{f.name}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground shrink-0 ml-4 capitalize">{f.category}</span>
+                  <span className="text-xs text-muted-foreground shrink-0 ml-4 capitalize">
+                    {f.category}
+                  </span>
                 </div>
               ))}
             </div>

@@ -1,5 +1,5 @@
-import { Message, IMessage } from "../lib/db/models/Message.js";
 import { v4 as uuid } from "uuid";
+import { type IMessage, Message } from "../lib/db/models/Message.js";
 
 export interface SendMessageParams {
   orgId: string;
@@ -47,10 +47,7 @@ export async function getMessageHistory(params: GetHistoryParams) {
     query.createdAt = { $lt: new Date(params.before) };
   }
 
-  const messages = await Message.find(query)
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .lean();
+  const messages = await Message.find(query).sort({ createdAt: -1 }).limit(limit).lean();
 
   return messages.reverse();
 }
@@ -74,7 +71,6 @@ export async function markConversationRead(params: MarkReadParams) {
       $push: { readBy: { userId: params.userId, readAt: now } },
     },
   );
-
 }
 
 export async function getUnreadCount(orgId: string, userId: string) {

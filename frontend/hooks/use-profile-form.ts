@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export type ProfileData = {
   user: {
@@ -146,30 +146,56 @@ export function useProfileForm(initialData: ProfileData) {
   const [editOrgState, setEditOrgState] = useState(initialData?.org?.state || "");
   const [editPincode, setEditPincode] = useState(initialData?.org?.pincode || "");
   const [editOrgCountry, setEditOrgCountry] = useState(initialData?.org?.country || "India");
-  const [editAuthorizedPerson, setEditAuthorizedPerson] = useState(initialData?.org?.authorizedPersonName || "");
+  const [editAuthorizedPerson, setEditAuthorizedPerson] = useState(
+    initialData?.org?.authorizedPersonName || "",
+  );
   const [editDesignation, setEditDesignation] = useState(initialData?.org?.designation || "");
-  const [editAuthorizedEmail, setEditAuthorizedEmail] = useState(initialData?.org?.authorizedPersonEmail || "");
-  const [editAuthorizedMobile, setEditAuthorizedMobile] = useState(initialData?.org?.authorizedPersonMobile || "");
-  const [editNumEmployees, setEditNumEmployees] = useState(initialData?.org?.numberOfEmployees?.toString() || "");
-  const [editCompanyDesc, setEditCompanyDesc] = useState(initialData?.org?.companyDescription || "");
+  const [editAuthorizedEmail, setEditAuthorizedEmail] = useState(
+    initialData?.org?.authorizedPersonEmail || "",
+  );
+  const [editAuthorizedMobile, setEditAuthorizedMobile] = useState(
+    initialData?.org?.authorizedPersonMobile || "",
+  );
+  const [editNumEmployees, setEditNumEmployees] = useState(
+    initialData?.org?.numberOfEmployees?.toString() || "",
+  );
+  const [editCompanyDesc, setEditCompanyDesc] = useState(
+    initialData?.org?.companyDescription || "",
+  );
   // Extended fields
   const [editTradeName, setEditTradeName] = useState(initialData?.org?.tradeName || "");
-  const [editYearEstablished, setEditYearEstablished] = useState(initialData?.org?.yearEstablished || "");
+  const [editYearEstablished, setEditYearEstablished] = useState(
+    initialData?.org?.yearEstablished || "",
+  );
   const [editCompanySize, setEditCompanySize] = useState(initialData?.org?.companySize || "");
-  const [editRegistrationNumber, setEditRegistrationNumber] = useState(initialData?.org?.registrationNumber || "");
-  const [editRegistrationAuthority, setEditRegistrationAuthority] = useState(initialData?.org?.registrationAuthority || "");
+  const [editRegistrationNumber, setEditRegistrationNumber] = useState(
+    initialData?.org?.registrationNumber || "",
+  );
+  const [editRegistrationAuthority, setEditRegistrationAuthority] = useState(
+    initialData?.org?.registrationAuthority || "",
+  );
   const [editTaxId, setEditTaxId] = useState(initialData?.org?.taxIdentificationNumber || "");
-  const [editRegistrationDate, setEditRegistrationDate] = useState(initialData?.org?.registrationDate || "");
-  const [editBusinessStatus, setEditBusinessStatus] = useState(initialData?.org?.businessStatus || "Active");
+  const [editRegistrationDate, setEditRegistrationDate] = useState(
+    initialData?.org?.registrationDate || "",
+  );
+  const [editBusinessStatus, setEditBusinessStatus] = useState(
+    initialData?.org?.businessStatus || "Active",
+  );
   const [editSupportEmail, setEditSupportEmail] = useState(initialData?.org?.supportEmail || "");
   const [editSupportPhone, setEditSupportPhone] = useState(initialData?.org?.supportPhone || "");
   const [editFacebook, setEditFacebook] = useState(initialData?.org?.facebook || "");
   const [editInstagram, setEditInstagram] = useState(initialData?.org?.instagram || "");
   const [editTwitterHandle, setEditTwitterHandle] = useState(initialData?.org?.twitterHandle || "");
   const [editYoutube, setEditYoutube] = useState(initialData?.org?.youtube || "");
-  const [editPrimaryActivity, setEditPrimaryActivity] = useState(initialData?.org?.primaryBusinessActivity || "");
-  const [editSecondaryActivity, setEditSecondaryActivity] = useState(initialData?.org?.secondaryBusinessActivity || "");
-  const [editOperatingCountries, setEditOperatingCountries] = useState(initialData?.org?.operatingCountries || "");
+  const [editPrimaryActivity, setEditPrimaryActivity] = useState(
+    initialData?.org?.primaryBusinessActivity || "",
+  );
+  const [editSecondaryActivity, setEditSecondaryActivity] = useState(
+    initialData?.org?.secondaryBusinessActivity || "",
+  );
+  const [editOperatingCountries, setEditOperatingCountries] = useState(
+    initialData?.org?.operatingCountries || "",
+  );
   const [editTimeZone, setEditTimeZone] = useState(initialData?.org?.timeZone || "");
   const [editCurrency, setEditCurrency] = useState(initialData?.org?.preferredCurrency || "");
 
@@ -193,8 +219,10 @@ export function useProfileForm(initialData: ProfileData) {
     if (!editName.trim()) errors.push("Name is required");
     if (!editEmail.trim()) errors.push("Email is required");
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editEmail)) errors.push("Invalid email format");
-    if (editCompanyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editCompanyEmail)) errors.push("Invalid company email format");
-    if (editNumEmployees && isNaN(Number(editNumEmployees))) errors.push("Number of employees must be a number");
+    if (editCompanyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editCompanyEmail))
+      errors.push("Invalid company email format");
+    if (editNumEmployees && isNaN(Number(editNumEmployees)))
+      errors.push("Number of employees must be a number");
     if (errors.length > 0) {
       setSaveError(errors.join("; "));
       return;
@@ -268,7 +296,10 @@ export function useProfileForm(initialData: ProfileData) {
 
       if (!res.ok) {
         let errMsg = "Request failed (" + res.status + ")";
-        try { const err = await res.json(); errMsg = err.error || errMsg; } catch {}
+        try {
+          const err = await res.json();
+          errMsg = err.error || errMsg;
+        } catch {}
         setSaveError(errMsg);
         return;
       }
@@ -290,22 +321,54 @@ export function useProfileForm(initialData: ProfileData) {
         });
       }
     } catch (e) {
-      setSaveError(e instanceof TypeError && e.message === "Failed to fetch"
-        ? "Cannot connect to server. Please check your connection and try again."
-        : (e instanceof Error ? e.message : "Network error"));
+      setSaveError(
+        e instanceof TypeError && e.message === "Failed to fetch"
+          ? "Cannot connect to server. Please check your connection and try again."
+          : e instanceof Error
+            ? e.message
+            : "Network error",
+      );
     } finally {
       setSaving(false);
     }
   }, [
-    editName, editEmail, editPhone, editDepartment, editCompany,
-    editAddress, editCity, editState, editCountry, editZipCode,
-    editLinkedin, editGithub, editTwitter, editWebsite,
-    editCompanyName, editDomain, editBusinessType, editIndustry,
-    editGstNumber, editPanNumber, editCinNumber, editCompanyEmail,
-    editMobileNumber, editAltMobile, editOrgWebsite,
-    editAddressLine1, editAddressLine2, editOrgCity, editOrgState,
-    editPincode, editOrgCountry, editAuthorizedPerson, editDesignation,
-    editAuthorizedEmail, editAuthorizedMobile, editNumEmployees, editCompanyDesc,
+    editName,
+    editEmail,
+    editPhone,
+    editDepartment,
+    editCompany,
+    editAddress,
+    editCity,
+    editState,
+    editCountry,
+    editZipCode,
+    editLinkedin,
+    editGithub,
+    editTwitter,
+    editWebsite,
+    editCompanyName,
+    editDomain,
+    editBusinessType,
+    editIndustry,
+    editGstNumber,
+    editPanNumber,
+    editCinNumber,
+    editCompanyEmail,
+    editMobileNumber,
+    editAltMobile,
+    editOrgWebsite,
+    editAddressLine1,
+    editAddressLine2,
+    editOrgCity,
+    editOrgState,
+    editPincode,
+    editOrgCountry,
+    editAuthorizedPerson,
+    editDesignation,
+    editAuthorizedEmail,
+    editAuthorizedMobile,
+    editNumEmployees,
+    editCompanyDesc,
   ]);
 
   const handleCancel = useCallback(() => {
@@ -463,40 +526,148 @@ export function useProfileForm(initialData: ProfileData) {
   }, []);
 
   return {
-    data, setData, editing, setEditing, saving, saveError, setSaveError, saveSuccess, setSaveSuccess,
-    bannerUrl, setBannerUrl, profileImage, setProfileImage,
-    editName, setEditName, editEmail, setEditEmail, editPhone, setEditPhone,
-    editDepartment, setEditDepartment, editCompany, setEditCompany,
-    editAddress, setEditAddress, editCity, setEditCity, editState, setEditState,
-    editCountry, setEditCountry, editZipCode, setEditZipCode,
-    editLinkedin, setEditLinkedin, editGithub, setEditGithub,
-    editTwitter, setEditTwitter, editWebsite, setEditWebsite,
-    editCompanyName, setEditCompanyName, editDomain, setEditDomain,
-    editBusinessType, setEditBusinessType, editIndustry, setEditIndustry,
-    editGstNumber, setEditGstNumber, editPanNumber, setEditPanNumber,
-    editCinNumber, setEditCinNumber, editCompanyEmail, setEditCompanyEmail,
-    editMobileNumber, setEditMobileNumber, editAltMobile, setEditAltMobile,
-    editOrgWebsite, setEditOrgWebsite,
-    editAddressLine1, setEditAddressLine1, editAddressLine2, setEditAddressLine2,
-    editOrgCity, setEditOrgCity, editOrgState, setEditOrgState,
-    editPincode, setEditPincode, editOrgCountry, setEditOrgCountry,
-    editAuthorizedPerson, setEditAuthorizedPerson, editDesignation, setEditDesignation,
-    editAuthorizedEmail, setEditAuthorizedEmail, editAuthorizedMobile, setEditAuthorizedMobile,
-    editNumEmployees, setEditNumEmployees, editCompanyDesc, setEditCompanyDesc,
-    editTradeName, setEditTradeName, editYearEstablished, setEditYearEstablished,
-    editCompanySize, setEditCompanySize, editRegistrationNumber, setEditRegistrationNumber,
-    editRegistrationAuthority, setEditRegistrationAuthority, editTaxId, setEditTaxId,
-    editRegistrationDate, setEditRegistrationDate, editBusinessStatus, setEditBusinessStatus,
-    editSupportEmail, setEditSupportEmail, editSupportPhone, setEditSupportPhone,
-    editFacebook, setEditFacebook, editInstagram, setEditInstagram,
-    editTwitterHandle, setEditTwitterHandle, editYoutube, setEditYoutube,
-    editPrimaryActivity, setEditPrimaryActivity, editSecondaryActivity, setEditSecondaryActivity,
-    editOperatingCountries, setEditOperatingCountries, editTimeZone, setEditTimeZone,
-    editCurrency, setEditCurrency,
-    showBannerEditor, setShowBannerEditor, showImageEditor, setShowImageEditor,
-    urlInput, setUrlInput, uploading, uploadingImage, fileKey, imageFileKey,
-    dbUser, org,
-    handleSave, handleCancel, updateBanner, handleBannerFile,
-    removeProfileImage, handleProfileImageFile,
+    data,
+    setData,
+    editing,
+    setEditing,
+    saving,
+    saveError,
+    setSaveError,
+    saveSuccess,
+    setSaveSuccess,
+    bannerUrl,
+    setBannerUrl,
+    profileImage,
+    setProfileImage,
+    editName,
+    setEditName,
+    editEmail,
+    setEditEmail,
+    editPhone,
+    setEditPhone,
+    editDepartment,
+    setEditDepartment,
+    editCompany,
+    setEditCompany,
+    editAddress,
+    setEditAddress,
+    editCity,
+    setEditCity,
+    editState,
+    setEditState,
+    editCountry,
+    setEditCountry,
+    editZipCode,
+    setEditZipCode,
+    editLinkedin,
+    setEditLinkedin,
+    editGithub,
+    setEditGithub,
+    editTwitter,
+    setEditTwitter,
+    editWebsite,
+    setEditWebsite,
+    editCompanyName,
+    setEditCompanyName,
+    editDomain,
+    setEditDomain,
+    editBusinessType,
+    setEditBusinessType,
+    editIndustry,
+    setEditIndustry,
+    editGstNumber,
+    setEditGstNumber,
+    editPanNumber,
+    setEditPanNumber,
+    editCinNumber,
+    setEditCinNumber,
+    editCompanyEmail,
+    setEditCompanyEmail,
+    editMobileNumber,
+    setEditMobileNumber,
+    editAltMobile,
+    setEditAltMobile,
+    editOrgWebsite,
+    setEditOrgWebsite,
+    editAddressLine1,
+    setEditAddressLine1,
+    editAddressLine2,
+    setEditAddressLine2,
+    editOrgCity,
+    setEditOrgCity,
+    editOrgState,
+    setEditOrgState,
+    editPincode,
+    setEditPincode,
+    editOrgCountry,
+    setEditOrgCountry,
+    editAuthorizedPerson,
+    setEditAuthorizedPerson,
+    editDesignation,
+    setEditDesignation,
+    editAuthorizedEmail,
+    setEditAuthorizedEmail,
+    editAuthorizedMobile,
+    setEditAuthorizedMobile,
+    editNumEmployees,
+    setEditNumEmployees,
+    editCompanyDesc,
+    setEditCompanyDesc,
+    editTradeName,
+    setEditTradeName,
+    editYearEstablished,
+    setEditYearEstablished,
+    editCompanySize,
+    setEditCompanySize,
+    editRegistrationNumber,
+    setEditRegistrationNumber,
+    editRegistrationAuthority,
+    setEditRegistrationAuthority,
+    editTaxId,
+    setEditTaxId,
+    editRegistrationDate,
+    setEditRegistrationDate,
+    editBusinessStatus,
+    setEditBusinessStatus,
+    editSupportEmail,
+    setEditSupportEmail,
+    editSupportPhone,
+    setEditSupportPhone,
+    editFacebook,
+    setEditFacebook,
+    editInstagram,
+    setEditInstagram,
+    editTwitterHandle,
+    setEditTwitterHandle,
+    editYoutube,
+    setEditYoutube,
+    editPrimaryActivity,
+    setEditPrimaryActivity,
+    editSecondaryActivity,
+    setEditSecondaryActivity,
+    editOperatingCountries,
+    setEditOperatingCountries,
+    editTimeZone,
+    setEditTimeZone,
+    editCurrency,
+    setEditCurrency,
+    showBannerEditor,
+    setShowBannerEditor,
+    showImageEditor,
+    setShowImageEditor,
+    urlInput,
+    setUrlInput,
+    uploading,
+    uploadingImage,
+    fileKey,
+    imageFileKey,
+    dbUser,
+    org,
+    handleSave,
+    handleCancel,
+    updateBanner,
+    handleBannerFile,
+    removeProfileImage,
+    handleProfileImageFile,
   };
 }

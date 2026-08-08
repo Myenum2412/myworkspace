@@ -6,17 +6,30 @@ import { getUserOrgId } from "@/lib/org";
 
 export async function GET() {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
-  if (!orgId) return NextResponse.json({ projects: [], tasks: [], orgId: "", userId: session.user.id, initialTimesheet: [] });
+
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
+  if (!orgId)
+    return NextResponse.json({
+      projects: [],
+      tasks: [],
+      orgId: "",
+      userId: session.user.id,
+      initialTimesheet: [],
+    });
 
   try {
     const [projectDocs, taskDocs, timesheetDoc] = await Promise.all([
       db.collection(collections.projects).find({ orgId }).toArray(),
       db.collection(collections.tasks).find({ orgId }).toArray(),
-      db.collection("timesheets").findOne({ orgId, userId: session.user.id, week: new Date().toISOString().slice(0, 10) }),
+      db
+        .collection("timesheets")
+        .findOne({ orgId, userId: session.user.id, week: new Date().toISOString().slice(0, 10) }),
     ]);
 
     const projects = projectDocs.map((p: any) => ({

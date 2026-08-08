@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { DataTable } from "@/components/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
-import { apiFetch } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useEffect, useMemo, useState } from "react";
+import { DataTable } from "@/components/data-table";
 import { useIndustry } from "@/components/industry-provider";
-import { ClockIcon, ActivityIcon } from "@/lib/icons";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiFetch } from "@/lib/api";
+import { ActivityIcon, ClockIcon } from "@/lib/icons";
 
 type ActivityRow = {
   id: string;
@@ -60,74 +60,94 @@ export default function StaffActivityPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") { router.push("/login"); }
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
   }, [status, router]);
 
   useEffect(() => {
     if (!session?.user?.orgId) return;
     let cancelled = false;
     apiFetch(`/api/activity?orgId=${session.user.orgId}&limit=200`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
         if (!cancelled && d?.data) setActivities(d.data);
       })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [session?.user?.orgId]);
 
-  const columns: ColumnDef<ActivityRow>[] = useMemo(() => [
-    {
-      accessorKey: "userName",
-      header: "User",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Avatar className="size-7">
-            {row.original.userAvatar && <AvatarImage src={row.original.userAvatar} alt={row.original.userName} />}
-            <AvatarFallback className="text-[10px]">{row.original.userName.slice(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <span className="font-medium text-sm">{row.original.userName}</span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "action",
-      header: "Action",
-      cell: ({ row }) => (
-        <Badge className={`text-xs font-medium ${getActionBadge(row.original.action)}`}>
-          {row.original.action.replace(/_/g, " ").replace(/\./g, " ")}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "entityType",
-      header: "Type",
-      cell: ({ row }) => (
-        <span className="text-sm capitalize text-muted-foreground">
-          {row.original.entityType?.replace(/_/g, " ") || "—"}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "description",
-      header: "Description",
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground line-clamp-1">{row.original.description || "—"}</span>
-      ),
-    },
-    {
-      accessorKey: "createdAt",
-      header: "Time",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <ClockIcon className="size-3.5 shrink-0" />
-          {formatDate(row.original.createdAt)}
-        </div>
-      ),
-    },
-  ], []);
+  const columns: ColumnDef<ActivityRow>[] = useMemo(
+    () => [
+      {
+        accessorKey: "userName",
+        header: "User",
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            <Avatar className="size-7">
+              {row.original.userAvatar && (
+                <AvatarImage src={row.original.userAvatar} alt={row.original.userName} />
+              )}
+              <AvatarFallback className="text-[10px]">
+                {row.original.userName.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="font-medium text-sm">{row.original.userName}</span>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "action",
+        header: "Action",
+        cell: ({ row }) => (
+          <Badge className={`text-xs font-medium ${getActionBadge(row.original.action)}`}>
+            {row.original.action.replace(/_/g, " ").replace(/\./g, " ")}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "entityType",
+        header: "Type",
+        cell: ({ row }) => (
+          <span className="text-sm capitalize text-muted-foreground">
+            {row.original.entityType?.replace(/_/g, " ") || "—"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "description",
+        header: "Description",
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground line-clamp-1">
+            {row.original.description || "—"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "createdAt",
+        header: "Time",
+        cell: ({ row }) => (
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <ClockIcon className="size-3.5 shrink-0" />
+            {formatDate(row.original.createdAt)}
+          </div>
+        ),
+      },
+    ],
+    [],
+  );
 
-  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (status === "loading" || loading)
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </div>
+    );
   if (!session?.user) return null;
 
   return (

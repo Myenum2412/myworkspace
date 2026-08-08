@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
+import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { auth } from "@/lib/auth/config";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string; commentId: string }> }
+  { params }: { params: Promise<{ id: string; commentId: string }> },
 ) {
   try {
     const session = await auth();
@@ -34,7 +34,7 @@ export async function DELETE(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string; commentId: string }> }
+  { params }: { params: Promise<{ id: string; commentId: string }> },
 ) {
   try {
     const session = await auth();
@@ -57,7 +57,7 @@ export async function PUT(
       },
       {
         $set: { content: content.trim(), updatedAt: new Date() },
-      }
+      },
     );
 
     if (result.matchedCount === 0) {

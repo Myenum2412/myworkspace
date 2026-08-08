@@ -1,18 +1,18 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
+import { type Response, Router } from "express";
+import { notifyClient } from "../lib/notifications/notification-wiring.js";
 import { isAdminRole } from "../lib/rbac/index.js";
+import { requireEmail, requireString } from "../lib/validate.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
-import { requireString, requireEmail } from "../lib/validate.js";
+import { AppError } from "../middleware/error.js";
 import {
-  listClients,
+  createClient,
+  deleteClient,
   getClient,
   getClientWorkspace,
-  createClient,
+  listClients,
   updateClient,
-  deleteClient,
 } from "../services/client.service.js";
-import { notifyClient } from "../lib/notifications/notification-wiring.js";
 import { createNotification } from "../services/notification.service.js";
 
 const router = Router();
@@ -31,11 +31,15 @@ function assertNoOrgOverride(req: AuthRequest): void {
   }
 }
 
-router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["clients"] }), async (req: AuthRequest, res: Response) => {
-  const orgId = req.user!.orgId!;
-  const data = await listClients(orgId);
-  res.json({ success: true, data, total: data.length });
-});
+router.get(
+  "/",
+  cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["clients"] }),
+  async (req: AuthRequest, res: Response) => {
+    const orgId = req.user!.orgId!;
+    const data = await listClients(orgId);
+    res.json({ success: true, data, total: data.length });
+  },
+);
 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
   const orgId = req.user!.orgId!;
@@ -56,7 +60,10 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   const orgId = req.user!.orgId!;
   const name = requireString(req.body.name, "name", { min: 1, max: 300 });
   const email = requireEmail(req.body.email, "email");
-  const primaryContact = requireString(req.body.primaryContact, "primaryContact", { min: 1, max: 500 });
+  const primaryContact = requireString(req.body.primaryContact, "primaryContact", {
+    min: 1,
+    max: 500,
+  });
 
   const result = await createClient({
     orgId,
@@ -69,7 +76,9 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     body: req.body,
   });
 
-  notifyClient.created(req.user!.userId, orgId, req.user!.userId, result.client.name, result.client.id).catch(() => {});
+  notifyClient
+    .created(req.user!.userId, orgId, req.user!.userId, result.client.name, result.client.id)
+    .catch(() => {});
   res.status(201).json({ success: true, data: result });
 });
 
@@ -77,8 +86,16 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update clients");
   assertNoOrgOverride(req);
   const orgId = req.user!.orgId!;
-  const data = await updateClient(orgId, req.params.id, req.user!.userId, req.user!.email!, req.body);
-  notifyClient.updated(req.user!.userId, orgId, req.user!.userId, data.name || "Client", req.params.id).catch(() => {});
+  const data = await updateClient(
+    orgId,
+    req.params.id,
+    req.user!.userId,
+    req.user!.email!,
+    req.body,
+  );
+  notifyClient
+    .updated(req.user!.userId, orgId, req.user!.userId, data.name || "Client", req.params.id)
+    .catch(() => {});
   res.json({ success: true, data });
 });
 

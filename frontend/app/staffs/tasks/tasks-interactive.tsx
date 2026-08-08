@@ -1,1 +1,1 @@
-export { default } from "./tasks-interactive.client"
+export { default } from "./tasks-interactive.client";

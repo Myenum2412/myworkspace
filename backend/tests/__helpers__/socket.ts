@@ -1,7 +1,7 @@
 import http from "http";
-import { Server as IOServer } from "socket.io";
-import { io as ioClient, Socket as ClientSocket } from "socket.io-client";
 import jwt from "jsonwebtoken";
+import { Server as IOServer } from "socket.io";
+import { type Socket as ClientSocket, io as ioClient } from "socket.io-client";
 import { env } from "../../src/config/env.js";
 
 export interface TestServer {
@@ -43,7 +43,12 @@ export async function startSocketServer(): Promise<TestServer> {
 }
 
 export async function connectClient(url: string, token: string): Promise<ClientSocket> {
-  const client = ioClient(url, { path: "/api/socketio", auth: { token }, transports: ["websocket"], forceNew: true });
+  const client = ioClient(url, {
+    path: "/api/socketio",
+    auth: { token },
+    transports: ["websocket"],
+    forceNew: true,
+  });
   await new Promise<void>((resolve, reject) => {
     client.on("connect", () => resolve());
     client.on("connect_error", (err) => reject(err));
@@ -73,5 +78,9 @@ export async function closeAll(sockets: ClientSocket[], server: TestServer) {
 }
 
 export function issueToken(userId: string, orgId: string): string {
-  return jwt.sign({ userId, email: "t@e.com", role: "members", permissions: [], orgId, purpose: "socket" }, env.JWT_SECRET, { expiresIn: "10m" });
+  return jwt.sign(
+    { userId, email: "t@e.com", role: "members", permissions: [], orgId, purpose: "socket" },
+    env.JWT_SECRET,
+    { expiresIn: "10m" },
+  );
 }

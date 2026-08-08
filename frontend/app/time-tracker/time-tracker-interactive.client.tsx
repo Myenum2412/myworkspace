@@ -1,24 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Loader2, Trash2, PlusCircle, EyeIcon } from "@/lib/icons";
 import { TimeEntryViewDialog } from "@/components/time-tracker/time-entry-view-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar as CalendarUI } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar, Clock, EyeIcon, Loader2, PlusCircle, Trash2 } from "@/lib/icons";
 
 const hours = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
@@ -42,7 +38,7 @@ function calcDuration(startTime?: string, endTime?: string): number {
   const [sh, sm] = startTime.split(":").map(Number);
   const [eh, em] = endTime.split(":").map(Number);
   if (isNaN(sh) || isNaN(sm) || isNaN(eh) || isNaN(em)) return 0;
-  return Math.max(0, (eh * 60 + em) - (sh * 60 + sm));
+  return Math.max(0, eh * 60 + em - (sh * 60 + sm));
 }
 
 interface TimeEntry {
@@ -132,17 +128,26 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
   };
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/time-entries/${id}`, { method: "DELETE", credentials: "include" });
+    const res = await fetch(`/api/time-entries/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
     if (res.ok) {
       setEntries((prev) => prev.filter((e) => e.id !== id));
-      setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
   const handleBulkDelete = async () => {
     const ids = [...selectedIds];
     const results = await Promise.allSettled(
-      ids.map((id) => fetch(`/api/time-entries/${id}`, { method: "DELETE", credentials: "include" }))
+      ids.map((id) =>
+        fetch(`/api/time-entries/${id}`, { method: "DELETE", credentials: "include" }),
+      ),
     );
     const deleted = ids.filter((_, i) => results[i].status === "fulfilled");
     setEntries((prev) => prev.filter((e) => !deleted.includes(e.id)));
@@ -152,7 +157,8 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -181,13 +187,18 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1.5 text-primary font-medium text-xs border border-gray-200 rounded-sm px-2.5 py-2 transition-colors outline-none">
                 <PlusCircle className="size-3.5" />
-                <span className="max-w-[80px] truncate">{selectedProject ? selectedProject.name : "Project"}</span>
+                <span className="max-w-[80px] truncate">
+                  {selectedProject ? selectedProject.name : "Project"}
+                </span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
               {selectedProject && (
                 <>
-                  <DropdownMenuItem className="text-muted-foreground text-xs cursor-pointer" onClick={() => setSelectedProject(null)}>
+                  <DropdownMenuItem
+                    className="text-muted-foreground text-xs cursor-pointer"
+                    onClick={() => setSelectedProject(null)}
+                  >
                     Clear selection
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -198,11 +209,20 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {projects.length === 0 ? (
-                <div className="px-3 py-4 text-sm text-muted-foreground text-center">No projects yet</div>
+                <div className="px-3 py-4 text-sm text-muted-foreground text-center">
+                  No projects yet
+                </div>
               ) : (
                 projects.map((project) => (
-                  <DropdownMenuItem key={project.id} className="cursor-pointer" onClick={() => setSelectedProject(project)}>
-                    <div className="w-2 h-2 rounded-sm mr-2 shadow-sm shrink-0" style={{ backgroundColor: project.color }} />
+                  <DropdownMenuItem
+                    key={project.id}
+                    className="cursor-pointer"
+                    onClick={() => setSelectedProject(project)}
+                  >
+                    <div
+                      className="w-2 h-2 rounded-sm mr-2 shadow-sm shrink-0"
+                      style={{ backgroundColor: project.color }}
+                    />
                     {project.name}
                   </DropdownMenuItem>
                 ))
@@ -219,7 +239,11 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
             <PopoverTrigger asChild>
               <button className="flex items-center gap-1.5 text-gray-600 font-medium text-xs border border-gray-200 rounded-sm px-2.5 py-2 transition-colors outline-none">
                 <Calendar className="size-3.5" />
-                {date ? date.toDateString() === new Date().toDateString() ? "Today" : date.toLocaleDateString().slice(0, 6) : "Today"}
+                {date
+                  ? date.toDateString() === new Date().toDateString()
+                    ? "Today"
+                    : date.toLocaleDateString().slice(0, 6)
+                  : "Today"}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="center">
@@ -228,25 +252,63 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
           </Popover>
 
           <div className="flex items-center gap-1 text-gray-800 font-medium text-xs">
-            <select value={startHour} onChange={(e) => setStartHour(e.target.value)} className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
-              {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+            <select
+              value={startHour}
+              onChange={(e) => setStartHour(e.target.value)}
+              className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none"
+            >
+              {hours.map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
             </select>
             <span className="text-gray-400">:</span>
-            <select value={startMinute} onChange={(e) => setStartMinute(e.target.value)} className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
-              {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+            <select
+              value={startMinute}
+              onChange={(e) => setStartMinute(e.target.value)}
+              className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none"
+            >
+              {minutes.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
             </select>
-            <button onClick={() => setStartPeriod(startPeriod === "AM" ? "PM" : "AM")} className="text-[10px] font-semibold uppercase text-muted-foreground hover:text-gray-800 w-6 text-center">
+            <button
+              onClick={() => setStartPeriod(startPeriod === "AM" ? "PM" : "AM")}
+              className="text-[10px] font-semibold uppercase text-muted-foreground hover:text-gray-800 w-6 text-center"
+            >
               {startPeriod}
             </button>
             <span className="text-gray-300 mx-0.5">-</span>
-            <select value={endHour} onChange={(e) => setEndHour(e.target.value)} className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
-              {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+            <select
+              value={endHour}
+              onChange={(e) => setEndHour(e.target.value)}
+              className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none"
+            >
+              {hours.map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
             </select>
             <span className="text-gray-400">:</span>
-            <select value={endMinute} onChange={(e) => setEndMinute(e.target.value)} className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none">
-              {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+            <select
+              value={endMinute}
+              onChange={(e) => setEndMinute(e.target.value)}
+              className="border border-gray-200 rounded-sm px-1.5 py-2 outline-none text-xs bg-transparent appearance-none"
+            >
+              {minutes.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
             </select>
-            <button onClick={() => setEndPeriod(endPeriod === "AM" ? "PM" : "AM")} className="text-[10px] font-semibold uppercase text-muted-foreground hover:text-gray-800 w-6 text-center">
+            <button
+              onClick={() => setEndPeriod(endPeriod === "AM" ? "PM" : "AM")}
+              className="text-[10px] font-semibold uppercase text-muted-foreground hover:text-gray-800 w-6 text-center"
+            >
               {endPeriod}
             </button>
           </div>
@@ -342,7 +404,11 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
               onChange={(e) => setStartHour(e.target.value)}
               className="border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-pointer text-center font-medium text-[13px] appearance-none"
             >
-              {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+              {hours.map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
             </select>
             <span className="text-gray-600">:</span>
             <select
@@ -350,7 +416,11 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
               onChange={(e) => setStartMinute(e.target.value)}
               className="border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-pointer text-center font-medium text-[13px] appearance-none"
             >
-              {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+              {minutes.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
             </select>
             <button
               onClick={() => setStartPeriod(startPeriod === "AM" ? "PM" : "AM")}
@@ -364,7 +434,11 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
               onChange={(e) => setEndHour(e.target.value)}
               className="border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-pointer text-center font-medium text-[13px] appearance-none"
             >
-              {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+              {hours.map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
             </select>
             <span className="text-gray-600">:</span>
             <select
@@ -372,7 +446,11 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
               onChange={(e) => setEndMinute(e.target.value)}
               className="border-none outline-none focus:ring-0 bg-transparent p-0 m-0 cursor-pointer text-center font-medium text-[13px] appearance-none"
             >
-              {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+              {minutes.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
             </select>
             <button
               onClick={() => setEndPeriod(endPeriod === "AM" ? "PM" : "AM")}
@@ -388,16 +466,15 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
             <PopoverTrigger asChild>
               <button className="flex items-center gap-[6px] hover:text-gray-800 transition-colors text-[13px] font-medium text-gray-600 outline-none">
                 <Calendar className="size-[16px]" />
-                {date ? date.toDateString() === new Date().toDateString() ? "Today" : date.toLocaleDateString() : "Today"}
+                {date
+                  ? date.toDateString() === new Date().toDateString()
+                    ? "Today"
+                    : date.toLocaleDateString()
+                  : "Today"}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="center">
-              <CalendarUI
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                autoFocus
-              />
+              <CalendarUI mode="single" selected={date} onSelect={setDate} autoFocus />
             </PopoverContent>
           </Popover>
 
@@ -422,10 +499,10 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
       <div className="p-4">
         <div className="flex items-center gap-2 mb-4">
           <Clock className="size-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">
-            {totalHours}h logged today
-          </span>
-          <Badge variant="secondary" className="text-xs">{entries.length} entries</Badge>
+          <span className="text-sm text-muted-foreground">{totalHours}h logged today</span>
+          <Badge variant="secondary" className="text-xs">
+            {entries.length} entries
+          </Badge>
         </div>
 
         {entries.length === 0 ? (
@@ -465,21 +542,34 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                         className="size-4 rounded-sm border-gray-300 cursor-pointer"
                       />
                     </th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Description</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Project</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                      Description
+                    </th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                      Project
+                    </th>
                     <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Time</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Duration</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                      Duration
+                    </th>
                     <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {entries.map((entry) => (
-                    <tr key={entry.id} className={`border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer ${selectedIds.has(entry.id) ? "bg-blue-50/50" : ""}`} onClick={() => setViewEntry(entry)}>
+                    <tr
+                      key={entry.id}
+                      className={`border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer ${selectedIds.has(entry.id) ? "bg-blue-50/50" : ""}`}
+                      onClick={() => setViewEntry(entry)}
+                    >
                       <td className="px-4 py-3">
                         <input
                           type="checkbox"
                           checked={selectedIds.has(entry.id)}
-                          onChange={(e) => { e.stopPropagation(); toggleSelect(entry.id); }}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            toggleSelect(entry.id);
+                          }}
                           onClick={(e) => e.stopPropagation()}
                           className="size-4 rounded-sm border-gray-300 cursor-pointer"
                         />
@@ -488,7 +578,9 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                         <p className="text-sm font-medium">{entry.description}</p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(entry.date).toLocaleDateString()}
-                          {entry.startTime && entry.endTime && ` · ${to12h(entry.startTime)} - ${to12h(entry.endTime)}`}
+                          {entry.startTime &&
+                            entry.endTime &&
+                            ` · ${to12h(entry.startTime)} - ${to12h(entry.endTime)}`}
                         </p>
                       </td>
                       <td className="px-4 py-3">
@@ -508,7 +600,8 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                       <td className="px-4 py-3">
                         <span className="text-sm font-mono font-medium">
                           {(() => {
-                            const dur = calcDuration(entry.startTime, entry.endTime) || entry.duration || 0;
+                            const dur =
+                              calcDuration(entry.startTime, entry.endTime) || entry.duration || 0;
                             return `${Math.floor(dur / 60)}h ${dur % 60}m`;
                           })()}
                         </span>
@@ -516,14 +609,20 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           <button
-                            onClick={(e) => { e.stopPropagation(); setViewEntry(entry); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setViewEntry(entry);
+                            }}
                             className="text-muted-foreground hover:text-black transition-colors p-1"
                             title="View"
                           >
                             <EyeIcon className="size-4" />
                           </button>
                           <button
-                            onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(entry.id);
+                            }}
                             className="text-muted-foreground hover:text-black transition-colors p-1"
                             title="Delete"
                           >
@@ -535,7 +634,6 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
                   ))}
                 </tbody>
               </table>
-
             </div>
           </div>
         )}
@@ -544,7 +642,9 @@ export default function TimeTracker({ user, orgId, initialEntries, projects }: T
       <TimeEntryViewDialog
         entry={viewEntry}
         open={!!viewEntry}
-        onOpenChange={(open) => { if (!open) setViewEntry(null); }}
+        onOpenChange={(open) => {
+          if (!open) setViewEntry(null);
+        }}
       />
     </main>
   );

@@ -1,6 +1,4 @@
-import {
-  validateFileExtension,
-} from "../../src/services/validation.service.js";
+import { validateFileExtension } from "../../src/services/validation.service.js";
 
 describe("validateFileExtension", () => {
   it("returns true for valid extension matching mime type", () => {

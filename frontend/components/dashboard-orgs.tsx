@@ -1,16 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Building2Icon } from "@/lib/icons";
 import { DeleteOrgDashboardButton } from "@/components/dashboard-actions";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Building2Icon } from "@/lib/icons";
 
 export function DashboardOrgsTable({ orgs }: { orgs: Record<string, unknown>[] }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -73,14 +68,10 @@ export function DashboardOrgsTable({ orgs }: { orgs: Record<string, unknown>[] }
                       onCheckedChange={() => toggle(org.id as string)}
                     />
                   </td>
-                  <td className="px-4 py-3 font-medium">
-                    {org.name as string}
-                  </td>
+                  <td className="px-4 py-3 font-medium">{org.name as string}</td>
                   <td className="px-4 py-3">{(org.plan as string) || "free"}</td>
                   <td className="px-4 py-3 text-right text-muted-foreground">
-                    {org.createdAt
-                      ? new Date(org.createdAt as string).toLocaleDateString()
-                      : "—"}
+                    {org.createdAt ? new Date(org.createdAt as string).toLocaleDateString() : "—"}
                   </td>
                   <td className="px-4 py-3">
                     <DeleteOrgDashboardButton

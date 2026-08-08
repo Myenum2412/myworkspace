@@ -1,5 +1,12 @@
-import { Schema, model, Document } from "mongoose";
-import { NOTIFICATION_TYPES, NOTIFICATION_CATEGORIES, NOTIFICATION_FREQUENCIES, NotificationType, NotificationCategory, NotificationFrequency } from "./Notification.js";
+import { type Document, model, Schema } from "mongoose";
+import {
+  NOTIFICATION_CATEGORIES,
+  NOTIFICATION_FREQUENCIES,
+  NOTIFICATION_TYPES,
+  type NotificationCategory,
+  type NotificationFrequency,
+  type NotificationType,
+} from "./Notification.js";
 
 export interface INotificationChannelSetting {
   inApp: boolean;
@@ -69,7 +76,7 @@ const NotificationChannelSettingSchema = new Schema<INotificationChannelSetting>
     sms: { type: Boolean, default: false },
     webhook: { type: Boolean, default: false },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const NotificationTypeSettingSchema = new Schema<INotificationTypeSetting>(
@@ -79,7 +86,7 @@ const NotificationTypeSettingSchema = new Schema<INotificationTypeSetting>(
     enabled: { type: Boolean, default: true },
     priority: { type: String, enum: ["critical", "high", "medium", "low"] },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const MutedNotificationSchema = new Schema<IMutedNotification>(
@@ -88,7 +95,7 @@ const MutedNotificationSchema = new Schema<IMutedNotification>(
     mutedUntil: Date,
     mutedForever: { type: Boolean, default: false },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const SnoozeScheduleSchema = new Schema<ISnoozeSchedule>(
@@ -98,12 +105,15 @@ const SnoozeScheduleSchema = new Schema<ISnoozeSchedule>(
     timezone: { type: String, default: "UTC" },
     daysOfWeek: { type: [Number], default: [1, 2, 3, 4, 5] },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const defaultCategorySettings: Record<string, INotificationChannelSetting> = {};
 for (const cat of [...NOTIFICATION_CATEGORIES]) {
-  defaultCategorySettings[cat] = { ...DEFAULT_CHANNELS, email: cat === "auth" || cat === "security" || cat === "billing" };
+  defaultCategorySettings[cat] = {
+    ...DEFAULT_CHANNELS,
+    email: cat === "auth" || cat === "security" || cat === "billing",
+  };
 }
 
 const notificationSettingsSchema = new Schema<INotificationSettings>(
@@ -137,9 +147,12 @@ const notificationSettingsSchema = new Schema<INotificationSettings>(
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export { DEFAULT_CHANNELS, defaultCategorySettings };
 
-export const NotificationSettings = model<INotificationSettings>("NotificationSettings", notificationSettingsSchema);
+export const NotificationSettings = model<INotificationSettings>(
+  "NotificationSettings",
+  notificationSettingsSchema,
+);

@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals";
-import { cacheManager, CacheKeys } from "../../../src/lib/cache.js";
+import { CacheKeys, cacheManager } from "../../../src/lib/cache.js";
 
 jest.mock("../../../src/lib/valkey.js", () => ({
   valkeyGet: jest.fn().mockResolvedValue(null),

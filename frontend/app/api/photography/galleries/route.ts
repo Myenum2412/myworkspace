@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
-import { requireUserOrgId } from "@/lib/org";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
+import { requireUserOrgId } from "@/lib/org";
 
 export async function GET() {
   const session = await auth();
@@ -12,7 +12,8 @@ export async function GET() {
 
   const orgId = await requireUserOrgId(session.user.id, session.user.email);
 
-  const galleries = await db.collection(collections.qrGalleries)
+  const galleries = await db
+    .collection(collections.qrGalleries)
     .find({ orgId })
     .sort({ createdAt: -1 })
     .toArray();

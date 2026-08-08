@@ -49,8 +49,7 @@ export async function fetchData<T>(
   if (cached !== undefined && cached !== null) {
     try {
       return dataSchema.parse(cached) as T;
-    } catch {
-    }
+    } catch {}
   }
   const responseSchema = apiResponse(dataSchema);
   const parsed = await fetchAndValidate(url, responseSchema, options);

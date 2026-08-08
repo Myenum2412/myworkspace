@@ -1,10 +1,16 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2 } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 interface PincodeResult {
   cities: string[];
@@ -102,7 +108,13 @@ interface LocationSelectProps {
   className?: string;
 }
 
-export function LocationSelect({ options, value, onChange, placeholder, className }: LocationSelectProps) {
+export function LocationSelect({
+  options,
+  value,
+  onChange,
+  placeholder,
+  className,
+}: LocationSelectProps) {
   if (options.length > 0) {
     return (
       <Select value={value} onValueChange={onChange}>
@@ -111,7 +123,9 @@ export function LocationSelect({ options, value, onChange, placeholder, classNam
         </SelectTrigger>
         <SelectContent>
           {options.map((o) => (
-            <SelectItem key={o} value={o}>{o}</SelectItem>
+            <SelectItem key={o} value={o}>
+              {o}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>

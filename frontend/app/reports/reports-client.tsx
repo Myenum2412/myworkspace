@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Input } from "@/components/ui/input";
-import { BarChart3Icon, SearchIcon, MedalIcon } from "@/lib/icons";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LeaderboardRankings } from "@/components/ui/leaderboard-rankings";
+import { Input } from "@/components/ui/input";
 import type { LeaderboardRankingItem } from "@/components/ui/leaderboard-rankings";
+import { LeaderboardRankings } from "@/components/ui/leaderboard-rankings";
+import { BarChart3Icon, MedalIcon, SearchIcon } from "@/lib/icons";
 
 type Task = {
   _id: string;
@@ -43,14 +43,20 @@ export default function ReportsClient({ tasks, employees }: ReportsClientProps) 
       (t) =>
         t.title.toLowerCase().includes(q) ||
         t.status.toLowerCase().includes(q) ||
-        t.priority.toLowerCase().includes(q)
+        t.priority.toLowerCase().includes(q),
     );
   }, [tasks, searchQuery]);
 
   const total = filteredTasks.length;
   const completed = filteredTasks.filter((t) => t.status === "done").length;
   const inProgress = filteredTasks.filter((t) => t.status === "in_progress").length;
-  const overdue = filteredTasks.filter((t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "done" && t.status !== "cancelled").length;
+  const overdue = filteredTasks.filter(
+    (t) =>
+      t.dueDate &&
+      new Date(t.dueDate) < new Date() &&
+      t.status !== "done" &&
+      t.status !== "cancelled",
+  ).length;
 
   const leaderboardRankings = useMemo<LeaderboardRankingItem[]>(() => {
     const sorted = [...employees].sort((a, b) => {
@@ -65,15 +71,32 @@ export default function ReportsClient({ tasks, employees }: ReportsClientProps) 
       value: Math.max(0, 100 - i * 7 + Math.floor(Math.sin(i * 2.5) * 10)),
       byline: emp.designation || emp.department || emp.role,
       avatarUrl: emp.avatar || null,
-      rankChange: i === 0 ? 2 : i === sorted.length - 1 ? -3 : (i % 3 === 0 ? 1 : i % 3 === 1 ? -1 : 0),
+      rankChange:
+        i === 0 ? 2 : i === sorted.length - 1 ? -3 : i % 3 === 0 ? 1 : i % 3 === 1 ? -1 : 0,
     }));
   }, [employees]);
 
   const priorityBreakdown = [
-    { label: "Urgent", count: filteredTasks.filter((t) => t.priority === "urgent").length, color: "bg-red-500" },
-    { label: "High", count: filteredTasks.filter((t) => t.priority === "high").length, color: "bg-red-500" },
-    { label: "Medium", count: filteredTasks.filter((t) => t.priority === "medium").length, color: "bg-red-500" },
-    { label: "Low", count: filteredTasks.filter((t) => t.priority === "low").length, color: "bg-gray-400" },
+    {
+      label: "Urgent",
+      count: filteredTasks.filter((t) => t.priority === "urgent").length,
+      color: "bg-red-500",
+    },
+    {
+      label: "High",
+      count: filteredTasks.filter((t) => t.priority === "high").length,
+      color: "bg-red-500",
+    },
+    {
+      label: "Medium",
+      count: filteredTasks.filter((t) => t.priority === "medium").length,
+      color: "bg-red-500",
+    },
+    {
+      label: "Low",
+      count: filteredTasks.filter((t) => t.priority === "low").length,
+      color: "bg-gray-400",
+    },
   ];
 
   return (
@@ -99,7 +122,9 @@ export default function ReportsClient({ tasks, employees }: ReportsClientProps) 
 
       <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="text-base">Priority Breakdown</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Priority Breakdown</CardTitle>
+          </CardHeader>
           <CardContent>
             {total === 0 ? (
               <p className="text-sm text-muted-foreground">No task data available.</p>
@@ -111,7 +136,10 @@ export default function ReportsClient({ tasks, employees }: ReportsClientProps) 
                     <span className="text-sm flex-1">{p.label}</span>
                     <span className="text-sm font-bold">{p.count}</span>
                     <div className="w-24 h-2 rounded-sm bg-muted">
-                      <div className={`h-2 rounded-sm ${p.color}`} style={{ width: `${total > 0 ? (p.count / total) * 100 : 0}%` }} />
+                      <div
+                        className={`h-2 rounded-sm ${p.color}`}
+                        style={{ width: `${total > 0 ? (p.count / total) * 100 : 0}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -121,18 +149,32 @@ export default function ReportsClient({ tasks, employees }: ReportsClientProps) 
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">Status Overview</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Status Overview</CardTitle>
+          </CardHeader>
           <CardContent>
             {total === 0 ? (
               <p className="text-sm text-muted-foreground">No task data available.</p>
             ) : (
               <div className="space-y-3">
                 {[
-                  { label: "To Do", count: filteredTasks.filter((t) => t.status === "todo").length, color: "bg-gray-400" },
+                  {
+                    label: "To Do",
+                    count: filteredTasks.filter((t) => t.status === "todo").length,
+                    color: "bg-gray-400",
+                  },
                   { label: "In Progress", count: inProgress, color: "bg-red-500" },
-                  { label: "Review", count: filteredTasks.filter((t) => t.status === "review").length, color: "bg-gray-1000" },
+                  {
+                    label: "Review",
+                    count: filteredTasks.filter((t) => t.status === "review").length,
+                    color: "bg-gray-1000",
+                  },
                   { label: "Done", count: completed, color: "bg-red-500" },
-                  { label: "Cancelled", count: filteredTasks.filter((t) => t.status === "cancelled").length, color: "bg-red-500" },
+                  {
+                    label: "Cancelled",
+                    count: filteredTasks.filter((t) => t.status === "cancelled").length,
+                    color: "bg-red-500",
+                  },
                   { label: "Overdue", count: overdue, color: "bg-red-500" },
                 ].map((s) => (
                   <div key={s.label} className="flex items-center gap-3">
@@ -140,7 +182,10 @@ export default function ReportsClient({ tasks, employees }: ReportsClientProps) 
                     <span className="text-sm flex-1">{s.label}</span>
                     <span className="text-sm font-bold">{s.count}</span>
                     <div className="w-24 h-2 rounded-sm bg-muted">
-                      <div className={`h-2 rounded-sm ${s.color}`} style={{ width: `${total > 0 ? (s.count / total) * 100 : 0}%` }} />
+                      <div
+                        className={`h-2 rounded-sm ${s.color}`}
+                        style={{ width: `${total > 0 ? (s.count / total) * 100 : 0}%` }}
+                      />
                     </div>
                   </div>
                 ))}

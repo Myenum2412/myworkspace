@@ -1,18 +1,28 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
-} from "@/components/ui/dialog";
+import { useCallback, useRef, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import {
-  UploadIcon, XIcon, FileText, Loader2Icon, AlertCircleIcon, CheckCircleIcon,
-} from "@/lib/icons";
 import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertCircleIcon,
+  CheckCircleIcon,
+  FileText,
+  Loader2Icon,
+  UploadIcon,
+  XIcon,
+} from "@/lib/icons";
 
 interface UploadFile {
   file: File;
@@ -40,7 +50,17 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId, moduleName, entityId, projectId, onUploadComplete }: FileUploadDialogProps) {
+export function FileUploadDialog({
+  open,
+  onOpenChange,
+  orgId,
+  folderId,
+  clientId,
+  moduleName,
+  entityId,
+  projectId,
+  onUploadComplete,
+}: FileUploadDialogProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [description, setDescription] = useState("");
@@ -56,24 +76,27 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
   }, []);
 
   const addFiles = useCallback((fileList: FileList | File[]) => {
-    const newFiles: UploadFile[] = Array.from(fileList).map(file => ({
+    const newFiles: UploadFile[] = Array.from(fileList).map((file) => ({
       file,
       id: Math.random().toString(36).slice(2),
       progress: 0,
       status: "pending" as const,
     }));
-    setFiles(prev => [...prev, ...newFiles]);
+    setFiles((prev) => [...prev, ...newFiles]);
   }, []);
 
   const removeFile = useCallback((id: string) => {
-    setFiles(prev => prev.filter(f => f.id !== id));
+    setFiles((prev) => prev.filter((f) => f.id !== id));
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
-  }, [addFiles]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragOver(false);
+      if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+    },
+    [addFiles],
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -87,7 +110,7 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
     setUploading(true);
 
     const formData = new FormData();
-    files.forEach(f => formData.append("files", f.file));
+    files.forEach((f) => formData.append("files", f.file));
     formData.append("orgId", orgId);
     formData.append("folderId", folderId || "");
     if (clientId) formData.append("clientId", clientId);
@@ -95,9 +118,17 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
     if (entityId) formData.append("entityId", entityId);
     if (projectId) formData.append("projectId", projectId);
     formData.append("description", description);
-    formData.append("tags", JSON.stringify(tags.split(",").map(t => t.trim()).filter(Boolean)));
+    formData.append(
+      "tags",
+      JSON.stringify(
+        tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+      ),
+    );
 
-    setFiles(prev => prev.map(f => ({ ...f, status: "uploading" as const })));
+    setFiles((prev) => prev.map((f) => ({ ...f, status: "uploading" as const })));
 
     try {
       const res = await fetch(`/api/files/upload`, {
@@ -109,30 +140,51 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
       const data = await res.json();
 
       if (data.results) {
-        setFiles(prev => prev.map((f, i) => {
-          const result = data.results[i];
-          if (!result) return { ...f, status: "error" as const, error: "Upload failed" };
-          if (result.error === "duplicate_skipped") return { ...f, status: "duplicate" as const };
-          if (result.fileId) return { ...f, status: "done" as const, progress: 100 };
-          return { ...f, status: "error" as const, error: result.error || "Upload failed" };
-        }));
+        setFiles((prev) =>
+          prev.map((f, i) => {
+            const result = data.results[i];
+            if (!result) return { ...f, status: "error" as const, error: "Upload failed" };
+            if (result.error === "duplicate_skipped") return { ...f, status: "duplicate" as const };
+            if (result.fileId) return { ...f, status: "done" as const, progress: 100 };
+            return { ...f, status: "error" as const, error: result.error || "Upload failed" };
+          }),
+        );
       } else if (!res.ok) {
         const serverError = data.error || `HTTP ${res.status}`;
-        setFiles(prev => prev.map(f => f.status === "uploading" ? { ...f, status: "error" as const, error: serverError } : f));
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.status === "uploading" ? { ...f, status: "error" as const, error: serverError } : f,
+          ),
+        );
       }
     } catch (err: any) {
-      setFiles(prev => prev.map(f => f.status === "uploading" ? { ...f, status: "error" as const, error: err.message || "Network error" } : f));
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.status === "uploading"
+            ? { ...f, status: "error" as const, error: err.message || "Network error" }
+            : f,
+        ),
+      );
     } finally {
       setUploading(false);
       onUploadComplete?.();
     }
   };
 
-  const allDone = files.length > 0 && files.every(f => f.status === "done" || f.status === "duplicate");
-  const hasError = files.some(f => f.status === "error");
+  const allDone =
+    files.length > 0 && files.every((f) => f.status === "done" || f.status === "duplicate");
+  const hasError = files.some((f) => f.status === "error");
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) { onOpenChange(false); setTimeout(reset, 300); } }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) {
+          onOpenChange(false);
+          setTimeout(reset, 300);
+        }
+      }}
+    >
       <DialogContent className="w-auto h-auto min-w-[50vw] sm:max-w-fit p-0 overflow-hidden border-none shadow-2xl">
         <div className="bg-gradient-to-br from-primary/5 via-background to-background p-6 space-y-6">
           <DialogHeader>
@@ -154,17 +206,21 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
             <div className="space-y-1">
               <p className="font-semibold">Important Upload Guidelines</p>
               <ul className="list-disc list-inside text-amber-700/80 dark:text-amber-400/80 text-xs space-y-1">
-                <li>Maximum file size is <strong>500MB</strong> per file.</li>
+                <li>
+                  Maximum file size is <strong>500MB</strong> per file.
+                </li>
                 <li>Please ensure files are relevant to the client or project.</li>
-                <li>Do not upload executable files (.exe, .bat) or sensitive unencrypted credentials.</li>
+                <li>
+                  Do not upload executable files (.exe, .bat) or sensitive unencrypted credentials.
+                </li>
               </ul>
             </div>
           </div>
 
           <div
             className={`group relative border-2 border-dashed rounded-sm p-10 text-center cursor-pointer transition-all duration-200 ease-in-out ${
-              dragOver 
-                ? "border-primary bg-primary/10 scale-[1.02] shadow-inner" 
+              dragOver
+                ? "border-primary bg-primary/10 scale-[1.02] shadow-inner"
                 : "border-muted-foreground/25 bg-card hover:bg-muted/50 hover:border-primary/50"
             }`}
             onDrop={handleDrop}
@@ -173,15 +229,15 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
             onClick={() => inputRef.current?.click()}
           >
             <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-sm" />
-            <div className={`mx-auto flex size-16 items-center justify-center rounded-sm bg-primary/10 mb-4 transition-transform duration-300 ${dragOver ? "scale-110" : ""}`}>
+            <div
+              className={`mx-auto flex size-16 items-center justify-center rounded-sm bg-primary/10 mb-4 transition-transform duration-300 ${dragOver ? "scale-110" : ""}`}
+            >
               <UploadIcon className="size-8 text-primary" />
             </div>
             <p className="text-base font-medium text-foreground mb-1">
               {dragOver ? "Drop files here!" : "Drag & drop files here"}
             </p>
-            <p className="text-sm text-muted-foreground">
-              or click to browse your computer
-            </p>
+            <p className="text-sm text-muted-foreground">or click to browse your computer</p>
             <input
               ref={inputRef}
               type="file"
@@ -218,7 +274,10 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
           {files.length > 0 && (
             <div className="space-y-1 max-h-52 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-muted-foreground/20 divide-y">
               {files.map((f) => (
-                <div key={f.id} className="group flex items-center gap-3 py-3 text-sm transition-all">
+                <div
+                  key={f.id}
+                  className="group flex items-center gap-3 py-3 text-sm transition-all"
+                >
                   <div className="grid size-9 shrink-0 place-content-center rounded border bg-muted">
                     {f.status === "uploading" ? (
                       <Loader2Icon className="size-4 text-primary animate-spin" />
@@ -227,7 +286,10 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
                     ) : f.status === "error" ? (
                       <AlertCircleIcon className="size-4 text-destructive" />
                     ) : f.status === "duplicate" ? (
-                      <Badge variant="secondary" className="text-[10px] px-1"> dup</Badge>
+                      <Badge variant="secondary" className="text-[10px] px-1">
+                        {" "}
+                        dup
+                      </Badge>
                     ) : (
                       <FileText className="size-4 text-muted-foreground" />
                     )}
@@ -243,8 +305,11 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
                     )}
                   </div>
                   {!uploading && (f.status === "pending" || f.status === "error") && (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); removeFile(f.id); }} 
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile(f.id);
+                      }}
                       className="text-muted-foreground hover:text-destructive p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                       title="Remove file"
                     >
@@ -258,27 +323,41 @@ export function FileUploadDialog({ open, onOpenChange, orgId, folderId, clientId
 
           {hasError && (
             <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 p-3 rounded-sm">
-              <AlertCircleIcon className="size-4 shrink-0" /> 
+              <AlertCircleIcon className="size-4 shrink-0" />
               <span>Some files failed to upload. Hover over the error icon for details.</span>
             </div>
           )}
         </div>
 
         <DialogFooter className="bg-muted/40 p-4 border-t border-border/50 flex flex-col sm:flex-row gap-2 sm:gap-0">
-          <Button variant="outline" onClick={() => { onOpenChange(false); setTimeout(reset, 300); }} className="">
+          <Button
+            variant="outline"
+            onClick={() => {
+              onOpenChange(false);
+              setTimeout(reset, 300);
+            }}
+            className=""
+          >
             Cancel
           </Button>
-          <Button 
-            onClick={startUpload} 
+          <Button
+            onClick={startUpload}
             disabled={!files.length || uploading}
             className="shadow-md transition-all active:scale-95 bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {uploading ? (
-              <><Loader2Icon className="mr-2 size-4 animate-spin" /> Uploading...</>
+              <>
+                <Loader2Icon className="mr-2 size-4 animate-spin" /> Uploading...
+              </>
             ) : allDone ? (
-              <><CheckCircleIcon className="mr-2 size-4" /> Done</>
+              <>
+                <CheckCircleIcon className="mr-2 size-4" /> Done
+              </>
             ) : (
-              <><UploadIcon className="mr-2 size-4" /> Upload {files.length} file{files.length > 1 ? "s" : ""}</>
+              <>
+                <UploadIcon className="mr-2 size-4" /> Upload {files.length} file
+                {files.length > 1 ? "s" : ""}
+              </>
             )}
           </Button>
         </DialogFooter>

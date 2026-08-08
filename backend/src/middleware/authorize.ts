@@ -1,26 +1,28 @@
-import { Response, NextFunction } from "express";
 import crypto from "crypto";
-import { AuthRequest } from "./auth.js";
-import { AppError } from "./error.js";
-import { ROLES, isPlatformRole, isAdminRole } from "../lib/rbac/index.js";
+import type { NextFunction, Response } from "express";
+import { isAdminRole, isPlatformRole, ROLES } from "../lib/rbac/index.js";
 import { recordAuditLog } from "../services/audit.service.js";
+import type { AuthRequest } from "./auth.js";
+import { AppError } from "./error.js";
 
 /**
  * Extract correlation ID from request headers or generate one.
  */
 function getCorrelationId(req: AuthRequest): string {
-  return (req.headers["x-correlation-id"] as string) ||
+  return (
+    (req.headers["x-correlation-id"] as string) ||
     (req.headers["x-request-id"] as string) ||
-    crypto.randomUUID();
+    crypto.randomUUID()
+  );
 }
 
 /**
  * Extract trace ID from request headers.
  */
 function getTraceId(req: AuthRequest): string | undefined {
-  return (req.headers["x-trace-id"] as string) ||
-    (req.headers["x-b3-traceid"] as string) ||
-    undefined;
+  return (
+    (req.headers["x-trace-id"] as string) || (req.headers["x-b3-traceid"] as string) || undefined
+  );
 }
 
 /**
@@ -170,7 +172,7 @@ export function auditLog(action: string, entityType: string) {
     const correlationId = getCorrelationId(req);
 
     const originalSend = _res.json.bind(_res);
-    _res.json = function (body: any) {
+    _res.json = (body: any) => {
       const duration = Date.now() - startTime;
       const success = _res.statusCode < 400;
 
@@ -219,7 +221,7 @@ export function auditDataMutation(action: string, entityType: string) {
     const requestBody = { ...req.body };
 
     const originalSend = _res.json.bind(_res);
-    _res.json = function (body: any) {
+    _res.json = (body: any) => {
       const duration = Date.now() - startTime;
       const success = _res.statusCode < 400;
 

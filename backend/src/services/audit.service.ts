@@ -1,9 +1,9 @@
-import { AuditLog, calculateAuditHash, IAuditLog } from "../lib/db/models/AuditLog.js";
-import { ActivityLog } from "../lib/db/models/ActivityLog.js";
-import { eventProducer } from "../lib/queue/producer.js";
-import { logger } from "../lib/logger/index.js";
-import { env } from "../config/env.js";
 import crypto from "crypto";
+import { env } from "../config/env.js";
+import { ActivityLog } from "../lib/db/models/ActivityLog.js";
+import { AuditLog, calculateAuditHash, IAuditLog } from "../lib/db/models/AuditLog.js";
+import { logger } from "../lib/logger/index.js";
+import { eventProducer } from "../lib/queue/producer.js";
 
 /**
  * Enhanced Audit Service with immutable hash chain logging.
@@ -87,20 +87,30 @@ function calculateRiskScore(entry: AuditEntry): { score: number; factors: string
 
   // High-risk actions
   const highRiskActions = [
-    "password.reset", "password.changed", "role.changed",
-    "permission.granted", "permission.revoked", "user.deleted",
-    "org.deleted", "billing.changed", "security.bypass",
+    "password.reset",
+    "password.changed",
+    "role.changed",
+    "permission.granted",
+    "permission.revoked",
+    "user.deleted",
+    "org.deleted",
+    "billing.changed",
+    "security.bypass",
   ];
 
   const mediumRiskActions = [
-    "login.failed", "logout", "session.terminated",
-    "data.exported", "file.deleted", "settings.changed",
+    "login.failed",
+    "logout",
+    "session.terminated",
+    "data.exported",
+    "file.deleted",
+    "settings.changed",
   ];
 
-  if (highRiskActions.some(a => entry.action.includes(a))) {
+  if (highRiskActions.some((a) => entry.action.includes(a))) {
     score += 40;
     factors.push("high_risk_action");
-  } else if (mediumRiskActions.some(a => entry.action.includes(a))) {
+  } else if (mediumRiskActions.some((a) => entry.action.includes(a))) {
     score += 20;
     factors.push("medium_risk_action");
   }
@@ -166,9 +176,8 @@ async function writeDirect(entry: AuditEntry): Promise<void> {
     const createdAt = new Date();
 
     // Parse metadata if it's a string
-    const metadata = typeof entry.metadata === "string"
-      ? JSON.parse(entry.metadata)
-      : entry.metadata;
+    const metadata =
+      typeof entry.metadata === "string" ? JSON.parse(entry.metadata) : entry.metadata;
 
     // Calculate risk score
     const { score: riskScore, factors: riskFactors } = calculateRiskScore(entry);
@@ -237,7 +246,8 @@ async function writeDirect(entry: AuditEntry): Promise<void> {
       ipAddress: entry.ipAddress,
       userAgent: entry.userAgent,
       success: entry.success,
-      metadata: typeof entry.metadata === "string" ? entry.metadata : JSON.stringify(entry.metadata),
+      metadata:
+        typeof entry.metadata === "string" ? entry.metadata : JSON.stringify(entry.metadata),
     });
   } catch (err) {
     logger.error({ err, entry }, "Direct audit log write failed");
@@ -252,11 +262,10 @@ async function writeViaQueue(entry: AuditEntry): Promise<void> {
     const { QUEUES, getChannel } = await import("../lib/queue/connection.js");
     const ch = await getChannel();
     if (ch) {
-      ch.sendToQueue(
-        QUEUES.AUDIT_LOG,
-        Buffer.from(JSON.stringify(entry)),
-        { persistent: true, priority: 5 },
-      );
+      ch.sendToQueue(QUEUES.AUDIT_LOG, Buffer.from(JSON.stringify(entry)), {
+        persistent: true,
+        priority: 5,
+      });
       return;
     }
   } catch {

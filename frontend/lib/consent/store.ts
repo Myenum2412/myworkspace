@@ -144,7 +144,9 @@ export const useConsentStore = create<ConsentState>()(
             showBanner: true,
             showPreferences: false,
           });
-          window.dispatchEvent(new CustomEvent("consentUpdated", { detail: { categories: DEFAULT_CATEGORIES } }));
+          window.dispatchEvent(
+            new CustomEvent("consentUpdated", { detail: { categories: DEFAULT_CATEGORIES } }),
+          );
         } catch (err) {
           console.error("Failed to withdraw consent:", err);
         } finally {
@@ -197,6 +199,6 @@ export const useConsentStore = create<ConsentState>()(
         consent: state.consent,
         region: state.region,
       }),
-    }
-  )
+    },
+  ),
 );

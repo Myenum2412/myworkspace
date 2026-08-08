@@ -1,6 +1,6 @@
-import { newEnforcer, Enforcer } from "casbin";
-import path from "path";
+import { type Enforcer, newEnforcer } from "casbin";
 import fs from "fs";
+import path from "path";
 
 // Use process.cwd() to find config files relative to project root
 const CONFIG_DIR = path.resolve(process.cwd(), "src", "config");

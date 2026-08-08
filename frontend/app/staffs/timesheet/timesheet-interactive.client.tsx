@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -10,9 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusIcon, Trash2Icon, SaveIcon, ClockIcon, ChevronDownIcon } from "@/lib/icons";
-import { toast } from "sonner";
+import { ChevronDownIcon, ClockIcon, PlusIcon, SaveIcon, Trash2Icon } from "@/lib/icons";
 
 type Task = {
   _id: string;
@@ -53,7 +53,15 @@ type TimesheetInteractiveProps = {
   initialTimesheet?: TimesheetRow[];
 };
 
-const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+const DAYS = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const;
 const DAY_LABELS: Record<string, string> = {
   monday: "Mon",
   tuesday: "Tue",
@@ -111,7 +119,7 @@ function calcDuration(startTime: string, endTime: string): number {
   const [sh, sm] = startTime.split(":").map(Number);
   const [eh, em] = endTime.split(":").map(Number);
   if (isNaN(sh) || isNaN(sm) || isNaN(eh) || isNaN(em)) return 0;
-  return Math.max(0, (eh * 60 + em) - (sh * 60 + sm));
+  return Math.max(0, eh * 60 + em - (sh * 60 + sm));
 }
 
 function formatDuration(minutes: number): string {
@@ -164,7 +172,9 @@ function TimeInputPopover({
         <div className="absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg p-3 z-50 w-64">
           <div className="space-y-3">
             <div>
-              <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 block">Start Time</label>
+              <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 block">
+                Start Time
+              </label>
               <div className="flex items-center gap-1">
                 <select
                   value={startParsed.hour}
@@ -176,7 +186,11 @@ function TimeInputPopover({
                   }}
                   className="border rounded px-2 py-1.5 text-xs w-14"
                 >
-                  {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+                  {hours.map((h) => (
+                    <option key={h} value={h}>
+                      {h}
+                    </option>
+                  ))}
                 </select>
                 <span className="text-muted-foreground">:</span>
                 <select
@@ -189,7 +203,11 @@ function TimeInputPopover({
                   }}
                   className="border rounded px-2 py-1.5 text-xs w-14"
                 >
-                  {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+                  {minutes.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
                 </select>
                 <button
                   type="button"
@@ -207,7 +225,9 @@ function TimeInputPopover({
               </div>
             </div>
             <div>
-              <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 block">End Time</label>
+              <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 block">
+                End Time
+              </label>
               <div className="flex items-center gap-1">
                 <select
                   value={endParsed.hour}
@@ -219,7 +239,11 @@ function TimeInputPopover({
                   }}
                   className="border rounded px-2 py-1.5 text-xs w-14"
                 >
-                  {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+                  {hours.map((h) => (
+                    <option key={h} value={h}>
+                      {h}
+                    </option>
+                  ))}
                 </select>
                 <span className="text-muted-foreground">:</span>
                 <select
@@ -232,7 +256,11 @@ function TimeInputPopover({
                   }}
                   className="border rounded px-2 py-1.5 text-xs w-14"
                 >
-                  {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+                  {minutes.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
                 </select>
                 <button
                   type="button"
@@ -267,12 +295,7 @@ function TimeInputPopover({
               >
                 Clear
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                className="flex-1"
-                onClick={() => setOpen(false)}
-              >
+              <Button type="button" size="sm" className="flex-1" onClick={() => setOpen(false)}>
                 Done
               </Button>
             </div>
@@ -324,16 +347,16 @@ export default function TimesheetInteractive({
           updated.taskId = "";
         }
         return updated;
-      })
+      }),
     );
   };
 
-  const updateDayTime = (id: string, day: typeof DAYS[number], value: DayTimeEntry) => {
+  const updateDayTime = (id: string, day: (typeof DAYS)[number], value: DayTimeEntry) => {
     setRows((prev) =>
       prev.map((row) => {
         if (row.id !== id) return row;
         return { ...row, [day]: value };
-      })
+      }),
     );
   };
 
@@ -356,7 +379,13 @@ export default function TimesheetInteractive({
         body: JSON.stringify({
           orgId,
           userId,
-          rows: rows.filter((r) => r.projectId || r.taskId || r.remarks || DAYS.some((d) => r[d].startTime || r[d].endTime)),
+          rows: rows.filter(
+            (r) =>
+              r.projectId ||
+              r.taskId ||
+              r.remarks ||
+              DAYS.some((d) => r[d].startTime || r[d].endTime),
+          ),
         }),
       });
       if (res.ok) {
@@ -401,15 +430,26 @@ export default function TimesheetInteractive({
             <thead>
               <tr>
                 <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-12">#</th>
-                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left min-w-[150px]">Project</th>
-                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left min-w-[150px]">Task</th>
-                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left min-w-[120px]">Remarks</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left min-w-[150px]">
+                  Project
+                </th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left min-w-[150px]">
+                  Task
+                </th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left min-w-[120px]">
+                  Remarks
+                </th>
                 {DAYS.map((day) => (
-                  <th key={day} className="px-4 py-3.5 font-semibold whitespace-nowrap text-center w-24">
+                  <th
+                    key={day}
+                    className="px-4 py-3.5 font-semibold whitespace-nowrap text-center w-24"
+                  >
                     {DAY_LABELS[day]}
                   </th>
                 ))}
-                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-center w-20">Total</th>
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-center w-20">
+                  Total
+                </th>
                 <th className="px-4 py-3.5 w-10" />
               </tr>
             </thead>
@@ -421,7 +461,10 @@ export default function TimesheetInteractive({
                 }, 0);
 
                 return (
-                  <tr key={row.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
+                  <tr
+                    key={row.id}
+                    className="border-b last:border-0 hover:bg-slate-50 transition-colors"
+                  >
                     <td className="px-4 py-3 text-muted-foreground">{index + 1}</td>
                     <td className="px-4 py-3">
                       <Select

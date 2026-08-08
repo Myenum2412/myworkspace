@@ -1,5 +1,5 @@
-import crypto from "crypto";
 import { jest } from "@jest/globals";
+import crypto from "crypto";
 import { recordAuditLog } from "../../../src/services/audit.service.js";
 
 jest.mock("../../../src/lib/queue/producer.js", () => ({
@@ -98,12 +98,18 @@ describe("Webhook receivers (contract)", () => {
     const payload = JSON.stringify({ event: "test", data: {} });
     const secret = "whsec_test";
     const timestamp = Math.floor(Date.now() / 1000);
-    const validSig = crypto.createHmac("sha256", secret).update(`${timestamp}.${payload}`).digest("hex");
+    const validSig = crypto
+      .createHmac("sha256", secret)
+      .update(`${timestamp}.${payload}`)
+      .digest("hex");
 
     expect(validSig).toBeTruthy();
 
     const tamperedPayload = JSON.stringify({ event: "test", data: { tampered: true } });
-    const tamperedSig = crypto.createHmac("sha256", secret).update(`${timestamp}.${tamperedPayload}`).digest("hex");
+    const tamperedSig = crypto
+      .createHmac("sha256", secret)
+      .update(`${timestamp}.${tamperedPayload}`)
+      .digest("hex");
     expect(tamperedSig).not.toBe(validSig);
   });
 

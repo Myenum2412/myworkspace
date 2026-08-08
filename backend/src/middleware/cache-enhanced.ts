@@ -1,10 +1,10 @@
-import { Response, NextFunction } from "express";
+import type { NextFunction, Response } from "express";
+import type { Cluster, Redis } from "ioredis";
 import NodeCache from "node-cache";
-import { Redis, Cluster } from "ioredis";
 import { cacheService } from "../lib/cache/cache-service.js";
-import { getValkey, isValkeyConnected } from "../lib/valkey.js";
 import { logger } from "../lib/logger/index.js";
 import { metricsRegistry } from "../lib/monitoring/index.js";
+import { getValkey, isValkeyConnected } from "../lib/valkey.js";
 import type { AuthRequest } from "./auth.js";
 
 interface CacheEnhancedOptions {
@@ -61,7 +61,9 @@ function buildCacheKey(req: AuthRequest, options: CacheEnhancedOptions): string 
   if (options.varyByQuery) {
     const query = req.query;
     if (Object.keys(query).length > 0) {
-      const sorted = Object.keys(query).sort().map((k) => `${k}=${query[k]}`);
+      const sorted = Object.keys(query)
+        .sort()
+        .map((k) => `${k}=${query[k]}`);
       parts.push(`q:${sorted.join("&")}`);
     }
   }
@@ -157,7 +159,10 @@ export function cacheEnhanced(options: CacheEnhancedOptions) {
     const l1Hit = l1Cache.get<string>(cacheKey);
     if (l1Hit !== undefined) {
       totalHits++;
-      metricsRegistry.incrementCounter("cache_layer_hits", { layer: "l1", endpoint: req.originalUrl || "" });
+      metricsRegistry.incrementCounter("cache_layer_hits", {
+        layer: "l1",
+        endpoint: req.originalUrl || "",
+      });
       res.setHeader("X-Cache", "HIT");
       res.setHeader("X-Cache-Layer", "L1");
       res.setHeader("X-Cache-Key", cacheKey);
@@ -193,7 +198,10 @@ export function cacheEnhanced(options: CacheEnhancedOptions) {
     if (l2Hit !== null) {
       totalHits++;
       l1Cache.set(cacheKey, l2Hit, options.ttl);
-      metricsRegistry.incrementCounter("cache_layer_hits", { layer: "l2", endpoint: req.originalUrl || "" });
+      metricsRegistry.incrementCounter("cache_layer_hits", {
+        layer: "l2",
+        endpoint: req.originalUrl || "",
+      });
       res.setHeader("X-Cache", "HIT");
       res.setHeader("X-Cache-Layer", "L2");
       res.setHeader("X-Cache-Key", cacheKey);

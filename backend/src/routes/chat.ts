@@ -1,11 +1,11 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
+import { type Response, Router } from "express";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import {
-  sendMessage,
+  getConversations,
   getMessageHistory,
   markConversationRead,
-  getConversations,
+  sendMessage,
 } from "../services/chat.service.js";
 import { processEvent } from "../services/notification-engine.service.js";
 
@@ -71,16 +71,20 @@ router.get("/messages/:conversationId", authenticate, async (req: AuthRequest, r
   res.json({ success: true, data: messages });
 });
 
-router.post("/messages/:conversationId/read", authenticate, async (req: AuthRequest, res: Response) => {
-  const { conversationId } = req.params;
-  if (!req.user?.orgId || !req.user?.userId) throw new AppError(401, "Unauthorized");
-  await markConversationRead({
-    orgId: req.user.orgId,
-    conversationId,
-    userId: req.user.userId,
-  });
-  res.json({ success: true });
-});
+router.post(
+  "/messages/:conversationId/read",
+  authenticate,
+  async (req: AuthRequest, res: Response) => {
+    const { conversationId } = req.params;
+    if (!req.user?.orgId || !req.user?.userId) throw new AppError(401, "Unauthorized");
+    await markConversationRead({
+      orgId: req.user.orgId,
+      conversationId,
+      userId: req.user.userId,
+    });
+    res.json({ success: true });
+  },
+);
 
 router.get("/conversations", authenticate, async (req: AuthRequest, res: Response) => {
   if (!req.user?.orgId || !req.user?.userId) throw new AppError(401, "Unauthorized");

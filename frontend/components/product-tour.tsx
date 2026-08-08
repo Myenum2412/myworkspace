@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { TourProvider, useTour, type Tour } from "@/components/ui/tour";
+import { useSession } from "next-auth/react";
+import { useEffect, useRef } from "react";
+import { type Tour, TourProvider, useTour } from "@/components/ui/tour";
 import { completeTourAction } from "@/lib/actions/tour";
 
 const TOUR_STORAGE_KEY = "product_tour_completed";

@@ -1,16 +1,16 @@
-"use client"
-import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Eye, Pencil, Trash2, XCircle, CheckCircle, Ban } from "@/lib/icons";
-import { Button } from "@/components/ui/button";
+"use client";
+import type { ColumnDef } from "@tanstack/react-table";
+import type { Appointment, AppointmentStatus } from "@/components/appointments/appointment-types";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Appointment, AppointmentStatus } from "@/components/appointments/appointment-types";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+import { Ban, CheckCircle, Eye, MoreHorizontal, Pencil, Trash2, XCircle } from "@/lib/icons";
 
 export const statusColorMap: Record<AppointmentStatus, string> = {
   Pending: "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
@@ -41,7 +41,9 @@ export const columns: ColumnDef<Appointment>[] = [
   {
     accessorKey: "mobileNumber",
     header: "Mobile Number",
-    cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("mobileNumber")}</span>,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.getValue("mobileNumber")}</span>
+    ),
   },
   {
     accessorKey: "doctorName",
@@ -59,7 +61,9 @@ export const columns: ColumnDef<Appointment>[] = [
   {
     accessorKey: "preferredTime",
     header: "Preferred Time",
-    cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("preferredTime")}</span>,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.getValue("preferredTime")}</span>
+    ),
   },
   {
     accessorKey: "status",
@@ -67,7 +71,9 @@ export const columns: ColumnDef<Appointment>[] = [
     cell: ({ row }) => {
       const status = row.getValue<AppointmentStatus>("status");
       return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColorMap[status] || ""}`}>
+        <span
+          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColorMap[status] || ""}`}
+        >
           {status}
         </span>
       );
@@ -90,7 +96,9 @@ export const columns: ColumnDef<Appointment>[] = [
     header: "Booking Date",
     cell: ({ row }) => {
       const date = row.getValue<string>("bookingDatetime");
-      return <span className="text-muted-foreground text-xs">{new Date(date).toLocaleString()}</span>;
+      return (
+        <span className="text-muted-foreground text-xs">{new Date(date).toLocaleString()}</span>
+      );
     },
   },
 ];

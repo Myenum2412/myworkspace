@@ -1,8 +1,8 @@
-import { Response, NextFunction } from "express";
-import { AuthRequest } from "./auth.js";
-import { AppError } from "./error.js";
-import { recordAuditLog } from "../services/audit.service.js";
+import type { NextFunction, Response } from "express";
 import { logger } from "../lib/logger/index.js";
+import { recordAuditLog } from "../services/audit.service.js";
+import type { AuthRequest } from "./auth.js";
+import { AppError } from "./error.js";
 
 /**
  * Tenant Isolation Middleware
@@ -39,7 +39,7 @@ export function tenantIsolation(options: TenantIsolationOptions = {}) {
 
   return async (req: AuthRequest, _res: Response, next: NextFunction) => {
     // Skip for public paths
-    if (config.skipPaths?.some(path => req.path.startsWith(path))) {
+    if (config.skipPaths?.some((path) => req.path.startsWith(path))) {
       next();
       return;
     }
@@ -63,12 +63,15 @@ export function tenantIsolation(options: TenantIsolationOptions = {}) {
     const orgId = req.orgId || req.user.orgId;
 
     if (config.requireOrgId && !orgId) {
-      logger.warn({
-        userId: req.user.userId,
-        role: req.user.role,
-        path: req.originalUrl,
-        method: req.method,
-      }, "Tenant isolation: missing orgId");
+      logger.warn(
+        {
+          userId: req.user.userId,
+          role: req.user.role,
+          path: req.originalUrl,
+          method: req.method,
+        },
+        "Tenant isolation: missing orgId",
+      );
 
       await recordAuditLog({
         orgId: "system",
@@ -97,13 +100,16 @@ export function tenantIsolation(options: TenantIsolationOptions = {}) {
     const requestOrgId = queryOrgId || bodyOrgId;
 
     if (requestOrgId && orgId && requestOrgId !== orgId) {
-      logger.error({
-        userId: req.user.userId,
-        contextOrgId: orgId,
-        requestOrgId,
-        path: req.originalUrl,
-        method: req.method,
-      }, "Tenant isolation violation: orgId mismatch in request");
+      logger.error(
+        {
+          userId: req.user.userId,
+          contextOrgId: orgId,
+          requestOrgId,
+          path: req.originalUrl,
+          method: req.method,
+        },
+        "Tenant isolation violation: orgId mismatch in request",
+      );
 
       await recordAuditLog({
         orgId,
@@ -158,12 +164,15 @@ export function validateResourceOrg(
     const resourceOrgId = await getResourceOrgId(req);
 
     if (resourceOrgId && req.orgId && resourceOrgId !== req.orgId) {
-      logger.error({
-        userId: req.user.userId,
-        contextOrgId: req.orgId,
-        resourceOrgId,
-        path: req.originalUrl,
-      }, "Tenant isolation violation: resource belongs to different org");
+      logger.error(
+        {
+          userId: req.user.userId,
+          contextOrgId: req.orgId,
+          resourceOrgId,
+          path: req.originalUrl,
+        },
+        "Tenant isolation violation: resource belongs to different org",
+      );
 
       await recordAuditLog({
         orgId: req.orgId,

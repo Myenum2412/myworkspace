@@ -1,13 +1,13 @@
-import { AppError } from "../../../src/middleware/error.js";
 import {
-  requireString,
+  optionalArray,
+  optionalString,
   requireEmail,
   requireEnum,
-  optionalString,
-  optionalArray,
+  requireString,
   TASK_PRIORITIES,
   TASK_STATUSES,
 } from "../../../src/lib/validate.js";
+import { AppError } from "../../../src/middleware/error.js";
 
 function expectAppError(fn: () => unknown, fields: string[]): void {
   try {

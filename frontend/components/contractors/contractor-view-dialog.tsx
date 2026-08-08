@@ -1,12 +1,7 @@
-"use client"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+"use client";
 import type { Contractor } from "@/app/contractors/columns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type Props = {
   contractor: Contractor | null;
@@ -14,7 +9,13 @@ type Props = {
   onOpenChange: (open: boolean) => void;
 };
 
-const FieldDisplay = ({ label, value }: { label: string; value?: string | number | boolean | null }) => (
+const FieldDisplay = ({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | number | boolean | null;
+}) => (
   <div className="space-y-0.5">
     <p className="text-xs text-muted-foreground">{label}</p>
     <p className="text-sm font-medium">{value ?? "—"}</p>
@@ -89,7 +90,9 @@ export function ContractorViewDialog({ contractor, open, onOpenChange }: Props) 
               <div className="space-y-2">
                 {contractor.emergencyContacts?.map((c, i) => (
                   <div key={i} className="rounded-sm border p-3">
-                    <p className="text-xs font-medium text-muted-foreground mb-1">Contact {i + 1}</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">
+                      Contact {i + 1}
+                    </p>
                     <div className="grid grid-cols-3 gap-4">
                       <FieldDisplay label="Name" value={c.name} />
                       <FieldDisplay label="Phone" value={c.phoneNumber} />

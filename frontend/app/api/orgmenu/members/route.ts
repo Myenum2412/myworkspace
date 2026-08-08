@@ -1,26 +1,36 @@
+import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { getUserOrgId } from "@/lib/org";
-import { ObjectId } from "mongodb";
 import { sendEmailDirect } from "@/lib/email";
+import { getUserOrgId } from "@/lib/org";
 
 export async function GET() {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
   if (!orgId) return NextResponse.json({ members: [] });
   try {
-    const org = await db.collection(collections.organizations).findOne({ id: orgId }) as any;
+    const org = (await db.collection(collections.organizations).findOne({ id: orgId })) as any;
     const companyName = org?.name || "";
 
-    const objectId = (() => { try { return new ObjectId(orgId); } catch { return null; } })();
+    const objectId = (() => {
+      try {
+        return new ObjectId(orgId);
+      } catch {
+        return null;
+      }
+    })();
     const userQuery = objectId
       ? { $or: [{ orgId }, { orgId: objectId }], role: { $ne: "clients" } }
       : { orgId, role: { $ne: "clients" } };
-    const users = await db.collection(collections.users).find(userQuery).toArray() as any[];
+    const users = (await db.collection(collections.users).find(userQuery).toArray()) as any[];
 
     const members = users.map((u) => ({
       userId: u.id || u._id?.toString() || "",
@@ -40,23 +50,30 @@ export async function GET() {
     }));
 
     return NextResponse.json({ members });
-  } catch { return NextResponse.json({ members: [] }); }
+  } catch {
+    return NextResponse.json({ members: [] });
+  }
 }
 
 export async function DELETE(req: Request) {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const { userId } = await req.json();
     if (!userId) return NextResponse.json({ error: "No userId provided" }, { status: 400 });
-    if (userId === session.user.id) return NextResponse.json({ error: "You cannot delete your own account" }, { status: 400 });
-    const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+    if (userId === session.user.id)
+      return NextResponse.json({ error: "You cannot delete your own account" }, { status: 400 });
+    const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
     if (!orgId) return NextResponse.json({ error: "No org found" }, { status: 400 });
 
     const orConditions: Record<string, unknown>[] = [{ id: userId }];
     if (ObjectId.isValid(userId)) orConditions.push({ _id: new ObjectId(userId) });
-    const user = await db.collection(collections.users).findOne({ $or: orConditions }) as any;
+    const user = (await db.collection(collections.users).findOne({ $or: orConditions })) as any;
 
     const userDelete = user
       ? db.collection(collections.users).deleteOne(user.id ? { id: user.id } : { _id: user._id })
@@ -69,7 +86,7 @@ export async function DELETE(req: Request) {
     ]);
 
     if (user?.email) {
-      const org = await db.collection(collections.organizations).findOne({ id: orgId }) as any;
+      const org = (await db.collection(collections.organizations).findOne({ id: orgId })) as any;
       const companyName = org?.name || "MyWorkspace";
       const htmlBody = buildTerminationEmail(user.name || "User", companyName);
       sendEmailDirect(user.email, `Account Terminated - ${companyName}`, htmlBody).catch(() => {});

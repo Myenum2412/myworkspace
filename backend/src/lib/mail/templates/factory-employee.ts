@@ -1,4 +1,4 @@
-import { EmailData } from "./types.js";
+import type { EmailData } from "./types.js";
 
 function ts(): string {
   return new Date().toLocaleString();
@@ -9,7 +9,7 @@ export const buildEmployeeInvited = (
   inviterName: string,
   workspaceName: string,
   role: string,
-  inviteUrl: string
+  inviteUrl: string,
 ): EmailData => ({
   subject: `You've been invited to ${workspaceName}`,
   previewText: `${inviterName} has invited you to join ${workspaceName}`,
@@ -32,7 +32,7 @@ export const buildEmployeeOnboarded = (
   email: string,
   workspaceName: string,
   loginUrl: string,
-  tempPassword: string
+  tempPassword: string,
 ): EmailData => ({
   subject: `Welcome to ${workspaceName} - Your Account is Ready`,
   previewText: `Your ${workspaceName} account has been created. Sign in with ${email}.`,
@@ -69,7 +69,7 @@ export const buildRoleChanged = (
   oldRole: string,
   newRole: string,
   workspaceName: string,
-  profileUrl: string
+  profileUrl: string,
 ): EmailData => ({
   subject: "Role Updated",
   previewText: `Your role in ${workspaceName} has been changed to ${newRole}`,
@@ -95,7 +95,7 @@ export const buildLeaveRequestSubmitted = (
   endDate: string,
   duration: string,
   reason: string,
-  leaveUrl: string
+  leaveUrl: string,
 ): EmailData => ({
   subject: `Leave Request Submitted: ${leaveType}`,
   previewText: `Your ${leaveType} leave request from ${startDate} to ${endDate} has been submitted`,
@@ -121,7 +121,7 @@ export const buildLeaveRequestApproved = (
   endDate: string,
   duration: string,
   approvedBy: string,
-  leaveUrl: string
+  leaveUrl: string,
 ): EmailData => ({
   subject: `Leave Request Approved: ${leaveType}`,
   previewText: `Your ${leaveType} leave request has been approved`,
@@ -148,7 +148,7 @@ export const buildLeaveRequestRejected = (
   endDate: string,
   rejectedBy: string,
   reason: string,
-  leaveUrl: string
+  leaveUrl: string,
 ): EmailData => ({
   subject: `Leave Request Not Approved: ${leaveType}`,
   previewText: `Your ${leaveType} leave request has not been approved`,
@@ -171,7 +171,7 @@ export const buildEmployeeDeactivated = (
   firstName: string,
   deactivatedBy: string,
   reason: string,
-  supportEmail_: string
+  supportEmail_: string,
 ): EmailData => ({
   subject: "Account Deactivated",
   previewText: "Your account has been deactivated",
@@ -183,14 +183,16 @@ export const buildEmployeeDeactivated = (
     { label: "Deactivated By", value: deactivatedBy },
     { label: "Reason", value: reason },
   ],
-  outro: ["If you believe this is a mistake, please contact your administrator or our support team."],
+  outro: [
+    "If you believe this is a mistake, please contact your administrator or our support team.",
+  ],
   supportEmail: supportEmail_ || "support@workspace.com",
 });
 
 export const buildEmployeeReactivated = (
   firstName: string,
   reactivatedBy: string,
-  loginUrl: string
+  loginUrl: string,
 ): EmailData => ({
   subject: "Account Reactivated",
   previewText: "Your account has been reactivated",
@@ -198,9 +200,7 @@ export const buildEmployeeReactivated = (
   metadata: { module: "Employee Management", timestamp: ts(), action: "Account Reactivated" },
   statusIndicator: { type: "success", label: "Active" },
   intro: ["Good news! Your account has been reactivated by an administrator."],
-  details: [
-    { label: "Reactivated By", value: reactivatedBy },
-  ],
+  details: [{ label: "Reactivated By", value: reactivatedBy }],
   button: { text: "Log In", url: loginUrl },
   supportEmail: "support@workspace.com",
 });
@@ -209,7 +209,7 @@ export const buildEmployeeProfileUpdated = (
   firstName: string,
   updatedBy: string,
   changes: string,
-  profileUrl: string
+  profileUrl: string,
 ): EmailData => ({
   subject: "Profile Updated",
   previewText: "Your profile information has been updated",
@@ -229,18 +229,20 @@ export const buildWorkAnniversary = (
   firstName: string,
   years: number,
   workspaceName: string,
-  profileUrl: string
+  profileUrl: string,
 ): EmailData => ({
-  subject: `Happy ${years} Year${years > 1 ? 's' : ''} at ${workspaceName}!`,
-  previewText: `Celebrating ${years} year${years > 1 ? 's' : ''} with ${workspaceName}`,
+  subject: `Happy ${years} Year${years > 1 ? "s" : ""} at ${workspaceName}!`,
+  previewText: `Celebrating ${years} year${years > 1 ? "s" : ""} with ${workspaceName}`,
   greeting: `Hi ${firstName},`,
   metadata: { module: "Employee Management", timestamp: ts(), action: "Work Anniversary" },
   statusIndicator: { type: "success", label: "Anniversary" },
-  intro: [`Congratulations on ${years} incredible year${years > 1 ? 's' : ''} with ${workspaceName}!`],
+  intro: [
+    `Congratulations on ${years} incredible year${years > 1 ? "s" : ""} with ${workspaceName}!`,
+  ],
   cards: [
     {
       title: "Your Journey",
-      content: `Thank you for your dedication and contributions over the past ${years} year${years > 1 ? 's' : ''}. Your hard work has made a real difference to our team and company.`,
+      content: `Thank you for your dedication and contributions over the past ${years} year${years > 1 ? "s" : ""}. Your hard work has made a real difference to our team and company.`,
     },
   ],
   button: { text: "View Profile", url: profileUrl },
@@ -255,7 +257,7 @@ export const buildLeaveRequestActionNeeded = (
   startDate: string,
   endDate: string,
   duration: string,
-  reviewUrl: string
+  reviewUrl: string,
 ): EmailData => ({
   subject: `Leave Request Pending Your Review: ${employeeName}`,
   previewText: `${employeeName} has submitted a ${leaveType} leave request requiring your approval`,
@@ -279,7 +281,7 @@ export const buildOnboardingReminder = (
   email: string,
   workspaceName: string,
   daysSinceCreation: number,
-  loginUrl: string
+  loginUrl: string,
 ): EmailData => ({
   subject: `Reminder: Complete Your ${workspaceName} Onboarding`,
   previewText: `You haven't completed your ${workspaceName} onboarding yet. Sign in with ${email} to get started.`,
@@ -287,13 +289,16 @@ export const buildOnboardingReminder = (
   metadata: { module: "Employee Management", timestamp: ts(), action: "Onboarding Reminder" },
   statusIndicator: { type: "warning", label: "Action Required" },
   intro: [
-    `Your ${workspaceName} account was created ${daysSinceCreation} day${daysSinceCreation > 1 ? 's' : ''} ago, but you haven't completed the onboarding process yet.`,
+    `Your ${workspaceName} account was created ${daysSinceCreation} day${daysSinceCreation > 1 ? "s" : ""} ago, but you haven't completed the onboarding process yet.`,
     "Please sign in using your credentials to get started.",
   ],
   details: [
     { label: "Workspace", value: workspaceName },
     { label: "Email", value: email },
-    { label: "Account Created", value: `${daysSinceCreation} day${daysSinceCreation > 1 ? 's' : ''} ago` },
+    {
+      label: "Account Created",
+      value: `${daysSinceCreation} day${daysSinceCreation > 1 ? "s" : ""} ago`,
+    },
   ],
   quickStart: [
     "Log in with your email and password",

@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  AlertCircleIcon,
   CheckCircle2Icon,
   CircleSlash2Icon,
   ClockIcon,
   CoffeeIcon,
-  VideoIcon,
-  HomeIcon,
-  SparklesIcon,
-  RefreshCwIcon,
   HistoryIcon,
-  AlertCircleIcon,
+  HomeIcon,
+  RefreshCwIcon,
+  SparklesIcon,
+  VideoIcon,
 } from "@/lib/icons";
 
 type StatusOption = {
@@ -26,12 +26,54 @@ type StatusOption = {
 };
 
 const STATUS_OPTIONS: StatusOption[] = [
-  { value: "available", label: "Available", icon: CheckCircle2Icon, color: "text-green-600", bg: "bg-green-50", ring: "ring-green-500" },
-  { value: "busy", label: "Busy", icon: ClockIcon, color: "text-red-600", bg: "bg-red-50", ring: "ring-red-500" },
-  { value: "break", label: "On Break", icon: CoffeeIcon, color: "text-amber-600", bg: "bg-amber-50", ring: "ring-amber-500" },
-  { value: "meeting", label: "In Meeting", icon: VideoIcon, color: "text-purple-600", bg: "bg-purple-50", ring: "ring-purple-500" },
-  { value: "offline", label: "Offline", icon: CircleSlash2Icon, color: "text-gray-500", bg: "bg-gray-100", ring: "ring-gray-400" },
-  { value: "remote", label: "Working Remotely", icon: HomeIcon, color: "text-blue-600", bg: "bg-blue-50", ring: "ring-blue-500" },
+  {
+    value: "available",
+    label: "Available",
+    icon: CheckCircle2Icon,
+    color: "text-green-600",
+    bg: "bg-green-50",
+    ring: "ring-green-500",
+  },
+  {
+    value: "busy",
+    label: "Busy",
+    icon: ClockIcon,
+    color: "text-red-600",
+    bg: "bg-red-50",
+    ring: "ring-red-500",
+  },
+  {
+    value: "break",
+    label: "On Break",
+    icon: CoffeeIcon,
+    color: "text-amber-600",
+    bg: "bg-amber-50",
+    ring: "ring-amber-500",
+  },
+  {
+    value: "meeting",
+    label: "In Meeting",
+    icon: VideoIcon,
+    color: "text-purple-600",
+    bg: "bg-purple-50",
+    ring: "ring-purple-500",
+  },
+  {
+    value: "offline",
+    label: "Offline",
+    icon: CircleSlash2Icon,
+    color: "text-gray-500",
+    bg: "bg-gray-100",
+    ring: "ring-gray-400",
+  },
+  {
+    value: "remote",
+    label: "Working Remotely",
+    icon: HomeIcon,
+    color: "text-blue-600",
+    bg: "bg-blue-50",
+    ring: "ring-blue-500",
+  },
 ];
 
 function formatTimeAgo(date: Date | string | null): string {
@@ -41,7 +83,12 @@ function formatTimeAgo(date: Date | string | null): string {
   if (diff < 60000) return "Just now";
   if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-  return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function StaffStatusForm({
@@ -132,8 +179,12 @@ export function StaffStatusForm({
                     : "bg-card hover:bg-accent/50 border-border"
                 }`}
               >
-                <Icon className={`size-4 shrink-0 ${isActive ? opt.color : "text-muted-foreground"}`} />
-                <span className={`text-sm font-medium ${isActive ? "" : "text-foreground"}`}>{opt.label}</span>
+                <Icon
+                  className={`size-4 shrink-0 ${isActive ? opt.color : "text-muted-foreground"}`}
+                />
+                <span className={`text-sm font-medium ${isActive ? "" : "text-foreground"}`}>
+                  {opt.label}
+                </span>
                 {isActive && <CheckCircle2Icon className="size-3.5 ml-auto shrink-0" />}
               </button>
             );
@@ -149,9 +200,17 @@ export function StaffStatusForm({
               : "bg-card hover:bg-accent/50 border-border"
           }`}
         >
-          <SparklesIcon className={`size-4 shrink-0 ${selectedStatus === "custom" ? "text-foreground" : "text-muted-foreground"}`} />
-          <span className={`text-sm font-medium ${selectedStatus === "custom" ? "" : "text-foreground"}`}>Custom Status</span>
-          {selectedStatus === "custom" && <CheckCircle2Icon className="size-3.5 ml-auto shrink-0" />}
+          <SparklesIcon
+            className={`size-4 shrink-0 ${selectedStatus === "custom" ? "text-foreground" : "text-muted-foreground"}`}
+          />
+          <span
+            className={`text-sm font-medium ${selectedStatus === "custom" ? "" : "text-foreground"}`}
+          >
+            Custom Status
+          </span>
+          {selectedStatus === "custom" && (
+            <CheckCircle2Icon className="size-3.5 ml-auto shrink-0" />
+          )}
         </button>
       </div>
 

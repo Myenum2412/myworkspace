@@ -1,13 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
 import { getUserOrgId } from "@/lib/org";
 
 type SettingsState = { error?: string; success?: boolean } | null;
 
-export async function saveSettings(_prevState: SettingsState, formData: FormData): Promise<SettingsState> {
+export async function saveSettings(
+  _prevState: SettingsState,
+  formData: FormData,
+): Promise<SettingsState> {
   const session = await auth();
   if (!session?.user) return { error: "Unauthorized" };
 

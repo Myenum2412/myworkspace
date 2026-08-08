@@ -1,12 +1,23 @@
-import { Response, NextFunction } from "express";
-import { enforce, buildFileResource, buildFolderResource, resetEnforcer } from "../../../src/config/casbin.js";
+import type { NextFunction, Response } from "express";
 import {
-  ROLES, isAdminRole, isPlatformRole, hasRole, hasAnyRole,
-  getEffectivePermissions, ADMIN_ROLES, PLATFORM_ROLES,
+  buildFileResource,
+  buildFolderResource,
+  enforce,
+  resetEnforcer,
+} from "../../../src/config/casbin.js";
+import {
+  ADMIN_ROLES,
+  getEffectivePermissions,
+  hasAnyRole,
+  hasRole,
+  isAdminRole,
+  isPlatformRole,
+  PLATFORM_ROLES,
+  ROLES,
 } from "../../../src/lib/rbac/index.js";
-import { authorizeRole, orgAdminOnly, membersOnly } from "../../../src/middleware/authorize.js";
+import { authorizeRole, membersOnly, orgAdminOnly } from "../../../src/middleware/authorize.js";
+import { requireOrgContext, resolveOrgContext } from "../../../src/middleware/org-context.js";
 import { verifyOwnership } from "../../../src/middleware/ownership.js";
-import { resolveOrgContext, requireOrgContext } from "../../../src/middleware/org-context.js";
 import type { AuthRequest, JwtPayload } from "../../../src/types/index.js";
 
 jest.mock("../../../src/services/audit.service.js", () => ({
@@ -17,8 +28,8 @@ jest.mock("../../../src/lib/db/models/OrgMember.js", () => ({
   OrgMember: { findOne: jest.fn() },
 }));
 
-import { recordAuditLog } from "../../../src/services/audit.service.js";
 import { OrgMember } from "../../../src/lib/db/models/OrgMember.js";
+import { recordAuditLog } from "../../../src/services/audit.service.js";
 
 function mockReq(overrides?: Partial<AuthRequest>): AuthRequest {
   return {
@@ -34,7 +45,10 @@ function mockReq(overrides?: Partial<AuthRequest>): AuthRequest {
 }
 
 function mockRes(): Response {
-  const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() } as unknown as Response;
+  const res = {
+    status: jest.fn().mockReturnThis(),
+    json: jest.fn().mockReturnThis(),
+  } as unknown as Response;
   return res;
 }
 
@@ -135,7 +149,9 @@ describe("RBAC Security", () => {
     it("orgAdminOnly requires authentication", async () => {
       const middleware = orgAdminOnly();
       const req = mockReq();
-      await expect(middleware(req, mockRes(), mockNext())).rejects.toThrow("Authentication required");
+      await expect(middleware(req, mockRes(), mockNext())).rejects.toThrow(
+        "Authentication required",
+      );
     });
 
     it("membersOnly rejects staffs", async () => {
@@ -175,13 +191,17 @@ describe("RBAC Security", () => {
     it("membersOnly requires authentication", async () => {
       const middleware = membersOnly();
       const req = mockReq();
-      await expect(middleware(req, mockRes(), mockNext())).rejects.toThrow("Authentication required");
+      await expect(middleware(req, mockRes(), mockNext())).rejects.toThrow(
+        "Authentication required",
+      );
     });
 
     it("authorizeRole requires authentication", async () => {
       const middleware = authorizeRole(ROLES.ORG_ADMIN);
       const req = mockReq();
-      await expect(middleware(req, mockRes(), mockNext())).rejects.toThrow("Authentication required");
+      await expect(middleware(req, mockRes(), mockNext())).rejects.toThrow(
+        "Authentication required",
+      );
     });
 
     it("isPlatformRole returns true only for org_admin", () => {
@@ -289,7 +309,9 @@ describe("RBAC Security", () => {
       };
       const middleware = verifyOwnership(mockModel as any, "createdBy");
       const req = mockReq({ params: { id: "resource-1" } });
-      await expect(middleware(req, mockRes(), mockNext())).rejects.toThrow("Authentication required");
+      await expect(middleware(req, mockRes(), mockNext())).rejects.toThrow(
+        "Authentication required",
+      );
     });
 
     it("verifyOwnership rejects non-existent resources", async () => {
@@ -359,7 +381,9 @@ describe("RBAC Security", () => {
 
     it("resolveOrgContext requires authentication", async () => {
       const req = mockReq();
-      await expect(resolveOrgContext(req, mockRes(), mockNext())).rejects.toThrow("Authentication required");
+      await expect(resolveOrgContext(req, mockRes(), mockNext())).rejects.toThrow(
+        "Authentication required",
+      );
     });
 
     it("requireOrgContext rejects when orgId is missing", () => {
@@ -379,7 +403,9 @@ describe("RBAC Security", () => {
 
     it("requireOrgContext requires authentication", () => {
       const req = mockReq();
-      expect(() => requireOrgContext(req, mockRes(), mockNext())).toThrow("Authentication required");
+      expect(() => requireOrgContext(req, mockRes(), mockNext())).toThrow(
+        "Authentication required",
+      );
     });
   });
 

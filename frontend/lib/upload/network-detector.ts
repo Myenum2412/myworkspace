@@ -76,22 +76,32 @@ class NetworkDetector {
   getChunkSizeForNetwork(): number {
     const quality = this.currentInfo.quality;
     switch (quality) {
-      case "excellent": return 50 * 1024 * 1024;
-      case "good": return 20 * 1024 * 1024;
-      case "fair": return 5 * 1024 * 1024;
-      case "poor": return 1 * 1024 * 1024;
-      default: return 10 * 1024 * 1024;
+      case "excellent":
+        return 50 * 1024 * 1024;
+      case "good":
+        return 20 * 1024 * 1024;
+      case "fair":
+        return 5 * 1024 * 1024;
+      case "poor":
+        return 1 * 1024 * 1024;
+      default:
+        return 10 * 1024 * 1024;
     }
   }
 
   getParallelUploadsForNetwork(): number {
     const quality = this.currentInfo.quality;
     switch (quality) {
-      case "excellent": return 6;
-      case "good": return 4;
-      case "fair": return 2;
-      case "poor": return 1;
-      default: return 3;
+      case "excellent":
+        return 6;
+      case "good":
+        return 4;
+      case "fair":
+        return 2;
+      case "poor":
+        return 1;
+      default:
+        return 3;
     }
   }
 }

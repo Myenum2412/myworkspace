@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIndustry } from "@/components/industry-provider";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function StaffAddPage() {
   const { t } = useIndustry();
@@ -16,9 +16,7 @@ export default function StaffAddPage() {
           <CardTitle>{t("page.employees.title")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {t("nav.staffAdd")}
-          </p>
+          <p className="text-sm text-muted-foreground">{t("nav.staffAdd")}</p>
         </CardContent>
       </Card>
     </main>

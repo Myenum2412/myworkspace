@@ -1,23 +1,19 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { motion, type Variants } from "motion/react"
-import { cn } from "@/lib/utils"
+import { motion, type Variants } from "motion/react";
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface AnimatedGroupProps {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  className?: string;
   variants?: {
-    container?: Variants
-    item?: Variants
-  }
+    container?: Variants;
+    item?: Variants;
+  };
 }
 
-export function AnimatedGroup({
-  children,
-  className,
-  variants,
-}: AnimatedGroupProps) {
+export function AnimatedGroup({ children, className, variants }: AnimatedGroupProps) {
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -28,7 +24,7 @@ export function AnimatedGroup({
       },
     },
     ...variants?.container,
-  }
+  };
 
   const itemVariants: Variants = {
     hidden: {
@@ -47,7 +43,7 @@ export function AnimatedGroup({
       },
     },
     ...variants?.item,
-  }
+  };
 
   return (
     <motion.div
@@ -62,5 +58,5 @@ export function AnimatedGroup({
         </motion.div>
       ))}
     </motion.div>
-  )
+  );
 }

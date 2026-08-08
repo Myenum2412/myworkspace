@@ -1,12 +1,24 @@
-import { Response, NextFunction } from "express";
-import { AuthRequest } from "./auth.js";
-import { AppError } from "./error.js";
-import { enforce, buildFileResource, buildFolderResource } from "../config/casbin.js";
+import type { NextFunction, Response } from "express";
+import { buildFileResource, buildFolderResource, enforce } from "../config/casbin.js";
 import { rbacLogger } from "../lib/logger/index.js";
+import type { AuthRequest } from "./auth.js";
+import { AppError } from "./error.js";
 
 export type ResourceType = "file" | "folder" | "upload";
 
-export type ActionType = "view" | "upload" | "download" | "edit" | "delete" | "share" | "restore" | "archive" | "create" | "resume" | "cancel" | "pause";
+export type ActionType =
+  | "view"
+  | "upload"
+  | "download"
+  | "edit"
+  | "delete"
+  | "share"
+  | "restore"
+  | "archive"
+  | "create"
+  | "resume"
+  | "cancel"
+  | "pause";
 
 export interface FileResourceParams {
   orgId?: string;
@@ -34,17 +46,17 @@ export function casbinAuthorize(resourceType: ResourceType, action: ActionType) 
 
       if (resourceType === "file") {
         const params: FileResourceParams = {
-          orgId: req.user.orgId || req.body?.orgId || req.query?.orgId as string,
-          projectId: req.body?.projectId || req.query?.projectId as string,
-          clientId: req.body?.clientId || req.query?.clientId as string,
+          orgId: req.user.orgId || req.body?.orgId || (req.query?.orgId as string),
+          projectId: req.body?.projectId || (req.query?.projectId as string),
+          clientId: req.body?.clientId || (req.query?.clientId as string),
           fileId: req.params?.id || req.body?.fileId,
         };
         resource = buildFileResource(params);
       } else if (resourceType === "folder") {
         const params: FolderResourceParams = {
-          orgId: req.user.orgId || req.body?.orgId || req.query?.orgId as string,
-          projectId: req.body?.projectId || req.query?.projectId as string,
-          clientId: req.body?.clientId || req.query?.clientId as string,
+          orgId: req.user.orgId || req.body?.orgId || (req.query?.orgId as string),
+          projectId: req.body?.projectId || (req.query?.projectId as string),
+          clientId: req.body?.clientId || (req.query?.clientId as string),
         };
         resource = buildFolderResource(params);
       } else {
@@ -61,11 +73,20 @@ export function casbinAuthorize(resourceType: ResourceType, action: ActionType) 
       const allowed = await enforce(role, resource, action);
 
       if (!allowed) {
-        rbacLogger.warn({ userId: req.user.userId, role, resource, action }, "Casbin access denied");
-        throw new AppError(403, `Forbidden: insufficient permissions to ${action} this ${resourceType}`);
+        rbacLogger.warn(
+          { userId: req.user.userId, role, resource, action },
+          "Casbin access denied",
+        );
+        throw new AppError(
+          403,
+          `Forbidden: insufficient permissions to ${action} this ${resourceType}`,
+        );
       }
 
-      rbacLogger.debug({ userId: req.user.userId, role, resource, action }, "Casbin access granted");
+      rbacLogger.debug(
+        { userId: req.user.userId, role, resource, action },
+        "Casbin access granted",
+      );
       next();
     } catch (err) {
       if (err instanceof AppError) {

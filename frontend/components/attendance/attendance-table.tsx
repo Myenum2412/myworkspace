@@ -1,10 +1,9 @@
-"use client"
-import { useState, useMemo, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
+import { useCallback, useMemo, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronLeft, ChevronRight, EyeIcon } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -12,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ChevronLeft, ChevronRight, EyeIcon } from "@/lib/icons";
 import { AttendanceViewDialog } from "./attendance-view-dialog";
 
 type AttendanceRecord = {
@@ -29,7 +29,13 @@ type AttendanceTableProps = {
   data: AttendanceRecord[];
 };
 
-const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
 export function AttendanceTable({ data }: AttendanceTableProps) {
   const [viewRecord, setViewRecord] = useState<AttendanceRecord | null>(null);
@@ -89,20 +95,34 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
                       aria-label="Select all"
                     />
                   </th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Employee</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Employee
+                  </th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">ID</th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Email</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Department</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Designation</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Check In</th>
-                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Check Out</th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Department
+                  </th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Designation
+                  </th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Check In
+                  </th>
+                  <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                    Check Out
+                  </th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Remarks</th>
                   <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left w-10"></th>
                 </tr>
               </thead>
               <tbody>
                 {paginated.map((t, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer" onClick={() => setViewRecord(t)}>
+                  <tr
+                    key={i}
+                    className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer"
+                    onClick={() => setViewRecord(t)}
+                  >
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={selectedRows.has(i)}
@@ -142,7 +162,16 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
                       <span className="text-gray-500 italic text-xs">\u2014</span>
                     </td>
                     <td className="px-4 py-3">
-                      <Button variant="ghost" size="icon" className="" onClick={(e) => { e.stopPropagation(); setViewRecord(t); }} title="View">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className=""
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewRecord(t);
+                        }}
+                        title="View"
+                      >
                         <EyeIcon className="size-4" />
                       </Button>
                     </td>
@@ -159,7 +188,9 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
             </span>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Rows per page:
+                </span>
                 <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
                   <SelectTrigger className="h-8 w-[70px]">
                     <SelectValue />
@@ -200,7 +231,9 @@ export function AttendanceTable({ data }: AttendanceTableProps) {
       <AttendanceViewDialog
         record={viewRecord}
         open={!!viewRecord}
-        onOpenChange={(open) => { if (!open) setViewRecord(null); }}
+        onOpenChange={(open) => {
+          if (!open) setViewRecord(null);
+        }}
       />
     </>
   );

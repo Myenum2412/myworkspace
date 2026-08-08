@@ -1,7 +1,7 @@
-import { env } from "../../../config/env.js";
-import { EmailData, SocialLinks, StatusType } from "./types.js";
 import fs from "fs";
 import path from "path";
+import { env } from "../../../config/env.js";
+import { type EmailData, SocialLinks, type StatusType } from "./types.js";
 
 const publicDir = path.join(process.cwd(), "frontend", "public");
 
@@ -33,7 +33,8 @@ const COLORS = {
   neutralBg: "#f8fafc",
 };
 
-const FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+const FONT =
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
 const ICONS: Record<string, string> = {
   linkedin: "https://cdn-icons-png.flaticon.com/512/174/174857.png",
@@ -46,11 +47,16 @@ const ICONS: Record<string, string> = {
 
 function getStatusColors(type: StatusType) {
   switch (type) {
-    case "success": return { bg: COLORS.successBg, text: COLORS.success, border: COLORS.success };
-    case "warning": return { bg: COLORS.warningBg, text: COLORS.warning, border: COLORS.warning };
-    case "error": return { bg: COLORS.dangerBg, text: COLORS.danger, border: COLORS.danger };
-    case "info": return { bg: COLORS.infoBg, text: COLORS.info, border: COLORS.info };
-    case "neutral": return { bg: COLORS.neutralBg, text: COLORS.neutral, border: COLORS.neutral };
+    case "success":
+      return { bg: COLORS.successBg, text: COLORS.success, border: COLORS.success };
+    case "warning":
+      return { bg: COLORS.warningBg, text: COLORS.warning, border: COLORS.warning };
+    case "error":
+      return { bg: COLORS.dangerBg, text: COLORS.danger, border: COLORS.danger };
+    case "info":
+      return { bg: COLORS.infoBg, text: COLORS.info, border: COLORS.info };
+    case "neutral":
+      return { bg: COLORS.neutralBg, text: COLORS.neutral, border: COLORS.neutral };
   }
 }
 
@@ -111,7 +117,9 @@ export function buildEmailHtml(data: EmailData): string {
 
   const renderIntro = () => {
     if (!data.intro || data.intro.length === 0) return "";
-    return data.intro.map(p => `
+    return data.intro
+      .map(
+        (p) => `
       <tr>
         <td style="padding: 0 40px 8px;">
           <p style="margin: 0; font-family: ${FONT}; font-size: 16px; line-height: 26px; color: ${COLORS.textMuted};">
@@ -119,7 +127,9 @@ export function buildEmailHtml(data: EmailData): string {
           </p>
         </td>
       </tr>
-    `).join("");
+    `,
+      )
+      .join("");
   };
 
   const renderStatusIndicator = () => {
@@ -145,7 +155,9 @@ export function buildEmailHtml(data: EmailData): string {
   const renderDetails = () => {
     if (!data.details || data.details.length === 0) return "";
 
-    const rows = data.details.map(d => `
+    const rows = data.details
+      .map(
+        (d) => `
       <tr>
         <td width="35%" style="padding: 8px 16px; border-bottom: 1px solid ${COLORS.border}; font-family: ${FONT}; font-size: 13px; font-weight: 600; color: ${COLORS.textMain};">
           ${d.label}
@@ -154,7 +166,9 @@ export function buildEmailHtml(data: EmailData): string {
           ${d.value}
         </td>
       </tr>
-    `).join("");
+    `,
+      )
+      .join("");
 
     return `
       <tr>
@@ -170,7 +184,9 @@ export function buildEmailHtml(data: EmailData): string {
   const renderAccountInfo = () => {
     if (!data.accountInfo || data.accountInfo.length === 0) return "";
 
-    const rows = data.accountInfo.map(info => `
+    const rows = data.accountInfo
+      .map(
+        (info) => `
       <tr>
         <td width="35%" style="padding: 10px 16px; border-bottom: 1px solid ${COLORS.border}; font-family: ${FONT}; font-size: 13px; font-weight: 600; color: ${COLORS.textMain}; text-transform: uppercase; letter-spacing: 0.3px;">
           ${info.label}
@@ -179,7 +195,9 @@ export function buildEmailHtml(data: EmailData): string {
           ${info.value}
         </td>
       </tr>
-    `).join("");
+    `,
+      )
+      .join("");
 
     return `
       <tr>
@@ -195,14 +213,18 @@ export function buildEmailHtml(data: EmailData): string {
   const renderQuickStart = () => {
     if (!data.quickStart || data.quickStart.length === 0) return "";
 
-    const items = data.quickStart.map(item => `
+    const items = data.quickStart
+      .map(
+        (item) => `
       <tr>
         <td width="16" valign="top" style="padding-bottom: 8px; font-family: ${FONT}; font-size: 14px; color: ${COLORS.success}; font-weight: 700;">-</td>
         <td valign="top" style="padding-bottom: 8px; font-family: ${FONT}; font-size: 15px; color: ${COLORS.textMuted}; line-height: 22px;">
           ${item}
         </td>
       </tr>
-    `).join("");
+    `,
+      )
+      .join("");
 
     return `
       <tr>
@@ -225,20 +247,24 @@ export function buildEmailHtml(data: EmailData): string {
   const renderFeatures = () => {
     if (!data.features || data.features.length === 0) return "";
 
-    const items = data.features.map(feat => `
+    const items = data.features
+      .map(
+        (feat) => `
       <tr>
         <td style="padding-bottom: 14px;">
           <table width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr>
               <td valign="top">
                 <h4 style="margin: 0 0 2px; font-family: ${FONT}; font-size: 15px; font-weight: 700; color: ${COLORS.textMain};">${feat.title}</h4>
-                ${feat.description ? `<p style="margin: 0; font-family: ${FONT}; font-size: 14px; color: ${COLORS.textMuted}; line-height: 20px;">${feat.description}</p>` : ''}
+                ${feat.description ? `<p style="margin: 0; font-family: ${FONT}; font-size: 14px; color: ${COLORS.textMuted}; line-height: 20px;">${feat.description}</p>` : ""}
               </td>
             </tr>
           </table>
         </td>
       </tr>
-    `).join("");
+    `,
+      )
+      .join("");
 
     return `
       <tr>
@@ -255,25 +281,26 @@ export function buildEmailHtml(data: EmailData): string {
   const renderSummaryItems = () => {
     if (!data.summaryItems || data.summaryItems.length === 0) return "";
 
-    const items = data.summaryItems.map(item => {
-      const statusColor = item.status ? getStatusColors(item.status) : null;
-      return `
+    const items = data.summaryItems
+      .map((item) => {
+        const statusColor = item.status ? getStatusColors(item.status) : null;
+        return `
         <tr>
           <td style="padding: 12px 16px; border-bottom: 1px solid ${COLORS.border};">
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                ${statusColor ? `<td width="4" style="background-color: ${statusColor.border}; padding: 0; width: 4px;"></td>` : ''}
-                <td style="padding: 0 0 0 ${statusColor ? '16' : '0'}px;">
+                ${statusColor ? `<td width="4" style="background-color: ${statusColor.border}; padding: 0; width: 4px;"></td>` : ""}
+                <td style="padding: 0 0 0 ${statusColor ? "16" : "0"}px;">
                   <table width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
                       <td>
-                        <a href="${item.url || '#'}" style="font-family: ${FONT}; font-size: 15px; font-weight: 600; color: ${COLORS.primary}; text-decoration: none; line-height: 22px;">
+                        <a href="${item.url || "#"}" style="font-family: ${FONT}; font-size: 15px; font-weight: 600; color: ${COLORS.primary}; text-decoration: none; line-height: 22px;">
                           ${item.title}
                         </a>
-                        ${item.description ? `<p style="margin: 2px 0 0; font-family: ${FONT}; font-size: 13px; color: ${COLORS.textMuted}; line-height: 18px;">${item.description}</p>` : ''}
+                        ${item.description ? `<p style="margin: 2px 0 0; font-family: ${FONT}; font-size: 13px; color: ${COLORS.textMuted}; line-height: 18px;">${item.description}</p>` : ""}
                       </td>
                     </tr>
-                    ${item.meta ? `<tr><td style="padding-top: 4px;"><span style="font-family: ${FONT}; font-size: 11px; color: ${COLORS.textLight};">${item.meta}</span></td></tr>` : ''}
+                    ${item.meta ? `<tr><td style="padding-top: 4px;"><span style="font-family: ${FONT}; font-size: 11px; color: ${COLORS.textLight};">${item.meta}</span></td></tr>` : ""}
                   </table>
                 </td>
               </tr>
@@ -281,7 +308,8 @@ export function buildEmailHtml(data: EmailData): string {
           </td>
         </tr>
       `;
-    }).join("");
+      })
+      .join("");
 
     return `
       <tr>
@@ -297,26 +325,38 @@ export function buildEmailHtml(data: EmailData): string {
   const renderCards = () => {
     if (!data.cards || data.cards.length === 0) return "";
 
-    const cards = data.cards.map(card => `
+    const cards = data.cards
+      .map(
+        (card) => `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 12px;">
         <tr>
           <td style="padding: 16px; background-color: #f8fafc; border: 1px solid ${COLORS.border}; border-radius: 8px;">
-            ${card.title ? `<h4 style="margin: 0 0 6px; font-family: ${FONT}; font-size: 14px; font-weight: 700; color: ${COLORS.textMain};">${card.title}</h4>` : ''}
-            ${card.content ? `<p style="margin: 0 0 8px; font-family: ${FONT}; font-size: 13px; color: ${COLORS.textMuted}; line-height: 20px;">${card.content}</p>` : ''}
-            ${card.list ? `
+            ${card.title ? `<h4 style="margin: 0 0 6px; font-family: ${FONT}; font-size: 14px; font-weight: 700; color: ${COLORS.textMain};">${card.title}</h4>` : ""}
+            ${card.content ? `<p style="margin: 0 0 8px; font-family: ${FONT}; font-size: 13px; color: ${COLORS.textMuted}; line-height: 20px;">${card.content}</p>` : ""}
+            ${
+              card.list
+                ? `
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                ${card.list.map(item => `
+                ${card.list
+                  .map(
+                    (item) => `
                   <tr>
                     <td width="12" valign="top" style="padding-bottom: 4px; font-family: ${FONT}; font-size: 12px; color: ${COLORS.primary};">-</td>
                     <td valign="top" style="padding-bottom: 4px; font-family: ${FONT}; font-size: 13px; color: ${COLORS.textMuted};">${item}</td>
                   </tr>
-                `).join("")}
+                `,
+                  )
+                  .join("")}
               </table>
-            ` : ''}
+            `
+                : ""
+            }
           </td>
         </tr>
       </table>
-    `).join("");
+    `,
+      )
+      .join("");
 
     return `
       <tr>
@@ -336,7 +376,7 @@ export function buildEmailHtml(data: EmailData): string {
             <tr>
               <td style="padding: 6px 12px; background-color: #f8fafc; border-radius: 4px;">
                 <span style="font-family: ${FONT}; font-size: 11px; color: ${COLORS.textLight};">
-                  ${data.metadata.module} ${data.metadata.action ? `- ${data.metadata.action}` : ''} &bull; ${data.metadata.timestamp}
+                  ${data.metadata.module} ${data.metadata.action ? `- ${data.metadata.action}` : ""} &bull; ${data.metadata.timestamp}
                 </span>
               </td>
             </tr>
@@ -459,7 +499,9 @@ export function buildEmailHtml(data: EmailData): string {
 
   const renderOutro = () => {
     if (!data.outro || data.outro.length === 0) return "";
-    return data.outro.map(p => `
+    return data.outro
+      .map(
+        (p) => `
       <tr>
         <td style="padding: 0 40px 10px;">
           <p style="margin: 0; font-family: ${FONT}; font-size: 15px; line-height: 24px; color: ${COLORS.textMuted};">
@@ -467,18 +509,35 @@ export function buildEmailHtml(data: EmailData): string {
           </p>
         </td>
       </tr>
-    `).join("");
+    `,
+      )
+      .join("");
   };
 
   const renderSocials = () => {
     if (!data.socialLinks) return "";
 
     const links: string[] = [];
-    if (data.socialLinks.linkedin) links.push(`<a href="${data.socialLinks.linkedin}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.linkedin}" width="20" height="20" alt="LinkedIn" /></a>`);
-    if (data.socialLinks.twitter) links.push(`<a href="${data.socialLinks.twitter}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.twitter}" width="20" height="20" alt="Twitter" /></a>`);
-    if (data.socialLinks.facebook) links.push(`<a href="${data.socialLinks.facebook}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.facebook}" width="20" height="20" alt="Facebook" /></a>`);
-    if (data.socialLinks.instagram) links.push(`<a href="${data.socialLinks.instagram}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.instagram}" width="20" height="20" alt="Instagram" /></a>`);
-    if (data.socialLinks.youtube) links.push(`<a href="${data.socialLinks.youtube}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.youtube}" width="20" height="20" alt="YouTube" /></a>`);
+    if (data.socialLinks.linkedin)
+      links.push(
+        `<a href="${data.socialLinks.linkedin}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.linkedin}" width="20" height="20" alt="LinkedIn" /></a>`,
+      );
+    if (data.socialLinks.twitter)
+      links.push(
+        `<a href="${data.socialLinks.twitter}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.twitter}" width="20" height="20" alt="Twitter" /></a>`,
+      );
+    if (data.socialLinks.facebook)
+      links.push(
+        `<a href="${data.socialLinks.facebook}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.facebook}" width="20" height="20" alt="Facebook" /></a>`,
+      );
+    if (data.socialLinks.instagram)
+      links.push(
+        `<a href="${data.socialLinks.instagram}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.instagram}" width="20" height="20" alt="Instagram" /></a>`,
+      );
+    if (data.socialLinks.youtube)
+      links.push(
+        `<a href="${data.socialLinks.youtube}" style="display:inline-block; margin:0 6px;"><img src="${ICONS.youtube}" width="20" height="20" alt="YouTube" /></a>`,
+      );
 
     if (links.length === 0) return "";
 
@@ -515,8 +574,8 @@ export function buildEmailHtml(data: EmailData): string {
                   <a href="${appUrl}/privacy" style="color: ${COLORS.primary}; text-decoration: none;">Privacy Policy</a>
                   <span style="color: ${COLORS.textLight};"> &bull; </span>
                   <a href="${appUrl}/terms" style="color: ${COLORS.primary}; text-decoration: none;">Terms</a>
-                  ${data.supportEmail ? ` <span style="color: ${COLORS.textLight};"> &bull; </span> <a href="mailto:${data.supportEmail}" style="color: ${COLORS.primary}; text-decoration: none;">Contact</a>` : ''}
-                  ${data.unsubscribeUrl ? ` <span style="color: ${COLORS.textLight};"> &bull; </span> <a href="${data.unsubscribeUrl}" style="color: ${COLORS.primary}; text-decoration: none;">Unsubscribe</a>` : ''}
+                  ${data.supportEmail ? ` <span style="color: ${COLORS.textLight};"> &bull; </span> <a href="mailto:${data.supportEmail}" style="color: ${COLORS.primary}; text-decoration: none;">Contact</a>` : ""}
+                  ${data.unsubscribeUrl ? ` <span style="color: ${COLORS.textLight};"> &bull; </span> <a href="${data.unsubscribeUrl}" style="color: ${COLORS.primary}; text-decoration: none;">Unsubscribe</a>` : ""}
                 </p>
               </td>
             </tr>

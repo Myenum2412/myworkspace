@@ -1,4 +1,9 @@
-import { getCurrentVersion, getVersionHistory, getRecentChanges, getPolicyStats } from "../../../src/lib/casbin/policy-manager.js";
+import {
+  getCurrentVersion,
+  getPolicyStats,
+  getRecentChanges,
+  getVersionHistory,
+} from "../../../src/lib/casbin/policy-manager.js";
 
 describe("Policy Manager", () => {
   describe("getCurrentVersion", () => {

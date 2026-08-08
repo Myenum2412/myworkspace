@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { auth } from "@/lib/auth/config";
-import { getUserOrgId } from "@/lib/org";
-import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
+import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
+import { getUserOrgId } from "@/lib/org";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,8 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { orgId, userId, date, startTime, endTime, duration, description, projectId, projectName } = body;
+  const { orgId, userId, date, startTime, endTime, duration, description, projectId, projectName } =
+    body;
 
   if (!orgId || !userId || !date || !description) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -52,7 +53,8 @@ export async function GET(req: Request) {
   }
 
   const { searchParams } = new URL(req.url);
-  const orgId = searchParams.get("orgId") || await getUserOrgId(session.user.id, session.user.email);
+  const orgId =
+    searchParams.get("orgId") || (await getUserOrgId(session.user.id, session.user.email));
   const date = searchParams.get("date");
   const projectId = searchParams.get("projectId");
 
@@ -69,7 +71,8 @@ export async function GET(req: Request) {
   if (date) filter.date = date;
 
   try {
-    const raw = await db.collection(collections.timeEntries)
+    const raw = await db
+      .collection(collections.timeEntries)
       .find(filter)
       .sort({ date: -1, createdAt: -1 })
       .toArray();
@@ -92,6 +95,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ data: entries });
   } catch (err) {
     console.error("[API /api/time-entries] GET error:", err);
-      return NextResponse.json({ error: "Could not load time entries" }, { status: 500 });
+    return NextResponse.json({ error: "Could not load time entries" }, { status: 500 });
   }
 }

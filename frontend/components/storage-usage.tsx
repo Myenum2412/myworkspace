@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  HardDriveIcon,
-  ImageIcon,
-  FileTextIcon,
-  VideoIcon,
   FileAudioIcon,
   FileIcon,
+  FileTextIcon,
+  HardDriveIcon,
+  ImageIcon,
   Loader2Icon,
+  VideoIcon,
 } from "@/lib/icons";
 
 type MimeCategory = { _id: string; count: number; size: number };
@@ -40,8 +40,15 @@ export function StorageUsage() {
   const otherCount = categories.slice(5).reduce((sum, c) => sum + c.count, 0);
 
   const items = [
-    ...top5.map((c) => ({ id: c._id, count: c.count, label: MIME_LABELS[c._id]?.label || "Other", icon: MIME_LABELS[c._id]?.icon || FileIcon })),
-    ...(otherCount > 0 ? [{ id: "other", count: otherCount, label: "Other", icon: FileIcon as typeof ImageIcon }] : []),
+    ...top5.map((c) => ({
+      id: c._id,
+      count: c.count,
+      label: MIME_LABELS[c._id]?.label || "Other",
+      icon: MIME_LABELS[c._id]?.icon || FileIcon,
+    })),
+    ...(otherCount > 0
+      ? [{ id: "other", count: otherCount, label: "Other", icon: FileIcon as typeof ImageIcon }]
+      : []),
   ];
 
   return (
@@ -60,7 +67,10 @@ export function StorageUsage() {
         ) : items.length === 0 ? (
           <div className="flex gap-4">
             {["Img", "Doc", "Video", "Audio", "Other"].map((label) => (
-              <div key={label} className="flex-1 flex items-center justify-end gap-2 rounded-sm border border-dashed p-4">
+              <div
+                key={label}
+                className="flex-1 flex items-center justify-end gap-2 rounded-sm border border-dashed p-4"
+              >
                 <span className="text-2xl font-bold tabular-nums">0</span>
                 <span className="text-xs text-muted-foreground">{label}</span>
               </div>
@@ -69,7 +79,10 @@ export function StorageUsage() {
         ) : (
           <div className="flex gap-4">
             {items.map((item) => (
-              <div key={item.id} className="flex-1 flex items-center justify-end gap-2 rounded-sm border p-4">
+              <div
+                key={item.id}
+                className="flex-1 flex items-center justify-end gap-2 rounded-sm border p-4"
+              >
                 <span className="text-2xl font-bold tabular-nums">{item.count}</span>
                 <span className="text-xs text-muted-foreground">{item.label}</span>
               </div>

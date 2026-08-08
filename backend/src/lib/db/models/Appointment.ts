@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export type AppointmentStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
 
@@ -46,7 +46,7 @@ const appointmentSchema = new Schema<IAppointment>(
     createdBy: { type: String, required: true },
     source: { type: String, enum: ["web"], default: "web" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 appointmentSchema.index({ orgId: 1, appointmentDate: 1 });

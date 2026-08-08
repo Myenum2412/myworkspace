@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   description: "Complete your account setup",
 };
 
-export default function OnboardingLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

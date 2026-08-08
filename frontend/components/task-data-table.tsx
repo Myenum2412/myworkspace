@@ -1,6 +1,8 @@
-"use client"
+"use client";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
-import { type ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/data-table";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,17 +14,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  MoreHorizontalIcon,
+  AlertCircleIcon,
+  CalendarIcon,
+  ClockIcon,
   EyeIcon,
+  ListTodoIcon,
+  MoreHorizontalIcon,
   PencilIcon,
   Trash2Icon,
-  ListTodoIcon,
-  CalendarIcon,
-  AlertCircleIcon,
-  ClockIcon,
 } from "@/lib/icons";
-import { DataTable } from "@/components/data-table";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 export interface TaskRow {
   _id: string;
@@ -42,7 +42,10 @@ export interface TaskRow {
 
 const COMPLETED_STATUSES = new Set(["completed", "done", "cancelled", "closed"]);
 
-function getDueDateStatus(dueDate?: string | null, status?: string): "overdue" | "due-soon" | "normal" {
+function getDueDateStatus(
+  dueDate?: string | null,
+  status?: string,
+): "overdue" | "due-soon" | "normal" {
   if (!dueDate || COMPLETED_STATUSES.has(status ?? "")) return "normal";
   const now = new Date();
   const due = new Date(dueDate);
@@ -126,9 +129,11 @@ export function TaskDataTable({
       return {
         status,
         className:
-          status === "overdue" ? "bg-red-50 hover:bg-red-100/50" :
-          status === "due-soon" ? "bg-yellow-50 hover:bg-yellow-100/50" :
-          "",
+          status === "overdue"
+            ? "bg-red-50 hover:bg-red-100/50"
+            : status === "due-soon"
+              ? "bg-yellow-50 hover:bg-yellow-100/50"
+              : "",
       };
     });
   }, [data]);
@@ -143,9 +148,7 @@ export function TaskDataTable({
       id: "index",
       header: "Task #",
       cell: ({ row }) => (
-        <span className="font-mono text-xs text-muted-foreground">
-          #{row.index + 1}
-        </span>
+        <span className="font-mono text-xs text-muted-foreground">#{row.index + 1}</span>
       ),
       size: 80,
     },
@@ -156,7 +159,10 @@ export function TaskDataTable({
         <div className="flex items-center gap-2">
           <span className="font-medium">{row.original.title}</span>
           {row.original.type && (
-            <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${typeStyles[row.original.type] || ""}`}>
+            <Badge
+              variant="outline"
+              className={`text-[9px] px-1.5 py-0 ${typeStyles[row.original.type] || ""}`}
+            >
               {row.original.type}
             </Badge>
           )}
@@ -177,7 +183,12 @@ export function TaskDataTable({
               />
             ) : (
               <span className="text-[10px] font-medium text-muted-foreground">
-                {(row.original.assigneeName || "U").split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+                {(row.original.assigneeName || "U")
+                  .split(" ")
+                  .map((n: string) => n[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()}
               </span>
             )}
           </div>
@@ -188,9 +199,7 @@ export function TaskDataTable({
     {
       id: "creator",
       header: "Delegated By",
-      cell: ({ row }) => (
-        <span className="text-sm">{row.original.creatorName || "—"}</span>
-      ),
+      cell: ({ row }) => <span className="text-sm">{row.original.creatorName || "—"}</span>,
     },
     ...(showTeamHead
       ? [
@@ -257,13 +266,23 @@ export function TaskDataTable({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {onView && (
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView(row.original); }}>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView(row.original);
+                }}
+              >
                 <EyeIcon className="mr-2 size-4" />
                 View
               </DropdownMenuItem>
             )}
             {onEdit && (
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(row.original); }}>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(row.original);
+                }}
+              >
                 <PencilIcon className="mr-2 size-4" />
                 Edit
               </DropdownMenuItem>

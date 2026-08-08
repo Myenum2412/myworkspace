@@ -1,6 +1,5 @@
 "use client";
 
-import { useSessionTracker } from "@/hooks/use-session-tracker";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +8,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Clock, Play, Coffee } from "@/lib/icons";
+import { useSessionTracker } from "@/hooks/use-session-tracker";
+import { Clock, Coffee, Play } from "@/lib/icons";
 
 export function SessionTracker() {
   const {
@@ -40,9 +40,7 @@ export function SessionTracker() {
         >
           <Clock className={`size-3.5 ${isOnBreak ? "animate-pulse" : ""}`} />
           <span className="font-mono text-xs">{formatDuration(elapsed)}</span>
-          {isOnBreak && (
-            <span className="text-[10px] text-black font-medium">BREAK</span>
-          )}
+          {isOnBreak && <span className="text-[10px] text-black font-medium">BREAK</span>}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
@@ -85,12 +83,7 @@ export function SessionTracker() {
 
         <div className="p-1">
           {isOnBreak ? (
-            <Button
-              variant="default"
-              size="sm"
-              className="gap-2"
-              onClick={endBreak}
-            >
+            <Button variant="default" size="sm" className="gap-2" onClick={endBreak}>
               <Play className="size-4" />
               Resume Work
             </Button>

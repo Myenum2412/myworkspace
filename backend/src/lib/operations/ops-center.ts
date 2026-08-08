@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
@@ -43,7 +43,11 @@ export interface IAlertRule extends Document {
 const serviceHealthSchema = new Schema<IServiceHealth>({
   id: { type: String, required: true, unique: true },
   service: { type: String, required: true },
-  status: { type: String, enum: ["healthy", "degraded", "down", "maintenance"], default: "healthy" },
+  status: {
+    type: String,
+    enum: ["healthy", "degraded", "down", "maintenance"],
+    default: "healthy",
+  },
   metrics: {
     uptime: { type: Number, default: 99.9 },
     latency: { type: Number, default: 0 },
@@ -61,11 +65,17 @@ const incidentSchema = new Schema<IIncident>({
   service: { type: String, required: true },
   title: { type: String, required: true },
   description: String,
-  status: { type: String, enum: ["detected", "investigating", "mitigated", "resolved", "monitoring"], default: "detected" },
+  status: {
+    type: String,
+    enum: ["detected", "investigating", "mitigated", "resolved", "monitoring"],
+    default: "detected",
+  },
   affectedOrgs: [String],
   detectedAt: { type: Date, default: Date.now },
-  acknowledgedAt: Date, resolvedAt: Date,
-  rootCause: String, resolution: String,
+  acknowledgedAt: Date,
+  resolvedAt: Date,
+  rootCause: String,
+  resolution: String,
 });
 
 const alertRuleSchema = new Schema<IAlertRule>({
@@ -85,11 +95,17 @@ export const Incident = model<IIncident>("Incident", incidentSchema);
 export const AlertRule = model<IAlertRule>("AlertRule", alertRuleSchema);
 
 export class OperationsCenter {
-  async recordHealthCheck(service: string, status: "healthy" | "degraded" | "down", metrics: Partial<IServiceHealth["metrics"]>): Promise<void> {
+  async recordHealthCheck(
+    service: string,
+    status: "healthy" | "degraded" | "down",
+    metrics: Partial<IServiceHealth["metrics"]>,
+  ): Promise<void> {
     await ServiceHealth.findOneAndUpdate(
-      { service }, {
+      { service },
+      {
         $set: {
-          status, lastChecked: new Date(),
+          status,
+          lastChecked: new Date(),
           "metrics.uptime": metrics.uptime ?? 99.9,
           "metrics.latency": metrics.latency ?? 0,
           "metrics.errorRate": metrics.errorRate ?? 0,
@@ -105,43 +121,76 @@ export class OperationsCenter {
   async getServiceDashboard(): Promise<{
     services: IServiceHealth[];
     overallStatus: "healthy" | "degraded" | "down";
-    avgLatency: number; avgErrorRate: number;
+    avgLatency: number;
+    avgErrorRate: number;
   }> {
-    const services = await ServiceHealth.find({}).lean() as unknown as IServiceHealth[];
-    const overallStatus = services.some(s => s.status === "down") ? "down"
-      : services.some(s => s.status === "degraded") ? "degraded" : "healthy";
-    const avgLatency = services.length > 0 ? Math.round(services.reduce((s, svc) => s + svc.metrics.latency, 0) / services.length) : 0;
-    const avgErrorRate = services.length > 0 ? Math.round((services.reduce((s, svc) => s + svc.metrics.errorRate, 0) / services.length) * 100) / 100 : 0;
+    const services = (await ServiceHealth.find({}).lean()) as unknown as IServiceHealth[];
+    const overallStatus = services.some((s) => s.status === "down")
+      ? "down"
+      : services.some((s) => s.status === "degraded")
+        ? "degraded"
+        : "healthy";
+    const avgLatency =
+      services.length > 0
+        ? Math.round(services.reduce((s, svc) => s + svc.metrics.latency, 0) / services.length)
+        : 0;
+    const avgErrorRate =
+      services.length > 0
+        ? Math.round(
+            (services.reduce((s, svc) => s + svc.metrics.errorRate, 0) / services.length) * 100,
+          ) / 100
+        : 0;
     return { services, overallStatus, avgLatency, avgErrorRate };
   }
 
   async reportIncident(params: {
-    severity: IIncident["severity"]; service: string;
-    title: string; description?: string;
+    severity: IIncident["severity"];
+    service: string;
+    title: string;
+    description?: string;
   }): Promise<IIncident> {
     const incident = await Incident.create({
-      id: uuid(), ...params, status: "detected",
-      detectedAt: new Date(), affectedOrgs: [],
+      id: uuid(),
+      ...params,
+      status: "detected",
+      detectedAt: new Date(),
+      affectedOrgs: [],
     });
-    logger.error({ incidentId: incident.id, service: params.service, severity: params.severity }, "Incident reported");
+    logger.error(
+      { incidentId: incident.id, service: params.service, severity: params.severity },
+      "Incident reported",
+    );
     return incident;
   }
 
-  async updateIncidentStatus(incidentId: string, status: IIncident["status"], resolution?: string): Promise<void> {
+  async updateIncidentStatus(
+    incidentId: string,
+    status: IIncident["status"],
+    resolution?: string,
+  ): Promise<void> {
     const update: Record<string, unknown> = { status };
     if (status === "investigating") update.acknowledgedAt = new Date();
-    if (status === "resolved") { update.resolvedAt = new Date(); update.resolution = resolution; }
+    if (status === "resolved") {
+      update.resolvedAt = new Date();
+      update.resolution = resolution;
+    }
     await Incident.updateOne({ id: incidentId }, { $set: update });
   }
 
   async getActiveIncidents(): Promise<IIncident[]> {
-    return Incident.find({ status: { $in: ["detected", "investigating", "mitigated", "monitoring"] } })
-      .sort({ detectedAt: -1 }).lean() as any;
+    return Incident.find({
+      status: { $in: ["detected", "investigating", "mitigated", "monitoring"] },
+    })
+      .sort({ detectedAt: -1 })
+      .lean() as any;
   }
 
   async createAlertRule(params: {
-    name: string; metric: string; condition: IAlertRule["condition"];
-    threshold: number; channels: IAlertRule["channels"];
+    name: string;
+    metric: string;
+    condition: IAlertRule["condition"];
+    threshold: number;
+    channels: IAlertRule["channels"];
   }): Promise<IAlertRule> {
     return AlertRule.create({ id: uuid(), ...params, cooldownMinutes: 60, isActive: true });
   }
@@ -154,9 +203,15 @@ export class OperationsCenter {
       if (currentValue === undefined) continue;
       let breached = false;
       switch (rule.condition) {
-        case "gt": breached = currentValue > rule.threshold; break;
-        case "lt": breached = currentValue < rule.threshold; break;
-        case "eq": breached = currentValue === rule.threshold; break;
+        case "gt":
+          breached = currentValue > rule.threshold;
+          break;
+        case "lt":
+          breached = currentValue < rule.threshold;
+          break;
+        case "eq":
+          breached = currentValue === rule.threshold;
+          break;
       }
       if (breached) {
         triggered.push(rule.name);
@@ -167,8 +222,12 @@ export class OperationsCenter {
   }
 
   async getOpsSummary(): Promise<{
-    totalServices: number; healthy: number; degraded: number; down: number;
-    activeIncidents: number; totalAlerts: number;
+    totalServices: number;
+    healthy: number;
+    degraded: number;
+    down: number;
+    activeIncidents: number;
+    totalAlerts: number;
     avgUptime: number;
   }> {
     const [services, activeIncidents, totalAlerts] = await Promise.all([
@@ -178,11 +237,17 @@ export class OperationsCenter {
     ]);
     return {
       totalServices: services.length,
-      healthy: services.filter(s => s.status === "healthy").length,
-      degraded: services.filter(s => s.status === "degraded").length,
-      down: services.filter(s => s.status === "down").length,
-      activeIncidents, totalAlerts,
-      avgUptime: services.length > 0 ? Math.round(services.reduce((s, svc) => s + svc.metrics.uptime, 0) / services.length * 10) / 10 : 0,
+      healthy: services.filter((s) => s.status === "healthy").length,
+      degraded: services.filter((s) => s.status === "degraded").length,
+      down: services.filter((s) => s.status === "down").length,
+      activeIncidents,
+      totalAlerts,
+      avgUptime:
+        services.length > 0
+          ? Math.round(
+              (services.reduce((s, svc) => s + svc.metrics.uptime, 0) / services.length) * 10,
+            ) / 10
+          : 0,
     };
   }
 }

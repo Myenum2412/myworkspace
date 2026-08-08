@@ -1,11 +1,12 @@
-import { useConsentStore } from "../consent/store";
 import { trackEvent, trackEvents } from "../consent/services";
+import { useConsentStore } from "../consent/store";
 
 type EventProperties = Record<string, unknown>;
 
-const SESSION_ID = typeof crypto !== "undefined" && crypto.randomUUID
-  ? crypto.randomUUID()
-  : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+const SESSION_ID =
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 function getPageUrl(): string {
   if (typeof window === "undefined") return "";
@@ -22,7 +23,13 @@ function getUTMParams(): Record<string, string> | undefined {
   const params = new URLSearchParams(window.location.search);
   const utm: Record<string, string> = {};
   let hasUtm = false;
-  for (const key of ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"] as const) {
+  for (const key of [
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_term",
+    "utm_content",
+  ] as const) {
     const val = params.get(key);
     if (val) {
       utm[key.replace("utm_", "")] = val;
@@ -63,7 +70,10 @@ export class Tracker {
 
     const eventCategory = this.categorizeEvent(eventName);
     const requiredCategory = this.getConsentCategory(eventCategory);
-    if (requiredCategory && !consent.categories[requiredCategory as keyof typeof consent.categories]) {
+    if (
+      requiredCategory &&
+      !consent.categories[requiredCategory as keyof typeof consent.categories]
+    ) {
       return;
     }
 
@@ -108,26 +118,43 @@ export class Tracker {
     });
 
     if (allowed.length > 0) {
-      trackEvents(allowed.map(({ eventName, properties }) => ({
-        eventName,
-        eventCategory: this.categorizeEvent(eventName),
-        properties,
-      })));
+      trackEvents(
+        allowed.map(({ eventName, properties }) => ({
+          eventName,
+          eventCategory: this.categorizeEvent(eventName),
+          properties,
+        })),
+      );
     }
   }
 
   private categorizeEvent(eventName: string): string {
     if (eventName.startsWith("page_view") || eventName.startsWith("landing_")) return "engagement";
-    if (eventName.startsWith("sign_up") || eventName.startsWith("login") || eventName.startsWith("logout")) return "auth";
+    if (
+      eventName.startsWith("sign_up") ||
+      eventName.startsWith("login") ||
+      eventName.startsWith("logout")
+    )
+      return "auth";
     if (eventName.startsWith("onboarding")) return "onboarding";
     if (eventName.startsWith("workspace")) return "workspace";
     if (eventName.startsWith("project")) return "project";
     if (eventName.startsWith("file_")) return "file";
-    if (eventName.startsWith("subscription") || eventName.startsWith("payment") || eventName.startsWith("trial")) return "subscription";
+    if (
+      eventName.startsWith("subscription") ||
+      eventName.startsWith("payment") ||
+      eventName.startsWith("trial")
+    )
+      return "subscription";
     if (eventName.startsWith("feature_")) return "feature";
     if (eventName.startsWith("ai_")) return "ai";
     if (eventName.startsWith("search")) return "search";
-    if (eventName.startsWith("invitation") || eventName.startsWith("member") || eventName.startsWith("comment")) return "collaboration";
+    if (
+      eventName.startsWith("invitation") ||
+      eventName.startsWith("member") ||
+      eventName.startsWith("comment")
+    )
+      return "collaboration";
     if (eventName.startsWith("support") || eventName.startsWith("help_")) return "support";
     return "engagement";
   }
@@ -157,4 +184,3 @@ export class Tracker {
 }
 
 export const tracker = new Tracker();
-

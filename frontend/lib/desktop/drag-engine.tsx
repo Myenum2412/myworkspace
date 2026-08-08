@@ -2,13 +2,13 @@
 
 import {
   createContext,
-  useContext,
+  type DragEvent,
+  type ReactNode,
   useCallback,
+  useContext,
   useMemo,
   useRef,
   useState,
-  type ReactNode,
-  type DragEvent,
 } from "react";
 
 export type DragDataType = "file" | "folder" | "task" | "project" | "team" | "card";
@@ -102,7 +102,8 @@ export function DragEngineProvider({
       const previewEl = document.createElement("div");
       previewEl.style.cssText =
         "position:fixed;top:-9999px;left:-9999px;padding:8px 16px;background:rgba(0,0,0,0.8);color:white;border-radius:var(--radius-md);font-size:13px;z-index:9999;pointer-events:none;white-space:nowrap;backdrop-filter:blur(8px);";
-      previewEl.textContent = items.length > 1 ? `${items.length} items` : `${items[0].data || "Item"}`;
+      previewEl.textContent =
+        items.length > 1 ? `${items.length} items` : `${items[0].data || "Item"}`;
       document.body.appendChild(previewEl);
       e.dataTransfer.setDragImage(previewEl, 10, 10);
       setTimeout(() => document.body.removeChild(previewEl), 0);
@@ -125,16 +126,16 @@ export function DragEngineProvider({
     setDropTargetState(null);
   }, [dragItems, dropTarget, onDrop, onDragEnd]);
 
-  const setDropTarget = useCallback(
-    (target: DropTarget | null) => {
-      setDropTargetState(target);
-    },
-    [],
-  );
+  const setDropTarget = useCallback((target: DropTarget | null) => {
+    setDropTargetState(target);
+  }, []);
 
   return (
     <DragContext.Provider
-      value={useMemo(() => ({ activeDrag, dragItems, dropTarget, startDrag, endDrag, setDropTarget, canDrop }), [activeDrag, dragItems, dropTarget, startDrag, endDrag, setDropTarget, canDrop])}
+      value={useMemo(
+        () => ({ activeDrag, dragItems, dropTarget, startDrag, endDrag, setDropTarget, canDrop }),
+        [activeDrag, dragItems, dropTarget, startDrag, endDrag, setDropTarget, canDrop],
+      )}
     >
       {children}
       {activeDrag && (
@@ -240,12 +241,9 @@ export function useDraggable(options: {
     [options.id, options.type, options.data, options.source, options.disabled, startDrag],
   );
 
-  const handleDragEnd = useCallback(
-    (e: DragEvent) => {
-      setIsDragging(false);
-    },
-    [],
-  );
+  const handleDragEnd = useCallback((e: DragEvent) => {
+    setIsDragging(false);
+  }, []);
 
   return {
     ref,

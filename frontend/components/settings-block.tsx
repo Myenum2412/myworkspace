@@ -1,34 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { toast } from "sonner"
-import {
-  RiBankCardLine,
-  RiCheckLine,
-  RiMailLine,
-  RiUserLine,
-} from "@/lib/icons"
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
-import { Toaster } from "@/components/ui/sonner"
+import { useState } from "react";
+import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Toaster } from "@/components/ui/sonner";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -36,8 +18,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RiBankCardLine, RiCheckLine, RiMailLine, RiUserLine } from "@/lib/icons";
 
 const teamMembers = [
   {
@@ -72,52 +55,48 @@ const teamMembers = [
     role: "Staff",
     roleVariant: "outline" as const,
   },
-]
+];
 
-const planFeatures = [
-  "Unlimited projects",
-  "Priority support",
-  "Advanced analytics",
-]
+const planFeatures = ["Unlimited projects", "Priority support", "Advanced analytics"];
 
 export default function SettingsBlock() {
-  const [marketingEmails, setMarketingEmails] = useState(true)
-  const [fullName, setFullName] = useState("Ada Lovelace")
-  const [email, setEmail] = useState("ada@acme.com")
+  const [marketingEmails, setMarketingEmails] = useState(true);
+  const [fullName, setFullName] = useState("Ada Lovelace");
+  const [email, setEmail] = useState("ada@acme.com");
 
   function saveChanges() {
     toast.success("Profile saved", {
       id: "profile-saved",
       description: "Your account details have been updated.",
-    })
+    });
   }
 
   function inviteMember() {
     toast.success("Invitation sent", {
       id: "invitation-sent",
       description: "We emailed an invite to join the Acme workspace.",
-    })
+    });
   }
 
   function changePlan() {
     toast("Plans available", {
       id: "plans-available",
       description: "Compare plans and pick the one that fits your team.",
-    })
+    });
   }
 
   function cancelSubscription() {
     toast.error("Subscription canceled", {
       id: "subscription-canceled",
       description: "Your Pro plan stays active until Jan 1, 2027.",
-    })
+    });
   }
 
   function updatePayment() {
     toast.success("Payment method updated", {
       id: "payment-updated",
       description: "Future charges will use your new card.",
-    })
+    });
   }
 
   return (
@@ -141,9 +120,7 @@ export default function SettingsBlock() {
             <Card>
               <CardHeader>
                 <CardTitle>Profile</CardTitle>
-                <CardDescription>
-                  Update your personal details and preferences.
-                </CardDescription>
+                <CardDescription>Update your personal details and preferences.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-6">
                 <Field>
@@ -165,21 +142,15 @@ export default function SettingsBlock() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@acme.com"
                   />
-                  <FieldDescription>
-                    Used for sign-in and account notices.
-                  </FieldDescription>
+                  <FieldDescription>Used for sign-in and account notices.</FieldDescription>
                 </Field>
 
                 <Separator />
 
                 <Field orientation="horizontal">
                   <FieldContent>
-                    <FieldLabel htmlFor="marketing-emails">
-                      Marketing emails
-                    </FieldLabel>
-                    <FieldDescription>
-                      Receive product news and occasional offers.
-                    </FieldDescription>
+                    <FieldLabel htmlFor="marketing-emails">Marketing emails</FieldLabel>
+                    <FieldDescription>Receive product news and occasional offers.</FieldDescription>
                   </FieldContent>
                   <Switch
                     id="marketing-emails"
@@ -202,9 +173,7 @@ export default function SettingsBlock() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex flex-col gap-1">
                       <CardTitle>Pro plan</CardTitle>
-                      <CardDescription>
-                        Billed annually, renews Jan 1, 2027.
-                      </CardDescription>
+                      <CardDescription>Billed annually, renews Jan 1, 2027.</CardDescription>
                     </div>
                     <Badge variant="secondary">
                       <RiCheckLine data-icon="inline-start" />
@@ -214,20 +183,13 @@ export default function SettingsBlock() {
                 </CardHeader>
                 <CardContent className="flex flex-col gap-6">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold tracking-tight">
-                      $24
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      / month
-                    </span>
+                    <span className="text-3xl font-bold tracking-tight">$24</span>
+                    <span className="text-sm text-muted-foreground">/ month</span>
                   </div>
 
                   <ul className="flex flex-col gap-2">
                     {planFeatures.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-center gap-2 text-sm"
-                      >
+                      <li key={feature} className="flex items-center gap-2 text-sm">
                         <span className="flex size-5 items-center justify-center bg-primary/10 text-primary">
                           <RiCheckLine className="size-3.5" />
                         </span>
@@ -250,9 +212,7 @@ export default function SettingsBlock() {
               <Card>
                 <CardHeader>
                   <CardTitle>Payment method</CardTitle>
-                  <CardDescription>
-                    The card charged for your subscription.
-                  </CardDescription>
+                  <CardDescription>The card charged for your subscription.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between gap-4 rounded-none border border-border p-4">
@@ -261,12 +221,8 @@ export default function SettingsBlock() {
                         <RiBankCardLine className="size-5" />
                       </span>
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium">
-                          Visa ending in 4242
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          Expires 08 / 2028
-                        </span>
+                        <span className="text-sm font-medium">Visa ending in 4242</span>
+                        <span className="text-xs text-muted-foreground">Expires 08 / 2028</span>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" onClick={updatePayment}>
@@ -284,9 +240,7 @@ export default function SettingsBlock() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="flex flex-col gap-1">
                     <CardTitle>Team members</CardTitle>
-                    <CardDescription>
-                      People with access to the Acme workspace.
-                    </CardDescription>
+                    <CardDescription>People with access to the Acme workspace.</CardDescription>
                   </div>
                   <Button size="sm" onClick={inviteMember}>
                     <RiMailLine data-icon="inline-start" />
@@ -299,9 +253,7 @@ export default function SettingsBlock() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Member</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        Email
-                      </TableHead>
+                      <TableHead className="hidden md:table-cell">Email</TableHead>
                       <TableHead className="text-right">Role</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -316,9 +268,7 @@ export default function SettingsBlock() {
                                 alt={member.name}
                                 className="grayscale"
                               />
-                              <AvatarFallback className="text-xs">
-                                {member.initials}
-                              </AvatarFallback>
+                              <AvatarFallback className="text-xs">{member.initials}</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
                               <span className="font-medium">{member.name}</span>
@@ -350,5 +300,5 @@ export default function SettingsBlock() {
       </div>
       <Toaster />
     </section>
-  )
+  );
 }

@@ -1,8 +1,14 @@
 import mongoose from "mongoose";
-import { connectTestDb, resetDb } from "../../__helpers__/db.js";
-import { createNotification, listNotifications, getUnreadCount, markAllRead, markRead } from "../../../src/services/notification.service.js";
 import { Notification } from "../../../src/lib/db/models/Notification.js";
 import { AppError } from "../../../src/middleware/error.js";
+import {
+  createNotification,
+  getUnreadCount,
+  listNotifications,
+  markAllRead,
+  markRead,
+} from "../../../src/services/notification.service.js";
+import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 
 beforeAll(async () => await connectTestDb());
 beforeEach(async () => await resetDb());
@@ -37,14 +43,28 @@ describe("NotificationService", () => {
     });
 
     it("throws AppError when required fields are missing", async () => {
-      await expect(createNotification({ userId: "", orgId: ORG_ID, type: "", title: "" } as any)).rejects.toThrow(AppError);
+      await expect(
+        createNotification({ userId: "", orgId: ORG_ID, type: "", title: "" } as any),
+      ).rejects.toThrow(AppError);
     });
   });
 
   describe("listNotifications", () => {
     it("returns created notifications for a user", async () => {
-      await createNotification({ userId: USER_ID, orgId: ORG_ID, createdBy: "u1", type: "system", title: "First" });
-      await createNotification({ userId: USER_ID, orgId: ORG_ID, createdBy: "u1", type: "system", title: "Second" });
+      await createNotification({
+        userId: USER_ID,
+        orgId: ORG_ID,
+        createdBy: "u1",
+        type: "system",
+        title: "First",
+      });
+      await createNotification({
+        userId: USER_ID,
+        orgId: ORG_ID,
+        createdBy: "u1",
+        type: "system",
+        title: "Second",
+      });
 
       const list = await listNotifications(USER_ID);
 
@@ -54,8 +74,20 @@ describe("NotificationService", () => {
     });
 
     it("does not return other users' notifications", async () => {
-      await createNotification({ userId: USER_ID, orgId: ORG_ID, createdBy: "u1", type: "system", title: "Mine" });
-      await createNotification({ userId: OTHER_USER, orgId: ORG_ID, createdBy: "u2", type: "system", title: "Theirs" });
+      await createNotification({
+        userId: USER_ID,
+        orgId: ORG_ID,
+        createdBy: "u1",
+        type: "system",
+        title: "Mine",
+      });
+      await createNotification({
+        userId: OTHER_USER,
+        orgId: ORG_ID,
+        createdBy: "u2",
+        type: "system",
+        title: "Theirs",
+      });
 
       const list = await listNotifications(USER_ID);
 
@@ -66,15 +98,33 @@ describe("NotificationService", () => {
 
   describe("getUnreadCount", () => {
     it("returns correct unread count", async () => {
-      await createNotification({ userId: USER_ID, orgId: ORG_ID, createdBy: "u1", type: "system", title: "Unread 1" });
-      await createNotification({ userId: USER_ID, orgId: ORG_ID, createdBy: "u1", type: "system", title: "Unread 2" });
+      await createNotification({
+        userId: USER_ID,
+        orgId: ORG_ID,
+        createdBy: "u1",
+        type: "system",
+        title: "Unread 1",
+      });
+      await createNotification({
+        userId: USER_ID,
+        orgId: ORG_ID,
+        createdBy: "u1",
+        type: "system",
+        title: "Unread 2",
+      });
 
       const count = await getUnreadCount(USER_ID);
       expect(count).toBe(2);
     });
 
     it("returns zero when all are read", async () => {
-      const n = await createNotification({ userId: USER_ID, orgId: ORG_ID, createdBy: "u1", type: "system", title: "Read me" });
+      const n = await createNotification({
+        userId: USER_ID,
+        orgId: ORG_ID,
+        createdBy: "u1",
+        type: "system",
+        title: "Read me",
+      });
       await Notification.findByIdAndUpdate(n.id, { read: true });
 
       const count = await getUnreadCount(USER_ID);
@@ -84,8 +134,20 @@ describe("NotificationService", () => {
 
   describe("markAllRead", () => {
     it("marks all notifications as read for a user", async () => {
-      await createNotification({ userId: USER_ID, orgId: ORG_ID, createdBy: "u1", type: "system", title: "A" });
-      await createNotification({ userId: USER_ID, orgId: ORG_ID, createdBy: "u1", type: "system", title: "B" });
+      await createNotification({
+        userId: USER_ID,
+        orgId: ORG_ID,
+        createdBy: "u1",
+        type: "system",
+        title: "A",
+      });
+      await createNotification({
+        userId: USER_ID,
+        orgId: ORG_ID,
+        createdBy: "u1",
+        type: "system",
+        title: "B",
+      });
 
       await markAllRead(USER_ID);
 
@@ -94,8 +156,20 @@ describe("NotificationService", () => {
     });
 
     it("does not affect other users' notifications", async () => {
-      await createNotification({ userId: USER_ID, orgId: ORG_ID, createdBy: "u1", type: "system", title: "Mine" });
-      await createNotification({ userId: OTHER_USER, orgId: ORG_ID, createdBy: "u2", type: "system", title: "Theirs" });
+      await createNotification({
+        userId: USER_ID,
+        orgId: ORG_ID,
+        createdBy: "u1",
+        type: "system",
+        title: "Mine",
+      });
+      await createNotification({
+        userId: OTHER_USER,
+        orgId: ORG_ID,
+        createdBy: "u2",
+        type: "system",
+        title: "Theirs",
+      });
 
       await markAllRead(USER_ID);
 
@@ -108,7 +182,13 @@ describe("NotificationService", () => {
 
   describe("markRead", () => {
     it("marks a single notification as read", async () => {
-      const n = await createNotification({ userId: USER_ID, orgId: ORG_ID, createdBy: "u1", type: "system", title: "Single" });
+      const n = await createNotification({
+        userId: USER_ID,
+        orgId: ORG_ID,
+        createdBy: "u1",
+        type: "system",
+        title: "Single",
+      });
 
       await markRead(n.id, USER_ID);
 
@@ -117,11 +197,19 @@ describe("NotificationService", () => {
     });
 
     it("throws AppError when notification does not exist", async () => {
-      await expect(markRead(new mongoose.Types.ObjectId().toHexString(), USER_ID)).rejects.toThrow(AppError);
+      await expect(markRead(new mongoose.Types.ObjectId().toHexString(), USER_ID)).rejects.toThrow(
+        AppError,
+      );
     });
 
     it("throws AppError when userId does not match", async () => {
-      const n = await createNotification({ userId: USER_ID, orgId: ORG_ID, createdBy: "u1", type: "system", title: "Not yours" });
+      const n = await createNotification({
+        userId: USER_ID,
+        orgId: ORG_ID,
+        createdBy: "u1",
+        type: "system",
+        title: "Not yours",
+      });
 
       await expect(markRead(n.id, OTHER_USER)).rejects.toThrow(AppError);
     });

@@ -1,11 +1,11 @@
-import { logger } from "../lib/logger/index.js";
 import { connection } from "mongoose";
-import { isRabbitMQConfigured, getChannel } from "../lib/queue/connection.js";
-import { socketIOManager } from "../lib/socketio/index.js";
-import { Notification } from "../lib/db/models/Notification.js";
-import { EmailLog } from "../lib/db/models/EmailLog.js";
-import { NotificationSettings } from "../lib/db/models/NotificationSettings.js";
 import { env } from "../config/env.js";
+import { EmailLog } from "../lib/db/models/EmailLog.js";
+import { Notification } from "../lib/db/models/Notification.js";
+import { NotificationSettings } from "../lib/db/models/NotificationSettings.js";
+import { logger } from "../lib/logger/index.js";
+import { getChannel, isRabbitMQConfigured } from "../lib/queue/connection.js";
+import { socketIOManager } from "../lib/socketio/index.js";
 
 export interface HealthStatus {
   status: "healthy" | "degraded" | "unhealthy";
@@ -91,9 +91,11 @@ export async function checkNotificationHealth(): Promise<HealthStatus> {
     };
 
     const overallStatus: HealthStatus["status"] =
-      checks.database.status === "unhealthy" ? "unhealthy" :
-      failedCount > 50 ? "degraded" :
-      "healthy";
+      checks.database.status === "unhealthy"
+        ? "unhealthy"
+        : failedCount > 50
+          ? "degraded"
+          : "healthy";
 
     return {
       status: overallStatus,

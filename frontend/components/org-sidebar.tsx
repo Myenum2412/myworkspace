@@ -3,28 +3,23 @@
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { SidebarBrand } from "@/components/sidebar-brand";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarRail } from "@/components/ui/sidebar";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarRail,
-} from "@/components/ui/sidebar";
-import { ROLES, isAdminRole } from "@/lib/rbac";
-import {
+  ActivityIcon,
+  BrainIcon,
   Building2Icon,
+  ClipboardListIcon,
+  Code2Icon,
+  CreditCardIcon,
   LayoutDashboardIcon,
-  UsersIcon,
+  PuzzleIcon,
   Settings2Icon,
   ShieldIcon,
-  ClipboardListIcon,
-  BrainIcon,
-  WorkflowIcon,
-  Code2Icon,
-  PuzzleIcon,
-  ActivityIcon,
   StarIcon,
-  CreditCardIcon,
+  UsersIcon,
+  WorkflowIcon,
 } from "@/lib/icons";
+import { isAdminRole, ROLES } from "@/lib/rbac";
 
 export const defaultOrgNavData = [
   {

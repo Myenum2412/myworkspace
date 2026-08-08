@@ -1,9 +1,6 @@
 const inFlightRequests = new Map<string, Promise<unknown>>();
 
-export function deduplicateRequest<T>(
-  key: string,
-  fetcher: () => Promise<T>,
-): Promise<T> {
+export function deduplicateRequest<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
   const existing = inFlightRequests.get(key);
   if (existing) return existing as Promise<T>;
 

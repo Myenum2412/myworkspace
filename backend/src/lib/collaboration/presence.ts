@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 
 export interface IPresence extends Document {
@@ -27,7 +27,11 @@ export interface ISharedWorkspace extends Document {
   orgId: string;
   name: string;
   description?: string;
-  members: { userId: string; role: "workspace_owner" | "workspace_editor" | "workspace_viewer"; joinedAt: Date }[];
+  members: {
+    userId: string;
+    role: "workspace_owner" | "workspace_editor" | "workspace_viewer";
+    joinedAt: Date;
+  }[];
   resources: { type: string; id: string; addedAt: Date }[];
   isActive: boolean;
   createdBy: string;
@@ -60,23 +64,37 @@ const activityFeedSchema = new Schema<IActivityFeedItem>({
 
 activityFeedSchema.index({ orgId: 1, createdAt: -1 });
 
-const sharedWorkspaceSchema = new Schema<ISharedWorkspace>({
-  id: { type: String, required: true, unique: true },
-  orgId: { type: String, required: true, index: true },
-  name: { type: String, required: true },
-  description: String,
-  members: [{ userId: String, role: { type: String, enum: ["workspace_owner", "workspace_editor", "workspace_viewer"] }, joinedAt: { type: Date, default: Date.now } }],
-  resources: [{ type: String, id: String, addedAt: { type: Date, default: Date.now } }],
-  isActive: { type: Boolean, default: true },
-  createdBy: { type: String, required: true },
-}, { timestamps: true });
+const sharedWorkspaceSchema = new Schema<ISharedWorkspace>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    name: { type: String, required: true },
+    description: String,
+    members: [
+      {
+        userId: String,
+        role: { type: String, enum: ["workspace_owner", "workspace_editor", "workspace_viewer"] },
+        joinedAt: { type: Date, default: Date.now },
+      },
+    ],
+    resources: [{ type: String, id: String, addedAt: { type: Date, default: Date.now } }],
+    isActive: { type: Boolean, default: true },
+    createdBy: { type: String, required: true },
+  },
+  { timestamps: true },
+);
 
 export const Presence = model<IPresence>("Presence", presenceSchema);
 export const ActivityFeed = model<IActivityFeedItem>("ActivityFeed", activityFeedSchema);
 export const SharedWorkspace = model<ISharedWorkspace>("SharedWorkspace", sharedWorkspaceSchema);
 
 export class CollaborationEngine {
-  async updatePresence(userId: string, orgId: string, status: IPresence["status"], resource?: string): Promise<void> {
+  async updatePresence(
+    userId: string,
+    orgId: string,
+    status: IPresence["status"],
+    resource?: string,
+  ): Promise<void> {
     await Presence.findOneAndUpdate(
       { userId, orgId },
       { $set: { status, lastSeen: new Date(), currentResource: resource || "" } },
@@ -89,14 +107,22 @@ export class CollaborationEngine {
   }
 
   async recordActivity(params: {
-    orgId: string; actorId: string; action: string;
-    entityType: string; entityId: string; summary: string;
+    orgId: string;
+    actorId: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    summary: string;
     metadata?: Record<string, unknown>;
   }): Promise<IActivityFeedItem> {
     return ActivityFeed.create({ id: uuid(), ...params, metadata: params.metadata || {} });
   }
 
-  async getActivityFeed(orgId: string, limit = 50, offset = 0): Promise<{ items: IActivityFeedItem[]; total: number }> {
+  async getActivityFeed(
+    orgId: string,
+    limit = 50,
+    offset = 0,
+  ): Promise<{ items: IActivityFeedItem[]; total: number }> {
     const [items, total] = await Promise.all([
       ActivityFeed.find({ orgId }).sort({ createdAt: -1 }).skip(offset).limit(limit).lean(),
       ActivityFeed.countDocuments({ orgId }),
@@ -105,22 +131,36 @@ export class CollaborationEngine {
   }
 
   async createWorkspace(params: {
-    orgId: string; name: string; description?: string;
-    members?: { userId: string; role: "workspace_owner" | "workspace_editor" | "workspace_viewer" }[];
+    orgId: string;
+    name: string;
+    description?: string;
+    members?: {
+      userId: string;
+      role: "workspace_owner" | "workspace_editor" | "workspace_viewer";
+    }[];
     createdBy: string;
   }): Promise<ISharedWorkspace> {
     return SharedWorkspace.create({
-      id: uuid(), ...params,
-      members: params.members || [{ userId: params.createdBy, role: "workspace_owner", joinedAt: new Date() }],
+      id: uuid(),
+      ...params,
+      members: params.members || [
+        { userId: params.createdBy, role: "workspace_owner", joinedAt: new Date() },
+      ],
       resources: [],
       isActive: true,
     });
   }
 
-  async addWorkspaceMembers(workspaceId: string, members: { userId: string; role: "workspace_owner" | "workspace_editor" | "workspace_viewer" }[]): Promise<void> {
+  async addWorkspaceMembers(
+    workspaceId: string,
+    members: {
+      userId: string;
+      role: "workspace_owner" | "workspace_editor" | "workspace_viewer";
+    }[],
+  ): Promise<void> {
     await SharedWorkspace.updateOne(
       { id: workspaceId },
-      { $push: { members: { $each: members.map(m => ({ ...m, joinedAt: new Date() })) } } },
+      { $push: { members: { $each: members.map((m) => ({ ...m, joinedAt: new Date() })) } } },
     );
   }
 

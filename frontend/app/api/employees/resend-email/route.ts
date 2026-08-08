@@ -1,9 +1,9 @@
+import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { auth } from "@/lib/auth/config";
-import { hash } from "bcryptjs";
-import { sendEmailDirect, buildEmployeeOnboardedHtml } from "@/lib/email";
+import { buildEmployeeOnboardedHtml, sendEmailDirect } from "@/lib/email";
 import { isAdminRole } from "@/lib/rbac";
 
 export async function POST(request: Request) {
@@ -38,12 +38,17 @@ export async function POST(request: Request) {
     const newTempPassword = Math.random().toString(36).slice(-8) + "A1!";
     const hashedPassword = await hash(newTempPassword, 12);
 
-    await db.collection(collections.users).updateOne(
-      { id: userId },
-      { $set: { password: hashedPassword, updatedAt: new Date() } }
-    );
+    await db
+      .collection(collections.users)
+      .updateOne({ id: userId }, { $set: { password: hashedPassword, updatedAt: new Date() } });
 
-    const htmlBody = buildEmployeeOnboardedHtml(firstName, employee.email as string, workspaceName, loginUrl, newTempPassword);
+    const htmlBody = buildEmployeeOnboardedHtml(
+      firstName,
+      employee.email as string,
+      workspaceName,
+      loginUrl,
+      newTempPassword,
+    );
     const subject = `Welcome to ${workspaceName} - Your Account is Ready`;
     const result = await sendEmailDirect(employee.email as string, subject, htmlBody);
 

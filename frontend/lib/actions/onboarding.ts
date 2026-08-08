@@ -1,10 +1,10 @@
 "use server";
 
+import { revalidatePath, revalidateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { auth, unstable_update } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { revalidatePath, revalidateTag } from "next/cache";
-import { redirect } from "next/navigation";
 import { ROLES } from "@/lib/rbac";
 
 export interface OnboardingData {
@@ -33,7 +33,6 @@ export interface OnboardingData {
 }
 
 export async function completeOnboarding(data: OnboardingData) {
-
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -47,13 +46,12 @@ export async function completeOnboarding(data: OnboardingData) {
     redirect("/orgmenu");
   }
 
-  let member = await db.collection(collections.orgMembers).findOne({ userId });
+  const member = await db.collection(collections.orgMembers).findOne({ userId });
 
-  
   let orgId = member?.orgId;
   if (!member) {
     const org = await db.collection(collections.organizations).findOne({ ownerId: userId });
-  
+
     if (!org) {
       redirect("/login?error=No+organization+found");
     }
@@ -65,7 +63,6 @@ export async function completeOnboarding(data: OnboardingData) {
       role: ROLES.MEMBERS,
       joinedAt: new Date(),
     });
-  
   }
 
   const updateFields: Record<string, unknown> = {
@@ -82,7 +79,9 @@ export async function completeOnboarding(data: OnboardingData) {
     country: data.companyDetails.country,
     authorizedPersonName: data.companyDetails.authorizedPersonName,
     authorizedPersonEmail: data.companyDetails.authorizedPersonEmail,
-    numberOfEmployees: data.companyDetails.numberOfEmployees ? Number(data.companyDetails.numberOfEmployees) : undefined,
+    numberOfEmployees: data.companyDetails.numberOfEmployees
+      ? Number(data.companyDetails.numberOfEmployees)
+      : undefined,
     companyDescription: data.companyDetails.companyDescription,
     onboardingCompleted: true,
     updatedAt: new Date(),
@@ -93,26 +92,21 @@ export async function completeOnboarding(data: OnboardingData) {
   if (data.companyDetails.cinNumber) updateFields.cinNumber = data.companyDetails.cinNumber;
   if (data.companyDetails.website) updateFields.website = data.companyDetails.website;
   if (data.companyDetails.designation) updateFields.designation = data.companyDetails.designation;
-  if (data.companyDetails.authorizedPersonMobile) updateFields.authorizedPersonMobile = data.companyDetails.authorizedPersonMobile;
+  if (data.companyDetails.authorizedPersonMobile)
+    updateFields.authorizedPersonMobile = data.companyDetails.authorizedPersonMobile;
 
-
-  await db.collection(collections.organizations).updateOne(
-    { id: orgId },
-    { $set: updateFields }
-  );
-
+  await db.collection(collections.organizations).updateOne({ id: orgId }, { $set: updateFields });
 
   const userUpdateFields: Record<string, unknown> = {
     designation: data.companyDetails.designation || "",
     department: data.companyDetails.industry || "",
     phone: data.companyDetails.authorizedPersonMobile || data.companyDetails.mobileNumber || "",
-    location: [data.companyDetails.city, data.companyDetails.state, data.companyDetails.country].filter(Boolean).join(", "),
+    location: [data.companyDetails.city, data.companyDetails.state, data.companyDetails.country]
+      .filter(Boolean)
+      .join(", "),
     updatedAt: new Date(),
   };
-  await db.collection(collections.users).updateOne(
-    { id: userId },
-    { $set: userUpdateFields }
-  );
+  await db.collection(collections.users).updateOne({ id: userId }, { $set: userUpdateFields });
 
   await db.collection(collections.activityLogs).insertOne({
     id: crypto.randomUUID(),
@@ -128,6 +122,6 @@ export async function completeOnboarding(data: OnboardingData) {
   await unstable_update({});
   revalidatePath("/dashboard");
   revalidatePath("/orgmenu/members");
-  revalidateTag('dashboard', 'max');
+  revalidateTag("dashboard", "max");
   redirect("/dashboard");
 }

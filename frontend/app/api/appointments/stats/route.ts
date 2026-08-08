@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { auth } from "@/lib/auth/config";
 import { ensureUserOrg } from "@/lib/org";
 
 export async function GET() {
@@ -11,7 +11,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
     const today = new Date().toISOString().split("T")[0];
 
     const [total, todayCount, pending, confirmed, completed, cancelled] = await Promise.all([

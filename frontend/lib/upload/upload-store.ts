@@ -1,6 +1,12 @@
 import { create } from "zustand";
-import type { UploadFile, UploadStats, UploadOptions, SocketUploadEvent, NetworkQuality } from "./types";
 import { networkDetector } from "./network-detector";
+import type {
+  NetworkQuality,
+  SocketUploadEvent,
+  UploadFile,
+  UploadOptions,
+  UploadStats,
+} from "./types";
 
 interface UploadState {
   uploads: Record<string, UploadFile>;
@@ -174,7 +180,11 @@ export const useUploadStore = create<UploadState>((set, get) => ({
       case "upload:pending_approval": {
         for (const [id, file] of Object.entries(state.uploads)) {
           if (file.tusId === data.tusId || file.name === data.fileName) {
-            state.updateUpload(id, { status: "pending_approval", progress: 100, tusId: data.tusId });
+            state.updateUpload(id, {
+              status: "pending_approval",
+              progress: 100,
+              tusId: data.tusId,
+            });
             break;
           }
         }
@@ -192,7 +202,10 @@ export const useUploadStore = create<UploadState>((set, get) => ({
       case "upload:rejected": {
         for (const [id, file] of Object.entries(state.uploads)) {
           if (file.tusId === data.tusId || file.name === data.fileName || id === data.uploadId) {
-            state.updateUpload(id, { status: "failed", error: data.reason || "Upload rejected by approver" });
+            state.updateUpload(id, {
+              status: "failed",
+              error: data.reason || "Upload rejected by approver",
+            });
             break;
           }
         }

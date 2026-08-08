@@ -1,39 +1,42 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  Loader2,
-  CalendarIcon,
-  AlertCircleIcon,
-  XIcon,
-  FileTextIcon,
-  PaperclipIcon,
-  UserIcon,
-  UsersIcon,
-  ClockIcon,
-  ArrowLeftIcon,
-  RefreshCwIcon,
-  ListTodoIcon,
-} from "@/lib/icons";
-
-import { Calendar } from "@/components/ui/calendar";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import {
+  AlertCircleIcon,
+  ArrowLeftIcon,
+  CalendarIcon,
+  ClockIcon,
+  FileTextIcon,
+  ListTodoIcon,
+  Loader2,
+  PaperclipIcon,
+  RefreshCwIcon,
+  UserIcon,
+  UsersIcon,
+  XIcon,
+} from "@/lib/icons";
 
-import dynamic from "next/dynamic";
+const TiptapEditor = dynamic(
+  () => import("@/components/ui/tiptap-editor").then((m) => ({ default: m.TiptapEditor })),
+  { ssr: false },
+);
 
-const TiptapEditor = dynamic(() => import("@/components/ui/tiptap-editor").then((m) => ({ default: m.TiptapEditor })), { ssr: false });
-
+import TableUpload from "@/components/table-upload";
+import { AssigneeSelector, PrioritySelector } from "@/components/task-allocation/components";
+import type { AssigneeType } from "@/components/task-allocation/types";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
 import {
   Select,
   SelectContent,
@@ -41,11 +44,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PrioritySelector, AssigneeSelector } from "@/components/task-allocation/components";
-import type { AssigneeType } from "@/components/task-allocation/types";
-import TableUpload from "@/components/table-upload";
-import { taskService, type Task } from "@/lib/services/task-service";
 import { employeeService } from "@/lib/services/employee-service";
+import { type Task, taskService } from "@/lib/services/task-service";
 import { teamService } from "@/lib/services/team-service";
 
 interface TaskDefinition {
@@ -90,7 +90,17 @@ function buildTaskUploadFolder(project: string, taskTitle: string, dueDate?: Dat
   return `${seg(project)}/${seg(taskTitle)}/${date}`;
 }
 
-function FormField({ label, required, className, children }: { label: string; required?: boolean; className?: string; children: React.ReactNode }) {
+function FormField({
+  label,
+  required,
+  className,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className={`space-y-1.5 ${className || ""}`}>
       <Label className="text-xs font-medium text-muted-foreground">
@@ -102,7 +112,13 @@ function FormField({ label, required, className, children }: { label: string; re
   );
 }
 
-export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: () => void; onSuccess?: () => void }) {
+export function CreateTaskPageInteractive({
+  onClose,
+  onSuccess,
+}: {
+  onClose?: () => void;
+  onSuccess?: () => void;
+}) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -111,7 +127,9 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
   const [selectedClient, setSelectedClient] = useState("");
   const [projectName, setProjectName] = useState("");
   const [clientList, setClientList] = useState<string[]>([]);
-  const [projectList, setProjectList] = useState<{ id: string; name: string; client: string }[]>([]);
+  const [projectList, setProjectList] = useState<{ id: string; name: string; client: string }[]>(
+    [],
+  );
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
@@ -151,45 +169,60 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
     Promise.allSettled([
       employeeService.getAllEmployees().catch(() => []),
       teamService.getAllTeams().catch(() => []),
-      fetch("/api/clients", { credentials: "include", signal }).then((r) => r.json()).catch(() => []),
-      fetch("/api/projects-list", { credentials: "include", signal }).then((r) => r.json()).catch(() => ({ data: [] })),
-    ]).then((results) => {
-      if (signal.aborted) return;
-      const [staffResult, teamResult, clientsResult, projectsResult] = results;
-      const staff = staffResult.status === "fulfilled" ? staffResult.value : [];
-      const teamList = teamResult.status === "fulfilled" ? teamResult.value : [];
-      const clientsRes = clientsResult.status === "fulfilled" ? clientsResult.value : [];
-      const projectsRes = projectsResult.status === "fulfilled" ? projectsResult.value : { data: [] };
+      fetch("/api/clients", { credentials: "include", signal })
+        .then((r) => r.json())
+        .catch(() => []),
+      fetch("/api/projects-list", { credentials: "include", signal })
+        .then((r) => r.json())
+        .catch(() => ({ data: [] })),
+    ])
+      .then((results) => {
+        if (signal.aborted) return;
+        const [staffResult, teamResult, clientsResult, projectsResult] = results;
+        const staff = staffResult.status === "fulfilled" ? staffResult.value : [];
+        const teamList = teamResult.status === "fulfilled" ? teamResult.value : [];
+        const clientsRes = clientsResult.status === "fulfilled" ? clientsResult.value : [];
+        const projectsRes =
+          projectsResult.status === "fulfilled" ? projectsResult.value : { data: [] };
 
-      setEmployees((staff as any[]).map((s) => ({
-        id: s.id,
-        name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || "Unknown",
-        role: s.designation || s.role || "",
-      })));
-      setTeams((teamList as any[]).map((t) => ({
-        id: t.id,
-        name: t.name,
-        created_by: t.headUserId || "",
-        memberCount: t.memberCount || t.memberIds?.length || 0,
-      })));
-      const clientArr = Array.isArray(clientsRes)
-        ? clientsRes
-        : clientsRes?.initialClients || clientsRes?.data || [];
-      const clientNames = clientArr.map((c: { name?: string }) => c.name).filter(Boolean);
-      const projectArr = Array.isArray(projectsRes) ? projectsRes : projectsRes?.data || [];
-      const mappedProjects = projectArr.map((p: { id?: string; name?: string; client?: string; clientName?: string }) => ({
-        id: p.id || "",
-        name: p.name || "",
-        client: p.client || p.clientName || "",
-      }));
-      setProjectList(mappedProjects);
-      const projectClientNames = [...new Set(mappedProjects.map((p: { client: string }) => p.client).filter(Boolean))];
-      setClientList([...new Set([...clientNames, ...projectClientNames])]);
+        setEmployees(
+          (staff as any[]).map((s) => ({
+            id: s.id,
+            name: `${s.firstName || ""} ${s.lastName || ""}`.trim() || s.name || "Unknown",
+            role: s.designation || s.role || "",
+          })),
+        );
+        setTeams(
+          (teamList as any[]).map((t) => ({
+            id: t.id,
+            name: t.name,
+            created_by: t.headUserId || "",
+            memberCount: t.memberCount || t.memberIds?.length || 0,
+          })),
+        );
+        const clientArr = Array.isArray(clientsRes)
+          ? clientsRes
+          : clientsRes?.initialClients || clientsRes?.data || [];
+        const clientNames = clientArr.map((c: { name?: string }) => c.name).filter(Boolean);
+        const projectArr = Array.isArray(projectsRes) ? projectsRes : projectsRes?.data || [];
+        const mappedProjects = projectArr.map(
+          (p: { id?: string; name?: string; client?: string; clientName?: string }) => ({
+            id: p.id || "",
+            name: p.name || "",
+            client: p.client || p.clientName || "",
+          }),
+        );
+        setProjectList(mappedProjects);
+        const projectClientNames = [
+          ...new Set(mappedProjects.map((p: { client: string }) => p.client).filter(Boolean)),
+        ];
+        setClientList([...new Set([...clientNames, ...projectClientNames])]);
 
-      setIsLoadingData(false);
-    }).catch(() => {
-      if (!signal.aborted) setIsLoadingData(false);
-    });
+        setIsLoadingData(false);
+      })
+      .catch(() => {
+        if (!signal.aborted) setIsLoadingData(false);
+      });
 
     fetch("/api/tasks?limit=100", { credentials: "include", signal })
       .then((r) => r.json())
@@ -206,11 +239,13 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
           }));
         const source = savedDefs.length > 0 ? savedDefs : ([] as TaskDefinition[]);
         const seen = new Set<string>();
-        setLocalTaskDefs(source.filter((d: { id: string }) => {
-          if (seen.has(d.id)) return false;
-          seen.add(d.id);
-          return true;
-        }));
+        setLocalTaskDefs(
+          source.filter((d: { id: string }) => {
+            if (seen.has(d.id)) return false;
+            seen.add(d.id);
+            return true;
+          }),
+        );
       })
       .catch(() => {});
 
@@ -280,7 +315,8 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
       }
 
       const created = await taskService.createTask(payload as unknown as Partial<Task>);
-      const taskId = (created as any)?.taskId || (created as any)?._id || (created as any)?.id || "";
+      const taskId =
+        (created as any)?.taskId || (created as any)?._id || (created as any)?.id || "";
 
       if (taskId && uploadedFiles.length > 0) {
         const orgId = (session?.user as any)?.orgId || "";
@@ -293,7 +329,11 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
           fd.append("moduleName", "task");
           fd.append("entityId", taskId);
           if (storageFolder) fd.append("storageFolder", storageFolder);
-          await fetch("/api/files/upload", { method: "POST", credentials: "include", body: fd }).catch(() => {});
+          await fetch("/api/files/upload", {
+            method: "POST",
+            credentials: "include",
+            body: fd,
+          }).catch(() => {});
         }
       }
 
@@ -312,28 +352,37 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
     }
   };
 
-  const TaskTypeIcon = TASK_TYPES.find(t => t.id === taskType)?.icon || UserIcon;
+  const TaskTypeIcon = TASK_TYPES.find((t) => t.id === taskType)?.icon || UserIcon;
 
   return (
     <>
       <div className="px-6 py-4 shrink-0 bg-background/95 backdrop-blur border-b">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <Button variant="ghost" size="icon" onClick={() => { onClose ? onClose() : router.back(); }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                onClose ? onClose() : router.back();
+              }}
+            >
               <ArrowLeftIcon className="size-4" />
             </Button>
             <div className="min-w-0">
               <h2 className="text-lg font-semibold tracking-tight">Create New Task</h2>
-              <p className="text-sm text-muted-foreground">
-                Create and assign work to your team
-              </p>
+              <p className="text-sm text-muted-foreground">Create and assign work to your team</p>
             </div>
           </div>
           {localTaskDefs.length > 0 && (
-            <Select onValueChange={(val) => {
-              const selected = localTaskDefs.find((d) => d.id === val);
-              if (selected) { setTitle(selected.name); setDescription(selected.description || ""); }
-            }}>
+            <Select
+              onValueChange={(val) => {
+                const selected = localTaskDefs.find((d) => d.id === val);
+                if (selected) {
+                  setTitle(selected.name);
+                  setDescription(selected.description || "");
+                }
+              }}
+            >
               <SelectTrigger className="w-fit gap-1.5 rounded-lg text-xs font-medium text-muted-foreground truncate">
                 <FileTextIcon className="size-3.5 shrink-0" />
                 <span className="max-w-[100px] truncate">Template</span>
@@ -343,7 +392,9 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                   .filter((d) => d.isActive)
                   .filter((d, i, arr) => arr.findIndex((x) => x.id === d.id) === i)
                   .map((def) => (
-                    <SelectItem key={def.id} value={def.id} className="text-xs">{def.name}</SelectItem>
+                    <SelectItem key={def.id} value={def.id} className="text-xs">
+                      {def.name}
+                    </SelectItem>
                   ))}
               </SelectContent>
             </Select>
@@ -383,7 +434,9 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                       onClick={() => setTaskType(id)}
                       className={`flex flex-col items-start gap-1.5 rounded-xl border-2 p-4 text-left transition-all ${taskType === id ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"}`}
                     >
-                      <span className={`flex size-8 items-center justify-center rounded-lg ${taskType === id ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                      <span
+                        className={`flex size-8 items-center justify-center rounded-lg ${taskType === id ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+                      >
                         <Icon className="size-4" />
                       </span>
                       <span className="text-sm font-medium text-foreground">{name}</span>
@@ -415,7 +468,14 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                         </button>
                         <button
                           type="button"
-                          onClick={() => { setRepeatType("weekly"); if (repeatStartDate) { const end = new Date(repeatStartDate); end.setDate(end.getDate() + 6); setRepeatEndDate(end); } }}
+                          onClick={() => {
+                            setRepeatType("weekly");
+                            if (repeatStartDate) {
+                              const end = new Date(repeatStartDate);
+                              end.setDate(end.getDate() + 6);
+                              setRepeatEndDate(end);
+                            }
+                          }}
                           className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${repeatType === "weekly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
                         >
                           Weekly
@@ -423,8 +483,17 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                       </div>
                       <Popover open={repeatStartDateOpen} onOpenChange={setRepeatStartDateOpen}>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm" className="rounded-lg text-xs font-normal">
-                            {repeatStartDate ? repeatStartDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Start date"}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-lg text-xs font-normal"
+                          >
+                            {repeatStartDate
+                              ? repeatStartDate.toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                })
+                              : "Start date"}
                             <CalendarIcon className="size-3 ml-1" />
                           </Button>
                         </PopoverTrigger>
@@ -449,13 +518,29 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                           <span className="text-xs text-muted-foreground">to</span>
                           <Popover open={repeatEndDateOpen} onOpenChange={setRepeatEndDateOpen}>
                             <PopoverTrigger asChild>
-                              <Button variant="outline" size="sm" className="rounded-lg text-xs font-normal">
-                                {repeatEndDate ? repeatEndDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "End date"}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-lg text-xs font-normal"
+                              >
+                                {repeatEndDate
+                                  ? repeatEndDate.toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                    })
+                                  : "End date"}
                                 <CalendarIcon className="size-3 ml-1" />
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0 rounded-lg" align="start">
-                              <Calendar mode="single" selected={repeatEndDate} onSelect={(d) => { setRepeatEndDate(d); setRepeatEndDateOpen(false); }} />
+                              <Calendar
+                                mode="single"
+                                selected={repeatEndDate}
+                                onSelect={(d) => {
+                                  setRepeatEndDate(d);
+                                  setRepeatEndDateOpen(false);
+                                }}
+                              />
                             </PopoverContent>
                           </Popover>
                         </>
@@ -488,18 +573,32 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
 
                 <div className="grid grid-cols-3 gap-3">
                   <FormField label="Client">
-                    <Select value={selectedClient} onValueChange={(v) => { setSelectedClient(v); setProjectName(""); }}>
+                    <Select
+                      value={selectedClient}
+                      onValueChange={(v) => {
+                        setSelectedClient(v);
+                        setProjectName("");
+                      }}
+                    >
                       <SelectTrigger className="text-sm rounded-lg">
                         <SelectValue placeholder="Select" className="truncate" />
                       </SelectTrigger>
                       <SelectContent className="rounded-lg">
                         {isLoadingData && clientList.length === 0 ? (
-                          <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading clients...</div>
+                          <div className="px-2 py-4 text-center text-xs text-muted-foreground">
+                            Loading clients...
+                          </div>
                         ) : clientList.length === 0 ? (
-                          <div className="px-2 py-4 text-center text-xs text-muted-foreground">No clients</div>
-                        ) : clientList.map((c) => (
-                          <SelectItem key={c} value={c} className="text-sm truncate">{c}</SelectItem>
-                        ))}
+                          <div className="px-2 py-4 text-center text-xs text-muted-foreground">
+                            No clients
+                          </div>
+                        ) : (
+                          clientList.map((c) => (
+                            <SelectItem key={c} value={c} className="text-sm truncate">
+                              {c}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </FormField>
@@ -515,13 +614,27 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                             ? projectList.filter((p) => p.client === selectedClient)
                             : projectList;
                           if (isLoadingData && visibleProjects.length === 0) {
-                            return <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading projects...</div>;
+                            return (
+                              <div className="px-2 py-4 text-center text-xs text-muted-foreground">
+                                Loading projects...
+                              </div>
+                            );
                           }
                           if (visibleProjects.length === 0) {
-                            return <div className="px-2 py-4 text-center text-xs text-muted-foreground">No projects</div>;
+                            return (
+                              <div className="px-2 py-4 text-center text-xs text-muted-foreground">
+                                No projects
+                              </div>
+                            );
                           }
                           return visibleProjects.map((p) => (
-                            <SelectItem key={p.id || p.name} value={p.name} className="text-sm truncate">{p.name}</SelectItem>
+                            <SelectItem
+                              key={p.id || p.name}
+                              value={p.name}
+                              className="text-sm truncate"
+                            >
+                              {p.name}
+                            </SelectItem>
                           ));
                         })()}
                       </SelectContent>
@@ -557,9 +670,18 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                     <FormField label="Due Date">
                       <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="justify-between rounded-lg text-sm font-normal">
+                          <Button
+                            variant="outline"
+                            className="justify-between rounded-lg text-sm font-normal"
+                          >
                             {dueDate ? (
-                              <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                              <span>
+                                {dueDate.toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </span>
                             ) : (
                               <span className="text-muted-foreground">Select a date</span>
                             )}
@@ -567,7 +689,14 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0 rounded-lg" align="start">
-                          <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
+                          <Calendar
+                            mode="single"
+                            selected={dueDate}
+                            onSelect={(d) => {
+                              setDueDate(d);
+                              setDueDateOpen(false);
+                            }}
+                          />
                         </PopoverContent>
                       </Popover>
                     </FormField>
@@ -598,9 +727,18 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                     <FormField label="Due Date">
                       <Popover open={dueDateOpen} onOpenChange={setDueDateOpen}>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="justify-between rounded-lg text-sm font-normal">
+                          <Button
+                            variant="outline"
+                            className="justify-between rounded-lg text-sm font-normal"
+                          >
                             {dueDate ? (
-                              <span>{dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                              <span>
+                                {dueDate.toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </span>
                             ) : (
                               <span className="text-muted-foreground">Select a date</span>
                             )}
@@ -608,7 +746,14 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0 rounded-lg" align="start">
-                          <Calendar mode="single" selected={dueDate} onSelect={(d) => { setDueDate(d); setDueDateOpen(false); }} />
+                          <Calendar
+                            mode="single"
+                            selected={dueDate}
+                            onSelect={(d) => {
+                              setDueDate(d);
+                              setDueDateOpen(false);
+                            }}
+                          />
                         </PopoverContent>
                       </Popover>
                     </FormField>
@@ -620,12 +765,18 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                         </SelectTrigger>
                         <SelectContent className="rounded-lg">
                           {isLoadingData && teams.length === 0 ? (
-                            <div className="px-2 py-4 text-center text-xs text-muted-foreground">Loading teams...</div>
+                            <div className="px-2 py-4 text-center text-xs text-muted-foreground">
+                              Loading teams...
+                            </div>
                           ) : teams.length === 0 ? (
-                            <div className="px-2 py-4 text-center text-xs text-muted-foreground">No teams</div>
+                            <div className="px-2 py-4 text-center text-xs text-muted-foreground">
+                              No teams
+                            </div>
                           ) : (
                             teams.map((t) => (
-                              <SelectItem key={t.id} value={t.id} className="text-sm truncate">{t.name} ({t.memberCount} members)</SelectItem>
+                              <SelectItem key={t.id} value={t.id} className="text-sm truncate">
+                                {t.name} ({t.memberCount} members)
+                              </SelectItem>
                             ))
                           )}
                         </SelectContent>
@@ -650,8 +801,12 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                 <div className="rounded-xl border border-dashed bg-muted/30 p-4 transition-colors hover:bg-muted/50">
                   <div className="flex items-center gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">Drop files or click to browse</p>
-                      <p className="text-xs text-muted-foreground truncate">PDF, DOC, XLS, images — up to 10MB</p>
+                      <p className="text-sm font-medium text-foreground">
+                        Drop files or click to browse
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        PDF, DOC, XLS, images — up to 10MB
+                      </p>
                     </div>
                     <Button
                       type="button"
@@ -659,7 +814,7 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
                       size="sm"
                       className="rounded-lg text-xs"
                       onClick={() => {
-                        const el = document.querySelector<HTMLInputElement>('[data-file-trigger]');
+                        const el = document.querySelector<HTMLInputElement>("[data-file-trigger]");
                         if (el) el.click();
                       }}
                     >
@@ -681,9 +836,13 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
               <span className="flex size-6 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <FileTextIcon className="size-3.5" />
               </span>
-              <h3 className="text-sm font-semibold">Description <span className="text-destructive">*</span></h3>
+              <h3 className="text-sm font-semibold">
+                Description <span className="text-destructive">*</span>
+              </h3>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Add rich context, checklists, and instructions.</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Add rich context, checklists, and instructions.
+            </p>
           </div>
           <div className="flex-1 min-h-0 px-5 pb-5">
             <TiptapEditor
@@ -698,18 +857,29 @@ export function CreateTaskPageInteractive({ onClose, onSuccess }: { onClose?: ()
       <div className="flex items-center justify-between gap-3 border-t bg-background px-6 py-4 shrink-0">
         <Button
           variant="ghost"
-          onClick={() => { onClose ? onClose() : router.back(); }}
+          onClick={() => {
+            onClose ? onClose() : router.back();
+          }}
           disabled={isSubmitting}
         >
           Cancel
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={isSubmitting || !title.trim() || !description.trim() || !priority || (taskType === "team" && !selectedTeam)}
+          disabled={
+            isSubmitting ||
+            !title.trim() ||
+            !description.trim() ||
+            !priority ||
+            (taskType === "team" && !selectedTeam)
+          }
           className="rounded-lg"
         >
           {isSubmitting ? (
-            <><Loader2 className="animate-spin mr-1.5" />Creating...</>
+            <>
+              <Loader2 className="animate-spin mr-1.5" />
+              Creating...
+            </>
           ) : (
             <>
               <TaskTypeIcon className="size-3.5 mr-1.5" />

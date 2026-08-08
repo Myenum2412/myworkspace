@@ -1,1 +1,1 @@
-export { default } from "./teams-interactive.client"
+export { default } from "./teams-interactive.client";

@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Loader2 } from "@/lib/icons";
 import { AppointmentForm } from "./appointment-form";
-import type { Appointment, Doctor, AppointmentStatus } from "./appointment-types";
+import type { Appointment, AppointmentStatus, Doctor } from "./appointment-types";
 
 interface EditProps {
   appointment: Appointment | null;
@@ -22,7 +22,13 @@ interface EditProps {
   onUpdated: (appt: Appointment) => void;
 }
 
-export function AppointmentEditDialog({ appointment: propAppointment, doctors, open, onOpenChange, onUpdated }: EditProps) {
+export function AppointmentEditDialog({
+  appointment: propAppointment,
+  doctors,
+  open,
+  onOpenChange,
+  onUpdated,
+}: EditProps) {
   if (!propAppointment) return null;
   const appt = propAppointment;
 
@@ -46,9 +52,7 @@ export function AppointmentEditDialog({ appointment: propAppointment, doctors, o
       <DialogContent className="sm:max-w-2xl max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Appointment</DialogTitle>
-          <DialogDescription>
-            Appointment ID: {appt.appointmentId}
-          </DialogDescription>
+          <DialogDescription>Appointment ID: {appt.appointmentId}</DialogDescription>
         </DialogHeader>
         <AppointmentForm
           doctors={doctors}
@@ -68,7 +72,12 @@ interface CancelProps {
   onStatusChanged: (appt: Appointment) => void;
 }
 
-export function AppointmentCancelDialog({ appointment: propAppointment, open, onOpenChange, onStatusChanged }: CancelProps) {
+export function AppointmentCancelDialog({
+  appointment: propAppointment,
+  open,
+  onOpenChange,
+  onStatusChanged,
+}: CancelProps) {
   if (!propAppointment) return null;
   const appt = propAppointment;
   const [loading, setLoading] = useState(false);
@@ -97,11 +106,15 @@ export function AppointmentCancelDialog({ appointment: propAppointment, open, on
         <DialogHeader>
           <DialogTitle>Cancel Appointment</DialogTitle>
           <DialogDescription>
-            Are you sure you want to cancel the appointment for <strong>{appt.patientName}</strong> on <strong>{new Date(appt.appointmentDate).toLocaleDateString()}</strong> at <strong>{appt.preferredTime}</strong>?
+            Are you sure you want to cancel the appointment for <strong>{appt.patientName}</strong>{" "}
+            on <strong>{new Date(appt.appointmentDate).toLocaleDateString()}</strong> at{" "}
+            <strong>{appt.preferredTime}</strong>?
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>No, Keep It</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            No, Keep It
+          </Button>
           <Button variant="destructive" onClick={handleCancel} disabled={loading}>
             {loading && <Loader2 className="mr-2 animate-spin" />}
             Yes, Cancel Appointment

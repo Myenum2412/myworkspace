@@ -1,14 +1,14 @@
-import sharp from "sharp";
-import path from "path";
+import { execSync } from "child_process";
 import fs from "fs/promises";
+import path from "path";
+import sharp from "sharp";
+import { env } from "../config/env.js";
+import { cacheManager } from "../lib/cache.js";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { FileMetadata } from "../lib/db/models/FileMetadata.js";
-import { getStorageProvider } from "../lib/storage/providers.js";
-import { cacheManager } from "../lib/cache.js";
 import { logger } from "../lib/logger/index.js";
 import { metricsRegistry } from "../lib/monitoring/index.js";
-import { execSync } from "child_process";
-import { env } from "../config/env.js";
+import { getStorageProvider } from "../lib/storage/providers.js";
 
 const THUMB_DIR = path.resolve(process.cwd(), "data", "thumbnails");
 const THUMB_SIZES = {
@@ -28,19 +28,30 @@ export function getRelativeThumbPath(fileId: string, size: ThumbnailSize): strin
 }
 
 async function ensureDir(dir: string) {
-  try { await fs.mkdir(dir, { recursive: true }); }
-  catch (err: any) { if (err.code !== "EEXIST") throw err; }
+  try {
+    await fs.mkdir(dir, { recursive: true });
+  } catch (err: any) {
+    if (err.code !== "EEXIST") throw err;
+  }
 }
 
-async function getFileBuffer(fileId: string, storagePath: string, providedBuffer?: Buffer): Promise<Buffer | null> {
+async function getFileBuffer(
+  fileId: string,
+  storagePath: string,
+  providedBuffer?: Buffer,
+): Promise<Buffer | null> {
   if (providedBuffer) return providedBuffer;
   const provider = getStorageProvider();
   return provider.get(storagePath);
 }
 
 function hasFfmpeg(): boolean {
-  try { execSync("which ffmpeg", { stdio: "ignore" }); return true; }
-  catch { return false; }
+  try {
+    execSync("which ffmpeg", { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function generateThumbnail(
@@ -70,10 +81,10 @@ export async function generateThumbnail(
         const durationSec = await getVideoDuration(tmpInput);
         const seekSec = Math.min(Math.floor(durationSec * 0.3), 30);
 
-        execSync(
-          `ffmpeg -ss ${seekSec} -i "${tmpInput}" -vframes 1 -q:v 3 "${tmpPath}" -y`,
-          { stdio: "ignore", timeout: 30000 },
-        );
+        execSync(`ffmpeg -ss ${seekSec} -i "${tmpInput}" -vframes 1 -q:v 3 "${tmpPath}" -y`, {
+          stdio: "ignore",
+          timeout: 30000,
+        });
 
         const frameBuffer = await fs.readFile(tmpPath).catch(() => null);
         if (frameBuffer) {
@@ -83,7 +94,10 @@ export async function generateThumbnail(
               .resize(cfg.width, cfg.height, { fit: "cover", position: "centre" })
               .webp({ quality: 75 })
               .toFile(outPath);
-            generated.set(size as ThumbnailSize, getRelativeThumbPath(fileId, size as ThumbnailSize));
+            generated.set(
+              size as ThumbnailSize,
+              getRelativeThumbPath(fileId, size as ThumbnailSize),
+            );
           }
         }
         await fs.unlink(tmpInput).catch(() => {});
@@ -102,7 +116,8 @@ export async function generateThumbnail(
           { fileId },
           {
             $set: {
-              fileId, orgId,
+              fileId,
+              orgId,
               width: meta.width,
               height: meta.height,
               dpi: (meta as any).dpi || null,
@@ -132,10 +147,10 @@ export async function generateThumbnail(
       await fs.writeFile(tmpInput, buffer);
       const tmpArt = path.join(THUMB_DIR, `${fileId}-album-art.jpg`);
       try {
-        execSync(
-          `ffmpeg -i "${tmpInput}" -an -vcodec copy "${tmpArt}" -y`,
-          { stdio: "ignore", timeout: 15000 },
-        );
+        execSync(`ffmpeg -i "${tmpInput}" -an -vcodec copy "${tmpArt}" -y`, {
+          stdio: "ignore",
+          timeout: 15000,
+        });
         const artBuffer = await fs.readFile(tmpArt).catch(() => null);
         if (artBuffer && artBuffer.length > 100) {
           for (const [size, cfg] of Object.entries(THUMB_SIZES)) {
@@ -144,7 +159,10 @@ export async function generateThumbnail(
               .resize(cfg.width, cfg.height, { fit: "cover", position: "centre" })
               .webp({ quality: 70 })
               .toFile(outPath);
-            generated.set(size as ThumbnailSize, getRelativeThumbPath(fileId, size as ThumbnailSize));
+            generated.set(
+              size as ThumbnailSize,
+              getRelativeThumbPath(fileId, size as ThumbnailSize),
+            );
           }
         }
       } finally {
@@ -154,16 +172,23 @@ export async function generateThumbnail(
     }
 
     if (generated.size > 0) {
-      const primaryPath = generated.get("medium") || generated.get("small") || generated.values().next().value;
+      const primaryPath =
+        generated.get("medium") || generated.get("small") || generated.values().next().value;
       if (primaryPath) {
         await FileAttachment.updateOne({ id: fileId }, { thumbnailPath: primaryPath });
       }
     }
 
-    metricsRegistry.observeHistogram("thumbnail_generation_ms", { type: mt.split("/")[0] || "unknown" }, Date.now() - startTime);
+    metricsRegistry.observeHistogram(
+      "thumbnail_generation_ms",
+      { type: mt.split("/")[0] || "unknown" },
+      Date.now() - startTime,
+    );
     return generated;
   } catch (err) {
-    metricsRegistry.incrementCounter("thumbnail_generation_failures", { mimeType: mimeType || "unknown" });
+    metricsRegistry.incrementCounter("thumbnail_generation_failures", {
+      mimeType: mimeType || "unknown",
+    });
     logger.warn({ err, fileId }, "Thumbnail generation failed");
     return generated;
   }
@@ -174,8 +199,22 @@ async function generatePdfThumbnail(
   storagePath: string,
   generated: Map<ThumbnailSize, string>,
 ): Promise<void> {
-  const hasPdftoppm = (() => { try { execSync("which pdftoppm", { stdio: "ignore" }); return true; } catch { return false; } })();
-  const hasGhostscript = (() => { try { execSync("which gs", { stdio: "ignore" }); return true; } catch { return false; } })();
+  const hasPdftoppm = (() => {
+    try {
+      execSync("which pdftoppm", { stdio: "ignore" });
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+  const hasGhostscript = (() => {
+    try {
+      execSync("which gs", { stdio: "ignore" });
+      return true;
+    } catch {
+      return false;
+    }
+  })();
 
   if (!hasPdftoppm && !hasGhostscript) return;
 
@@ -190,9 +229,15 @@ async function generatePdfThumbnail(
 
     try {
       if (hasPdftoppm) {
-        execSync(`pdftoppm -png -singlefile -r 72 "${tmpPdf}" "${path.join(THUMB_DIR, `${fileId}-pdf-preview`)}"`, { stdio: "ignore", timeout: 30000 });
+        execSync(
+          `pdftoppm -png -singlefile -r 72 "${tmpPdf}" "${path.join(THUMB_DIR, `${fileId}-pdf-preview`)}"`,
+          { stdio: "ignore", timeout: 30000 },
+        );
       } else {
-        execSync(`gs -dNOPAUSE -dBATCH -sDEVICE=png16m -r72 -dFirstPage=1 -dLastPage=1 -sOutputFile="${tmpPng}" "${tmpPdf}"`, { stdio: "ignore", timeout: 30000 });
+        execSync(
+          `gs -dNOPAUSE -dBATCH -sDEVICE=png16m -r72 -dFirstPage=1 -dLastPage=1 -sOutputFile="${tmpPng}" "${tmpPdf}"`,
+          { stdio: "ignore", timeout: 30000 },
+        );
       }
 
       const pngBuffer = await fs.readFile(tmpPng).catch(() => null);
@@ -231,7 +276,9 @@ export async function getThumbnail(
   fileId: string,
   size: ThumbnailSize = "medium",
 ): Promise<{ buffer: Buffer; mimeType: string } | null> {
-  const file = await FileAttachment.findOne({ id: fileId }).select("thumbnailPath mimeType orgId storagePath").lean();
+  const file = await FileAttachment.findOne({ id: fileId })
+    .select("thumbnailPath mimeType orgId storagePath")
+    .lean();
   if (!file) return null;
 
   const specificPath = getThumbPath(fileId, size);
@@ -278,7 +325,9 @@ export async function getThumbnail(
     const generated = await generateThumbnail(fileId, file.orgId);
     const thumbPath = generated.get(size);
     if (thumbPath) {
-      const fullPath = thumbPath.startsWith("thumbnails/") ? path.resolve(process.cwd(), "data", thumbPath) : thumbPath;
+      const fullPath = thumbPath.startsWith("thumbnails/")
+        ? path.resolve(process.cwd(), "data", thumbPath)
+        : thumbPath;
       const buf = await fs.readFile(fullPath).catch(() => null);
       if (buf) return { buffer: buf, mimeType: "image/webp" };
     }
@@ -289,11 +338,20 @@ export async function getThumbnail(
 
 export async function deleteThumbnails(fileId: string): Promise<void> {
   for (const size of Object.keys(THUMB_SIZES) as ThumbnailSize[]) {
-    try { await fs.unlink(getThumbPath(fileId, size)); } catch {}
+    try {
+      await fs.unlink(getThumbPath(fileId, size));
+    } catch {}
   }
 }
 
-export async function hasThumbnail(fileId: string, size: ThumbnailSize = "medium"): Promise<boolean> {
-  try { await fs.access(getThumbPath(fileId, size)); return true; }
-  catch { return false; }
+export async function hasThumbnail(
+  fileId: string,
+  size: ThumbnailSize = "medium",
+): Promise<boolean> {
+  try {
+    await fs.access(getThumbPath(fileId, size));
+    return true;
+  } catch {
+    return false;
+  }
 }

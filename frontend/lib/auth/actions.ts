@@ -1,13 +1,13 @@
 "use server";
 
-import { signIn, signOut } from "./config";
-import { db } from "@/lib/db";
-import { ROLES } from "@/lib/rbac";
-import { collections } from "@/lib/db/schema";
-import { v4 as uuid } from "uuid";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { v4 as uuid } from "uuid";
 import { createUserWorkspace } from "@/actions/user-folder";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
+import { ROLES } from "@/lib/rbac";
+import { signIn, signOut } from "./config";
 
 function getRedirectPath(role?: string): string {
   const r = role?.toLowerCase() || "";
@@ -24,8 +24,6 @@ export async function loginAction(formData: FormData) {
   if (!email || !password) {
     redirect("/login?error=Email+and+password+are+required");
   }
-
-
 
   let user;
   let isClient = false;
@@ -47,10 +45,11 @@ export async function loginAction(formData: FormData) {
       redirect("/login?error=User+not+found");
     }
   } catch (err) {
-    const isRedirect = err instanceof Error
-      && "digest" in err
-      && typeof (err as Error & { digest: string }).digest === "string"
-      && (err as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT");
+    const isRedirect =
+      err instanceof Error &&
+      "digest" in err &&
+      typeof (err as Error & { digest: string }).digest === "string" &&
+      (err as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT");
     if (isRedirect) {
       throw err;
     }
@@ -64,10 +63,9 @@ export async function loginAction(formData: FormData) {
     if (isClient) {
       // Parallelize client login writes
       await Promise.all([
-        db.collection(collections.clientUsers).updateOne(
-          { _id: user!._id },
-          { $set: { lastLogin: new Date() } }
-        ),
+        db
+          .collection(collections.clientUsers)
+          .updateOne({ _id: user!._id }, { $set: { lastLogin: new Date() } }),
         db.collection(collections.clientAuditLogs).insertOne({
           orgId: user!.orgId,
           clientId: user!.clientId,
@@ -82,16 +80,22 @@ export async function loginAction(formData: FormData) {
       // Parallelize user status update and member lookup
       const [member] = await Promise.all([
         db.collection(collections.orgMembers).findOne({ userId }),
-        db.collection(collections.users).updateOne(
-          { _id: user!._id },
-          { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } }
-        ),
+        db
+          .collection(collections.users)
+          .updateOne(
+            { _id: user!._id },
+            { $set: { status: "online", lastLogin: new Date(), updatedAt: new Date() } },
+          ),
       ]);
 
       if (!member) {
         const userName = user!.name || email.split("@")[0];
         const newOrgId = uuid();
-        let slug = userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${userId}`;
+        let slug =
+          userName
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "") || `org-${userId}`;
 
         const [existingSlug, existingOrg] = await Promise.all([
           db.collection(collections.organizations).findOne({ slug }),
@@ -106,12 +110,17 @@ export async function loginAction(formData: FormData) {
             { slug },
             {
               $setOnInsert: {
-                id: newOrgId, name: `${userName}'s Organization`, slug,
-                plan: "free", ownerId: userId, onboardingCompleted: true,
-                createdAt: new Date(), updatedAt: new Date(),
+                id: newOrgId,
+                name: `${userName}'s Organization`,
+                slug,
+                plan: "free",
+                ownerId: userId,
+                onboardingCompleted: true,
+                createdAt: new Date(),
+                updatedAt: new Date(),
               },
             },
-            { upsert: true }
+            { upsert: true },
           );
         }
 
@@ -119,40 +128,47 @@ export async function loginAction(formData: FormData) {
           { userId, orgId: orgIdToUse },
           {
             $setOnInsert: {
-              id: uuid(), orgId: orgIdToUse, userId,
-              role: ROLES.MEMBERS, joinedAt: new Date(),
+              id: uuid(),
+              orgId: orgIdToUse,
+              userId,
+              role: ROLES.MEMBERS,
+              joinedAt: new Date(),
             },
           },
-          { upsert: true }
+          { upsert: true },
         );
       }
 
       const orgId = member?.orgId || user!.orgId || "system";
       // Fire-and-forget activity log (non-critical)
-      db.collection(collections.activityLogs).insertOne({
-        id: uuid(), orgId, userId,
-        action: "user.login", entityType: "user", entityId: userId,
-        description: `${user!.name} logged in`,
-      }).catch(() => {});
+      db.collection(collections.activityLogs)
+        .insertOne({
+          id: uuid(),
+          orgId,
+          userId,
+          action: "user.login",
+          entityType: "user",
+          entityId: userId,
+          description: `${user!.name} logged in`,
+        })
+        .catch(() => {});
     }
-  } catch (err) {
-
-  }
+  } catch (err) {}
 
   const role = isClient ? ROLES.CLIENTS : user?.role;
   const redirectPath = getRedirectPath(role);
 
-
   revalidatePath(redirectPath);
-  revalidateTag('dashboard', 'max');
+  revalidateTag("dashboard", "max");
 
   try {
     await signIn("credentials", { email, password, redirect: true, redirectTo: redirectPath });
   } catch (err) {
-    const isRedirect = err instanceof Error
-      && "digest" in err
-      && typeof (err as Error & { digest: string }).digest === "string"
-      && (err as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT");
+    const isRedirect =
+      err instanceof Error &&
+      "digest" in err &&
+      typeof (err as Error & { digest: string }).digest === "string" &&
+      (err as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT");
     if (isRedirect) {
       throw err;
     }
@@ -211,14 +227,15 @@ export async function signupAction(formData: FormData) {
   }
 
   revalidatePath("/dashboard");
-  revalidateTag('dashboard', 'max');
+  revalidateTag("dashboard", "max");
   try {
     await signIn("credentials", { email, password, redirect: true, redirectTo: "/dashboard" });
   } catch (err) {
-    const isRedirect = err instanceof Error
-      && "digest" in err
-      && typeof (err as Error & { digest: string }).digest === "string"
-      && (err as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT");
+    const isRedirect =
+      err instanceof Error &&
+      "digest" in err &&
+      typeof (err as Error & { digest: string }).digest === "string" &&
+      (err as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT");
     if (isRedirect) {
       throw err;
     }
@@ -278,10 +295,11 @@ export async function verifySignupOtpAction(formData: FormData) {
     try {
       await signIn("credentials", { email, password, redirect: true, redirectTo: "/dashboard" });
     } catch (err) {
-      const isRedirect = err instanceof Error
-        && "digest" in err
-        && typeof (err as Error & { digest: string }).digest === "string"
-        && (err as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT");
+      const isRedirect =
+        err instanceof Error &&
+        "digest" in err &&
+        typeof (err as Error & { digest: string }).digest === "string" &&
+        (err as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT");
       if (isRedirect) {
         throw err;
       }
@@ -293,12 +311,11 @@ export async function verifySignupOtpAction(formData: FormData) {
 }
 
 export async function logoutAction() {
-  const session = await import("./config").then(m => m.auth());
+  const session = await import("./config").then((m) => m.auth());
   if (session?.user?.id) {
-    await db.collection(collections.users).updateOne(
-      { id: session.user.id },
-      { $set: { status: "offline", updatedAt: new Date() } }
-    );
+    await db
+      .collection(collections.users)
+      .updateOne({ id: session.user.id }, { $set: { status: "offline", updatedAt: new Date() } });
   }
   await signOut({ redirect: false });
   revalidatePath("/login");
@@ -317,7 +334,9 @@ export async function forgotPasswordAction(formData: FormData) {
       body: JSON.stringify({ email }),
     });
   } catch {}
-  redirect("/forgot-password?success=If an account exists with that email, a reset link has been sent");
+  redirect(
+    "/forgot-password?success=If an account exists with that email, a reset link has been sent",
+  );
 }
 
 export async function verifyEmailAction(formData: FormData) {

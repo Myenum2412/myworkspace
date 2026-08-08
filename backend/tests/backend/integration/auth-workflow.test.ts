@@ -1,5 +1,5 @@
-import request from "supertest";
 import type { Server } from "http";
+import request from "supertest";
 import app from "../../../src/app.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 
@@ -83,9 +83,7 @@ describe("Complete auth workflow", () => {
       .send({ name: "Lockout Test", email, password: testPassword });
 
     for (let i = 0; i < 5; i++) {
-      await request(server)
-        .post("/api/auth/login")
-        .send({ email, password: "wrongpass" });
+      await request(server).post("/api/auth/login").send({ email, password: "wrongpass" });
     }
 
     const res = await request(server)

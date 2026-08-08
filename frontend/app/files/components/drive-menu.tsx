@@ -1,40 +1,38 @@
 "use client";
 
-import React, { useState } from "react";
-import { useFileSystemStore } from "@/lib/file-system/store";
+import type React from "react";
+import { useState } from "react";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { getFileIcon, getFileTypeColor } from "@/components/files/utils";
-import { type FileItem, type FolderItem } from "@/lib/file-system/types";
-import { ROLES } from "@/lib/rbac";
-import * as api from "@/lib/file-system/api";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ContextMenuItem, ContextMenuSeparator } from "@/components/ui/context-menu";
 import {
-  StarIcon,
-  FolderIcon,
-  EyeIcon,
-  DownloadIcon,
-  PencilIcon,
-  CopyIcon,
-  ScissorsIcon,
-  Share2Icon,
-  ArrowRightIcon,
-  Trash2Icon,
-  InfoIcon,
-  MoreHorizontalIcon,
-} from "@/lib/icons";
-import {
+  DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuContent,
   DropdownMenuTrigger,
-  DropdownMenu,
 } from "@/components/ui/dropdown-menu";
-import {
-  ContextMenuItem,
-  ContextMenuSeparator,
-} from "@/components/ui/context-menu";
-import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/file-system/use-favorites";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+import * as api from "@/lib/file-system/api";
+import { useFileSystemStore } from "@/lib/file-system/store";
+import type { FileItem, FolderItem } from "@/lib/file-system/types";
+import {
+  ArrowRightIcon,
+  CopyIcon,
+  DownloadIcon,
+  EyeIcon,
+  FolderIcon,
+  InfoIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  ScissorsIcon,
+  Share2Icon,
+  StarIcon,
+  Trash2Icon,
+} from "@/lib/icons";
+import { ROLES } from "@/lib/rbac";
+import { cn } from "@/lib/utils";
 
 type MenuVariant = "dropdown" | "context";
 
@@ -73,7 +71,7 @@ export function DriveTile({ file, className }: { file: FileItem; className?: str
     <div
       className={cn(
         "flex h-full w-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-white to-gray-50 dark:from-card dark:to-card/40",
-        className
+        className,
       )}
     >
       <div className={cn("grid size-14 place-items-center rounded-xl shadow-sm", typeColor)}>
@@ -88,10 +86,12 @@ export function DriveFolderTile({ folder, className }: { folder: FolderItem; cla
     <div
       className={cn(
         "flex h-full w-full items-center justify-center bg-[color-mix(in_oklch,var(--primary)_7%,transparent)]",
-        className
+        className,
       )}
     >
-      <FolderIcon className={cn("size-12", folder.color ? `text-${folder.color}` : "text-primary/70")} />
+      <FolderIcon
+        className={cn("size-12", folder.color ? `text-${folder.color}` : "text-primary/70")}
+      />
     </div>
   );
 }
@@ -100,7 +100,17 @@ function isDropdown(variant: MenuVariant) {
   return variant === "dropdown";
 }
 
-function Item({ variant, children, className, onSelect }: { variant: MenuVariant; children: React.ReactNode; className?: string; onSelect?: () => void }) {
+function Item({
+  variant,
+  children,
+  className,
+  onSelect,
+}: {
+  variant: MenuVariant;
+  children: React.ReactNode;
+  className?: string;
+  onSelect?: () => void;
+}) {
   if (isDropdown(variant)) {
     return (
       <DropdownMenuItem className={className} onSelect={onSelect}>
@@ -131,7 +141,14 @@ export function FileMenu({ file, variant }: { file: FileItem; variant: MenuVaria
         <StarIcon className="size-4 mr-2.5" /> Star
       </Item>
       {!readonly && (
-        <Item variant={variant} onSelect={() => useFileSystemStore.getState().setRenameTarget({ type: "file", id: file.id, name: file.originalName })}>
+        <Item
+          variant={variant}
+          onSelect={() =>
+            useFileSystemStore
+              .getState()
+              .setRenameTarget({ type: "file", id: file.id, name: file.originalName })
+          }
+        >
           <PencilIcon className="size-4 mr-2.5" /> Rename
         </Item>
       )}
@@ -141,22 +158,42 @@ export function FileMenu({ file, variant }: { file: FileItem; variant: MenuVaria
         </Item>
       )}
       {!readonly && (
-        <Item variant={variant} onSelect={() => useFileSystemStore.getState().setMoveTarget({ type: "file", id: file.id })}>
+        <Item
+          variant={variant}
+          onSelect={() =>
+            useFileSystemStore.getState().setMoveTarget({ type: "file", id: file.id })
+          }
+        >
           <ArrowRightIcon className="size-4 mr-2.5" /> Move to
         </Item>
       )}
       {!readonly && (
-        <Item variant={variant} onSelect={() => useFileSystemStore.getState().setClipboard({ ids: [file.id], action: "copy" })}>
+        <Item
+          variant={variant}
+          onSelect={() =>
+            useFileSystemStore.getState().setClipboard({ ids: [file.id], action: "copy" })
+          }
+        >
           <CopyIcon className="size-4 mr-2.5" /> Copy
         </Item>
       )}
       {!readonly && (
-        <Item variant={variant} onSelect={() => useFileSystemStore.getState().setClipboard({ ids: [file.id], action: "cut" })}>
+        <Item
+          variant={variant}
+          onSelect={() =>
+            useFileSystemStore.getState().setClipboard({ ids: [file.id], action: "cut" })
+          }
+        >
           <ScissorsIcon className="size-4 mr-2.5" /> Cut
         </Item>
       )}
       <Separator variant={variant} />
-      <Item variant={variant} onSelect={() => useFileSystemStore.getState().setPropertiesTarget({ type: "file", id: file.id })}>
+      <Item
+        variant={variant}
+        onSelect={() =>
+          useFileSystemStore.getState().setPropertiesTarget({ type: "file", id: file.id })
+        }
+      >
         <InfoIcon className="size-4 mr-2.5" /> Details
       </Item>
       <Separator variant={variant} />
@@ -185,26 +222,53 @@ export function FolderMenu({ folder, variant }: { folder: FolderItem; variant: M
   const { toggleFavorite } = useFavorites();
   return (
     <>
-      <Item variant={variant} onSelect={() => useFileSystemStore.getState().setPropertiesTarget({ type: "folder", id: folder.id })}>
+      <Item
+        variant={variant}
+        onSelect={() =>
+          useFileSystemStore.getState().setPropertiesTarget({ type: "folder", id: folder.id })
+        }
+      >
         <InfoIcon className="size-4 mr-2.5" /> Info
       </Item>
       {!readonly && (
-        <Item variant={variant} onSelect={() => useFileSystemStore.getState().setRenameTarget({ type: "folder", id: folder.id, name: folder.name })}>
+        <Item
+          variant={variant}
+          onSelect={() =>
+            useFileSystemStore
+              .getState()
+              .setRenameTarget({ type: "folder", id: folder.id, name: folder.name })
+          }
+        >
           <PencilIcon className="size-4 mr-2.5" /> Rename
         </Item>
       )}
       {!readonly && (
-        <Item variant={variant} onSelect={() => useFileSystemStore.getState().setClipboard({ ids: [folder.id], action: "copy" })}>
+        <Item
+          variant={variant}
+          onSelect={() =>
+            useFileSystemStore.getState().setClipboard({ ids: [folder.id], action: "copy" })
+          }
+        >
           <CopyIcon className="size-4 mr-2.5" /> Copy
         </Item>
       )}
       {!readonly && (
-        <Item variant={variant} onSelect={() => useFileSystemStore.getState().setClipboard({ ids: [folder.id], action: "cut" })}>
+        <Item
+          variant={variant}
+          onSelect={() =>
+            useFileSystemStore.getState().setClipboard({ ids: [folder.id], action: "cut" })
+          }
+        >
           <ScissorsIcon className="size-4 mr-2.5" /> Cut
         </Item>
       )}
       {!readonly && (
-        <Item variant={variant} onSelect={() => useFileSystemStore.getState().setMoveTarget({ type: "folder", id: folder.id })}>
+        <Item
+          variant={variant}
+          onSelect={() =>
+            useFileSystemStore.getState().setMoveTarget({ type: "folder", id: folder.id })
+          }
+        >
           <ArrowRightIcon className="size-4 mr-2.5" /> Move to
         </Item>
       )}
@@ -236,7 +300,13 @@ function Separator({ variant }: { variant: MenuVariant }) {
 }
 
 /** Three-dot overflow button rendering the same drive actions. */
-export function DriveOverflowMenu({ kind, item }: { kind: "file" | "folder"; item: FileItem | FolderItem }) {
+export function DriveOverflowMenu({
+  kind,
+  item,
+}: {
+  kind: "file" | "folder";
+  item: FileItem | FolderItem;
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -259,7 +329,15 @@ export function DriveOverflowMenu({ kind, item }: { kind: "file" | "folder"; ite
   );
 }
 
-export function StarToggle({ starred, onToggle, className }: { starred: boolean; onToggle: () => void; className?: string }) {
+export function StarToggle({
+  starred,
+  onToggle,
+  className,
+}: {
+  starred: boolean;
+  onToggle: () => void;
+  className?: string;
+}) {
   return (
     <button
       onClick={(e) => {
@@ -270,7 +348,7 @@ export function StarToggle({ starred, onToggle, className }: { starred: boolean;
       className={cn(
         "rounded-full p-1.5 text-muted-foreground/50 transition-all hover:bg-accent hover:text-amber-500",
         starred && "text-amber-400",
-        className
+        className,
       )}
     >
       <StarIcon className={cn("size-4", starred && "fill-amber-400")} />

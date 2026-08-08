@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 
 export interface ICalendarAttendee {
@@ -112,7 +112,7 @@ const calendarEventSchema = new Schema<ICalendarEvent>(
     version: { type: Number, default: 1 },
     lastModified: { type: Date, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 calendarEventSchema.index({ userId: 1, calendarId: 1 });
@@ -121,7 +121,4 @@ calendarEventSchema.index({ connectionId: 1 });
 calendarEventSchema.index({ start: 1, end: 1 });
 calendarEventSchema.index({ orgId: 1, userId: 1, start: 1 });
 
-export const CalendarEvent = model<ICalendarEvent>(
-  "CalendarEvent",
-  calendarEventSchema
-);
+export const CalendarEvent = model<ICalendarEvent>("CalendarEvent", calendarEventSchema);

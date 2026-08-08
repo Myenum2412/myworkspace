@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
-import { db } from "@/lib/db";
-import { collections } from "@/lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
 import { ROLES } from "@/lib/rbac";
 
 export type ProjectData = {
@@ -30,7 +30,11 @@ export async function getProjects() {
     await db.collection(collections.organizations).insertOne({
       id: newOrgId,
       name: `${userName}'s Organization`,
-      slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
+      slug:
+        userName
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
       plan: "free",
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -71,7 +75,11 @@ export async function createProjectAction(formData: FormData) {
     await db.collection(collections.organizations).insertOne({
       id: newOrgId,
       name: `${userName}'s Organization`,
-      slug: userName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
+      slug:
+        userName
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "") || `org-${session.user.id.slice(0, 8)}`,
       plan: "free",
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -100,8 +108,8 @@ export async function createProjectAction(formData: FormData) {
     color: (formData.get("color") as string) || "#3b82f6",
     description: (formData.get("description") as string) || "",
     deadline: (formData.get("deadline") as string) || null,
-    access: ("Public" as const),
-    status: ("Active" as const),
+    access: "Public" as const,
+    status: "Active" as const,
     health: (formData.get("health") as string) || "on-track",
     priority: (formData.get("priority") as string) || "medium",
     category: (formData.get("category") as string) || "",
@@ -117,7 +125,7 @@ export async function createProjectAction(formData: FormData) {
 
   await db.collection(collections.projects).insertOne(doc);
   revalidatePath("/projects");
-  revalidateTag('dashboard', 'max');
+  revalidateTag("dashboard", "max");
   return { success: true, data: doc };
 }
 
@@ -134,7 +142,7 @@ export async function updateProjectAction(id: string, formData: FormData) {
 
   await db.collection(collections.projects).updateOne({ id }, { $set: update });
   revalidatePath("/projects");
-  revalidateTag('dashboard', 'max');
+  revalidateTag("dashboard", "max");
   return { success: true };
 }
 
@@ -144,6 +152,6 @@ export async function deleteProjectAction(id: string) {
 
   await db.collection(collections.projects).deleteOne({ id });
   revalidatePath("/projects");
-  revalidateTag('dashboard', 'max');
+  revalidateTag("dashboard", "max");
   return { success: true };
 }

@@ -1,15 +1,25 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
-import { Task } from "../db/models/Task.js";
-import { Project } from "../db/models/Project.js";
-import { User } from "../db/models/User.js";
 import { FileAttachment } from "../db/models/FileAttachment.js";
+import { Project } from "../db/models/Project.js";
+import { Task } from "../db/models/Task.js";
+import { User } from "../db/models/User.js";
 import { KnowledgeIndex } from "./knowledge-engine.js";
 
 export type RelationshipType =
-  | "assigned_to" | "created_by" | "part_of" | "related_to" | "depends_on"
-  | "blocks" | "references" | "attached_to" | "mentions" | "similar_to"
-  | "derived_from" | "supersedes" | "duplicates";
+  | "assigned_to"
+  | "created_by"
+  | "part_of"
+  | "related_to"
+  | "depends_on"
+  | "blocks"
+  | "references"
+  | "attached_to"
+  | "mentions"
+  | "similar_to"
+  | "derived_from"
+  | "supersedes"
+  | "duplicates";
 
 export interface IKnowledgeGraphEdge extends Document {
   id: string;
@@ -81,40 +91,60 @@ const documentIntelligenceSchema = new Schema<IDocumentIntelligence>({
 });
 
 export const KnowledgeGraphEdge = model<IKnowledgeGraphEdge>("KnowledgeGraphEdge", graphEdgeSchema);
-export const DocumentIntelligence = model<IDocumentIntelligence>("DocumentIntelligence", documentIntelligenceSchema);
+export const DocumentIntelligence = model<IDocumentIntelligence>(
+  "DocumentIntelligence",
+  documentIntelligenceSchema,
+);
 
 export class GraphEngine {
   async createEdge(params: {
-    orgId: string; sourceType: string; sourceId: string;
-    targetType: string; targetId: string;
-    relationship: RelationshipType; weight?: number;
+    orgId: string;
+    sourceType: string;
+    sourceId: string;
+    targetType: string;
+    targetId: string;
+    relationship: RelationshipType;
+    weight?: number;
   }): Promise<IKnowledgeGraphEdge> {
     const existing = await KnowledgeGraphEdge.findOne({
-      orgId: params.orgId, sourceId: params.sourceId,
-      targetId: params.targetId, relationship: params.relationship,
+      orgId: params.orgId,
+      sourceId: params.sourceId,
+      targetId: params.targetId,
+      relationship: params.relationship,
     }).lean();
     if (existing) return existing as any;
 
     return KnowledgeGraphEdge.create({
-      id: uuid(), ...params,
+      id: uuid(),
+      ...params,
       weight: params.weight || 1,
       metadata: {},
     });
   }
 
-  async getNode(orgId: string, entityId: string, entityType: string): Promise<IKnowledgeGraphNode | null> {
+  async getNode(
+    orgId: string,
+    entityId: string,
+    entityType: string,
+  ): Promise<IKnowledgeGraphNode | null> {
     let label = entityId;
     let summary: string | undefined;
 
     switch (entityType) {
       case "task": {
         const t = await Task.findOne({ id: entityId }).lean();
-        if (t) { label = t.title; summary = t.description; }
+        if (t) {
+          label = t.title;
+          summary = t.description;
+        }
         break;
       }
       case "project": {
         const p = await Project.findOne({ id: entityId }).lean();
-        if (p) { label = p.name; summary = p.description; }
+        if (p) {
+          label = p.name;
+          summary = p.description;
+        }
         break;
       }
       case "user": {
@@ -130,7 +160,8 @@ export class GraphEngine {
     }
 
     const edges = await KnowledgeGraphEdge.find({
-      orgId, $or: [{ sourceId: entityId }, { targetId: entityId }],
+      orgId,
+      $or: [{ sourceId: entityId }, { targetId: entityId }],
     }).lean();
 
     const neighbors: IKnowledgeGraphNode["neighbors"] = [];
@@ -138,7 +169,9 @@ export class GraphEngine {
       const isSource = edge.sourceId === entityId;
       const neighborId = isSource ? edge.targetId : edge.sourceId;
       const neighborType = isSource ? edge.targetType : edge.sourceType;
-      const ki = await KnowledgeIndex.findOne({ orgId, sourceId: neighborId }).select("title summary").lean();
+      const ki = await KnowledgeIndex.findOne({ orgId, sourceId: neighborId })
+        .select("title summary")
+        .lean();
       neighbors.push({
         node: {
           id: neighborId,
@@ -178,7 +211,12 @@ export class GraphEngine {
 
       for (const n of node.neighbors) {
         const nKey = `${n.node.type}:${n.node.id}`;
-        edges.push({ source: current.id, target: n.node.id, relationship: n.relationship, weight: n.weight });
+        edges.push({
+          source: current.id,
+          target: n.node.id,
+          relationship: n.relationship,
+          weight: n.weight,
+        });
         if (!visited.has(nKey)) {
           queue.push({ id: n.node.id, type: n.node.type, depth: current.depth + 1 });
         }
@@ -193,27 +231,44 @@ export class GraphEngine {
     const project = await Project.findOne({ id: projectId }).lean();
     if (!project) return;
 
-    await this.createEdge({ orgId, sourceType: "project", sourceId: projectId, targetType: "project", targetId: projectId, relationship: "part_of", weight: 0 });
+    await this.createEdge({
+      orgId,
+      sourceType: "project",
+      sourceId: projectId,
+      targetType: "project",
+      targetId: projectId,
+      relationship: "part_of",
+      weight: 0,
+    });
 
     for (const task of tasks) {
       await this.createEdge({
-        orgId, sourceType: "task", sourceId: task.id,
-        targetType: "project", targetId: projectId,
+        orgId,
+        sourceType: "task",
+        sourceId: task.id,
+        targetType: "project",
+        targetId: projectId,
         relationship: "part_of",
       });
 
       if (task.assigneeId) {
         await this.createEdge({
-          orgId, sourceType: "task", sourceId: task.id,
-          targetType: "user", targetId: task.assigneeId,
+          orgId,
+          sourceType: "task",
+          sourceId: task.id,
+          targetType: "user",
+          targetId: task.assigneeId,
           relationship: "assigned_to",
         });
       }
 
       if (task.creatorId) {
         await this.createEdge({
-          orgId, sourceType: "task", sourceId: task.id,
-          targetType: "user", targetId: task.creatorId,
+          orgId,
+          sourceType: "task",
+          sourceId: task.id,
+          targetType: "user",
+          targetId: task.creatorId,
           relationship: "created_by",
         });
       }
@@ -254,7 +309,11 @@ export class GraphEngine {
       totalEdges: total,
       byRelationship,
       byType,
-      topConnected: topAgg.map(t => ({ id: t._id.id, type: t._id.type, connections: t.connections })),
+      topConnected: topAgg.map((t) => ({
+        id: t._id.id,
+        type: t._id.type,
+        connections: t.connections,
+      })),
     };
   }
 }
@@ -268,11 +327,41 @@ export class DocumentIntelligenceEngine {
   ): Promise<IDocumentIntelligence> {
     const wordCount = content.split(/\s+/).length;
     const sentenceCount = (content.match(/[.!?]+/g) || []).length;
-    const readabilityScore = sentenceCount > 0
-      ? Math.round(Math.max(0, Math.min(100, 206.835 - 1.015 * (wordCount / sentenceCount) - 84.6 * (this.countSyllables(content) / wordCount))))
-      : 0;
+    const readabilityScore =
+      sentenceCount > 0
+        ? Math.round(
+            Math.max(
+              0,
+              Math.min(
+                100,
+                206.835 -
+                  1.015 * (wordCount / sentenceCount) -
+                  84.6 * (this.countSyllables(content) / wordCount),
+              ),
+            ),
+          )
+        : 0;
 
-    const stopWords = new Set(["the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by", "is", "are", "was", "were"]);
+    const stopWords = new Set([
+      "the",
+      "a",
+      "an",
+      "and",
+      "or",
+      "but",
+      "in",
+      "on",
+      "at",
+      "to",
+      "for",
+      "of",
+      "with",
+      "by",
+      "is",
+      "are",
+      "was",
+      "were",
+    ]);
     const words = content.toLowerCase().match(/\b\w{3,}\b/g) || [];
     const freq: Record<string, number> = {};
     for (const w of words) {
@@ -301,11 +390,20 @@ export class DocumentIntelligenceEngine {
       }
     }
 
-    const positiveWords = content.match(/\b(great|excellent|good|amazing|successful|innovative|productive|efficient)\b/gi);
-    const negativeWords = content.match(/\b(bad|poor|terrible|failed|broken|issue|problem|delay|blocker)\b/gi);
-    const sentiment = Math.max(-1, Math.min(1,
-      ((positiveWords?.length || 0) - (negativeWords?.length || 0)) / Math.max(1, wordCount) * 10
-    ));
+    const positiveWords = content.match(
+      /\b(great|excellent|good|amazing|successful|innovative|productive|efficient)\b/gi,
+    );
+    const negativeWords = content.match(
+      /\b(bad|poor|terrible|failed|broken|issue|problem|delay|blocker)\b/gi,
+    );
+    const sentiment = Math.max(
+      -1,
+      Math.min(
+        1,
+        (((positiveWords?.length || 0) - (negativeWords?.length || 0)) / Math.max(1, wordCount)) *
+          10,
+      ),
+    );
 
     const classification = await this.classifyDocument(content, keywords);
 
@@ -313,9 +411,17 @@ export class DocumentIntelligenceEngine {
       { orgId, sourceId },
       {
         $set: {
-          id: uuid(), orgId, sourceId, sourceType,
-          classification, entities, summary: content.substring(0, 300),
-          keywords, language: "en", sentiment, readabilityScore,
+          id: uuid(),
+          orgId,
+          sourceId,
+          sourceType,
+          classification,
+          entities,
+          summary: content.substring(0, 300),
+          keywords,
+          language: "en",
+          sentiment,
+          readabilityScore,
           processedAt: new Date(),
         },
       },
@@ -340,7 +446,8 @@ export class DocumentIntelligenceEngine {
     const kw = keywords.join(" ").toLowerCase();
 
     if (/\b(bug|error|crash|fix|issue|defect)\b/.test(lower)) return "bug_report";
-    if (/\b(feature|enhancement|request|suggestion|improve)\b/.test(lower)) return "feature_request";
+    if (/\b(feature|enhancement|request|suggestion|improve)\b/.test(lower))
+      return "feature_request";
     if (/\b(doc|manual|guide|readme|wiki|instruction)\b/.test(lower)) return "documentation";
     if (/\b(spec|requirement|design|architecture|plan)\b/.test(lower)) return "specification";
     if (/\b(meeting|minutes|agenda|notes|discussion)\b/.test(lower)) return "meeting_notes";

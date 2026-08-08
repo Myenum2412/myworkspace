@@ -1,6 +1,6 @@
-import path from "path";
-import fs from "fs/promises";
 import { existsSync, readdirSync, unlinkSync } from "fs";
+import fs from "fs/promises";
+import path from "path";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { FileMetadata } from "../lib/db/models/FileMetadata.js";
 import { UploadSession } from "../lib/db/models/UploadSession.js";
@@ -47,7 +47,9 @@ export async function cleanupOrphanedThumbnails(): Promise<number> {
       try {
         await fs.unlink(thumbPath);
         removed++;
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
   }
   logger.info({ removed }, "Orphaned thumbnail cleanup complete");
@@ -68,7 +70,10 @@ export async function cleanupOrphanedPreviews(): Promise<number> {
       if (exists) validIds.add(fileId);
     }
     if (!validIds.has(fileId)) {
-      try { await fs.unlink(filePath); removed++; } catch {}
+      try {
+        await fs.unlink(filePath);
+        removed++;
+      } catch {}
     }
   }
   return removed;
@@ -78,9 +83,14 @@ export async function cleanupTempConversions(): Promise<number> {
   let removed = 0;
   const files = await listDir(CONVERSION_DIR);
   for (const f of files) {
-    try { await fs.unlink(f); removed++; } catch {}
+    try {
+      await fs.unlink(f);
+      removed++;
+    } catch {}
   }
-  try { await fs.rmdir(CONVERSION_DIR).catch(() => {}); } catch {}
+  try {
+    await fs.rmdir(CONVERSION_DIR).catch(() => {});
+  } catch {}
   return removed;
 }
 
@@ -99,7 +109,11 @@ export async function cleanupExpiredCache(): Promise<number> {
     const entries = await fs.readdir(tmpDir);
     const now = Date.now();
     for (const entry of entries) {
-      if (entry.startsWith("video-meta-") || entry.startsWith("audio-meta-") || entry.startsWith("virus-scan-")) {
+      if (
+        entry.startsWith("video-meta-") ||
+        entry.startsWith("audio-meta-") ||
+        entry.startsWith("virus-scan-")
+      ) {
         const fullPath = path.join(tmpDir, entry);
         try {
           const stat = await fs.stat(fullPath);
@@ -128,10 +142,14 @@ export async function cleanupStaleTempUploads(): Promise<number> {
             await fs.unlink(fullPath);
             removed++;
           }
-        } catch { /* skip */ }
+        } catch {
+          /* skip */
+        }
       }
     }
-  } catch { /* dir may not exist */ }
+  } catch {
+    /* dir may not exist */
+  }
   if (removed > 0) {
     logger.info({ removed }, "Cleaned stale temp uploads");
     metricsRegistry.incrementCounter("cleanup_files_removed", { type: "temp_upload" }, removed);
@@ -155,7 +173,15 @@ export async function runFullCleanup(): Promise<CleanupResult> {
   const startTime = Date.now();
   logger.info("Starting full cleanup cycle");
 
-  const [orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches, staleTempUploads, staleSessions] = await Promise.all([
+  const [
+    orphanedThumbnails,
+    orphanedPreviews,
+    tempConversions,
+    staleMetadata,
+    expiredCaches,
+    staleTempUploads,
+    staleSessions,
+  ] = await Promise.all([
     cleanupOrphanedThumbnails(),
     cleanupOrphanedPreviews(),
     cleanupTempConversions(),
@@ -166,9 +192,29 @@ export async function runFullCleanup(): Promise<CleanupResult> {
   ]);
 
   const duration = Date.now() - startTime;
-  logger.info({ orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches, staleTempUploads, staleSessions, durationMs: duration }, "Cleanup cycle complete");
+  logger.info(
+    {
+      orphanedThumbnails,
+      orphanedPreviews,
+      tempConversions,
+      staleMetadata,
+      expiredCaches,
+      staleTempUploads,
+      staleSessions,
+      durationMs: duration,
+    },
+    "Cleanup cycle complete",
+  );
 
   metricsRegistry.observeHistogram("cleanup_duration_ms", {}, duration);
 
-  return { orphanedThumbnails, orphanedPreviews, tempConversions, staleMetadata, expiredCaches, staleTempUploads, staleSessions };
+  return {
+    orphanedThumbnails,
+    orphanedPreviews,
+    tempConversions,
+    staleMetadata,
+    expiredCaches,
+    staleTempUploads,
+    staleSessions,
+  };
 }

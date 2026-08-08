@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PhoneInput } from "@/components/ui/phone-input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
   Select,
   SelectContent,
@@ -13,8 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "@/lib/icons";
-import type { Doctor, Appointment } from "./appointment-types";
+import type { Appointment, Doctor } from "./appointment-types";
 
 interface AppointmentFormProps {
   doctors: Doctor[];
@@ -33,18 +33,36 @@ interface FormErrors {
 }
 
 const TIME_SLOTS = [
-  "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM",
-  "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM",
-  "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM",
-  "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM",
-  "05:00 PM", "05:30 PM",
+  "09:00 AM",
+  "09:30 AM",
+  "10:00 AM",
+  "10:30 AM",
+  "11:00 AM",
+  "11:30 AM",
+  "12:00 PM",
+  "12:30 PM",
+  "01:00 PM",
+  "01:30 PM",
+  "02:00 PM",
+  "02:30 PM",
+  "03:00 PM",
+  "03:30 PM",
+  "04:00 PM",
+  "04:30 PM",
+  "05:00 PM",
+  "05:30 PM",
 ];
 
 function getTodayString(): string {
   return new Date().toISOString().split("T")[0];
 }
 
-export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: AppointmentFormProps) {
+export function AppointmentForm({
+  doctors,
+  onSubmit,
+  onCancel,
+  initialData,
+}: AppointmentFormProps) {
   const [patientName, setPatientName] = useState(initialData?.patientName || "");
   const [mobileNumber, setMobileNumber] = useState(initialData?.mobileNumber || "");
   const [email, setEmail] = useState(initialData?.email || "");
@@ -60,7 +78,8 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
     const e: FormErrors = {};
     if (!patientName.trim()) e.patientName = "Full name is required";
     if (!mobileNumber.trim()) e.mobileNumber = "Mobile number is required";
-    else if (!/^\+?[\d\s-]{7,15}$/.test(mobileNumber.trim())) e.mobileNumber = "Enter a valid mobile number";
+    else if (!/^\+?[\d\s-]{7,15}$/.test(mobileNumber.trim()))
+      e.mobileNumber = "Enter a valid mobile number";
     if (!doctorId) e.doctorId = "Please select a doctor";
     if (!appointmentDate) e.appointmentDate = "Appointment date is required";
     else if (appointmentDate < getTodayString()) e.appointmentDate = "Date cannot be in the past";
@@ -93,7 +112,10 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white"
+    >
       <fieldset className="border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Patient Information</legend>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -119,7 +141,9 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
               className={errors.mobileNumber ? "border-destructive" : ""}
               placeholder=""
             />
-            {errors.mobileNumber && <p className="text-xs text-destructive">{errors.mobileNumber}</p>}
+            {errors.mobileNumber && (
+              <p className="text-xs text-destructive">{errors.mobileNumber}</p>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Email</Label>
@@ -165,7 +189,9 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
               min={getTodayString()}
               className={errors.appointmentDate ? "border-destructive" : ""}
             />
-            {errors.appointmentDate && <p className="text-xs text-destructive">{errors.appointmentDate}</p>}
+            {errors.appointmentDate && (
+              <p className="text-xs text-destructive">{errors.appointmentDate}</p>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">
@@ -177,11 +203,15 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
               </SelectTrigger>
               <SelectContent>
                 {TIME_SLOTS.map((slot) => (
-                  <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                  <SelectItem key={slot} value={slot}>
+                    {slot}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.preferredTime && <p className="text-xs text-destructive">{errors.preferredTime}</p>}
+            {errors.preferredTime && (
+              <p className="text-xs text-destructive">{errors.preferredTime}</p>
+            )}
           </div>
           <div className="space-y-1.5 md:col-span-2">
             <Label className="text-xs text-muted-foreground">
@@ -194,7 +224,9 @@ export function AppointmentForm({ doctors, onSubmit, onCancel, initialData }: Ap
               placeholder=""
               rows={3}
             />
-            {errors.reasonForVisit && <p className="text-xs text-destructive">{errors.reasonForVisit}</p>}
+            {errors.reasonForVisit && (
+              <p className="text-xs text-destructive">{errors.reasonForVisit}</p>
+            )}
           </div>
           <div className="space-y-1.5 md:col-span-2">
             <Label className="text-xs text-muted-foreground">Notes (Optional)</Label>

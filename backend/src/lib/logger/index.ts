@@ -5,11 +5,13 @@ const isTest = env.NODE_ENV === "test";
 const isDev = env.NODE_ENV !== "production";
 
 const pinoLogger = pino({
-  level: isTest ? "silent" : (env.LOG_LEVEL || (isDev ? "debug" : "info")),
-  transport: isDev ? {
-    target: "pino-pretty",
-    options: { colorize: true, translateTime: "HH:MM:ss.l" },
-  } : undefined,
+  level: isTest ? "silent" : env.LOG_LEVEL || (isDev ? "debug" : "info"),
+  transport: isDev
+    ? {
+        target: "pino-pretty",
+        options: { colorize: true, translateTime: "HH:MM:ss.l" },
+      }
+    : undefined,
   serializers: {
     err: pino.stdSerializers.err,
     error: pino.stdSerializers.err,
@@ -55,7 +57,8 @@ function createPinoLogger(name?: string): Logger {
     debug: (...args: LogArg[]) => adapt("debug", args),
     fatal: (...args: LogArg[]) => adapt("fatal", args),
     trace: (...args: LogArg[]) => adapt("trace", args),
-    child: (bindings: Record<string, unknown>) => createPinoLogger((bindings.module as string) || name),
+    child: (bindings: Record<string, unknown>) =>
+      createPinoLogger((bindings.module as string) || name),
   };
 }
 

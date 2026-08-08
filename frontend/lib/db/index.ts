@@ -1,2 +1,2 @@
-export { db, connectToMongo } from "./mongodb";
+export { connectToMongo, db } from "./mongodb";
 export { collections } from "./schema";

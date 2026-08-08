@@ -1,7 +1,7 @@
-import { Router, Request, Response } from "express";
-import path from "path";
-import fs from "fs";
 import crypto from "crypto";
+import { type Request, type Response, Router } from "express";
+import fs from "fs";
+import path from "path";
 import { env } from "../config/env.js";
 import { downloadLimiter, publicInfoLimiter } from "../middleware/rate-limit.js";
 
@@ -17,7 +17,8 @@ const INSTALLER_DIR = path.resolve(process.cwd(), "data", "installers");
 function getLatestInstallerPath(): string | null {
   try {
     if (!fs.existsSync(INSTALLER_DIR)) return null;
-    const files = fs.readdirSync(INSTALLER_DIR)
+    const files = fs
+      .readdirSync(INSTALLER_DIR)
       .filter((f) => f.endsWith(".exe") && f.startsWith("MyWorkspaceSetup"))
       .sort()
       .reverse();
@@ -55,13 +56,14 @@ router.get("/info", publicInfoLimiter, (_req: Request, res: Response) => {
       downloadUrl: "/api/installer/download",
       filename: installerExists ? path.basename(installerPath) : "MyWorkspaceSetup.exe",
       size: installerSize,
-      sizeFormatted: installerSize > 0
-        ? installerSize > 1073741824
-          ? `${(installerSize / 1073741824).toFixed(2)} GB`
-          : installerSize > 1048576
-            ? `${(installerSize / 1048576).toFixed(1)} MB`
-            : `${(installerSize / 1024).toFixed(0)} KB`
-        : "Unknown",
+      sizeFormatted:
+        installerSize > 0
+          ? installerSize > 1073741824
+            ? `${(installerSize / 1073741824).toFixed(2)} GB`
+            : installerSize > 1048576
+              ? `${(installerSize / 1048576).toFixed(1)} MB`
+              : `${(installerSize / 1024).toFixed(0)} KB`
+          : "Unknown",
       checksum: installerExists ? getFileChecksum(installerPath) : null,
       architecture: "x64",
       platform: "win32",
@@ -103,7 +105,8 @@ router.get("/download", downloadLimiter, (req: Request, res: Response) => {
     res.status(404).json({
       success: false,
       error: "Installer not available",
-      message: "The Windows desktop installer is not yet built. Please build it from the desktop/ directory.",
+      message:
+        "The Windows desktop installer is not yet built. Please build it from the desktop/ directory.",
       details: {
         howToBuild: "Run 'npm run build:win' in the desktop/ directory to generate the installer.",
         docs: "https://app.myworkspace.com/docs/desktop/setup",

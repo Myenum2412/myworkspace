@@ -1,4 +1,4 @@
-import { Schema, model, Document, Model } from "mongoose";
+import { type Document, Model, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 import { logger } from "../logger/index.js";
 
@@ -35,9 +35,7 @@ eventSchema.index({ correlationId: 1 });
 export const EventStore = model<IStoredEvent>("EventStore", eventSchema);
 
 export class EventSourcingRepository {
-  constructor(
-    private readonly aggregateType: string,
-  ) {}
+  constructor(private readonly aggregateType: string) {}
 
   async saveEvent(
     aggregateId: string,
@@ -67,10 +65,7 @@ export class EventSourcingRepository {
     return event;
   }
 
-  async getEvents(
-    aggregateId: string,
-    fromVersion = 0,
-  ): Promise<any[]> {
+  async getEvents(aggregateId: string, fromVersion = 0): Promise<any[]> {
     return EventStore.find({
       aggregateType: this.aggregateType,
       aggregateId,
@@ -81,11 +76,11 @@ export class EventSourcingRepository {
   }
 
   async getAggregateVersion(aggregateId: string): Promise<number> {
-    const event = await EventStore.findOne(
+    const event = (await EventStore.findOne(
       { aggregateType: this.aggregateType, aggregateId },
       { version: 1 },
       { sort: { version: -1 } },
-    ).lean() as any;
+    ).lean()) as any;
     return event?.version || 0;
   }
 
@@ -101,21 +96,11 @@ export class EventSourcingRepository {
     }, initialState);
   }
 
-  async getEventsByType(
-    eventType: string,
-    limit = 100,
-    skip = 0,
-  ): Promise<any[]> {
-    return EventStore.find({ eventType })
-      .sort({ timestamp: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+  async getEventsByType(eventType: string, limit = 100, skip = 0): Promise<any[]> {
+    return EventStore.find({ eventType }).sort({ timestamp: -1 }).skip(skip).limit(limit).lean();
   }
 
   async getEventsByCorrelationId(correlationId: string): Promise<any[]> {
-    return EventStore.find({ correlationId })
-      .sort({ timestamp: 1 })
-      .lean();
+    return EventStore.find({ correlationId }).sort({ timestamp: 1 }).lean();
   }
 }

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { ensureUserOrg } from "@/lib/org";
@@ -30,7 +30,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data: tree });
   } catch (err) {
     console.error("[api/folders/tree] error:", err);
-    return NextResponse.json({ success: false, error: "Could not load folder tree" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Could not load folder tree" },
+      { status: 500 },
+    );
   }
 }
 

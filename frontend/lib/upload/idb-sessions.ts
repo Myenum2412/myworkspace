@@ -1,4 +1,4 @@
-import { openDB, IDBPDatabase } from "idb";
+import { type IDBPDatabase, openDB } from "idb";
 import type { UploadSessionData, UploadStatus } from "./types";
 
 const DB_NAME = "upload-sessions-db";
@@ -33,7 +33,11 @@ export async function getSession(uploadId: string): Promise<UploadSessionData | 
   return db.get(STORE_NAME, uploadId);
 }
 
-export async function updateSessionStatus(uploadId: string, status: UploadStatus, offset?: number): Promise<void> {
+export async function updateSessionStatus(
+  uploadId: string,
+  status: UploadStatus,
+  offset?: number,
+): Promise<void> {
   const db = await getDb();
   const session = await db.get(STORE_NAME, uploadId);
   if (session) {

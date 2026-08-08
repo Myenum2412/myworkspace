@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IFollowUp extends Document {
   id: string;
@@ -44,7 +44,7 @@ const followUpSchema = new Schema<IFollowUp>(
     dueAt: Date,
     completedAt: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 followUpSchema.index({ orgId: 1, status: 1 });

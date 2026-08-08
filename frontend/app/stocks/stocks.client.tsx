@@ -1,11 +1,14 @@
 "use client";
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PlusIcon, FilterIcon, CheckIcon, XIcon, SearchIcon, PackageIcon } from "@/lib/icons";
+import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Stock } from "@/app/stocks/columns";
+import { columns, makeActionsCell } from "@/app/stocks/columns";
+import { DataTable } from "@/app/stocks/data-table";
+import { StockForm } from "@/app/stocks/stock-form";
 import { PageHeader } from "@/components/page-header";
+import Stats07 from "@/components/stats-07";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -14,11 +17,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Stock } from "@/app/stocks/columns";
-import { DataTable } from "@/app/stocks/data-table";
-import { columns, makeActionsCell } from "@/app/stocks/columns";
-import { StockForm } from "@/app/stocks/stock-form";
-import Stats07 from "@/components/stats-07";
+import { Input } from "@/components/ui/input";
+import { CheckIcon, FilterIcon, PackageIcon, PlusIcon, SearchIcon, XIcon } from "@/lib/icons";
 
 export default function StocksPage() {
   const { data: session, status } = useSession();
@@ -61,7 +61,7 @@ export default function StocksPage() {
               projectId: s.projectId ? String(s.projectId) : undefined,
               projectName: s.projectName ? String(s.projectName) : undefined,
             }))
-          : []
+          : [],
       );
     } catch {
     } finally {
@@ -87,19 +87,25 @@ export default function StocksPage() {
   }, [stocks]);
 
   const statuses = [...new Set(stocks.map((s) => s.status).filter(Boolean))];
-  const filteredData = statusFilter.length > 0 ? stocks.filter((s) => statusFilter.includes(s.status)) : stocks;
+  const filteredData =
+    statusFilter.length > 0 ? stocks.filter((s) => statusFilter.includes(s.status)) : stocks;
 
-  const statsItems = useMemo(() => [
-    { name: 'Total Items', value: stats.totalItems, subtitle: 'All inventory' },
-    { name: 'Total Stock', value: stats.totalStock, subtitle: 'Units available' },
-    { name: 'Low Stock', value: stats.lowStock, subtitle: 'Below reorder' },
-    { name: 'Out of Stock', value: stats.outOfStock, subtitle: 'Zero available' },
-    { name: 'Stock In', value: stats.stockIn, subtitle: 'Received today' },
-    { name: 'Stock Out', value: stats.stockOut, subtitle: 'Dispatched today' },
-  ], [stats]);
+  const statsItems = useMemo(
+    () => [
+      { name: "Total Items", value: stats.totalItems, subtitle: "All inventory" },
+      { name: "Total Stock", value: stats.totalStock, subtitle: "Units available" },
+      { name: "Low Stock", value: stats.lowStock, subtitle: "Below reorder" },
+      { name: "Out of Stock", value: stats.outOfStock, subtitle: "Zero available" },
+      { name: "Stock In", value: stats.stockIn, subtitle: "Received today" },
+      { name: "Stock Out", value: stats.stockOut, subtitle: "Dispatched today" },
+    ],
+    [stats],
+  );
 
   useEffect(() => {
-    if (status === "unauthenticated") { router.push("/login"); }
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
   }, [status, router]);
 
   useEffect(() => {
@@ -107,7 +113,12 @@ export default function StocksPage() {
     refreshStocks();
   }, [status]);
 
-  if (status === "loading" || (loading && stocks.length === 0)) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (status === "loading" || (loading && stocks.length === 0))
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </div>
+    );
   if (!session?.user) return null;
 
   async function handleSave(formData: Omit<Stock, "id">) {
@@ -130,8 +141,7 @@ export default function StocksPage() {
       await refreshStocks();
       setShowForm(false);
       setEditingStock(null);
-    } catch {
-    }
+    } catch {}
   }
 
   async function handleDelete(stock: Stock) {
@@ -141,11 +151,8 @@ export default function StocksPage() {
         credentials: "include",
       });
       await refreshStocks();
-    } catch {
-    }
+    } catch {}
   }
-
-
 
   return (
     <>
@@ -166,56 +173,56 @@ export default function StocksPage() {
           }
           actions={
             <>
-            {statuses.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1.5">
-                    <FilterIcon className="size-3.5" />
-                    Filter
+              {statuses.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1.5">
+                      <FilterIcon className="size-3.5" />
+                      Filter
+                      {statusFilter.length > 0 && (
+                        <span className="ml-0.5 rounded-sm bg-primary text-primary-foreground text-[10px] font-bold leading-none px-1.5 py-0.5">
+                          {statusFilter.length}
+                        </span>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
                     {statusFilter.length > 0 && (
-                      <span className="ml-0.5 rounded-sm bg-primary text-primary-foreground text-[10px] font-bold leading-none px-1.5 py-0.5">
-                        {statusFilter.length}
-                      </span>
+                      <>
+                        <DropdownMenuCheckboxItem
+                          checked={false}
+                          onCheckedChange={() => setStatusFilter([])}
+                          className="text-xs text-muted-foreground"
+                        >
+                          <XIcon className="mr-2 size-3" />
+                          Clear filters
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuSeparator />
+                      </>
                     )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {statusFilter.length > 0 && (
-                    <>
+                    {statuses.map((status) => (
                       <DropdownMenuCheckboxItem
-                        checked={false}
-                        onCheckedChange={() => setStatusFilter([])}
-                        className="text-xs text-muted-foreground"
+                        key={status}
+                        checked={statusFilter.includes(status)}
+                        onCheckedChange={(checked) => {
+                          setStatusFilter((prev) =>
+                            checked ? [...prev, status] : prev.filter((s) => s !== status),
+                          );
+                        }}
                       >
-                        <XIcon className="mr-2 size-3" />
-                        Clear filters
+                        {statusFilter.includes(status) && <CheckIcon className="mr-2 size-3.5" />}
+                        {status}
                       </DropdownMenuCheckboxItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  {statuses.map((status) => (
-                    <DropdownMenuCheckboxItem
-                      key={status}
-                      checked={statusFilter.includes(status)}
-                      onCheckedChange={(checked) => {
-                        setStatusFilter((prev) =>
-                          checked ? [...prev, status] : prev.filter((s) => s !== status)
-                        );
-                      }}
-                    >
-                      {statusFilter.includes(status) && <CheckIcon className="mr-2 size-3.5" />}
-                      {status}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-            <Button onClick={() => setShowForm(true)} className="">
-              <PlusIcon className="mr-1.5 size-4" />
-              Add Inventory
-            </Button>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              <Button onClick={() => setShowForm(true)} className="">
+                <PlusIcon className="mr-1.5 size-4" />
+                Add Inventory
+              </Button>
             </>
           }
         />
@@ -224,46 +231,104 @@ export default function StocksPage() {
         <Stats07 items={statsItems} />
 
         <DataTable
-            columns={[...columns, makeActionsCell(handleView, handleEdit, handleDelete)]}
-            data={filteredData}
-            onRowClick={handleView}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            hideSearchBar
-          />
+          columns={[...columns, makeActionsCell(handleView, handleEdit, handleDelete)]}
+          data={filteredData}
+          onRowClick={handleView}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          hideSearchBar
+        />
       </main>
 
       {viewingStock && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setViewingStock(null)}>
-          <div className="bg-background rounded-sm shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setViewingStock(null)}
+        >
+          <div
+            className="bg-background rounded-sm shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="px-6 py-4 border-b">
               <h2 className="text-lg font-semibold">Stock Details</h2>
             </div>
             <div className="p-6 space-y-4 text-sm">
               {viewingStock.image && (
                 <div className="flex justify-center mb-4">
-                  <img src={viewingStock.image} alt={viewingStock.productName} className="size-24 rounded-sm object-cover border" />
+                  <img
+                    src={viewingStock.image}
+                    alt={viewingStock.productName}
+                    className="size-24 rounded-sm object-cover border"
+                  />
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4">
-                <div><span className="font-medium text-muted-foreground">Item Code:</span> {viewingStock.itemCode || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Product:</span> {viewingStock.productName}</div>
-                <div><span className="font-medium text-muted-foreground">Category:</span> {viewingStock.category || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Brand:</span> {viewingStock.brand || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Unit:</span> {viewingStock.unit || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Supplier:</span> {viewingStock.supplier || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Warehouse:</span> {viewingStock.warehouse || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Project:</span> {viewingStock.projectName || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Status:</span> {viewingStock.status || "—"}</div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Item Code:</span>{" "}
+                  {viewingStock.itemCode || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Product:</span>{" "}
+                  {viewingStock.productName}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Category:</span>{" "}
+                  {viewingStock.category || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Brand:</span>{" "}
+                  {viewingStock.brand || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Unit:</span>{" "}
+                  {viewingStock.unit || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Supplier:</span>{" "}
+                  {viewingStock.supplier || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Warehouse:</span>{" "}
+                  {viewingStock.warehouse || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Project:</span>{" "}
+                  {viewingStock.projectName || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Status:</span>{" "}
+                  {viewingStock.status || "—"}
+                </div>
               </div>
               <div className="border-t pt-4 grid grid-cols-2 gap-4">
-                <div><span className="font-medium text-muted-foreground">Opening Stock:</span> {viewingStock.openingStock}</div>
-                <div><span className="font-medium text-muted-foreground">Stock In:</span> {viewingStock.stockIn}</div>
-                <div><span className="font-medium text-muted-foreground">Stock Out:</span> {viewingStock.stockOut}</div>
-                <div><span className="font-medium text-muted-foreground">Available:</span> {viewingStock.availableStock}</div>
-                <div><span className="font-medium text-muted-foreground">Reorder Level:</span> {viewingStock.reorderLevel}</div>
-                <div><span className="font-medium text-muted-foreground">Purchase Price:</span> ${viewingStock.purchasePrice.toFixed(2)}</div>
-                <div><span className="font-medium text-muted-foreground">Selling Price:</span> ${viewingStock.sellingPrice.toFixed(2)}</div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Opening Stock:</span>{" "}
+                  {viewingStock.openingStock}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Stock In:</span>{" "}
+                  {viewingStock.stockIn}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Stock Out:</span>{" "}
+                  {viewingStock.stockOut}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Available:</span>{" "}
+                  {viewingStock.availableStock}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Reorder Level:</span>{" "}
+                  {viewingStock.reorderLevel}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Purchase Price:</span> $
+                  {viewingStock.purchasePrice.toFixed(2)}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Selling Price:</span> $
+                  {viewingStock.sellingPrice.toFixed(2)}
+                </div>
               </div>
             </div>
           </div>
@@ -271,8 +336,17 @@ export default function StocksPage() {
       )}
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { setShowForm(false); setEditingStock(null); }}>
-          <div className="bg-background rounded-sm shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => {
+            setShowForm(false);
+            setEditingStock(null);
+          }}
+        >
+          <div
+            className="bg-background rounded-sm shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="px-6 py-4 border-b">
               <h2 className="text-lg font-semibold">{editingStock ? "Edit Stock" : "Add Stock"}</h2>
             </div>
@@ -280,7 +354,10 @@ export default function StocksPage() {
               <StockForm
                 stock={editingStock}
                 onSave={handleSave}
-                onCancel={() => { setShowForm(false); setEditingStock(null); }}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingStock(null);
+                }}
               />
             </div>
           </div>

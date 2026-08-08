@@ -1,30 +1,39 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
-import { PlusIcon, SearchIcon, AlertCircleIcon, CrownIcon, UserIcon, ListChecksIcon } from "@/lib/icons";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { DataTable } from "@/components/data-table";
 import { PageHeader } from "@/components/page-header";
-
+import Stats07 from "@/components/stats-07";
+import { TaskDetailedView } from "@/components/task-detailed-view";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { TaskDetailedView } from "@/components/task-detailed-view";
-import { createColumns } from "./columns.client";
-import type { Task } from "./columns.client";
-import Stats07 from "@/components/stats-07";
-import { DataTable } from "@/components/data-table";
-import type { ColumnDef } from "@tanstack/react-table";
-import { employeeService } from "@/lib/services/employee-service";
 import { apiFetch } from "@/lib/api";
-import { toast } from "sonner";
+import {
+  AlertCircleIcon,
+  CrownIcon,
+  ListChecksIcon,
+  PlusIcon,
+  SearchIcon,
+  UserIcon,
+} from "@/lib/icons";
+import { employeeService } from "@/lib/services/employee-service";
+import type { Task } from "./columns.client";
+import { createColumns } from "./columns.client";
 
 export interface OverviewInteractiveProps {
   tasks: Task[];
   currentUserId: string;
 }
 
-export default function OverviewInteractive({ tasks: initialTasks, currentUserId }: OverviewInteractiveProps) {
+export default function OverviewInteractive({
+  tasks: initialTasks,
+  currentUserId,
+}: OverviewInteractiveProps) {
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [viewOpen, setViewOpen] = useState(false);
@@ -34,9 +43,12 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   const [employees, setEmployees] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
-    employeeService.getAllEmployees().then((res) => {
-      setEmployees((res as any[]).map((e: any) => ({ id: e.id, name: e.name || "Unknown" })));
-    }).catch(() => {});
+    employeeService
+      .getAllEmployees()
+      .then((res) => {
+        setEmployees((res as any[]).map((e: any) => ({ id: e.id, name: e.name || "Unknown" })));
+      })
+      .catch(() => {});
   }, []);
 
   const total = tasks.length;
@@ -51,10 +63,18 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   const completionRate = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
   // Overdue tasks
-  const overdueTasks = useMemo(() =>
-    tasks.filter((t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "done" && t.status !== "cancelled")
-      .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime()),
-    [tasks]
+  const overdueTasks = useMemo(
+    () =>
+      tasks
+        .filter(
+          (t) =>
+            t.dueDate &&
+            new Date(t.dueDate) < new Date() &&
+            t.status !== "done" &&
+            t.status !== "cancelled",
+        )
+        .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime()),
+    [tasks],
   );
 
   // Employee leaderboard (ranked by completed tasks)
@@ -62,17 +82,27 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
     const completedCounts = new Map<string, { name: string; avatar: string; completed: number }>();
     for (const t of tasks) {
       if (t.status === "done" && t.assigneeId) {
-        const existing = completedCounts.get(t.assigneeId) || { name: t.assigneeName || "Unknown", avatar: t.assigneeAvatar || "", completed: 0 };
+        const existing = completedCounts.get(t.assigneeId) || {
+          name: t.assigneeName || "Unknown",
+          avatar: t.assigneeAvatar || "",
+          completed: 0,
+        };
         existing.completed++;
         completedCounts.set(t.assigneeId, existing);
       }
     }
-    const allEntries = employees.length > 0
-      ? employees.map((e) => {
-          const c = completedCounts.get(e.id);
-          return { id: e.id, name: e.name, avatar: c?.avatar || "", completed: c?.completed || 0 };
-        })
-      : [...completedCounts.entries()].map(([id, data]) => ({ id, ...data }));
+    const allEntries =
+      employees.length > 0
+        ? employees.map((e) => {
+            const c = completedCounts.get(e.id);
+            return {
+              id: e.id,
+              name: e.name,
+              avatar: c?.avatar || "",
+              completed: c?.completed || 0,
+            };
+          })
+        : [...completedCounts.entries()].map(([id, data]) => ({ id, ...data }));
     return allEntries.sort((a, b) => b.completed - a.completed);
   }, [tasks, employees]);
 
@@ -87,7 +117,12 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
           <Avatar className="size-7">
             <AvatarImage src={row.original.avatar} alt={row.original.name} />
             <AvatarFallback className="text-[10px]">
-              {row.original.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+              {row.original.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <span className="text-sm font-medium">{row.original.name}</span>
@@ -104,10 +139,15 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
       header: "Rank",
       cell: ({ row }) => {
         const index = row.index;
-        if (index === 0) return <span className="text-[10px] font-semibold text-yellow-600">1st</span>;
-        if (index === 1) return <span className="text-[10px] font-semibold text-gray-500">2nd</span>;
-        if (index === 2) return <span className="text-[10px] font-semibold text-amber-700">3rd</span>;
-        return <span className="text-[10px] font-semibold text-muted-foreground">#{index + 1}</span>;
+        if (index === 0)
+          return <span className="text-[10px] font-semibold text-yellow-600">1st</span>;
+        if (index === 1)
+          return <span className="text-[10px] font-semibold text-gray-500">2nd</span>;
+        if (index === 2)
+          return <span className="text-[10px] font-semibold text-amber-700">3rd</span>;
+        return (
+          <span className="text-[10px] font-semibold text-muted-foreground">#{index + 1}</span>
+        );
       },
     },
   ];
@@ -127,18 +167,27 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
   }, []);
 
   const overdueColumns = useMemo(
-    () => createColumns({
-      onView: (task) => { setSelectedTask(task); setViewOpen(true); },
-      onEdit: (task) => { setSelectedTask(task); setViewOpen(true); setEditMode(true); },
-      onDelete: handleDelete,
-    }),
-    [handleDelete]
+    () =>
+      createColumns({
+        onView: (task) => {
+          setSelectedTask(task);
+          setViewOpen(true);
+        },
+        onEdit: (task) => {
+          setSelectedTask(task);
+          setViewOpen(true);
+          setEditMode(true);
+        },
+        onDelete: handleDelete,
+      }),
+    [handleDelete],
   );
 
   const filteredOverdue = searchQuery
-    ? overdueTasks.filter((t) =>
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.assigneeName?.toLowerCase().includes(searchQuery.toLowerCase())
+    ? overdueTasks.filter(
+        (t) =>
+          t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          t.assigneeName?.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : overdueTasks;
 
@@ -160,7 +209,7 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
             </div>
           }
           actions={
-            <Button onClick={() => router.push('/createtask')} className="touch-target">
+            <Button onClick={() => router.push("/createtask")} className="touch-target">
               <PlusIcon className="mr-2 size-4" />
               New Task
             </Button>
@@ -169,12 +218,12 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
 
         <Stats07
           items={[
-            { name: 'Total Tasks', value: total, subtitle: 'All tasks' },
-            { name: 'My Tasks', value: myTasks, subtitle: 'Assigned to you' },
-            { name: 'Team Tasks', value: teamTasks, subtitle: 'Assigned to others' },
-            { name: 'Saved', value: savedCount, subtitle: 'Bookmarked tasks' },
-            { name: 'Upcoming', value: upcomingCount, subtitle: 'Pending due dates' },
-            { name: 'Completion', value: completionRate, subtitle: '% completed' },
+            { name: "Total Tasks", value: total, subtitle: "All tasks" },
+            { name: "My Tasks", value: myTasks, subtitle: "Assigned to you" },
+            { name: "Team Tasks", value: teamTasks, subtitle: "Assigned to others" },
+            { name: "Saved", value: savedCount, subtitle: "Bookmarked tasks" },
+            { name: "Upcoming", value: upcomingCount, subtitle: "Pending due dates" },
+            { name: "Completion", value: completionRate, subtitle: "% completed" },
           ]}
         />
 
@@ -185,7 +234,9 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               <h3 className="text-base font-semibold flex items-center gap-2">
                 <AlertCircleIcon className="size-4 text-red-500" />
                 Overdue Tasks
-                <Badge variant="destructive" className="ml-1 text-xs">{overdueTasks.length}</Badge>
+                <Badge variant="destructive" className="ml-1 text-xs">
+                  {overdueTasks.length}
+                </Badge>
               </h3>
             </div>
             <div className="flex-1 min-h-0">
@@ -199,7 +250,10 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
                 emptyMessage="No overdue tasks"
                 emptyIcon={<AlertCircleIcon className="size-6 text-muted-foreground/50" />}
                 showCheckboxes
-                onRowClick={(task) => { setSelectedTask(task); setViewOpen(true); }}
+                onRowClick={(task) => {
+                  setSelectedTask(task);
+                  setViewOpen(true);
+                }}
               />
             </div>
           </div>
@@ -210,7 +264,9 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               <h3 className="text-base font-semibold flex items-center gap-2">
                 <CrownIcon className="size-4 text-yellow-500" />
                 Employee Leaderboard
-                <span className="text-xs font-normal text-muted-foreground ml-1">by completed tasks</span>
+                <span className="text-xs font-normal text-muted-foreground ml-1">
+                  by completed tasks
+                </span>
               </h3>
             </div>
             <div className="flex-1 min-h-0">
@@ -237,9 +293,13 @@ export default function OverviewInteractive({ tasks: initialTasks, currentUserId
               task={selectedTask}
               editable
               onTaskUpdate={(updated) => {
-                setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
+                setTasks((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
               }}
-              onClose={() => { setViewOpen(false); setEditMode(false); setSelectedTask(null); }}
+              onClose={() => {
+                setViewOpen(false);
+                setEditMode(false);
+                setSelectedTask(null);
+              }}
             />
           </div>
         </div>

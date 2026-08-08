@@ -1,22 +1,20 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  ListTodoIcon, SearchIcon, ChevronLeft, ChevronRight,
-} from "@/lib/icons";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskDataTable } from "@/components/task-data-table";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/api";
-import Stats07 from "@/components/stats-07";
-import { useIndustry } from "@/components/industry-provider";
 import { CreateTaskPageInteractive } from "@/app/createtask/page-interactive";
+import { useIndustry } from "@/components/industry-provider";
+import Stats07 from "@/components/stats-07";
+import { TaskDataTable } from "@/components/task-data-table";
+import { TaskDetailedView } from "@/components/task-detailed-view";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { apiFetch } from "@/lib/api";
+import { ChevronLeft, ChevronRight, ListTodoIcon, SearchIcon } from "@/lib/icons";
 
 type UiTask = {
   _id: string;
@@ -86,13 +84,22 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
     setUpcomingLoading(true);
     apiFetch("/api/staffs/upcoming-tasks")
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (!cancelled && d?.tasks) setUpcomingTasks(d.tasks); })
+      .then((d) => {
+        if (!cancelled && d?.tasks) setUpcomingTasks(d.tasks);
+      })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setUpcomingLoading(false); });
-    return () => { cancelled = true; };
+      .finally(() => {
+        if (!cancelled) setUpcomingLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab, upcomingTasks.length]);
 
-  const queryKey = useMemo(() => ["tasks", "staff", orgId, sessionUserId] as const, [orgId, sessionUserId]);
+  const queryKey = useMemo(
+    () => ["tasks", "staff", orgId, sessionUserId] as const,
+    [orgId, sessionUserId],
+  );
   const seeded = useRef(false);
   useEffect(() => {
     if (seeded.current || !orgId) return;
@@ -111,7 +118,9 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
         if (!res.ok) return [];
         const d = await res.json();
         return d.data || [];
-      } catch { return []; }
+      } catch {
+        return [];
+      }
     },
     staleTime: 30_000,
     gcTime: 5 * 60_000,
@@ -148,7 +157,9 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
 
   const summary = useMemo(() => {
     const counts: Record<string, number> = {};
-    let overdue = 0, dueToday = 0, dueWeek = 0;
+    let overdue = 0,
+      dueToday = 0,
+      dueWeek = 0;
     const now = new Date();
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
     const weekEnd = new Date(todayEnd.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -184,81 +195,116 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
 
         {showCreateForm ? (
           <div className="flex flex-col flex-1 min-h-0 -mx-4 sm:-mx-6 md:-mx-8 -mb-4">
-            <CreateTaskPageInteractive onClose={() => setShowCreateForm(false)} onSuccess={() => { setShowCreateForm(false); refetch(); }} />
+            <CreateTaskPageInteractive
+              onClose={() => setShowCreateForm(false)}
+              onSuccess={() => {
+                setShowCreateForm(false);
+                refetch();
+              }}
+            />
           </div>
         ) : (
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col gap-4 min-h-0 flex-1">
-          <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 max-h-10! *:flex-none">
-            <TabsTrigger value="tasks" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Tasks</TabsTrigger>
-            <TabsTrigger value="upcoming" className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Upcoming Tasks</TabsTrigger>
-          </TabsList>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full flex flex-col gap-4 min-h-0 flex-1"
+          >
+            <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 max-h-10! *:flex-none">
+              <TabsTrigger
+                value="tasks"
+                className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
+              >
+                Tasks
+              </TabsTrigger>
+              <TabsTrigger
+                value="upcoming"
+                className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
+              >
+                Upcoming Tasks
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="tasks" className="mt-0 flex flex-col gap-4 min-h-0 flex-1">
-            <Stats07
-              items={[
-                { name: "Total Tasks", value: filteredTasks.length, subtitle: "All tasks" },
-                { name: "Overdue", value: summary.overdue, subtitle: "Past due date" },
-                { name: "Due Today", value: summary.dueToday, subtitle: "Due by today" },
-                { name: "Due This Week", value: summary.dueWeek, subtitle: "Due within 7 days" },
-                ...Object.entries(summary.counts).map(([status, count]) => ({
-                  name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-                  value: count,
-                  subtitle: `${status.replace(/_/g, ' ')} tasks`,
-                })),
-              ]}
-            />
+            <TabsContent value="tasks" className="mt-0 flex flex-col gap-4 min-h-0 flex-1">
+              <Stats07
+                items={[
+                  { name: "Total Tasks", value: filteredTasks.length, subtitle: "All tasks" },
+                  { name: "Overdue", value: summary.overdue, subtitle: "Past due date" },
+                  { name: "Due Today", value: summary.dueToday, subtitle: "Due by today" },
+                  { name: "Due This Week", value: summary.dueWeek, subtitle: "Due within 7 days" },
+                  ...Object.entries(summary.counts).map(([status, count]) => ({
+                    name: status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+                    value: count,
+                    subtitle: `${status.replace(/_/g, " ")} tasks`,
+                  })),
+                ]}
+              />
 
-            <div className="flex flex-col flex-1 min-h-0">
-              <div className="flex items-center gap-4 mb-4">
-                <h2 className="text-lg font-semibold shrink-0">{t("nav.tasks")}</h2>
-                <div className="flex-1 flex justify-center">
-                  <div className="relative w-full max-w-md">
-                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search tasks..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 h-9 bg-white"
-                    />
+              <div className="flex flex-col flex-1 min-h-0">
+                <div className="flex items-center gap-4 mb-4">
+                  <h2 className="text-lg font-semibold shrink-0">{t("nav.tasks")}</h2>
+                  <div className="flex-1 flex justify-center">
+                    <div className="relative w-full max-w-md">
+                      <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search tasks..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9 h-9 bg-white"
+                      />
+                    </div>
                   </div>
+                  <span className="text-sm text-muted-foreground shrink-0">
+                    {filteredTasks.length} tasks
+                  </span>
                 </div>
-                <span className="text-sm text-muted-foreground shrink-0">{filteredTasks.length} tasks</span>
+                <div className="flex-1 min-h-0">
+                  <TaskDataTable
+                    data={filteredTasks}
+                    onView={(t) => {
+                      setSelectedTask(t as unknown as UiTask);
+                      setViewOpen(true);
+                    }}
+                    onEdit={(t) => {
+                      setSelectedTask(t as unknown as UiTask);
+                      setViewOpen(true);
+                    }}
+                    searchPlaceholder="Search tasks..."
+                    emptyMessage="No tasks found."
+                    label="task"
+                    hideSearchBar
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                  />
+                </div>
               </div>
-              <div className="flex-1 min-h-0">
-                <TaskDataTable
-                  data={filteredTasks}
-                  onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-                  onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-                  searchPlaceholder="Search tasks..."
-                  emptyMessage="No tasks found."
-                  label="task"
-                  hideSearchBar
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                />
-              </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="upcoming" className="mt-0 flex flex-col flex-1 min-h-0">
-            {upcomingLoading ? (
-              <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>
-            ) : upcomingTasks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
-                <ListTodoIcon className="size-10 text-muted-foreground/50" />
-                <p className="text-sm font-medium">No upcoming tasks</p>
-              </div>
-            ) : (
-              <UpcomingTasksTable tasks={upcomingTasks} onView={(task) => {
-                const matching = filteredTasks.find((ft: UiTask) => ft._id === task._id || ft.id === task._id);
-                if (matching) {
-                  setSelectedTask(matching as unknown as UiTask);
-                  setViewOpen(true);
-                }
-              }} />
-            )}
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="upcoming" className="mt-0 flex flex-col flex-1 min-h-0">
+              {upcomingLoading ? (
+                <div className="flex flex-1 items-center justify-center p-8">
+                  <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                </div>
+              ) : upcomingTasks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
+                  <ListTodoIcon className="size-10 text-muted-foreground/50" />
+                  <p className="text-sm font-medium">No upcoming tasks</p>
+                </div>
+              ) : (
+                <UpcomingTasksTable
+                  tasks={upcomingTasks}
+                  onView={(task) => {
+                    const matching = filteredTasks.find(
+                      (ft: UiTask) => ft._id === task._id || ft.id === task._id,
+                    );
+                    if (matching) {
+                      setSelectedTask(matching as unknown as UiTask);
+                      setViewOpen(true);
+                    }
+                  }}
+                />
+              )}
+            </TabsContent>
+          </Tabs>
         )}
 
         {viewOpen && selectedTask && (
@@ -269,9 +315,12 @@ export default function TasksInteractive({ initialTasks, orgId, sessionUserId }:
                 sessionUserId={sessionUserId}
                 editable
                 onTaskUpdate={(updated) => {
-                  setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
+                  setTasks((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
                 }}
-                onClose={() => { setViewOpen(false); setSelectedTask(null); }}
+                onClose={() => {
+                  setViewOpen(false);
+                  setSelectedTask(null);
+                }}
               />
             </div>
           </div>
@@ -312,15 +361,23 @@ function UpcomingTasksTable({ tasks, onView }: { tasks: any[]; onView: (task: an
             </thead>
             <tbody>
               {paginated.map((task, index) => (
-                <tr key={task._id} className="border-b last:border-0 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => onView(task)}>
+                <tr
+                  key={task._id}
+                  className="border-b last:border-0 hover:bg-slate-50 transition-colors cursor-pointer"
+                  onClick={() => onView(task)}
+                >
                   <td className="px-4 py-3 text-muted-foreground">{index + 1}</td>
                   <td className="px-4 py-3 font-medium">{task.title}</td>
                   <td className="px-4 py-3">
-                    <Badge className={
-                      task.priority === "high" ? "bg-red-100 text-red-700" :
-                      task.priority === "medium" ? "bg-blue-100 text-blue-700" :
-                      "bg-gray-100 text-gray-600"
-                    }>
+                    <Badge
+                      className={
+                        task.priority === "high"
+                          ? "bg-red-100 text-red-700"
+                          : task.priority === "medium"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-gray-100 text-gray-600"
+                      }
+                    >
                       {task.priority}
                     </Badge>
                   </td>
@@ -329,7 +386,13 @@ function UpcomingTasksTable({ tasks, onView }: { tasks: any[]; onView: (task: an
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{task.assignee || "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    {task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                    {task.dueDate
+                      ? new Date(task.dueDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "—"}
                   </td>
                 </tr>
               ))}

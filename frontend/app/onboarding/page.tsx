@@ -1,10 +1,10 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useEffect } from "react";
-import { OnboardingInteractive } from "./onboarding-interactive";
 import { ROLES } from "@/lib/rbac";
+import { OnboardingInteractive } from "./onboarding-interactive";
 
 export default function OnboardingPage() {
   const { data: session, status } = useSession();

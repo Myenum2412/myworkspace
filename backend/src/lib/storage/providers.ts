@@ -1,25 +1,25 @@
-import path from "path";
-import fs from "fs/promises";
 import { constants as fsConstants } from "fs";
-import { Readable } from "stream";
+import fs from "fs/promises";
+import path from "path";
+import type { Readable } from "stream";
+import { logger } from "../logger/index.js";
 import {
-  getR2Client,
-  getR2Config,
-  isR2Configured,
-  PutObjectCommand,
-  GetObjectCommand,
-  DeleteObjectCommand,
-  HeadObjectCommand,
-  ListObjectsV2Command,
+  AbortMultipartUploadCommand,
+  CompleteMultipartUploadCommand,
   CopyObjectCommand,
   CreateMultipartUploadCommand,
-  UploadPartCommand,
-  CompleteMultipartUploadCommand,
-  AbortMultipartUploadCommand,
-  ListPartsCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+  getR2Client,
+  getR2Config,
   getSignedUrl,
+  HeadObjectCommand,
+  isR2Configured,
+  ListObjectsV2Command,
+  ListPartsCommand,
+  PutObjectCommand,
+  UploadPartCommand,
 } from "./r2-client.js";
-import { logger } from "../logger/index.js";
 
 export type StorageProviderType = "local" | "r2";
 
@@ -28,7 +28,11 @@ export interface IStorageProvider {
   saveStream(stream: Readable, key: string): Promise<void>;
   get(key: string): Promise<Buffer | null>;
   getStream(key: string): Promise<Readable | null>;
-  getStreamRange(key: string, start: number, end: number): Promise<{ stream: Readable; contentLength: number } | null>;
+  getStreamRange(
+    key: string,
+    start: number,
+    end: number,
+  ): Promise<{ stream: Readable; contentLength: number } | null>;
   delete(key: string): Promise<void>;
   exists(key: string): Promise<boolean>;
   getUrl(key: string): string;
@@ -37,7 +41,11 @@ export interface IStorageProvider {
   copy(sourceKey: string, destKey: string): Promise<void>;
   initMultipartUpload(key: string): Promise<string>;
   getPresignedUploadPartUrl(key: string, uploadId: string, partNumber: number): Promise<string>;
-  completeMultipartUpload(key: string, uploadId: string, parts: { ETag: string; PartNumber: number }[]): Promise<void>;
+  completeMultipartUpload(
+    key: string,
+    uploadId: string,
+    parts: { ETag: string; PartNumber: number }[],
+  ): Promise<void>;
   abortMultipartUpload(key: string, uploadId: string): Promise<void>;
   list(prefix: string): Promise<string[]>;
 }
@@ -106,7 +114,11 @@ export class LocalStorageProvider implements IStorageProvider {
     }
   }
 
-  async getStreamRange(key: string, start: number, end: number): Promise<{ stream: Readable; contentLength: number } | null> {
+  async getStreamRange(
+    key: string,
+    start: number,
+    end: number,
+  ): Promise<{ stream: Readable; contentLength: number } | null> {
     const fp = this.fullPath(key);
     try {
       await fs.access(fp, fsConstants.F_OK);
@@ -161,11 +173,19 @@ export class LocalStorageProvider implements IStorageProvider {
     throw new Error("Multipart upload not supported for local storage");
   }
 
-  async getPresignedUploadPartUrl(_key: string, _uploadId: string, _partNumber: number): Promise<string> {
+  async getPresignedUploadPartUrl(
+    _key: string,
+    _uploadId: string,
+    _partNumber: number,
+  ): Promise<string> {
     throw new Error("Multipart upload not supported for local storage");
   }
 
-  async completeMultipartUpload(_key: string, _uploadId: string, _parts: { ETag: string; PartNumber: number }[]): Promise<void> {
+  async completeMultipartUpload(
+    _key: string,
+    _uploadId: string,
+    _parts: { ETag: string; PartNumber: number }[],
+  ): Promise<void> {
     throw new Error("Multipart upload not supported for local storage");
   }
 
@@ -177,7 +197,7 @@ export class LocalStorageProvider implements IStorageProvider {
     const dir = this.fullPath(prefix);
     try {
       const entries = await fs.readdir(path.dirname(dir), { withFileTypes: true });
-      return entries.filter(e => e.isFile()).map(e => e.name);
+      return entries.filter((e) => e.isFile()).map((e) => e.name);
     } catch {
       return [];
     }
@@ -211,7 +231,11 @@ export class R2StorageProvider implements IStorageProvider {
       buffer = Buffer.concat([buffer, chunkBuf]);
       if (buffer.length >= minPartSize) {
         const command = new UploadPartCommand({
-          Bucket: bucket, Key: key, UploadId: uploadId, PartNumber: partNumber, Body: buffer,
+          Bucket: bucket,
+          Key: key,
+          UploadId: uploadId,
+          PartNumber: partNumber,
+          Body: buffer,
         });
         const response = await client.send(command);
         parts.push({ ETag: response.ETag || "", PartNumber: partNumber });
@@ -222,7 +246,11 @@ export class R2StorageProvider implements IStorageProvider {
 
     if (buffer.length > 0) {
       const command = new UploadPartCommand({
-        Bucket: bucket, Key: key, UploadId: uploadId, PartNumber: partNumber, Body: buffer,
+        Bucket: bucket,
+        Key: key,
+        UploadId: uploadId,
+        PartNumber: partNumber,
+        Body: buffer,
       });
       const response = await client.send(command);
       parts.push({ ETag: response.ETag || "", PartNumber: partNumber });
@@ -264,7 +292,11 @@ export class R2StorageProvider implements IStorageProvider {
     }
   }
 
-  async getStreamRange(key: string, start: number, end: number): Promise<{ stream: Readable; contentLength: number } | null> {
+  async getStreamRange(
+    key: string,
+    start: number,
+    end: number,
+  ): Promise<{ stream: Readable; contentLength: number } | null> {
     const client = getR2Client();
     const { bucket } = getR2Config();
     try {
@@ -275,7 +307,8 @@ export class R2StorageProvider implements IStorageProvider {
       });
       const response = await client.send(command);
       if (!response.Body) return null;
-      const contentLength = parseInt(response.ContentRange?.split("/")[1] || "0", 10) || (end - start + 1);
+      const contentLength =
+        parseInt(response.ContentRange?.split("/")[1] || "0", 10) || end - start + 1;
       return { stream: response.Body as Readable, contentLength };
     } catch (err: any) {
       if (err.name === "NoSuchKey") return null;
@@ -344,7 +377,11 @@ export class R2StorageProvider implements IStorageProvider {
     return response.UploadId || "";
   }
 
-  async getPresignedUploadPartUrl(key: string, uploadId: string, partNumber: number): Promise<string> {
+  async getPresignedUploadPartUrl(
+    key: string,
+    uploadId: string,
+    partNumber: number,
+  ): Promise<string> {
     const client = getR2Client();
     const { bucket } = getR2Config();
     const command = new UploadPartCommand({
@@ -356,7 +393,11 @@ export class R2StorageProvider implements IStorageProvider {
     return getSignedUrl(client, command, { expiresIn: 3600 });
   }
 
-  async completeMultipartUpload(key: string, uploadId: string, parts: { ETag: string; PartNumber: number }[]): Promise<void> {
+  async completeMultipartUpload(
+    key: string,
+    uploadId: string,
+    parts: { ETag: string; PartNumber: number }[],
+  ): Promise<void> {
     const client = getR2Client();
     const { bucket } = getR2Config();
     const command = new CompleteMultipartUploadCommand({
@@ -429,10 +470,15 @@ export function getStorageProviderFor(providerType?: string | null): IStoragePro
  * against a differently-configured backend (e.g. labeled "local" while stored
  * in R2, or vice-versa).
  */
-export async function readFromStorage(key: string, recordedProvider?: string | null): Promise<Buffer | null> {
+export async function readFromStorage(
+  key: string,
+  recordedProvider?: string | null,
+): Promise<Buffer | null> {
   const candidates: IStorageProvider[] = [];
-  if (recordedProvider === "local") candidates.push(new LocalStorageProvider(), new R2StorageProvider());
-  else if (recordedProvider === "r2") candidates.push(new R2StorageProvider(), new LocalStorageProvider());
+  if (recordedProvider === "local")
+    candidates.push(new LocalStorageProvider(), new R2StorageProvider());
+  else if (recordedProvider === "r2")
+    candidates.push(new R2StorageProvider(), new LocalStorageProvider());
   else candidates.push(getStorageProvider(), new LocalStorageProvider(), new R2StorageProvider());
 
   const seen = new Set<string>();

@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals";
-import { Request, Response, NextFunction } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { csrfProtection } from "../../../src/lib/csrf.js";
 
 function makeReq(overrides: Partial<Request> = {}): Partial<Request> {

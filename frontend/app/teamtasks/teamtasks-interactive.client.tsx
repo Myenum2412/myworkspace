@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { UsersIcon, PlusIcon, LayoutGridIcon, CalendarIcon } from "@/lib/icons";
-import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskDataTable } from "@/components/task-data-table";
-import TaskGanttView from "@/components/task-gantt-view";
-import { apiFetch } from "@/lib/api";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import Stats07 from "@/components/stats-07";
-import { useMemo } from "react";
+import { TaskDataTable } from "@/components/task-data-table";
+import { TaskDetailedView } from "@/components/task-detailed-view";
+import TaskGanttView from "@/components/task-gantt-view";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { apiFetch } from "@/lib/api";
+import { CalendarIcon, LayoutGridIcon, PlusIcon, UsersIcon } from "@/lib/icons";
 
 export type TeamTask = {
   _id: string;
@@ -55,7 +54,12 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
       const res = await apiFetch(`/api/tasks/${t._id}`, { method: "DELETE" });
       if (res.ok) setLocalTasks((prev) => prev.filter((x) => x._id !== t._id));
     } catch (error) {
-      const message = error instanceof TypeError && error.message === "Failed to fetch" ? "Could not connect to server" : error instanceof Error ? error.message : "Could not delete task";
+      const message =
+        error instanceof TypeError && error.message === "Failed to fetch"
+          ? "Could not connect to server"
+          : error instanceof Error
+            ? error.message
+            : "Could not delete task";
       toast.error(message);
     }
   }, []);
@@ -67,9 +71,11 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <UsersIcon className="size-5 sm:size-6" />
             <h1 className="text-xl sm:text-2xl font-bold">Team Tasks</h1>
-            <Badge variant="secondary" className="text-[10px] sm:text-xs whitespace-nowrap">{localTasks.length} tasks</Badge>
+            <Badge variant="secondary" className="text-[10px] sm:text-xs whitespace-nowrap">
+              {localTasks.length} tasks
+            </Badge>
           </div>
-          <Button onClick={() => router.push('/createtask')} className="touch-target">
+          <Button onClick={() => router.push("/createtask")} className="touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
@@ -78,12 +84,14 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
         {/* Stats Overview */}
         <Stats07
           items={[
-            { name: 'Team Tasks', value: localTasks.length, subtitle: 'Assigned to others' },
-            ...Object.entries(stats).slice(0, 5).map(([status, count]) => ({
-              name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-              value: count,
-              subtitle: `${status.replace(/_/g, ' ')} tasks`,
-            })),
+            { name: "Team Tasks", value: localTasks.length, subtitle: "Assigned to others" },
+            ...Object.entries(stats)
+              .slice(0, 5)
+              .map(([status, count]) => ({
+                name: status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+                value: count,
+                subtitle: `${status.replace(/_/g, " ")} tasks`,
+              })),
           ]}
         />
 
@@ -115,26 +123,34 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
               </Button>
             </div>
             <div className="flex-1 min-h-0">
-              {viewMode === "table"
-                ? (
-                  <TaskDataTable
-                    data={localTasks}
-                    onView={(t) => { setSelectedTask(t as TeamTask); setViewOpen(true); }}
-                    onEdit={(t) => { setSelectedTask(t as TeamTask); setViewOpen(true); setEditMode(true); }}
-                    onDelete={(t) => handleDelete(t as TeamTask)}
-                    searchPlaceholder="Search team tasks..."
-                    emptyMessage="No team tasks found."
-                    label="task"
-                    showTeamHead
-                  />
-                )
-                : (
-                  <TaskGanttView
-                    tasks={localTasks}
-                    onViewTask={(t) => { setSelectedTask(t as unknown as TeamTask); setViewOpen(true); setEditMode(false); }}
-                  />
-                )
-              }
+              {viewMode === "table" ? (
+                <TaskDataTable
+                  data={localTasks}
+                  onView={(t) => {
+                    setSelectedTask(t as TeamTask);
+                    setViewOpen(true);
+                  }}
+                  onEdit={(t) => {
+                    setSelectedTask(t as TeamTask);
+                    setViewOpen(true);
+                    setEditMode(true);
+                  }}
+                  onDelete={(t) => handleDelete(t as TeamTask)}
+                  searchPlaceholder="Search team tasks..."
+                  emptyMessage="No team tasks found."
+                  label="task"
+                  showTeamHead
+                />
+              ) : (
+                <TaskGanttView
+                  tasks={localTasks}
+                  onViewTask={(t) => {
+                    setSelectedTask(t as unknown as TeamTask);
+                    setViewOpen(true);
+                    setEditMode(false);
+                  }}
+                />
+              )}
             </div>
           </>
         )}
@@ -147,14 +163,19 @@ export default function TeamTasksInteractive({ tasks }: { tasks: TeamTask[] }) {
               task={selectedTask}
               editable
               onTaskUpdate={(updated) => {
-                setLocalTasks((prev) => prev.map((t) => t._id === updated._id ? (updated as TeamTask) : t));
+                setLocalTasks((prev) =>
+                  prev.map((t) => (t._id === updated._id ? (updated as TeamTask) : t)),
+                );
               }}
-              onClose={() => { setViewOpen(false); setEditMode(false); setSelectedTask(null); }}
+              onClose={() => {
+                setViewOpen(false);
+                setEditMode(false);
+                setSelectedTask(null);
+              }}
             />
           </div>
         </div>
       )}
-
     </>
   );
 }

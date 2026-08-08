@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { v4 as uuid } from "uuid";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { auth } from "@/lib/auth/config";
 import { ensureUserOrg } from "@/lib/org";
-import { v4 as uuid } from "uuid";
 
 export async function GET() {
   try {
@@ -12,7 +12,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
 
     const doctors = await db
       .collection(collections.doctors)
@@ -34,11 +34,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
     const body = await request.json();
 
     if (!body.doctorName || !body.specialization) {
-      return NextResponse.json({ error: "Doctor name and specialization are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Doctor name and specialization are required" },
+        { status: 400 },
+      );
     }
 
     const doctor = {
@@ -70,18 +73,20 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
     const id = request.nextUrl.searchParams.get("id");
     if (!id) {
       return NextResponse.json({ error: "Doctor ID is required" }, { status: 400 });
     }
 
     const body = await request.json();
-    const result = await db.collection(collections.doctors).findOneAndUpdate(
-      { id, orgId },
-      { $set: { ...body, updatedAt: new Date().toISOString() } },
-      { returnDocument: "after" }
-    );
+    const result = await db
+      .collection(collections.doctors)
+      .findOneAndUpdate(
+        { id, orgId },
+        { $set: { ...body, updatedAt: new Date().toISOString() } },
+        { returnDocument: "after" },
+      );
 
     if (!result) {
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
@@ -101,7 +106,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
     const id = request.nextUrl.searchParams.get("id");
     if (!id) {
       return NextResponse.json({ error: "Doctor ID is required" }, { status: 400 });

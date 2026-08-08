@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
-import { logger } from "../lib/logger/index.js";
-import { Notification } from "../lib/db/models/Notification.js";
 import { EmailLog } from "../lib/db/models/EmailLog.js";
+import { Notification } from "../lib/db/models/Notification.js";
+import { logger } from "../lib/logger/index.js";
 
 export interface NotificationMetric {
   type: string;
@@ -46,7 +46,7 @@ class NotificationMetrics extends EventEmitter {
     return {
       totalSent,
       totalErrors,
-      errorRate: totalSent > 0 ? (totalErrors / totalSent * 100).toFixed(2) + "%" : "0%",
+      errorRate: totalSent > 0 ? ((totalErrors / totalSent) * 100).toFixed(2) + "%" : "0%",
       channels: Object.fromEntries(this.counters),
       errors: Object.fromEntries(this.errorCounters),
       recentMetrics: this.metrics.slice(-100),
@@ -57,9 +57,19 @@ class NotificationMetrics extends EventEmitter {
     const since = new Date(Date.now() - days * 86400000);
 
     const [totalNotifs, sentEmails, failedEmails, byType, byCategory] = await Promise.all([
-      Notification.countDocuments(orgId ? { orgId, createdAt: { $gte: since } } : { createdAt: { $gte: since } }),
-      EmailLog.countDocuments({ status: "sent", createdAt: { $gte: since }, ...(orgId ? { orgId } : {}) }),
-      EmailLog.countDocuments({ status: "failed", createdAt: { $gte: since }, ...(orgId ? { orgId } : {}) }),
+      Notification.countDocuments(
+        orgId ? { orgId, createdAt: { $gte: since } } : { createdAt: { $gte: since } },
+      ),
+      EmailLog.countDocuments({
+        status: "sent",
+        createdAt: { $gte: since },
+        ...(orgId ? { orgId } : {}),
+      }),
+      EmailLog.countDocuments({
+        status: "failed",
+        createdAt: { $gte: since },
+        ...(orgId ? { orgId } : {}),
+      }),
       Notification.aggregate([
         { $match: { createdAt: { $gte: since }, ...(orgId ? { orgId } : {}) } },
         { $group: { _id: "$type", count: { $sum: 1 } } },
@@ -78,9 +88,10 @@ class NotificationMetrics extends EventEmitter {
       totalNotifications: totalNotifs,
       emailsSent: sentEmails,
       emailsFailed: failedEmails,
-      emailSuccessRate: sentEmails > 0
-        ? ((sentEmails / (sentEmails + failedEmails)) * 100).toFixed(1) + "%"
-        : "N/A",
+      emailSuccessRate:
+        sentEmails > 0
+          ? ((sentEmails / (sentEmails + failedEmails)) * 100).toFixed(1) + "%"
+          : "N/A",
       topTypes: byType,
       byCategory,
       inMemory: this.getStats(),

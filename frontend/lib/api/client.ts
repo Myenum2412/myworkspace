@@ -1,5 +1,5 @@
-import { withRetry } from "./retry";
 import { deduplicateRequest } from "./request-dedup";
+import { withRetry } from "./retry";
 
 export interface ApiClientOptions {
   baseUrl?: string;
@@ -130,10 +130,7 @@ function handleSessionExpiry(status: number): void {
   }
 }
 
-async function request<T>(
-  url: string,
-  options: RequestInit & ApiClientOptions = {},
-): Promise<T> {
+async function request<T>(url: string, options: RequestInit & ApiClientOptions = {}): Promise<T> {
   const {
     timeout = 15000,
     retries = 1,
@@ -183,31 +180,28 @@ async function request<T>(
       signal: abortSignal,
       credentials: "include",
       headers,
-    }).then(async (res) => {
-      if (!res.ok) {
-        let body: unknown;
-        try {
-          body = await res.json();
-        } catch {
-          body = await res.text().catch(() => null);
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          let body: unknown;
+          try {
+            body = await res.json();
+          } catch {
+            body = await res.text().catch(() => null);
+          }
+          throw new ApiError(`API error: ${res.status} ${res.statusText}`, res.status, body);
         }
-        throw new ApiError(
-          `API error: ${res.status} ${res.statusText}`,
-          res.status,
-          body,
-        );
-      }
-      return res.json() as Promise<{ success?: boolean; data?: T }>;
-    }).then((json) => {
-      if (json && typeof json === "object" && "data" in json) {
-        return json.data as T;
-      }
-      return json as unknown as T;
-    });
+        return res.json() as Promise<{ success?: boolean; data?: T }>;
+      })
+      .then((json) => {
+        if (json && typeof json === "object" && "data" in json) {
+          return json.data as T;
+        }
+        return json as unknown as T;
+      });
   };
 
-  const executeWithRetry = () =>
-    withRetry(fetchFn, { maxRetries: retries, baseDelay: 300 });
+  const executeWithRetry = () => withRetry(fetchFn, { maxRetries: retries, baseDelay: 300 });
 
   try {
     if (dedupKey) {
@@ -248,9 +242,7 @@ async function request<T>(
     }
 
     if (!skipAuth) {
-      handleSessionExpiry(
-        error instanceof ApiError ? error.status : 0,
-      );
+      handleSessionExpiry(error instanceof ApiError ? error.status : 0);
     }
     throw error;
   }

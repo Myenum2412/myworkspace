@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PlusCircle, X, FileText, Search, Trash2 } from "@/lib/icons";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { SearchableSelect } from "@/components/ui/searchable-select";
-import Link from "next/link";
-import { toast } from "sonner";
+import { FileText, PlusCircle, Search, Trash2, X } from "@/lib/icons";
 
 type LineItem = {
   id: string;
@@ -66,24 +66,26 @@ export default function NewInvoicePageClient() {
     setInvoiceNumber(`INV-${String(next).padStart(6, "0")}`);
 
     Promise.all([
-      fetch("/api/clients", { credentials: "include" }).then(r => r.json()),
-      fetch("/api/projects-list", { credentials: "include" }).then(r => r.json()),
-      fetch("/api/billing/services", { credentials: "include" }).then(r => r.json()),
-    ]).then(([clientsData, projectsData, servicesData]) => {
-      if (clientsData.success && clientsData.data) setClients(clientsData.data);
-      else if (clientsData.initialClients) setClients(clientsData.initialClients);
-      else if (Array.isArray(clientsData)) setClients(clientsData);
+      fetch("/api/clients", { credentials: "include" }).then((r) => r.json()),
+      fetch("/api/projects-list", { credentials: "include" }).then((r) => r.json()),
+      fetch("/api/billing/services", { credentials: "include" }).then((r) => r.json()),
+    ])
+      .then(([clientsData, projectsData, servicesData]) => {
+        if (clientsData.success && clientsData.data) setClients(clientsData.data);
+        else if (clientsData.initialClients) setClients(clientsData.initialClients);
+        else if (Array.isArray(clientsData)) setClients(clientsData);
 
-      const list = projectsData.data || projectsData || [];
-      setProjects(Array.isArray(list) ? list : []);
+        const list = projectsData.data || projectsData || [];
+        setProjects(Array.isArray(list) ? list : []);
 
-      setServices(servicesData.data || []);
-    }).catch(() => {});
+        setServices(servicesData.data || []);
+      })
+      .catch(() => {});
   }, []);
 
   const serviceOptions = services
-    .filter(s => s.status === "Active")
-    .map(s => `${s.name} - ${s.description}`);
+    .filter((s) => s.status === "Active")
+    .map((s) => `${s.name} - ${s.description}`);
 
   function addRow() {
     setItems((prev) => [
@@ -94,7 +96,11 @@ export default function NewInvoicePageClient() {
 
   function removeRow(id: string) {
     setItems((prev) => prev.filter((i) => i.id !== id));
-    setSelectedItems((prev) => { const next = new Set(prev); next.delete(id); return next; });
+    setSelectedItems((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   }
 
   function deleteSelected() {
@@ -115,23 +121,23 @@ export default function NewInvoicePageClient() {
     if (selectedItems.size === items.length) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(items.map(i => i.id)));
+      setSelectedItems(new Set(items.map((i) => i.id)));
     }
   };
 
   function updateItem(id: string, field: keyof LineItem, value: string | number) {
-    setItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, [field]: value } : i))
-    );
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, [field]: value } : i)));
   }
 
   function handleServiceSelect(id: string, val: string) {
-    const service = services.find(s => `${s.name} - ${s.description}` === val);
+    const service = services.find((s) => `${s.name} - ${s.description}` === val);
     if (service) {
       setItems((prev) =>
         prev.map((i) =>
-          i.id === id ? { ...i, details: val, description: service.description, rate: service.rate } : i
-        )
+          i.id === id
+            ? { ...i, details: val, description: service.description, rate: service.rate }
+            : i,
+        ),
       );
     }
   }
@@ -150,10 +156,16 @@ export default function NewInvoicePageClient() {
     setSaving(true);
     try {
       const profileRes = await fetch("/api/user/profile");
-      if (!profileRes.ok) { toast.error("Failed to load profile"); return; }
+      if (!profileRes.ok) {
+        toast.error("Failed to load profile");
+        return;
+      }
       const profileData = await profileRes.json();
       const orgId = profileData?.data?.org?.id;
-      if (!orgId) { toast.error("No organization found"); return; }
+      if (!orgId) {
+        toast.error("No organization found");
+        return;
+      }
 
       const customerName = clients.find((c) => c.id === selectedClient)?.name || "";
 
@@ -252,7 +264,12 @@ export default function NewInvoicePageClient() {
             <thead className="sticky top-0 z-10">
               <tr>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-10">
-                  <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="size-4 accent-blue-600" />
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
+                    className="size-4 accent-blue-600"
+                  />
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
                   <span className="text-white-800">Service</span>
@@ -281,7 +298,9 @@ export default function NewInvoicePageClient() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">No items yet</p>
-                        <p className="text-xs text-muted-foreground/60 mt-1">Click 'Add Row' to get started</p>
+                        <p className="text-xs text-muted-foreground/60 mt-1">
+                          Click 'Add Row' to get started
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -290,9 +309,17 @@ export default function NewInvoicePageClient() {
                 items.map((item) => {
                   const amount = item.quantity * item.rate;
                   return (
-                    <tr key={item.id} className="border-b border-gray-200 bg-white hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={item.id}
+                      className="border-b border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-4 py-3 w-10">
-                        <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelect(item.id)} className="size-4 accent-blue-600" />
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.has(item.id)}
+                          onChange={() => toggleSelect(item.id)}
+                          className="size-4 accent-blue-600"
+                        />
                       </td>
                       <td className="px-4 py-3 min-w-[250px]">
                         <SearchableSelect
@@ -306,7 +333,9 @@ export default function NewInvoicePageClient() {
                         <Input
                           type="number"
                           value={item.quantity}
-                          onChange={(e) => updateItem(item.id, "quantity", parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateItem(item.id, "quantity", parseFloat(e.target.value) || 0)
+                          }
                           className="text-right h-9"
                           min={1}
                         />
@@ -315,7 +344,9 @@ export default function NewInvoicePageClient() {
                         <Input
                           type="number"
                           value={item.rate}
-                          onChange={(e) => updateItem(item.id, "rate", parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateItem(item.id, "rate", parseFloat(e.target.value) || 0)
+                          }
                           className="text-right h-9"
                           min={0}
                           step={0.01}
@@ -327,7 +358,10 @@ export default function NewInvoicePageClient() {
                       <td className="px-4 py-3 text-center">
                         <div className="flex items-center justify-center gap-2">
                           {items.length > 1 && (
-                            <button onClick={() => removeRow(item.id)} className="p-1 text-red-400 hover:text-red-600">
+                            <button
+                              onClick={() => removeRow(item.id)}
+                              className="p-1 text-red-400 hover:text-red-600"
+                            >
                               <X className="size-4" />
                             </button>
                           )}
@@ -344,7 +378,12 @@ export default function NewInvoicePageClient() {
 
       <div className="flex items-center gap-3">
         <div className="flex items-center rounded-sm overflow-hidden bg-gray-50 border border-gray-200">
-          <Button variant="ghost" size="sm" onClick={addRow} className="text-blue-600 gap-1.5 px-3 hover:bg-gray-100 font-medium text-sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={addRow}
+            className="text-blue-600 gap-1.5 px-3 hover:bg-gray-100 font-medium text-sm"
+          >
             <PlusCircle className="size-4" />
             Add Row
           </Button>

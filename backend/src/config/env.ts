@@ -1,20 +1,29 @@
 export const env = {
   PORT: parseInt(process.env.PORT || "4000", 10),
-  MONGODB_URI: process.env.MONGODB_URI || (() => {
-    throw new Error("MONGODB_URI environment variable is required");
-  })(),
-  JWT_SECRET: process.env.JWT_SECRET || (() => {
-    throw new Error("JWT_SECRET environment variable is required");
-  })(),
+  MONGODB_URI:
+    process.env.MONGODB_URI ||
+    (() => {
+      throw new Error("MONGODB_URI environment variable is required");
+    })(),
+  JWT_SECRET:
+    process.env.JWT_SECRET ||
+    (() => {
+      throw new Error("JWT_SECRET environment variable is required");
+    })(),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "15m",
-  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || (() => {
-    throw new Error("JWT_REFRESH_SECRET or JWT_SECRET environment variable is required");
-  })(),
+  JWT_REFRESH_SECRET:
+    process.env.JWT_REFRESH_SECRET ||
+    process.env.JWT_SECRET ||
+    (() => {
+      throw new Error("JWT_REFRESH_SECRET or JWT_SECRET environment variable is required");
+    })(),
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || "30d",
   JWT_ISSUER: process.env.JWT_ISSUER || "myworkspace",
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || "developer@myenum.in",
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || "",
-  CORS_ORIGIN: (process.env.CORS_ORIGIN || "http://localhost:3000,https://myworkspace.myenum.in").split(",").map(s => s.trim()),
+  CORS_ORIGIN: (process.env.CORS_ORIGIN || "http://localhost:3000,https://myworkspace.myenum.in")
+    .split(",")
+    .map((s) => s.trim()),
   NODE_ENV: process.env.NODE_ENV || "development",
   RESEND_API_KEY: process.env.RESEND_API_KEY || "",
   MAIL_FROM: process.env.MAIL_FROM || "onboarding@resend.dev",
@@ -25,7 +34,9 @@ export const env = {
   APP_URL: process.env.APP_URL || "http://localhost:3000",
 
   // Websocket connect-src for Helmet CSP (derived from APP_URL).
-  BASE_URL_WS: process.env.BASE_URL_WS || (process.env.APP_URL || "http://localhost:3000").replace(/^http/, "ws"),
+  BASE_URL_WS:
+    process.env.BASE_URL_WS ||
+    (process.env.APP_URL || "http://localhost:3000").replace(/^http/, "ws"),
 
   // TUS resumable upload (tus-node-server + FileStore).
   TUS_PREFIX: process.env.TUS_PREFIX || "/files-tus",
@@ -74,11 +85,17 @@ export const env = {
 
   // Scheduler Configuration (JobScheduler.NET / Bree)
   SCHEDULER_HEARTBEAT_INTERVAL: process.env.SCHEDULER_HEARTBEAT_INTERVAL || "* * * * *",
-  SCHEDULER_HEALTH_CHECK_INTERVAL_MS: parseInt(process.env.SCHEDULER_HEALTH_CHECK_INTERVAL_MS || "30000", 10),
+  SCHEDULER_HEALTH_CHECK_INTERVAL_MS: parseInt(
+    process.env.SCHEDULER_HEALTH_CHECK_INTERVAL_MS || "30000",
+    10,
+  ),
   SCHEDULER_METRICS_INTERVAL_MS: parseInt(process.env.SCHEDULER_METRICS_INTERVAL_MS || "60000", 10),
   SCHEDULER_MAX_CONCURRENT_JOBS: parseInt(process.env.SCHEDULER_MAX_CONCURRENT_JOBS || "50", 10),
   SCHEDULER_DEFAULT_RETRIES: parseInt(process.env.SCHEDULER_DEFAULT_RETRIES || "3", 10),
-  SCHEDULER_DEFAULT_RETRY_DELAY_MS: parseInt(process.env.SCHEDULER_DEFAULT_RETRY_DELAY_MS || "60000", 10),
+  SCHEDULER_DEFAULT_RETRY_DELAY_MS: parseInt(
+    process.env.SCHEDULER_DEFAULT_RETRY_DELAY_MS || "60000",
+    10,
+  ),
   SCHEDULER_JOB_TTL_DAYS: parseInt(process.env.SCHEDULER_JOB_TTL_DAYS || "90", 10),
 
   // Business Configuration
@@ -88,7 +105,6 @@ export const env = {
   BUSINESS_SUPPORT_EMAIL: process.env.BUSINESS_SUPPORT_EMAIL || "support@myworkspace.com",
   BUSINESS_HOURS_START: parseInt(process.env.BUSINESS_HOURS_START || "9"),
   BUSINESS_HOURS_END: parseInt(process.env.BUSINESS_HOURS_END || "18"),
-
 };
 
 function deriveNtfyBaseUrl(): string {

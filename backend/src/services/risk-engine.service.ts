@@ -33,22 +33,40 @@ export async function evaluateLoginRisk(context: RiskContext): Promise<RiskResul
   let score = 0;
 
   const ipRisk = assessIpRisk(context.ipAddress);
-  if (ipRisk) { factors.push(ipRisk); score += ipRisk.score; }
+  if (ipRisk) {
+    factors.push(ipRisk);
+    score += ipRisk.score;
+  }
 
   const failedAttemptsRisk = assessFailedAttempts(context.failedAttempts);
-  if (failedAttemptsRisk) { factors.push(failedAttemptsRisk); score += failedAttemptsRisk.score; }
+  if (failedAttemptsRisk) {
+    factors.push(failedAttemptsRisk);
+    score += failedAttemptsRisk.score;
+  }
 
   const userAgentRisk = assessUserAgent(context.userAgent);
-  if (userAgentRisk) { factors.push(userAgentRisk); score += userAgentRisk.score; }
+  if (userAgentRisk) {
+    factors.push(userAgentRisk);
+    score += userAgentRisk.score;
+  }
 
   const geoChangeRisk = assessGeoChange(context);
-  if (geoChangeRisk) { factors.push(geoChangeRisk); score += geoChangeRisk.score; }
+  if (geoChangeRisk) {
+    factors.push(geoChangeRisk);
+    score += geoChangeRisk.score;
+  }
 
   const deviceRisk = assessDeviceHistory(context);
-  if (deviceRisk) { factors.push(deviceRisk); score += deviceRisk.score; }
+  if (deviceRisk) {
+    factors.push(deviceRisk);
+    score += deviceRisk.score;
+  }
 
   const anomalyRisk = assessTimeAnomaly(context);
-  if (anomalyRisk) { factors.push(anomalyRisk); score += anomalyRisk.score; }
+  if (anomalyRisk) {
+    factors.push(anomalyRisk);
+    score += anomalyRisk.score;
+  }
 
   score = Math.min(score, MAX_SCORE);
 
@@ -69,8 +87,13 @@ function assessIpRisk(ipAddress?: string): RiskFactor | null {
   }
 
   const privateIpPatterns = [
-    /^10\./, /^172\.(1[6-9]|2\d|3[01])\./, /^192\.168\./,
-    /^127\./, /^::1$/, /^fc00:/, /^fe80:/,
+    /^10\./,
+    /^172\.(1[6-9]|2\d|3[01])\./,
+    /^192\.168\./,
+    /^127\./,
+    /^::1$/,
+    /^fc00:/,
+    /^fe80:/,
   ];
 
   for (const pattern of privateIpPatterns) {
@@ -99,13 +122,21 @@ function assessUserAgent(userAgent?: string): RiskFactor | null {
 
   const ua = userAgent.toLowerCase();
   const suspiciousPatterns = [
-    { pattern: /curl|wget|python-requests|go-http|java|okhttp/i, score: 15, name: "programmatic_access" },
+    {
+      pattern: /curl|wget|python-requests|go-http|java|okhttp/i,
+      score: 15,
+      name: "programmatic_access",
+    },
     { pattern: /phantomjs|headless/i, score: 20, name: "headless_browser" },
   ];
 
   for (const sp of suspiciousPatterns) {
     if (sp.pattern.test(ua)) {
-      return { name: sp.name, score: sp.score, detail: `Suspicious user agent: ${userAgent.slice(0, 80)}` };
+      return {
+        name: sp.name,
+        score: sp.score,
+        detail: `Suspicious user agent: ${userAgent.slice(0, 80)}`,
+      };
     }
   }
 
@@ -134,7 +165,8 @@ function assessGeoChange(context: RiskContext): RiskFactor | null {
 }
 
 function assessDeviceHistory(context: RiskContext): RiskFactor | null {
-  if (!context.deviceFingerprint) return { name: "no_device_fingerprint", score: 5, detail: "No device identifier" };
+  if (!context.deviceFingerprint)
+    return { name: "no_device_fingerprint", score: 5, detail: "No device identifier" };
   return null;
 }
 

@@ -1,19 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RingStat } from "@/components/ring-stat";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar as CalendarUI } from "@/components/ui/calendar";
-import { Clock, Loader2, Calendar, EyeIcon } from "@/lib/icons";
-import { TeamMemberViewDialog } from "@/components/time-tracker/team-member-view-dialog";
 import Stats07, { type Stats07Item } from "@/components/stats-07";
+import { TeamMemberViewDialog } from "@/components/time-tracker/team-member-view-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Calendar as CalendarUI } from "@/components/ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar, Clock, EyeIcon, Loader2 } from "@/lib/icons";
 
 interface TeamMemberSummary {
   userId: string;
@@ -54,13 +50,28 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
   const [viewMember, setViewMember] = useState<TeamMemberSummary | null>(null);
 
   const members = data?.members || [];
-  const summary = data?.summary || { totalMembers: 0, activeMembers: 0, totalHoursAll: "0", totalEntries: 0 };
+  const summary = data?.summary || {
+    totalMembers: 0,
+    activeMembers: 0,
+    totalHoursAll: "0",
+    totalEntries: 0,
+  };
   const filteredMembers = teamFilter === "all" ? members : members.filter((m) => m.entryCount > 0);
 
   const statItems: Stats07Item[] = [
     { name: "Total Members", value: summary.totalMembers, subtitle: "Total members" },
-    { name: "Active Today", value: summary.activeMembers, subtitle: "Active today", fill: "#3b82f6" },
-    { name: "Total Hours", value: parseFloat(summary.totalHoursAll) || 0, subtitle: "Total hours", fill: "#f59e0b" },
+    {
+      name: "Active Today",
+      value: summary.activeMembers,
+      subtitle: "Active today",
+      fill: "#3b82f6",
+    },
+    {
+      name: "Total Hours",
+      value: parseFloat(summary.totalHoursAll) || 0,
+      subtitle: "Total hours",
+      fill: "#f59e0b",
+    },
     { name: "Total Entries", value: summary.totalEntries, subtitle: "Total entries" },
   ];
 
@@ -70,7 +81,9 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
       offline: "bg-gray-1000",
       break: "bg-gray-400",
     };
-    return <span className={`inline-block w-2 h-2 rounded-full ${colors[status] || "bg-gray-400"}`} />;
+    return (
+      <span className={`inline-block w-2 h-2 rounded-full ${colors[status] || "bg-gray-400"}`} />
+    );
   };
 
   const getInitials = (name: string) => {
@@ -93,15 +106,15 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
           <PopoverTrigger asChild>
             <button className="flex items-center gap-2 px-3 py-2 text-sm border rounded-sm hover:bg-muted transition-colors">
               <Calendar className="size-4" />
-              {date ? date.toDateString() === new Date().toDateString() ? "Today" : date.toLocaleDateString() : "Select date"}
+              {date
+                ? date.toDateString() === new Date().toDateString()
+                  ? "Today"
+                  : date.toLocaleDateString()
+                : "Select date"}
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="end">
-            <CalendarUI
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-            />
+            <CalendarUI mode="single" selected={date} onSelect={setDate} />
           </PopoverContent>
         </Popover>
       </div>
@@ -112,24 +125,29 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
             <CardTitle>Team Members</CardTitle>
-            <RingStat value={summary.activeMembers} max={summary.totalMembers} label="active" fill="var(--chart-2)" />
+            <RingStat
+              value={summary.activeMembers}
+              max={summary.totalMembers}
+              label="active"
+              fill="var(--chart-2)"
+            />
           </div>
           <div className="flex items-center gap-2">
-              <Badge
-                variant={teamFilter === "all" ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => setTeamFilter("all")}
-              >
-                All ({summary.totalMembers})
-              </Badge>
-              <Badge
-                variant={teamFilter === "active" ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => setTeamFilter("active")}
-              >
-                Active ({summary.activeMembers})
-              </Badge>
-            </div>
+            <Badge
+              variant={teamFilter === "all" ? "default" : "outline"}
+              className="cursor-pointer"
+              onClick={() => setTeamFilter("all")}
+            >
+              All ({summary.totalMembers})
+            </Badge>
+            <Badge
+              variant={teamFilter === "active" ? "default" : "outline"}
+              className="cursor-pointer"
+              onClick={() => setTeamFilter("active")}
+            >
+              Active ({summary.activeMembers})
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -151,18 +169,36 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
               <table className="table-premium w-full text-sm text-left">
                 <thead>
                   <tr>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Member</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Department</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">Status</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">Entries</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">Hours</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">Approved</th>
-                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">Pending</th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                      Member
+                    </th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                      Department
+                    </th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-left">
+                      Status
+                    </th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">
+                      Entries
+                    </th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">
+                      Hours
+                    </th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">
+                      Approved
+                    </th>
+                    <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">
+                      Pending
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredMembers.map((member) => (
-                    <tr key={member.userId} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer" onClick={() => setViewMember(member)}>
+                    <tr
+                      key={member.userId}
+                      className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white cursor-pointer"
+                      onClick={() => setViewMember(member)}
+                    >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <Avatar className="size-8">
@@ -191,10 +227,14 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
                         <span className="text-sm font-medium">{member.totalHours}h</span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Badge variant="secondary" className="font-mono text-xs">{member.approvedEntries}</Badge>
+                        <Badge variant="secondary" className="font-mono text-xs">
+                          {member.approvedEntries}
+                        </Badge>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Badge variant="outline" className="font-mono text-xs">{member.pendingEntries}</Badge>
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {member.pendingEntries}
+                        </Badge>
                       </td>
                     </tr>
                   ))}
@@ -207,7 +247,9 @@ export default function TeamTime({ initialData }: TeamTimeProps) {
       <TeamMemberViewDialog
         member={viewMember}
         open={!!viewMember}
-        onOpenChange={(open) => { if (!open) setViewMember(null); }}
+        onOpenChange={(open) => {
+          if (!open) setViewMember(null);
+        }}
       />
     </main>
   );

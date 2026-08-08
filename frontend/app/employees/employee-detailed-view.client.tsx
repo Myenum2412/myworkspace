@@ -1,30 +1,20 @@
-"use client"
+"use client";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Field, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import {
-  Field,
-  FieldLabel,
-  FieldSet,
-  FieldLegend,
-} from "@/components/ui/field";
-import {
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  PencilIcon,
-  Loader2Icon,
   CheckIcon,
-  XIcon,
-  FileIcon,
   DownloadIcon,
   ExternalLinkIcon,
+  FileIcon,
+  Loader2Icon,
+  PencilIcon,
+  XIcon,
 } from "@/lib/icons";
 import type { Employee } from "./columns";
 
@@ -39,21 +29,37 @@ const statusColors: Record<string, string> = {
 };
 
 const getInitials = (name: string) =>
-  name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
-export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee; onEdit?: (emp: Employee) => void }) {
-  const fullName = employee.firstName && employee.lastName
-    ? `${employee.firstName} ${employee.lastName}`
-    : employee.name;
+export function EmployeeDetailedView({
+  employee,
+  onEdit,
+}: {
+  employee: Employee;
+  onEdit?: (emp: Employee) => void;
+}) {
+  const fullName =
+    employee.firstName && employee.lastName
+      ? `${employee.firstName} ${employee.lastName}`
+      : employee.name;
 
-  const FieldInput = ({ label, value, className }: { label: string; value?: string | null; className?: string }) => (
+  const FieldInput = ({
+    label,
+    value,
+    className,
+  }: {
+    label: string;
+    value?: string | null;
+    className?: string;
+  }) => (
     <Field className={className}>
       <FieldLabel>{label}</FieldLabel>
-      <Input
-        value={value || ""}
-        readOnly
-        className="bg-muted/30"
-      />
+      <Input value={value || ""} readOnly className="bg-muted/30" />
     </Field>
   );
 
@@ -63,8 +69,12 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
         <DialogTitle className="flex items-center gap-2 text-xl">{fullName}</DialogTitle>
         <DialogDescription>
           <div className="flex items-center gap-2 mt-1">
-            <Badge variant="outline" className="capitalize text-xs">{employee.role}</Badge>
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusColors[employee.status] || ""}`}>
+            <Badge variant="outline" className="capitalize text-xs">
+              {employee.role}
+            </Badge>
+            <span
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusColors[employee.status] || ""}`}
+            >
               {employee.status.replace("_", " ")}
             </span>
           </div>
@@ -73,7 +83,6 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
 
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 min-h-0">
         <div className="space-y-12 max-w-4xl mx-auto">
-
           {/* Step 1: Profile */}
           <div className="space-y-8">
             <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 items-center sm:items-start">
@@ -88,8 +97,14 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
                   <FieldLegend>Basic Information</FieldLegend>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <FieldInput label="Display ID" value={employee.displayId || employee.id} />
-                    <FieldInput label="First Name" value={employee.firstName || fullName.split(" ")[0]} />
-                    <FieldInput label="Last Name" value={employee.lastName || fullName.split(" ").slice(1).join(" ") || null} />
+                    <FieldInput
+                      label="First Name"
+                      value={employee.firstName || fullName.split(" ")[0]}
+                    />
+                    <FieldInput
+                      label="Last Name"
+                      value={employee.lastName || fullName.split(" ").slice(1).join(" ") || null}
+                    />
                     <FieldInput label="Nickname" value={employee.nickname} />
                     <FieldInput label="Email" value={employee.email} />
                     <FieldInput label="Department" value={employee.department} />
@@ -120,7 +135,14 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FieldInput label="Branch Name" value={employee.branchName} />
                 <FieldInput label="Shift" value={employee.shift} />
-                <FieldInput label="Date of Joining" value={employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString() : null} />
+                <FieldInput
+                  label="Date of Joining"
+                  value={
+                    employee.joiningDate
+                      ? new Date(employee.joiningDate).toLocaleDateString()
+                      : null
+                  }
+                />
                 <FieldInput label="Source of Hire" value={employee.sourceOfHire} />
                 <FieldInput label="Current Experience" value={employee.currentExperience} />
                 <FieldInput label="Total Experience" value={employee.totalExperience} />
@@ -154,17 +176,27 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
               {employee.files && employee.files.length > 0 ? (
                 <div className="space-y-2">
                   {employee.files.map((f) => (
-                    <div key={f.id} className="flex items-center justify-between rounded-sm border bg-card px-4 py-3">
+                    <div
+                      key={f.id}
+                      className="flex items-center justify-between rounded-sm border bg-card px-4 py-3"
+                    >
                       <div className="flex items-center gap-3 min-w-0">
                         <FileIcon className="size-5 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{f.name}</p>
-                          <p className="text-xs text-muted-foreground">{(f.size / 1024).toFixed(1)} KB</p>
+                          <p className="text-xs text-muted-foreground">
+                            {(f.size / 1024).toFixed(1)} KB
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <Button variant="ghost" size="icon" className="" asChild>
-                          <a href={`/api/files/${f.id}`} target="_blank" rel="noopener noreferrer" title="View">
+                          <a
+                            href={`/api/files/${f.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="View"
+                          >
                             <ExternalLinkIcon className="size-4" />
                           </a>
                         </Button>
@@ -198,8 +230,14 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
                         <FieldInput label="From Date" value={row.from} />
                         <FieldInput label="To Date" value={row.to} />
                       </div>
-                      {row.description && <p className="text-sm text-muted-foreground mt-3">{row.description}</p>}
-                      {row.relevant && <Badge variant="secondary" className="mt-2 text-[10px]">Relevant</Badge>}
+                      {row.description && (
+                        <p className="text-sm text-muted-foreground mt-3">{row.description}</p>
+                      )}
+                      {row.relevant && (
+                        <Badge variant="secondary" className="mt-2 text-[10px]">
+                          Relevant
+                        </Badge>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -226,7 +264,9 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground italic">No education details recorded.</p>
+                <p className="text-sm text-muted-foreground italic">
+                  No education details recorded.
+                </p>
               )}
             </FieldSet>
 
@@ -247,11 +287,12 @@ export function EmployeeDetailedView({ employee, onEdit }: { employee: Employee;
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground italic">No dependent details recorded.</p>
+                <p className="text-sm text-muted-foreground italic">
+                  No dependent details recorded.
+                </p>
               )}
             </FieldSet>
           </div>
-
         </div>
       </div>
 

@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import Link from "next/link";
 import { AlertCircle } from "@/lib/icons";
@@ -32,8 +31,8 @@ export default function AuthNotFoundPage({
             <div className="space-y-2">
               <h1 className="text-2xl font-bold tracking-tight">Sign Up Required</h1>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                We checked your ID and it is not stored in our database.
-                Please create an account to get started.
+                We checked your ID and it is not stored in our database. Please create an account to
+                get started.
               </p>
             </div>
             <div className="flex flex-col gap-3 w-full">
@@ -72,9 +71,7 @@ export default function AuthNotFoundPage({
             <p className="text-xl font-medium text-black leading-relaxed max-w-xs">
               "The platform that transformed how our team collaborates and ships."
             </p>
-            <footer className="text-sm text-black/70 font-medium">
-              Team MyWorkSpace
-            </footer>
+            <footer className="text-sm text-black/70 font-medium">Team MyWorkSpace</footer>
           </blockquote>
         </div>
       </div>

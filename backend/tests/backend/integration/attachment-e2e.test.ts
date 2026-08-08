@@ -1,12 +1,25 @@
 import mongoose from "mongoose";
-import { connectTestDb, resetDb } from "../../__helpers__/db.js";
-import { seedOrgWithAdmin } from "../../__helpers__/users.js";
 import { FileAttachment } from "../../../src/lib/db/models/FileAttachment.js";
 import { FileVersion } from "../../../src/lib/db/models/FileVersion.js";
 import { Folder } from "../../../src/lib/db/models/Folder.js";
-import { uploadFile, softDeleteFile, restoreFile, getFileStream } from "../../../src/services/file.service.js";
-import { ensureClientFolders, resolveClientFolder, autoRouteFileInClientFolder } from "../../../src/services/client-folder.service.js";
-import { CLIENT_SUBFOLDERS, MODULE_FOLDER_MAP, getSubfolderForModule } from "../../../src/lib/uploads/folder-mapper.js";
+import {
+  CLIENT_SUBFOLDERS,
+  getSubfolderForModule,
+  MODULE_FOLDER_MAP,
+} from "../../../src/lib/uploads/folder-mapper.js";
+import {
+  autoRouteFileInClientFolder,
+  ensureClientFolders,
+  resolveClientFolder,
+} from "../../../src/services/client-folder.service.js";
+import {
+  getFileStream,
+  restoreFile,
+  softDeleteFile,
+  uploadFile,
+} from "../../../src/services/file.service.js";
+import { connectTestDb, resetDb } from "../../__helpers__/db.js";
+import { seedOrgWithAdmin } from "../../__helpers__/users.js";
 
 beforeAll(async () => {
   await connectTestDb();
@@ -83,8 +96,8 @@ describe("Attachment Feature - End-to-End Tests", () => {
         const result = await uploadFile({
           orgId: admin.orgId,
           uploaderId: admin.userId,
-          name: `test${tc.mimeType.split('/')[1]}`,
-          originalName: `test${tc.mimeType.split('/')[1]}`,
+          name: `test${tc.mimeType.split("/")[1]}`,
+          originalName: `test${tc.mimeType.split("/")[1]}`,
           mimeType: tc.mimeType,
           size: buffer.length,
           buffer,
@@ -145,7 +158,12 @@ describe("Attachment Feature - End-to-End Tests", () => {
       const file = await FileAttachment.findOne({ id: result.fileId }).lean();
       expect(file).not.toBeNull();
 
-      const targetFolderId = await resolveClientFolder(admin.orgId, clientId, "invoice", admin.userId);
+      const targetFolderId = await resolveClientFolder(
+        admin.orgId,
+        clientId,
+        "invoice",
+        admin.userId,
+      );
       expect(file!.folderId).toBe(targetFolderId);
     });
 
@@ -199,7 +217,7 @@ describe("Attachment Feature - End-to-End Tests", () => {
         clientId,
         "project",
         admin.userId,
-        "Test Project"
+        "Test Project",
       );
 
       expect(projectFolderId).toBeDefined();
@@ -444,7 +462,7 @@ describe("Attachment Feature - End-to-End Tests", () => {
 
       await FileAttachment.updateOne(
         { id: result.fileId },
-        { isLocked: true, lockedBy: admin.userId }
+        { isLocked: true, lockedBy: admin.userId },
       );
 
       const file = await FileAttachment.findOne({ id: result.fileId }).lean();
@@ -466,17 +484,14 @@ describe("Attachment Feature - End-to-End Tests", () => {
         buffer,
       });
 
-      await FileAttachment.updateOne(
-        { id: result.fileId },
-        { approvalStatus: "pending" }
-      );
+      await FileAttachment.updateOne({ id: result.fileId }, { approvalStatus: "pending" });
 
       const filePending = await FileAttachment.findOne({ id: result.fileId }).lean();
       expect(filePending!.approvalStatus).toBe("pending");
 
       await FileAttachment.updateOne(
         { id: result.fileId },
-        { approvalStatus: "approved", approvedBy: admin.userId, approvalNote: "Approved" }
+        { approvalStatus: "approved", approvedBy: admin.userId, approvalNote: "Approved" },
       );
 
       const fileApproved = await FileAttachment.findOne({ id: result.fileId }).lean();
@@ -682,11 +697,14 @@ describe("Attachment Feature - End-to-End Tests", () => {
 
       await FileAttachment.updateMany(
         { id: { $in: fileIds.slice(0, 3) } },
-        { deletedAt: new Date() }
+        { deletedAt: new Date() },
       );
 
       const active = await FileAttachment.countDocuments({ orgId: admin.orgId, deletedAt: null });
-      const deleted = await FileAttachment.countDocuments({ orgId: admin.orgId, deletedAt: { $ne: null } });
+      const deleted = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        deletedAt: { $ne: null },
+      });
 
       expect(active).toBe(2);
       expect(deleted).toBe(3);
@@ -711,7 +729,7 @@ describe("Attachment Feature - End-to-End Tests", () => {
 
       await FileAttachment.updateMany(
         { id: { $in: fileIds } },
-        { $addToSet: { tags: { $each: ["important", "reviewed"] } } }
+        { $addToSet: { tags: { $each: ["important", "reviewed"] } } },
       );
 
       const files = await FileAttachment.find({ id: { $in: fileIds } }).lean();

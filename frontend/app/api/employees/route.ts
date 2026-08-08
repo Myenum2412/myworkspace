@@ -1,34 +1,54 @@
+import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
+import { v4 as uuid } from "uuid";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { getNextEmployeeDisplayId } from "@/lib/db/counter";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
-import { ObjectId } from "mongodb";
-import { v4 as uuid } from "uuid";
 import { isAdminRole } from "@/lib/rbac";
-import { getNextEmployeeDisplayId } from "@/lib/db/counter";
 
 const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 export async function GET() {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
   if (!orgId) return NextResponse.json({ employees: [], teams: [], teamMembers: [] });
 
   try {
-    const user = { name: session.user.name || "User", email: session.user.email || "", avatar: session.user.image || "" };
-    const allOrgMembers = await db.collection(collections.orgMembers).find({ orgId }).toArray() as any[];
+    const user = {
+      name: session.user.name || "User",
+      email: session.user.email || "",
+      avatar: session.user.image || "",
+    };
+    const allOrgMembers = (await db
+      .collection(collections.orgMembers)
+      .find({ orgId })
+      .toArray()) as any[];
     const userIds = [...new Set(allOrgMembers.map((m) => m.userId).filter(Boolean))];
 
     let employees: any[] = [];
     if (userIds.length > 0) {
-      const objectIds = userIds.map((id) => { try { return new ObjectId(id); } catch { return null; } }).filter((id): id is ObjectId => id !== null);
-      const query = objectIds.length > 0
-        ? { $or: [{ id: { $in: userIds } }, { _id: { $in: objectIds } }] }
-        : { id: { $in: userIds } };
+      const objectIds = userIds
+        .map((id) => {
+          try {
+            return new ObjectId(id);
+          } catch {
+            return null;
+          }
+        })
+        .filter((id): id is ObjectId => id !== null);
+      const query =
+        objectIds.length > 0
+          ? { $or: [{ id: { $in: userIds } }, { _id: { $in: objectIds } }] }
+          : { id: { $in: userIds } };
       const users = await db.collection(collections.users).find(query).toArray();
 
       // Backfill displayId for legacy users who predate the displayId feature
@@ -55,32 +75,62 @@ export async function GET() {
         .map((m) => {
           const u = userMap.get(m.userId)!;
           return {
-            id: u.id || u._id?.toString() || "", name: u.name || "Unknown", email: u.email || "",
-            role: m.role || u.role || "staffs", status: u.status || "offline", department: u.department || "",
-            designation: u.designation || "", employmentType: u.employmentType || "", phone: u.phone || "",
-            branchName: u.branchName || "", joiningDate: u.joiningDate ? new Date(u.joiningDate).toISOString() : "",
+            id: u.id || u._id?.toString() || "",
+            name: u.name || "Unknown",
+            email: u.email || "",
+            role: m.role || u.role || "staffs",
+            status: u.status || "offline",
+            department: u.department || "",
+            designation: u.designation || "",
+            employmentType: u.employmentType || "",
+            phone: u.phone || "",
+            branchName: u.branchName || "",
+            joiningDate: u.joiningDate ? new Date(u.joiningDate).toISOString() : "",
             avatar: u.image || u.avatar || "",
-            displayId: u.displayId || "", firstName: u.firstName || "", lastName: u.lastName || "",
-            nickname: u.nickname || "", location: u.location || "", shift: u.shift || "",
-            sourceOfHire: u.sourceOfHire || "", currentExperience: u.currentExperience || "",
-            totalExperience: u.totalExperience || "", alternateEmail: u.alternateEmail || "",
-            address: u.address || "", city: u.city || "", state: u.state || "", country: u.country || "",
-            zipCode: u.zipCode || "", linkedin: u.linkedin || "", github: u.github || "",
-            twitter: u.twitter || "", website: u.website || "", company: u.company || "",
+            displayId: u.displayId || "",
+            firstName: u.firstName || "",
+            lastName: u.lastName || "",
+            nickname: u.nickname || "",
+            location: u.location || "",
+            shift: u.shift || "",
+            sourceOfHire: u.sourceOfHire || "",
+            currentExperience: u.currentExperience || "",
+            totalExperience: u.totalExperience || "",
+            alternateEmail: u.alternateEmail || "",
+            address: u.address || "",
+            city: u.city || "",
+            state: u.state || "",
+            country: u.country || "",
+            zipCode: u.zipCode || "",
+            linkedin: u.linkedin || "",
+            github: u.github || "",
+            twitter: u.twitter || "",
+            website: u.website || "",
+            company: u.company || "",
           };
         });
     }
 
     const [teamDocs, orgMemberDocs] = await Promise.all([
-      db.collection(collections.teams).aggregate([
-        { $match: { orgId } },
-        { $addFields: { _teamIdStr: { $toString: "$_id" } } },
-        { $lookup: { from: collections.teamMembers, let: { teamIdStr: "$_teamIdStr" }, pipeline: [{ $match: { $expr: { $eq: ["$teamId", "$$teamIdStr"] } } }], as: "members" } },
-        { $addFields: { memberCount: { $size: "$members" }, memberIds: "$members.userId" } },
-        { $addFields: { id: "$_teamIdStr" } },
-        { $project: { _id: 0, _teamIdStr: 0 } },
-        { $sort: { createdAt: -1 } },
-      ]).toArray(),
+      db
+        .collection(collections.teams)
+        .aggregate([
+          { $match: { orgId } },
+          { $addFields: { _teamIdStr: { $toString: "$_id" } } },
+          {
+            $lookup: {
+              from: collections.teamMembers,
+              let: { teamIdStr: "$_teamIdStr" },
+              pipeline: [{ $match: { $expr: { $eq: ["$teamId", "$$teamIdStr"] } } }],
+              as: "members",
+            },
+          },
+          { $addFields: { memberCount: { $size: "$members" }, memberIds: "$members.userId" } },
+          { $addFields: { id: "$_teamIdStr" } },
+          { $project: { _id: 0, _teamIdStr: 0 } },
+          { $sort: { createdAt: -1 } },
+        ])
+        .toArray(),
       db.collection(collections.orgMembers).find({ orgId }).toArray(),
     ]);
 
@@ -88,21 +138,31 @@ export async function GET() {
     const uniqueMemberIds = [...new Set(allTeamMemberIds)];
     const allOrgUserIds = [...new Set(allOrgMembers.map((m: any) => m.userId).filter(Boolean))];
     const allUserIdsToFetch = [...new Set([...uniqueMemberIds, ...allOrgUserIds])];
-    let memberUserMap = new Map<string, any>();
+    const memberUserMap = new Map<string, any>();
     if (allUserIdsToFetch.length > 0) {
-      const memberUserDocs = await db.collection(collections.users).find({ id: { $in: allUserIdsToFetch } }).toArray();
-      for (const u of memberUserDocs) { if (u.id) memberUserMap.set(u.id, u); }
+      const memberUserDocs = await db
+        .collection(collections.users)
+        .find({ id: { $in: allUserIdsToFetch } })
+        .toArray();
+      for (const u of memberUserDocs) {
+        if (u.id) memberUserMap.set(u.id, u);
+      }
     }
 
     const teams = (teamDocs as any[]).map((t) => {
       const memberList = (t.members || []).map((m: { userId: string; role: string }) => ({
-        userId: m.userId, name: memberUserMap.get(m.userId)?.name || "Unknown",
-        email: memberUserMap.get(m.userId)?.email || "", avatar: memberUserMap.get(m.userId)?.image || "",
+        userId: m.userId,
+        name: memberUserMap.get(m.userId)?.name || "Unknown",
+        email: memberUserMap.get(m.userId)?.email || "",
+        avatar: memberUserMap.get(m.userId)?.image || "",
         role: m.role || "team_staff",
       }));
       const lead = memberList.find((m: { role: string }) => m.role === "team_lead");
       return {
-        id: String(t.id || ""), name: t.name || "", description: t.description || "", memberCount: t.memberCount || 0,
+        id: String(t.id || ""),
+        name: t.name || "",
+        description: t.description || "",
+        memberCount: t.memberCount || 0,
         leadName: lead?.name || "",
         leadAvatar: lead?.avatar || "",
         members: memberList,
@@ -112,11 +172,21 @@ export async function GET() {
 
     const teamMembers = (orgMemberDocs as any[]).map((m) => {
       const u = memberUserMap.get(m.userId) || {};
-      return { userId: m.userId, name: u.name || "", email: u.email || "", avatar: u.image || "", role: m.role || "staffs", department: u.department || "", designation: u.designation || "" };
+      return {
+        userId: m.userId,
+        name: u.name || "",
+        email: u.email || "",
+        avatar: u.image || "",
+        role: m.role || "staffs",
+        department: u.department || "",
+        designation: u.designation || "",
+      };
     });
 
     return NextResponse.json({ employees, user, teams, teamMembers, orgId });
-  } catch { return NextResponse.json({ employees: [], teams: [], teamMembers: [] }); }
+  } catch {
+    return NextResponse.json({ employees: [], teams: [], teamMembers: [] });
+  }
 }
 
 export async function POST(request: Request) {
@@ -149,19 +219,25 @@ export async function POST(request: Request) {
       body: JSON.stringify(body),
     });
 
-    const backendBody = await backendRes.json().catch(() => ({ error: "Invalid response from server" }));
+    const backendBody = await backendRes
+      .json()
+      .catch(() => ({ error: "Invalid response from server" }));
 
     if (!backendRes.ok) {
       return NextResponse.json(
         { error: backendBody.error || backendBody.message || "Failed to create employee" },
-        { status: backendRes.status === 409 ? 400 : backendRes.status }
+        { status: backendRes.status === 409 ? 400 : backendRes.status },
       );
     }
 
     const account = backendBody.data || {};
     const email = (body.email as string) || "";
     const userId = account.user?.id || "";
-    const name = account.user?.name || [body.firstName || "", body.lastName || ""].filter(Boolean).join(" ") || email.split("@")[0] || "Employee";
+    const name =
+      account.user?.name ||
+      [body.firstName || "", body.lastName || ""].filter(Boolean).join(" ") ||
+      email.split("@")[0] ||
+      "Employee";
 
     const now = new Date();
 
@@ -184,7 +260,7 @@ export async function POST(request: Request) {
           relevant: exp.relevant || false,
           createdAt: now,
           updatedAt: now,
-        }))
+        })),
       );
     }
 
@@ -200,7 +276,7 @@ export async function POST(request: Request) {
           completionDate: edu.completionDate || null,
           createdAt: now,
           updatedAt: now,
-        }))
+        })),
       );
     }
 
@@ -215,7 +291,7 @@ export async function POST(request: Request) {
           dob: dep.dob || null,
           createdAt: now,
           updatedAt: now,
-        }))
+        })),
       );
     }
 
@@ -237,11 +313,16 @@ export async function POST(request: Request) {
       // Notify other admins/members
       const orgId = account.user?.orgId || session.user.orgId;
       if (orgId) {
-        const adminMembers = await db.collection(collections.orgMembers).find({
-          orgId,
-          role: { $in: ["org_admin", "members"] }
-        }).toArray();
-        const adminIds = [...new Set(adminMembers.map((m: any) => m.userId))].filter((id: string) => id !== userId);
+        const adminMembers = await db
+          .collection(collections.orgMembers)
+          .find({
+            orgId,
+            role: { $in: ["org_admin", "members"] },
+          })
+          .toArray();
+        const adminIds = [...new Set(adminMembers.map((m: any) => m.userId))].filter(
+          (id: string) => id !== userId,
+        );
         if (adminIds.length > 0) {
           const adminNotifs = adminIds.map((adminId: string) => ({
             id: uuid(),
@@ -270,10 +351,11 @@ export async function POST(request: Request) {
       emailStatus,
       emailError,
     });
-
   } catch (err: any) {
     console.error("[API POST /api/employees] Error:", err);
-    return NextResponse.json({ error: err.message || "Failed to create employee" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Failed to create employee" },
+      { status: 500 },
+    );
   }
 }
-

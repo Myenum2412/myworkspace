@@ -1,7 +1,16 @@
 "use client";
 
 import { create } from "zustand";
-import type { FileItem, FolderItem, ViewMode, SortField, SortDir, NavSection, FilterState, UploadQueueItem } from "./types";
+import type {
+  FileItem,
+  FilterState,
+  FolderItem,
+  NavSection,
+  SortDir,
+  SortField,
+  UploadQueueItem,
+  ViewMode,
+} from "./types";
 
 interface FileSystemState {
   orgId: string;
@@ -103,7 +112,8 @@ export const useFileSystemStore = create<FileSystemState>((set) => ({
 
   setOrgContext: (orgId, userId, role) => set({ orgId, userId, userRole: role }),
   setCurrentFolder: (id) => set({ currentFolderId: id, selectedIds: new Set() }),
-  setCurrentNav: (nav) => set({ currentNav: nav, currentFolderId: null, search: "", selectedIds: new Set() }),
+  setCurrentNav: (nav) =>
+    set({ currentNav: nav, currentFolderId: null, search: "", selectedIds: new Set() }),
   setViewMode: (mode) => set({ viewMode: mode }),
   setSort: (field, dir) => set({ sortField: field, sortDir: dir }),
   setFiles: (files) => set({ files }),
@@ -112,24 +122,29 @@ export const useFileSystemStore = create<FileSystemState>((set) => ({
   setSearch: (q) => set({ search: q }),
   setFilters: (f) => set({ filters: f }),
   setLoading: (l) => set({ isLoading: l }),
-  toggleSelection: (id) => set((s) => {
-    const next = new Set(s.selectedIds);
-    if (next.has(id)) next.delete(id); else next.add(id);
-    return { selectedIds: next };
-  }),
-  selectAll: () => set((s) => {
-    const all = [...s.files.map((f) => f.id), ...s.folders.map((f) => f.id)];
-    return { selectedIds: new Set(all) };
-  }),
+  toggleSelection: (id) =>
+    set((s) => {
+      const next = new Set(s.selectedIds);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return { selectedIds: next };
+    }),
+  selectAll: () =>
+    set((s) => {
+      const all = [...s.files.map((f) => f.id), ...s.folders.map((f) => f.id)];
+      return { selectedIds: new Set(all) };
+    }),
   clearSelection: () => set({ selectedIds: new Set() }),
   setClipboard: (c) => set({ clipboard: c }),
   addUploadItem: (item) => set((s) => ({ uploadQueue: [...s.uploadQueue, item] })),
-  updateUploadItem: (id, partial) => set((s) => ({
-    uploadQueue: s.uploadQueue.map((item) => item.id === id ? { ...item, ...partial } : item),
-  })),
-  removeUploadItem: (id) => set((s) => ({
-    uploadQueue: s.uploadQueue.filter((item) => item.id !== id),
-  })),
+  updateUploadItem: (id, partial) =>
+    set((s) => ({
+      uploadQueue: s.uploadQueue.map((item) => (item.id === id ? { ...item, ...partial } : item)),
+    })),
+  removeUploadItem: (id) =>
+    set((s) => ({
+      uploadQueue: s.uploadQueue.filter((item) => item.id !== id),
+    })),
   clearUploadQueue: () => set({ uploadQueue: [] }),
   setPreviewFile: (f) => set({ previewFile: f }),
   setPreviewPaneFile: (f) => set({ previewPaneFile: f }),
@@ -143,10 +158,12 @@ export const useFileSystemStore = create<FileSystemState>((set) => ({
   removeFile: (id) => set((s) => ({ files: s.files.filter((f) => f.id !== id) })),
   removeFolder: (id) => set((s) => ({ folders: s.folders.filter((f) => f.id !== id) })),
   addFolder: (f) => set((s) => ({ folders: [...s.folders, f] })),
-  updateFileInList: (id, data) => set((s) => ({
-    files: s.files.map((f) => f.id === id ? { ...f, ...data } : f),
-  })),
-  updateFolderInList: (id, data) => set((s) => ({
-    folders: s.folders.map((f) => f.id === id ? { ...f, ...data } : f),
-  })),
+  updateFileInList: (id, data) =>
+    set((s) => ({
+      files: s.files.map((f) => (f.id === id ? { ...f, ...data } : f)),
+    })),
+  updateFolderInList: (id, data) =>
+    set((s) => ({
+      folders: s.folders.map((f) => (f.id === id ? { ...f, ...data } : f)),
+    })),
 }));

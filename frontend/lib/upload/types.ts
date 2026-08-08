@@ -1,4 +1,12 @@
-export type UploadStatus = "pending" | "uploading" | "paused" | "completed" | "failed" | "cancelled" | "duplicate" | "pending_approval";
+export type UploadStatus =
+  | "pending"
+  | "uploading"
+  | "paused"
+  | "completed"
+  | "failed"
+  | "cancelled"
+  | "duplicate"
+  | "pending_approval";
 
 export type NetworkQuality = "unknown" | "excellent" | "good" | "fair" | "poor";
 

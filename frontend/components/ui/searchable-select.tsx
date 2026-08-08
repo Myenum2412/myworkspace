@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect, KeyboardEvent } from "react";
-import { Check, ChevronsUpDown, Search, X } from "@/lib/icons";
-import { cn } from "@/lib/utils";
+import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown, Search, X } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 interface SearchableSelectProps {
   options: string[];
@@ -38,9 +38,7 @@ export function SearchableSelect({
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const filtered = options.filter((o) =>
-    o.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = options.filter((o) => o.toLowerCase().includes(search.toLowerCase()));
 
   useEffect(() => {
     if (open) {
@@ -58,8 +56,12 @@ export function SearchableSelect({
   return (
     <div className={cn("space-y-1.5", className)}>
       {label && (
-        <label htmlFor={id} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          {label}{required && " *"}
+        <label
+          htmlFor={id}
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          {label}
+          {required && " *"}
         </label>
       )}
       <Popover open={open} onOpenChange={setOpen}>
@@ -71,14 +73,18 @@ export function SearchableSelect({
             className={cn(
               "justify-between font-normal",
               !value && "text-muted-foreground",
-              error && "border-destructive"
+              error && "border-destructive",
             )}
           >
             {value || placeholder}
             <ChevronsUpDown className="ml-2 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start" collisionPadding={16}>
+        <PopoverContent
+          className="w-[--radix-popover-trigger-width] p-0"
+          align="start"
+          collisionPadding={16}
+        >
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 size-4 shrink-0 opacity-50" />
             <Input
@@ -89,7 +95,10 @@ export function SearchableSelect({
               className="h-10 sm:h-10 border-0 bg-white px-0 py-0 shadow-none outline-none focus-visible:ring-0"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="shrink-0 opacity-50 hover:opacity-100 p-1">
+              <button
+                onClick={() => setSearch("")}
+                className="shrink-0 opacity-50 hover:opacity-100 p-1"
+              >
                 <X className="size-4" />
               </button>
             )}
@@ -104,13 +113,13 @@ export function SearchableSelect({
                   onClick={() => handleSelect(option)}
                   className={cn(
                     "flex w-full items-center gap-2 px-3 py-3 sm:py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground min-h-[44px] sm:min-h-0",
-                    value === option && "bg-accent font-medium"
+                    value === option && "bg-accent font-medium",
                   )}
                 >
                   <Check
                     className={cn(
                       "size-4 shrink-0",
-                      value === option ? "opacity-100" : "opacity-0"
+                      value === option ? "opacity-100" : "opacity-0",
                     )}
                   />
                   <span className="truncate">{option}</span>

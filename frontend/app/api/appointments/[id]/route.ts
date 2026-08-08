@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { auth } from "@/lib/auth/config";
 import { ensureUserOrg } from "@/lib/org";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
     const { id } = await params;
 
     const appointment = await db.collection(collections.appointments).findOne({ id, orgId });
@@ -33,15 +33,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
     const { id } = await params;
     const body = await request.json();
 
-    const result = await db.collection(collections.appointments).findOneAndUpdate(
-      { id, orgId },
-      { $set: { ...body, updatedAt: new Date().toISOString() } },
-      { returnDocument: "after" }
-    );
+    const result = await db
+      .collection(collections.appointments)
+      .findOneAndUpdate(
+        { id, orgId },
+        { $set: { ...body, updatedAt: new Date().toISOString() } },
+        { returnDocument: "after" },
+      );
 
     if (!result) {
       return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
@@ -54,14 +56,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orgId = session.user.orgId || await ensureUserOrg(session.user.id, session.user.email);
+    const orgId = session.user.orgId || (await ensureUserOrg(session.user.id, session.user.email));
     const { id } = await params;
 
     const result = await db.collection(collections.appointments).deleteOne({ id, orgId });

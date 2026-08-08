@@ -1,11 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
-import { PlusIcon, ListTodoIcon, SearchIcon, LayoutGridIcon, CalendarIcon, EyeIcon, PencilIcon, Trash2Icon, MoreHorizontalIcon, UsersIcon, ClockIcon, CheckCircle2Icon, AlertCircleIcon } from "@/lib/icons";
-import { Card, CardContent } from "@/components/ui/card";
+import { useCallback, useState } from "react";
+import type { TeamTask } from "@/app/teamtasks/teamtasks-interactive.client";
+import { DataTable } from "@/components/data-table";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
+import Stats07 from "@/components/stats-07";
+import { TaskDetailedView } from "@/components/task-detailed-view";
+import TaskGanttView from "@/components/task-gantt-view";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,14 +19,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TaskDetailedView } from "@/components/task-detailed-view";
-import { DataTable } from "@/components/data-table";
-import TaskGanttView from "@/components/task-gantt-view";
-import Stats07 from "@/components/stats-07";
-import type { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
-import type { TeamTask } from "@/app/teamtasks/teamtasks-interactive.client";
+import { Input } from "@/components/ui/input";
+import {
+  AlertCircleIcon,
+  CalendarIcon,
+  CheckCircle2Icon,
+  ClockIcon,
+  EyeIcon,
+  LayoutGridIcon,
+  ListTodoIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  PlusIcon,
+  SearchIcon,
+  Trash2Icon,
+  UsersIcon,
+} from "@/lib/icons";
 
 const statusStyles: Record<string, string> = {
   todo: "bg-gray-200 text-gray-700",
@@ -49,7 +63,13 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
 
   const total = tasks.length;
   const completed = tasks.filter((t) => t.status === "done").length;
-  const overdue = tasks.filter((t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "done" && t.status !== "cancelled").length;
+  const overdue = tasks.filter(
+    (t) =>
+      t.dueDate &&
+      new Date(t.dueDate) < new Date() &&
+      t.status !== "done" &&
+      t.status !== "cancelled",
+  ).length;
   const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
   const teamNames = [...new Set(tasks.map((t) => t.teamName || "Unassigned"))];
   const totalTeams = teamNames.length;
@@ -64,7 +84,10 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
         return;
       }
       setTasks((prev) => prev.filter((t) => t._id !== taskId));
-      if (selectedTask?._id === taskId) { setSelectedTask(null); setViewOpen(false); }
+      if (selectedTask?._id === taskId) {
+        setSelectedTask(null);
+        setViewOpen(false);
+      }
     } catch {
       alert("Network error while deleting task");
     } finally {
@@ -73,10 +96,11 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
   }
 
   const filteredTasks = searchQuery
-    ? tasks.filter((t) =>
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.assigneeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.teamName?.toLowerCase().includes(searchQuery.toLowerCase())
+    ? tasks.filter(
+        (t) =>
+          t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          t.assigneeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          t.teamName?.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : tasks;
 
@@ -89,9 +113,7 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
       id: "index",
       header: "Task #",
       cell: ({ row }) => (
-        <span className="font-mono text-xs text-muted-foreground">
-          #{row.index + 1}
-        </span>
+        <span className="font-mono text-xs text-muted-foreground">#{row.index + 1}</span>
       ),
       size: 80,
     },
@@ -121,10 +143,19 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
           <div className="flex items-center gap-2">
             <div className="size-6 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
               {t.assigneeAvatar ? (
-                <img src={t.assigneeAvatar} alt={t.assigneeName} className="size-full object-cover" />
+                <img
+                  src={t.assigneeAvatar}
+                  alt={t.assigneeName}
+                  className="size-full object-cover"
+                />
               ) : (
                 <span className="text-[10px] font-medium text-muted-foreground">
-                  {(t.assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                  {(t.assigneeName || "U")
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase()}
                 </span>
               )}
             </div>
@@ -161,9 +192,7 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
         const isOverdue = due < now && status !== "done" && status !== "cancelled";
         return (
           <span className={isOverdue ? "text-red-600 font-semibold" : ""}>
-            {isOverdue
-              ? "Overdue"
-              : due.toLocaleDateString()}
+            {isOverdue ? "Overdue" : due.toLocaleDateString()}
           </span>
         );
       },
@@ -176,14 +205,32 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-              <Button variant="ghost" size="icon-sm"><MoreHorizontalIcon /></Button>
+              <Button variant="ghost" size="icon-sm">
+                <MoreHorizontalIcon />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); setEditMode(false); }}>
-                <EyeIcon className="mr-2 size-4" />View
+              <DropdownMenuItem
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  setSelectedTask(t);
+                  setViewOpen(true);
+                  setEditMode(false);
+                }}
+              >
+                <EyeIcon className="mr-2 size-4" />
+                View
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedTask(t); setViewOpen(true); setEditMode(true); }}>
-                <PencilIcon className="mr-2 size-4" />Edit
+              <DropdownMenuItem
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  setSelectedTask(t);
+                  setViewOpen(true);
+                  setEditMode(true);
+                }}
+              >
+                <PencilIcon className="mr-2 size-4" />
+                Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DeleteConfirmDialog
@@ -194,7 +241,8 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
                 onConfirm={() => handleDeleteTask(t._id)}
               >
                 <DropdownMenuItem className="text-destructive" disabled={deleting}>
-                  <Trash2Icon className="mr-2 size-4" />Delete
+                  <Trash2Icon className="mr-2 size-4" />
+                  Delete
                 </DropdownMenuItem>
               </DeleteConfirmDialog>
             </DropdownMenuContent>
@@ -225,7 +273,7 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
               />
             </div>
           </div>
-          <Button onClick={() => router.push('/createtask')} className="touch-target">
+          <Button onClick={() => router.push("/createtask")} className="touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
@@ -233,12 +281,16 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
 
         <Stats07
           items={[
-            { name: 'Total Tasks', value: total, subtitle: 'All team tasks' },
-            { name: 'Teams', value: totalTeams, subtitle: 'Active teams' },
-            { name: 'Completed', value: completed, subtitle: 'Done tasks' },
-            { name: 'Overdue', value: overdue, subtitle: 'Past due date' },
-            { name: 'Avg per Team', value: totalTeams > 0 ? Math.round(total / totalTeams) : 0, subtitle: 'Average tasks' },
-            { name: 'Completion', value: completionRate, subtitle: '% completed' },
+            { name: "Total Tasks", value: total, subtitle: "All team tasks" },
+            { name: "Teams", value: totalTeams, subtitle: "Active teams" },
+            { name: "Completed", value: completed, subtitle: "Done tasks" },
+            { name: "Overdue", value: overdue, subtitle: "Past due date" },
+            {
+              name: "Avg per Team",
+              value: totalTeams > 0 ? Math.round(total / totalTeams) : 0,
+              subtitle: "Average tasks",
+            },
+            { name: "Completion", value: completionRate, subtitle: "% completed" },
           ]}
         />
 
@@ -268,7 +320,10 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
           <DataTable
             columns={columns}
             data={recentTasks}
-            onRowClick={(t) => { setSelectedTask(t); setViewOpen(true); }}
+            onRowClick={(t) => {
+              setSelectedTask(t);
+              setViewOpen(true);
+            }}
             searchPlaceholder="Search tasks..."
             title="Team Tasks"
             label="task(s)"
@@ -280,7 +335,11 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
           <div className="flex-1 min-h-0">
             <TaskGanttView
               tasks={tasks}
-              onViewTask={(t) => { setSelectedTask(t as unknown as TeamTask); setViewOpen(true); setEditMode(false); }}
+              onViewTask={(t) => {
+                setSelectedTask(t as unknown as TeamTask);
+                setViewOpen(true);
+                setEditMode(false);
+              }}
             />
           </div>
         )}
@@ -293,9 +352,15 @@ export default function TeamTasksOverview({ tasks: initialTasks }: { tasks: Team
               task={selectedTask}
               editable
               onTaskUpdate={(updated) => {
-                setTasks((prev) => prev.map((t) => t._id === updated._id ? updated as TeamTask : t));
+                setTasks((prev) =>
+                  prev.map((t) => (t._id === updated._id ? (updated as TeamTask) : t)),
+                );
               }}
-              onClose={() => { setViewOpen(false); setEditMode(false); setSelectedTask(null); }}
+              onClose={() => {
+                setViewOpen(false);
+                setEditMode(false);
+                setSelectedTask(null);
+              }}
             />
           </div>
         </div>

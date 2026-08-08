@@ -1,6 +1,6 @@
-"use client"
+"use client";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2, Eye } from "@/lib/icons";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+import { Eye, MoreHorizontal, Pencil, Trash2 } from "@/lib/icons";
 
 export type Stock = {
   id: string;
@@ -104,7 +104,9 @@ export const columns: ColumnDef<Stock>[] = [
   {
     accessorKey: "availableStock",
     header: "Available Stock",
-    cell: ({ row }) => <span className="text-xs font-semibold">{row.getValue<number>("availableStock")}</span>,
+    cell: ({ row }) => (
+      <span className="text-xs font-semibold">{row.getValue<number>("availableStock")}</span>
+    ),
     size: 110,
   },
   {
@@ -122,13 +124,17 @@ export const columns: ColumnDef<Stock>[] = [
   {
     accessorKey: "purchasePrice",
     header: "Purchase Price",
-    cell: ({ row }) => <span className="text-xs">₹{Number(row.getValue<number>("purchasePrice")).toFixed(2)}</span>,
+    cell: ({ row }) => (
+      <span className="text-xs">₹{Number(row.getValue<number>("purchasePrice")).toFixed(2)}</span>
+    ),
     size: 110,
   },
   {
     accessorKey: "sellingPrice",
     header: "Selling Price",
-    cell: ({ row }) => <span className="text-xs">₹{Number(row.getValue<number>("sellingPrice")).toFixed(2)}</span>,
+    cell: ({ row }) => (
+      <span className="text-xs">₹{Number(row.getValue<number>("sellingPrice")).toFixed(2)}</span>
+    ),
     size: 110,
   },
   {
@@ -145,7 +151,9 @@ export const columns: ColumnDef<Stock>[] = [
       const reorder = row.original.reorderLevel;
       const status = stockStatus(avail, reorder);
       return (
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusColorMap[status] || ""}`}>
+        <span
+          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusColorMap[status] || ""}`}
+        >
           {status}
         </span>
       );

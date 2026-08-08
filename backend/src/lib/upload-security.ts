@@ -33,12 +33,12 @@ export const ALLOWED_DOCUMENT_TYPES = new Set([
   "application/json",
   "application/xml",
   "text/xml",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  // .xlsx
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
   "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
-  "application/vnd.ms-excel",          // .xls
-  "application/msword",               // .doc
-  "application/vnd.ms-powerpoint",    // .ppt
+  "application/vnd.ms-excel", // .xls
+  "application/msword", // .doc
+  "application/vnd.ms-powerpoint", // .ppt
   "application/rtf",
 ]);
 
@@ -126,21 +126,51 @@ const EXT_TO_MIME: Record<string, string> = {
 
 // ─── Dangerously executable extensions (never allow) ───────────────────
 const BLOCKED_EXTENSIONS = new Set([
-  ".exe", ".bat", ".cmd", ".com", ".msi", ".scr", ".pif",
-  ".sh", ".bash", ".zsh", ".ksh",
-  ".php", ".php3", ".php4", ".phtml",
-  ".asp", ".aspx", ".jsp", ".jspx",
-  ".pl", ".py", ".pyc", ".pyo",
-  ".rb", ".rhtml",
-  ".cgi", ".shtml",
+  ".exe",
+  ".bat",
+  ".cmd",
+  ".com",
+  ".msi",
+  ".scr",
+  ".pif",
+  ".sh",
+  ".bash",
+  ".zsh",
+  ".ksh",
+  ".php",
+  ".php3",
+  ".php4",
+  ".phtml",
+  ".asp",
+  ".aspx",
+  ".jsp",
+  ".jspx",
+  ".pl",
+  ".py",
+  ".pyc",
+  ".pyo",
+  ".rb",
+  ".rhtml",
+  ".cgi",
+  ".shtml",
   ".swf",
-  ".hta", ".msc",
-  ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh",
-  ".ps1", ".psm1", ".psd1",
+  ".hta",
+  ".msc",
+  ".vbs",
+  ".vbe",
+  ".js",
+  ".jse",
+  ".wsf",
+  ".wsh",
+  ".ps1",
+  ".psm1",
+  ".psd1",
   ".jar",
-  ".app", ".dmg",
+  ".app",
+  ".dmg",
   ".reg",
-  ".scf", ".lnk",
+  ".scf",
+  ".lnk",
   ".inf",
 ]);
 

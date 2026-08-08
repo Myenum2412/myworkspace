@@ -1,1 +1,1 @@
-export { default } from "./terminated-interactive.client"
+export { default } from "./terminated-interactive.client";

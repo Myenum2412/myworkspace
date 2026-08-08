@@ -1,8 +1,8 @@
-"use client"
-import { ColumnDef } from "@tanstack/react-table";
+"use client";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircleIcon, XCircleIcon, FileIcon } from "@/lib/icons";
+import { CheckCircleIcon, FileIcon, XCircleIcon } from "@/lib/icons";
 
 export type ApprovalItem = {
   _id: string;
@@ -43,7 +43,10 @@ const priorityColors: Record<string, string> = {
 
 function PriorityBadge({ priority }: { priority: string }) {
   return (
-    <Badge variant="outline" className={`text-xs font-medium capitalize ${priorityColors[priority] || ""}`}>
+    <Badge
+      variant="outline"
+      className={`text-xs font-medium capitalize ${priorityColors[priority] || ""}`}
+    >
       {priority}
     </Badge>
   );
@@ -51,9 +54,16 @@ function PriorityBadge({ priority }: { priority: string }) {
 
 function TypeBadge({ itemType }: { itemType: string }) {
   if (itemType === "file") {
-    return <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs font-medium"><FileIcon className="size-3 mr-1" />File</Badge>;
+    return (
+      <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs font-medium">
+        <FileIcon className="size-3 mr-1" />
+        File
+      </Badge>
+    );
   }
-  return <Badge className="bg-gray-100 text-gray-700 border-gray-300 text-xs font-medium">Task</Badge>;
+  return (
+    <Badge className="bg-gray-100 text-gray-700 border-gray-300 text-xs font-medium">Task</Badge>
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -76,10 +86,14 @@ export const pendingColumns: ColumnDef<ApprovalItem>[] = [
         <div>
           <span className="font-medium text-sm">{row.getValue("title")}</span>
           {row.original.description && (
-            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">{row.original.description}</p>
+            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">
+              {row.original.description}
+            </p>
           )}
           {row.original.fileName && (
-            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">{row.original.fileName}</p>
+            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">
+              {row.original.fileName}
+            </p>
           )}
         </div>
       </div>
@@ -99,10 +113,15 @@ export const pendingColumns: ColumnDef<ApprovalItem>[] = [
     accessorKey: "assigneeName",
     header: "Submitted By",
     cell: ({ row }) => {
-      const name = row.original.itemType === "file"
-        ? row.original.uploaderName || row.original.assigneeName
-        : row.original.assigneeName;
-      return name ? <span className="text-sm">{name}</span> : <span className="text-sm text-muted-foreground">—</span>;
+      const name =
+        row.original.itemType === "file"
+          ? row.original.uploaderName || row.original.assigneeName
+          : row.original.assigneeName;
+      return name ? (
+        <span className="text-sm">{name}</span>
+      ) : (
+        <span className="text-sm text-muted-foreground">—</span>
+      );
     },
   },
   {
@@ -133,10 +152,14 @@ export const approvedColumns: ColumnDef<ApprovalItem>[] = [
         <div>
           <span className="font-medium text-sm">{row.getValue("title")}</span>
           {row.original.description && (
-            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">{row.original.description}</p>
+            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">
+              {row.original.description}
+            </p>
           )}
           {row.original.fileName && (
-            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">{row.original.fileName}</p>
+            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">
+              {row.original.fileName}
+            </p>
           )}
         </div>
       </div>
@@ -190,10 +213,14 @@ export const rejectedColumns: ColumnDef<ApprovalItem>[] = [
         <div>
           <span className="font-medium text-sm">{row.getValue("title")}</span>
           {row.original.description && (
-            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">{row.original.description}</p>
+            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">
+              {row.original.description}
+            </p>
           )}
           {row.original.fileName && (
-            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">{row.original.fileName}</p>
+            <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">
+              {row.original.fileName}
+            </p>
           )}
         </div>
       </div>

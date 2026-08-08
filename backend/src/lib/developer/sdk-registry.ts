@@ -1,6 +1,6 @@
-import { Schema, model, Document } from "mongoose";
-import { v4 as uuid } from "uuid";
 import crypto from "crypto";
+import { type Document, model, Schema } from "mongoose";
+import { v4 as uuid } from "uuid";
 import { logger } from "../logger/index.js";
 
 export interface IApiEndpoint extends Document {
@@ -16,8 +16,11 @@ export interface IApiEndpoint extends Document {
   requestSchema: Record<string, unknown>;
   responseSchema: Record<string, unknown>;
   parameters: {
-    name: string; in: "path" | "query" | "header" | "body";
-    required: boolean; type: string; description: string;
+    name: string;
+    in: "path" | "query" | "header" | "body";
+    required: boolean;
+    type: string;
+    description: string;
   }[];
   isActive: boolean;
   createdAt: Date;
@@ -48,44 +51,58 @@ export interface ISDKClient extends Document {
   content: string;
 }
 
-const apiEndpointSchema = new Schema<IApiEndpoint>({
-  id: { type: String, required: true, unique: true },
-  orgId: { type: String, required: true, index: true },
-  path: { type: String, required: true },
-  method: { type: String, enum: ["GET", "POST", "PUT", "PATCH", "DELETE"], required: true },
-  name: { type: String, required: true },
-  description: { type: String, default: "" },
-  version: { type: String, default: "1.0" },
-  tags: [{ type: String }],
-  auth: { type: String, enum: ["none", "api_key", "session", "oauth"], default: "api_key" },
-  requestSchema: { type: Schema.Types.Mixed, default: {} },
-  responseSchema: { type: Schema.Types.Mixed, default: {} },
-  parameters: [{
-    name: String,
-    in: { type: String, enum: ["path", "query", "header", "body"] },
-    required: Boolean, type: String, description: String,
-  }],
-  isActive: { type: Boolean, default: true },
-}, { timestamps: true });
+const apiEndpointSchema = new Schema<IApiEndpoint>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    path: { type: String, required: true },
+    method: { type: String, enum: ["GET", "POST", "PUT", "PATCH", "DELETE"], required: true },
+    name: { type: String, required: true },
+    description: { type: String, default: "" },
+    version: { type: String, default: "1.0" },
+    tags: [{ type: String }],
+    auth: { type: String, enum: ["none", "api_key", "session", "oauth"], default: "api_key" },
+    requestSchema: { type: Schema.Types.Mixed, default: {} },
+    responseSchema: { type: Schema.Types.Mixed, default: {} },
+    parameters: [
+      {
+        name: String,
+        in: { type: String, enum: ["path", "query", "header", "body"] },
+        required: Boolean,
+        type: String,
+        description: String,
+      },
+    ],
+    isActive: { type: Boolean, default: true },
+  },
+  { timestamps: true },
+);
 
-const integrationSchema = new Schema<IIntegration>({
-  id: { type: String, required: true, unique: true },
-  orgId: { type: String, required: true, index: true },
-  name: { type: String, required: true },
-  provider: { type: String, required: true },
-  type: { type: String, enum: ["webhook", "oauth", "webhook_out", "custom"], required: true },
-  config: { type: Schema.Types.Mixed, default: {} },
-  status: { type: String, enum: ["active", "error", "disabled"], default: "active" },
-  lastSyncAt: Date,
-  error: String,
-  createdBy: String,
-}, { timestamps: true });
+const integrationSchema = new Schema<IIntegration>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    name: { type: String, required: true },
+    provider: { type: String, required: true },
+    type: { type: String, enum: ["webhook", "oauth", "webhook_out", "custom"], required: true },
+    config: { type: Schema.Types.Mixed, default: {} },
+    status: { type: String, enum: ["active", "error", "disabled"], default: "active" },
+    lastSyncAt: Date,
+    error: String,
+    createdBy: String,
+  },
+  { timestamps: true },
+);
 
 const sdkClientSchema = new Schema<ISDKClient>({
   id: { type: String, required: true, unique: true },
   orgId: { type: String, required: true, index: true },
   name: { type: String, required: true },
-  language: { type: String, enum: ["typescript", "javascript", "python", "go", "java", "curl"], required: true },
+  language: {
+    type: String,
+    enum: ["typescript", "javascript", "python", "go", "java", "curl"],
+    required: true,
+  },
   version: { type: String, default: "1.0.0" },
   endpoints: [{ type: String }],
   generatedAt: { type: Date, default: Date.now },
@@ -98,15 +115,21 @@ export const SDKClient = model<ISDKClient>("SDKClient", sdkClientSchema);
 
 export class SDKRegistry {
   async registerEndpoint(params: {
-    orgId: string; path: string; method: IApiEndpoint["method"];
-    name: string; description?: string; version?: string;
-    tags?: string[]; auth?: IApiEndpoint["auth"];
+    orgId: string;
+    path: string;
+    method: IApiEndpoint["method"];
+    name: string;
+    description?: string;
+    version?: string;
+    tags?: string[];
+    auth?: IApiEndpoint["auth"];
     requestSchema?: Record<string, unknown>;
     responseSchema?: Record<string, unknown>;
     parameters?: IApiEndpoint["parameters"];
   }): Promise<IApiEndpoint> {
     return ApiEndpoint.create({
-      id: uuid(), ...params,
+      id: uuid(),
+      ...params,
       description: params.description || "",
       version: params.version || "1.0",
       tags: params.tags || [],
@@ -133,23 +156,31 @@ export class SDKRegistry {
   }
 
   async registerIntegration(params: {
-    orgId: string; name: string; provider: string;
-    type: IIntegration["type"]; config?: Record<string, unknown>;
+    orgId: string;
+    name: string;
+    provider: string;
+    type: IIntegration["type"];
+    config?: Record<string, unknown>;
     createdBy: string;
   }): Promise<IIntegration> {
     return Integration.create({
-      id: uuid(), ...params,
+      id: uuid(),
+      ...params,
       config: params.config || {},
       status: "active",
     });
   }
 
   async getIntegrationsByOrg(orgId: string): Promise<{
-    total: number; active: number; error: number;
+    total: number;
+    active: number;
+    error: number;
     integrations: IIntegration[];
   }> {
     const [integrations, total, active, error] = await Promise.all([
-      Integration.find({ orgId }).sort({ createdAt: -1 }).lean() as unknown as Promise<IIntegration[]>,
+      Integration.find({ orgId }).sort({ createdAt: -1 }).lean() as unknown as Promise<
+        IIntegration[]
+      >,
       Integration.countDocuments({ orgId }),
       Integration.countDocuments({ orgId, status: "active" }),
       Integration.countDocuments({ orgId, status: "error" }),
@@ -181,10 +212,12 @@ export class SDKRegistry {
     }
 
     return SDKClient.create({
-      id: uuid(), orgId,
+      id: uuid(),
+      orgId,
       name: `${language}-sdk-v${ver}`,
-      language, version: ver,
-      endpoints: endpoints.map(e => `${e.method} ${e.path}`),
+      language,
+      version: ver,
+      endpoints: endpoints.map((e) => `${e.method} ${e.path}`),
       generatedAt: new Date(),
       content,
     });
@@ -205,9 +238,19 @@ export class SDKRegistry {
 
     for (const ep of endpoints) {
       const fnName = ep.name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
-      const params = ep.parameters?.filter((p: any) => p.in === "path").map((p: any) => `${p.name}: ${p.type === "string" ? "string" : p.type === "number" ? "number" : "string"}`).join(", ");
+      const params = ep.parameters
+        ?.filter((p: any) => p.in === "path")
+        .map(
+          (p: any) =>
+            `${p.name}: ${p.type === "string" ? "string" : p.type === "number" ? "number" : "string"}`,
+        )
+        .join(", ");
       const sig = params ? `${fnName}(${params})` : `${fnName}()`;
-      const path = ep.parameters?.filter((p: any) => p.in === "path").reduce((acc: string, p: any) => acc.replace(`{${p.name}}`, `\${${p.name}}`), ep.path) || ep.path;
+      const path =
+        ep.parameters
+          ?.filter((p: any) => p.in === "path")
+          .reduce((acc: string, p: any) => acc.replace(`{${p.name}}`, `\${${p.name}}`), ep.path) ||
+        ep.path;
       sdk += `  async ${sig}: Promise<any> {\n`;
       sdk += `    return this.request("${ep.method}", \`${path}\`);\n`;
       sdk += `  }\n\n`;

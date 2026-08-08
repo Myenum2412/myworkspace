@@ -20,9 +20,7 @@ interface CalendarConnection {
 
 // ── Webhook Handler ──────────────────────────────────────────────────
 
-export async function handleCalendarWebhook(
-  headers: Record<string, string>
-): Promise<boolean> {
+export async function handleCalendarWebhook(headers: Record<string, string>): Promise<boolean> {
   const channelId = headers["x-goog-channel-id"];
   const resourceState = headers["x-goog-resource-state"];
   const resourceId = headers["x-goog-resource-id"];
@@ -64,7 +62,7 @@ export async function handleCalendarWebhook(
 
 export async function setupCalendarWebhook(
   connectionId: string,
-  calendarId: string
+  calendarId: string,
 ): Promise<boolean> {
   const connection = await db
     .collection(collections.calendarConnections)
@@ -73,13 +71,15 @@ export async function setupCalendarWebhook(
   if (!connection) return false;
 
   const conn = connection as unknown as CalendarConnection;
-  
+
   // For now, just log the webhook setup request
-  console.log(`[Calendar Webhook] Setup requested for connection ${connectionId}, calendar ${calendarId}`);
-  
+  console.log(
+    `[Calendar Webhook] Setup requested for connection ${connectionId}, calendar ${calendarId}`,
+  );
+
   // In production, this would call the Google Calendar Watch API
   // and store the channel ID and expiration
-  
+
   return true;
 }
 

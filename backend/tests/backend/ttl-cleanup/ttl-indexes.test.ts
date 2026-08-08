@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
+import { v4 as uuid } from "uuid";
 import { Notification } from "../../../src/lib/db/models/Notification.js";
 import { Session } from "../../../src/lib/db/models/Session.js";
-import { v4 as uuid } from "uuid";
 
 describe("TTL indexes", () => {
   beforeAll(async () => {
@@ -14,19 +14,25 @@ describe("TTL indexes", () => {
     const db = mongoose.connection.db!;
 
     // Drop existing indexes that might conflict
-    try { await db.collection("notifications").dropIndex("notifications_ttl_test"); } catch {}
-    try { await db.collection("notifications").dropIndex("createdAt_1"); } catch {}
-    try { await db.collection("sessions").dropIndex("sessions_ttl_test"); } catch {}
-    try { await db.collection("sessions").dropIndex("expiresAt_1"); } catch {}
+    try {
+      await db.collection("notifications").dropIndex("notifications_ttl_test");
+    } catch {}
+    try {
+      await db.collection("notifications").dropIndex("createdAt_1");
+    } catch {}
+    try {
+      await db.collection("sessions").dropIndex("sessions_ttl_test");
+    } catch {}
+    try {
+      await db.collection("sessions").dropIndex("expiresAt_1");
+    } catch {}
 
-    await db.collection("notifications").createIndex(
-      { createdAt: 1 },
-      { expireAfterSeconds: 2, name: "notifications_ttl_test" },
-    );
-    await db.collection("sessions").createIndex(
-      { expiresAt: 1 },
-      { expireAfterSeconds: 1, name: "sessions_ttl_test" },
-    );
+    await db
+      .collection("notifications")
+      .createIndex({ createdAt: 1 }, { expireAfterSeconds: 2, name: "notifications_ttl_test" });
+    await db
+      .collection("sessions")
+      .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 1, name: "sessions_ttl_test" });
   });
 
   beforeEach(async () => {

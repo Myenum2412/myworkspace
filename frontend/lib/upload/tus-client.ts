@@ -1,9 +1,15 @@
+import SparkMD5 from "spark-md5";
 import * as tus from "tus-js-client";
 import { v4 as uuid } from "uuid";
-import SparkMD5 from "spark-md5";
-import type { UploadOptions, UploadFile, UploadSessionData, UploadStatus } from "./types";
-import { saveSession, getSession, updateSessionStatus, updateSessionOffset, deleteSession } from "./idb-sessions";
+import {
+  deleteSession,
+  getSession,
+  saveSession,
+  updateSessionOffset,
+  updateSessionStatus,
+} from "./idb-sessions";
 import { networkDetector } from "./network-detector";
+import type { UploadFile, UploadOptions, UploadSessionData, UploadStatus } from "./types";
 
 const TUS_ENDPOINT = process.env.NEXT_PUBLIC_TUS_ENDPOINT || "/api/files-tus";
 const DEFAULT_CHUNK_SIZE = 10 * 1024 * 1024;
@@ -83,7 +89,10 @@ export async function createUpload(
   const uploadId = generateUploadId();
   const checksum = await calculateChecksum(file);
   const chunkSize = options.chunkSize || networkDetector.getChunkSizeForNetwork();
-  const parallelCount = options.parallelUploads || networkDetector.getParallelUploadsForNetwork() || MAX_PARALLEL_UPLOADS;
+  const parallelCount =
+    options.parallelUploads ||
+    networkDetector.getParallelUploadsForNetwork() ||
+    MAX_PARALLEL_UPLOADS;
 
   const uploadFile: UploadFile = {
     id: uploadId,
@@ -280,7 +289,9 @@ export async function createUpload(
   };
 }
 
-export async function getUploadStatus(tusId: string): Promise<{ success: boolean; data: any } | null> {
+export async function getUploadStatus(
+  tusId: string,
+): Promise<{ success: boolean; data: any } | null> {
   try {
     const token = getAuthToken();
     const headers: Record<string, string> = {};
@@ -311,7 +322,6 @@ export async function resumePendingSessions(
       if (serverStatus === "finalized" || serverStatus === "duplicate") {
         await updateSessionStatus(session.uploadId, "completed");
         onComplete?.({ success: true, fileId: fileId || undefined });
-        continue;
       }
     }
   }

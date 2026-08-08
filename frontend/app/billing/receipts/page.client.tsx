@@ -1,20 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import {
-  ReceiptIcon,
-  SearchIcon,
-  ChevronDownIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  RotateCcwIcon,
-  AlertTriangleIcon,
-  BanIcon,
-  RefreshCwIcon,
-} from "@/lib/icons";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -22,9 +13,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { TableHead } from "@/components/ui/table";
-import { toast } from "sonner";
+import {
+  AlertTriangleIcon,
+  BanIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ReceiptIcon,
+  RefreshCwIcon,
+  RotateCcwIcon,
+  SearchIcon,
+  XCircleIcon,
+} from "@/lib/icons";
 
 type ReceiptStatus = "paid" | "refunded" | "pending" | "failed" | "cancelled";
 
@@ -44,12 +44,42 @@ interface Receipt {
   createdAt: string;
 }
 
-const STATUS_OPTIONS: { value: ReceiptStatus; label: string; icon: React.ReactNode; color: string }[] = [
-  { value: "paid", label: "Paid", icon: <CheckCircleIcon className="size-3.5" />, color: "bg-emerald-50 text-emerald-700 ring-emerald-600/20" },
-  { value: "pending", label: "Pending", icon: <AlertTriangleIcon className="size-3.5" />, color: "bg-amber-50 text-amber-700 ring-amber-600/20" },
-  { value: "failed", label: "Failed", icon: <XCircleIcon className="size-3.5" />, color: "bg-red-50 text-red-700 ring-red-600/20" },
-  { value: "refunded", label: "Refunded", icon: <RotateCcwIcon className="size-3.5" />, color: "bg-blue-50 text-blue-700 ring-blue-600/20" },
-  { value: "cancelled", label: "Cancelled", icon: <BanIcon className="size-3.5" />, color: "bg-gray-50 text-gray-600 ring-gray-500/10" },
+const STATUS_OPTIONS: {
+  value: ReceiptStatus;
+  label: string;
+  icon: React.ReactNode;
+  color: string;
+}[] = [
+  {
+    value: "paid",
+    label: "Paid",
+    icon: <CheckCircleIcon className="size-3.5" />,
+    color: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
+  },
+  {
+    value: "pending",
+    label: "Pending",
+    icon: <AlertTriangleIcon className="size-3.5" />,
+    color: "bg-amber-50 text-amber-700 ring-amber-600/20",
+  },
+  {
+    value: "failed",
+    label: "Failed",
+    icon: <XCircleIcon className="size-3.5" />,
+    color: "bg-red-50 text-red-700 ring-red-600/20",
+  },
+  {
+    value: "refunded",
+    label: "Refunded",
+    icon: <RotateCcwIcon className="size-3.5" />,
+    color: "bg-blue-50 text-blue-700 ring-blue-600/20",
+  },
+  {
+    value: "cancelled",
+    label: "Cancelled",
+    icon: <BanIcon className="size-3.5" />,
+    color: "bg-gray-50 text-gray-600 ring-gray-500/10",
+  },
 ];
 
 const STATUS_MAP: Record<string, ReceiptStatus> = {
@@ -61,15 +91,20 @@ const STATUS_MAP: Record<string, ReceiptStatus> = {
 };
 
 function formatCurrency(amount: number, currency: string) {
-  const symbol = currency === "INR" ? "₹" : currency === "USD" ? "$" : currency === "EUR" ? "€" : currency + " ";
-  return symbol + amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const symbol =
+    currency === "INR" ? "₹" : currency === "USD" ? "$" : currency === "EUR" ? "€" : currency + " ";
+  return (
+    symbol + amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  );
 }
 
 function ReceiptStatusBadge({ status }: { status: ReceiptStatus }) {
   const opt = STATUS_OPTIONS.find((s) => s.value === status);
   if (!opt) return <Badge variant="outline">{status}</Badge>;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-sm px-2 py-1 text-xs font-medium ring-1 ring-inset ${opt.color}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-sm px-2 py-1 text-xs font-medium ring-1 ring-inset ${opt.color}`}
+    >
       {opt.icon}
       {opt.label}
     </span>
@@ -114,10 +149,19 @@ export default function ReceiptsPageClient() {
     params.set("limit", "100");
     params.set("orgId", orgId);
     fetch(`/api/receipts?${params}`, { credentials: "include", signal: controller.signal })
-      .then((r) => { if (!r.ok) throw new Error("Failed to load"); return r.json(); })
-      .then((data) => { if (!controller.signal.aborted) setReceipts(data.data || []); })
-      .catch(() => { if (!controller.signal.aborted) setError("Failed to load receipts"); })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load");
+        return r.json();
+      })
+      .then((data) => {
+        if (!controller.signal.aborted) setReceipts(data.data || []);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setError("Failed to load receipts");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
     return () => controller.abort();
   }, [statusFilter, orgId]);
 
@@ -174,19 +218,37 @@ export default function ReceiptsPageClient() {
       {/* Stats */}
       <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-xs text-[#64748B] font-medium">Total Receipts</CardTitle></CardHeader>
-          <CardContent><div className="text-xl font-bold text-[#0F172A]">{receipts.length}</div></CardContent>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs text-[#64748B] font-medium">Total Receipts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold text-[#0F172A]">{receipts.length}</div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-xs text-[#64748B] font-medium">Total Amount</CardTitle></CardHeader>
-          <CardContent><div className="text-xl font-bold text-[#0F172A]">{formatCurrency(totalAmount, "INR")}</div></CardContent>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs text-[#64748B] font-medium">Total Amount</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold text-[#0F172A]">
+              {formatCurrency(totalAmount, "INR")}
+            </div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-xs text-[#64748B] font-medium">Collected</CardTitle></CardHeader>
-          <CardContent><div className="text-xl font-bold text-emerald-600">{formatCurrency(paidAmount, "INR")}</div></CardContent>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs text-[#64748B] font-medium">Collected</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold text-emerald-600">
+              {formatCurrency(paidAmount, "INR")}
+            </div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-xs text-[#64748B] font-medium">Pending / Refunded</CardTitle></CardHeader>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs text-[#64748B] font-medium">Pending / Refunded</CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="text-xl font-bold text-[#0F172A]">
               {pendingCount} / {refundedCount}
@@ -213,7 +275,9 @@ export default function ReceiptsPageClient() {
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
             {STATUS_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -225,7 +289,9 @@ export default function ReceiptsPageClient() {
           {loading ? (
             <div className="flex-1 py-16" />
           ) : error ? (
-            <div className="flex items-center justify-center py-16 text-red-500 text-sm">{error}</div>
+            <div className="flex items-center justify-center py-16 text-red-500 text-sm">
+              {error}
+            </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-[#94A3B8]">
               <ReceiptIcon className="size-10 mb-3 opacity-30" />
@@ -251,7 +317,9 @@ export default function ReceiptsPageClient() {
                   {filtered.map((receipt) => (
                     <tr key={receipt.id} className="hover:bg-[#FAFBFC]">
                       <td>
-                        <span className="font-medium text-sm text-[#0F172A]">{receipt.receiptNumber}</span>
+                        <span className="font-medium text-sm text-[#0F172A]">
+                          {receipt.receiptNumber}
+                        </span>
                       </td>
                       <td>
                         <div className="text-sm text-[#0F172A]">{receipt.customerName}</div>
@@ -281,7 +349,9 @@ export default function ReceiptsPageClient() {
                       <td className="text-right">
                         <Select
                           value={receipt.status}
-                          onValueChange={(val) => handleStatusChange(receipt.id, val as ReceiptStatus)}
+                          onValueChange={(val) =>
+                            handleStatusChange(receipt.id, val as ReceiptStatus)
+                          }
                           disabled={updatingId === receipt.id}
                         >
                           <SelectTrigger className="h-9 w-40 rounded-sm border-[#E5E7EB] text-xs ml-auto">

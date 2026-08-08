@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { X, Cookie, Shield } from "@/lib/icons";
-import { useConsentStore } from "@/lib/consent/store";
+import { Button } from "@/components/ui/button";
 import { applyConsent } from "@/lib/analytics/script-loader";
 import { tracker } from "@/lib/analytics/tracker";
-import { Button } from "@/components/ui/button";
+import { useConsentStore } from "@/lib/consent/store";
+import { Cookie, Shield, X } from "@/lib/icons";
 
 const CATEGORY_LABELS: Record<string, { title: string; description: string }> = {
   essential: {
@@ -35,7 +35,17 @@ const CATEGORY_LABELS: Record<string, { title: string; description: string }> = 
 };
 
 export function CookieBanner() {
-  const { consent, showBanner, showPreferences, setShowPreferences, acceptAll, rejectNonEssential, savePreferences, init, initialized } = useConsentStore();
+  const {
+    consent,
+    showBanner,
+    showPreferences,
+    setShowPreferences,
+    acceptAll,
+    rejectNonEssential,
+    savePreferences,
+    init,
+    initialized,
+  } = useConsentStore();
 
   useEffect(() => {
     init();
@@ -130,9 +140,7 @@ export function CookieBanner() {
             <div className="flex items-center justify-between p-4 border-b border-border">
               <div className="flex items-center gap-2">
                 <Shield className="size-5 text-primary" />
-                <h3 className="text-base font-semibold text-foreground">
-                  Cookie Preferences
-                </h3>
+                <h3 className="text-base font-semibold text-foreground">Cookie Preferences</h3>
               </div>
               <button
                 onClick={() => setShowPreferences(false)}
@@ -144,20 +152,26 @@ export function CookieBanner() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               <p className="text-sm text-muted-foreground mb-4">
-                Manage your cookie preferences below. Essential cookies are always enabled
-                as they are required for the platform to function.
+                Manage your cookie preferences below. Essential cookies are always enabled as they
+                are required for the platform to function.
               </p>
 
-              {(["essential", "functional", "analytics", "performance", "personalization", "marketing"] as const).map((key) => {
+              {(
+                [
+                  "essential",
+                  "functional",
+                  "analytics",
+                  "performance",
+                  "personalization",
+                  "marketing",
+                ] as const
+              ).map((key) => {
                 const info = CATEGORY_LABELS[key];
                 const isEssential = key === "essential";
                 const checked = consent?.categories?.[key] ?? isEssential;
 
                 return (
-                  <div
-                    key={key}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
-                  >
+                  <div key={key} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                     <div className="flex-1 min-w-0">
                       <label
                         htmlFor={`cookie-${key}`}
@@ -174,8 +188,13 @@ export function CookieBanner() {
                       disabled={isEssential}
                       onChange={(e) => {
                         // For simplicity we use direct store updates
-                        const cats = { ...(consent?.categories || {}), [key]: e.target.checked } as any;
-                        useConsentStore.setState({ consent: { ...consent!, categories: cats } } as any);
+                        const cats = {
+                          ...(consent?.categories || {}),
+                          [key]: e.target.checked,
+                        } as any;
+                        useConsentStore.setState({
+                          consent: { ...consent!, categories: cats },
+                        } as any);
                       }}
                       className="mt-1 size-4 rounded border-border text-primary focus:ring-primary disabled:opacity-50"
                     />

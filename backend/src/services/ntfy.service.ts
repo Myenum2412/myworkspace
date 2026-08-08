@@ -31,10 +31,14 @@ export function getUserTopic(userId: string): string {
 
 function toPriority(priority?: string): number {
   switch (priority) {
-    case "critical": return 5;
-    case "high": return 4;
-    case "normal": return 3;
-    default: return 3;
+    case "critical":
+      return 5;
+    case "high":
+      return 4;
+    case "normal":
+      return 3;
+    default:
+      return 3;
   }
 }
 
@@ -42,15 +46,46 @@ function toTags(tag?: string, type?: string): string[] {
   const tags: string[] = [];
   if (type) {
     const normalized = type.toLowerCase();
-    if (normalized.includes("success") || normalized.includes("complete") || normalized.includes("approved")) tags.push("white_check_mark");
-    else if (normalized.includes("fail") || normalized.includes("reject") || normalized.includes("error") || normalized.includes("denied")) tags.push("warning");
+    if (
+      normalized.includes("success") ||
+      normalized.includes("complete") ||
+      normalized.includes("approved")
+    )
+      tags.push("white_check_mark");
+    else if (
+      normalized.includes("fail") ||
+      normalized.includes("reject") ||
+      normalized.includes("error") ||
+      normalized.includes("denied")
+    )
+      tags.push("warning");
     else if (normalized.includes("task")) tags.push("clipboard");
-    else if (normalized.includes("file") || normalized.includes("upload") || normalized.includes("share")) tags.push("page_facing_up");
-    else if (normalized.includes("security") || normalized.includes("login") || normalized.includes("auth")) tags.push("lock");
-    else if (normalized.includes("billing") || normalized.includes("payment") || normalized.includes("invoice")) tags.push("moneybag");
+    else if (
+      normalized.includes("file") ||
+      normalized.includes("upload") ||
+      normalized.includes("share")
+    )
+      tags.push("page_facing_up");
+    else if (
+      normalized.includes("security") ||
+      normalized.includes("login") ||
+      normalized.includes("auth")
+    )
+      tags.push("lock");
+    else if (
+      normalized.includes("billing") ||
+      normalized.includes("payment") ||
+      normalized.includes("invoice")
+    )
+      tags.push("moneybag");
   }
   if (tag && tag !== "default") {
-    tags.push(...tag.split(/[^a-zA-Z0-9_-]+/).filter(Boolean).map((t) => t.toLowerCase()));
+    tags.push(
+      ...tag
+        .split(/[^a-zA-Z0-9_-]+/)
+        .filter(Boolean)
+        .map((t) => t.toLowerCase()),
+    );
   }
   return tags;
 }
@@ -67,7 +102,7 @@ export async function publishToUser(
     tag?: string;
     priority?: string;
     type?: string;
-  }
+  },
 ) {
   if (!ntfyConfigured) return { success: false, reason: "ntfy not configured" };
 

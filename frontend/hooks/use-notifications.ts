@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { getSocketIO } from "@/lib/socketio-client";
-import { useNotificationPermission } from "./use-notification-permission";
-import { subscribeToPush } from "@/lib/push-subscription";
-import { useNotificationStore } from "../stores/notification-store";
-import { playSound } from "@/lib/sound-engine";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { drop004Sound } from "@/lib/drop-004";
+import { subscribeToPush } from "@/lib/push-subscription";
+import { getSocketIO } from "@/lib/socketio-client";
+import { playSound } from "@/lib/sound-engine";
+import { useNotificationStore } from "../stores/notification-store";
+import { useNotificationPermission } from "./use-notification-permission";
 
 export interface NotificationAction {
   label: string;
@@ -57,52 +57,55 @@ export function useNotifications(userId?: string) {
   userIdRef.current = userId;
   const soundEnabledRef = useRef(true);
 
-  const fetchNotifications = useCallback(async (reset = false, signal?: AbortSignal, filters?: Record<string, string>) => {
-    if (!userIdRef.current) return;
-    setLoading(true);
-    try {
-      const currentOffset = reset ? 0 : offsetRef.current;
-      const params = new URLSearchParams({
-        limit: "50",
-        offset: String(currentOffset),
-        ...(filters?.category && { category: filters.category }),
-        ...(filters?.type && { type: filters.type }),
-        ...(filters?.priority && { priority: filters.priority }),
-        ...(filters?.search && { search: filters.search }),
-        ...(filters?.startDate && { startDate: filters.startDate }),
-        ...(filters?.endDate && { endDate: filters.endDate }),
-        ...(filters?.unreadOnly === "true" && { unreadOnly: "true" }),
-        ...(filters?.archived === "true" && { archived: "true" }),
-      });
-      const res = await fetch(`/api/notifications?${params}`, { credentials: "include", signal });
-      if (res.ok) {
-        const d = await res.json();
-        const list: NotificationItem[] = (d.notifications || []).map((n: any) => ({
-          ...n,
-          id: n.id || n._id,
-        }));
-        if (reset) {
-          setNotifications(list);
-          store.setNotifications(list);
-          offsetRef.current = list.length;
-        } else {
-          const current = useNotificationStore.getState().notifications;
-          const map = new Map(current.map((n) => [n.id, n]));
-          for (const n of list) map.set(n.id, n);
-          const merged = Array.from(map.values());
-          setNotifications(merged);
-          store.setNotifications(merged);
-          offsetRef.current += list.length;
+  const fetchNotifications = useCallback(
+    async (reset = false, signal?: AbortSignal, filters?: Record<string, string>) => {
+      if (!userIdRef.current) return;
+      setLoading(true);
+      try {
+        const currentOffset = reset ? 0 : offsetRef.current;
+        const params = new URLSearchParams({
+          limit: "50",
+          offset: String(currentOffset),
+          ...(filters?.category && { category: filters.category }),
+          ...(filters?.type && { type: filters.type }),
+          ...(filters?.priority && { priority: filters.priority }),
+          ...(filters?.search && { search: filters.search }),
+          ...(filters?.startDate && { startDate: filters.startDate }),
+          ...(filters?.endDate && { endDate: filters.endDate }),
+          ...(filters?.unreadOnly === "true" && { unreadOnly: "true" }),
+          ...(filters?.archived === "true" && { archived: "true" }),
+        });
+        const res = await fetch(`/api/notifications?${params}`, { credentials: "include", signal });
+        if (res.ok) {
+          const d = await res.json();
+          const list: NotificationItem[] = (d.notifications || []).map((n: any) => ({
+            ...n,
+            id: n.id || n._id,
+          }));
+          if (reset) {
+            setNotifications(list);
+            store.setNotifications(list);
+            offsetRef.current = list.length;
+          } else {
+            const current = useNotificationStore.getState().notifications;
+            const map = new Map(current.map((n) => [n.id, n]));
+            for (const n of list) map.set(n.id, n);
+            const merged = Array.from(map.values());
+            setNotifications(merged);
+            store.setNotifications(merged);
+            offsetRef.current += list.length;
+          }
+          setHasMore(list.length >= 50);
+          setTotal(d.total || list.length);
+          const unread = d.unread ?? list.filter((n: NotificationItem) => !n.read).length;
+          setUnreadCount(unread);
+          store.setUnreadCount(unread);
         }
-        setHasMore(list.length >= 50);
-        setTotal(d.total || list.length);
-        const unread = d.unread ?? list.filter((n: NotificationItem) => !n.read).length;
-        setUnreadCount(unread);
-        store.setUnreadCount(unread);
-      }
-    } catch {}
-    setLoading(false);
-  }, []);
+      } catch {}
+      setLoading(false);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!userId) return;
@@ -217,9 +220,7 @@ export function useNotifications(userId?: string) {
     } catch {}
     store.updateNotification(id, { read: true });
     store.decrementUnread();
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     setUnreadCount((c) => Math.max(0, c - 1));
   }, []);
 
@@ -287,7 +288,7 @@ export function useNotifications(userId?: string) {
     } catch {}
     store.updateNotification(id, { snoozedUntil: until.toISOString() });
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, snoozedUntil: until.toISOString() } : n))
+      prev.map((n) => (n.id === id ? { ...n, snoozedUntil: until.toISOString() } : n)),
     );
   }, []);
 

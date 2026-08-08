@@ -39,7 +39,11 @@ function checkDevTools(): boolean {
   }
 
   // Method 2: Check Firebug
-  if (typeof (window as any).Firebug !== "undefined" && (window as any).Firebug.chrome && (window as any).Firebug.chrome.isInitialized) {
+  if (
+    typeof (window as any).Firebug !== "undefined" &&
+    (window as any).Firebug.chrome &&
+    (window as any).Firebug.chrome.isInitialized
+  ) {
     return true;
   }
 

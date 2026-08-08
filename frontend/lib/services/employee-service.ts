@@ -72,12 +72,16 @@ async function apiFetch<T>(url: string, options: RequestInit): Promise<T> {
 }
 
 async function createEmployee(data: CreateEmployeeInput): Promise<Record<string, unknown>> {
-  console.log(`[API POST /api/employees] Creating employee: ${data.firstName} ${data.lastName} <${data.email}>`);
+  console.log(
+    `[API POST /api/employees] Creating employee: ${data.firstName} ${data.lastName} <${data.email}>`,
+  );
   return apiFetch("/api/employees", { method: "POST", body: JSON.stringify(data) });
 }
 
 async function updateEmployee(data: UpdateEmployeeInput): Promise<Record<string, unknown>> {
-  console.log(`[API PUT /api/employees/${data.id}] Updating employee: ${data.firstName} ${data.lastName}`);
+  console.log(
+    `[API PUT /api/employees/${data.id}] Updating employee: ${data.firstName} ${data.lastName}`,
+  );
   return apiFetch(`/api/employees/${data.id}`, { method: "PUT", body: JSON.stringify(data) });
 }
 
@@ -91,9 +95,21 @@ async function getAllEmployees(): Promise<Array<Record<string, unknown>>> {
   return data.employees || data.data || data || [];
 }
 
-async function resendCredentialsEmail(userId: string): Promise<{ success: boolean; emailStatus: string; error?: string; newTempPassword?: string }> {
-  console.log(`[API POST /api/employees/resend-email] Resending credentials email for user: ${userId}`);
-  return apiFetch("/api/employees/resend-email", { method: "POST", body: JSON.stringify({ userId }) });
+async function resendCredentialsEmail(
+  userId: string,
+): Promise<{ success: boolean; emailStatus: string; error?: string; newTempPassword?: string }> {
+  console.log(
+    `[API POST /api/employees/resend-email] Resending credentials email for user: ${userId}`,
+  );
+  return apiFetch("/api/employees/resend-email", {
+    method: "POST",
+    body: JSON.stringify({ userId }),
+  });
 }
 
-export const employeeService = { createEmployee, updateEmployee, getAllEmployees, resendCredentialsEmail };
+export const employeeService = {
+  createEmployee,
+  updateEmployee,
+  getAllEmployees,
+  resendCredentialsEmail,
+};

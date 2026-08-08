@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { type ColumnDef } from "@tanstack/react-table";
+import { useMemo } from "react";
+import { DataTable } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ListTodoIcon } from "@/lib/icons";
-import { DataTable } from "@/components/data-table";
 
 const statusStyles: Record<string, string> = {
   todo: "bg-gray-100 text-gray-700",
@@ -40,34 +40,33 @@ interface AllocatedTaskRow {
 export function StaffRecentAllocatedTasks({ tasks }: { tasks: any[] }) {
   const visible = useMemo(() => tasks.slice(0, MAX_ROWS), [tasks]);
 
-  const columns = useMemo<ColumnDef<AllocatedTaskRow>[]>(() => [
-    {
-      id: "index",
-      header: "Task #",
-      cell: ({ row }) => (
-        <span className="font-mono text-xs text-muted-foreground">
-          #{row.index + 1}
-        </span>
-      ),
-      size: 80,
-    },
-    {
-      accessorKey: "title",
-      header: "Task title",
-      cell: ({ row }) => (
-        <span className="font-medium">{row.original.title}</span>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => (
-        <Badge className={statusStyles[row.original.status] || "bg-gray-100 text-gray-700"}>
-          {row.original.status.replace(/_/g, " ")}
-        </Badge>
-      ),
-    },
-  ], []);
+  const columns = useMemo<ColumnDef<AllocatedTaskRow>[]>(
+    () => [
+      {
+        id: "index",
+        header: "Task #",
+        cell: ({ row }) => (
+          <span className="font-mono text-xs text-muted-foreground">#{row.index + 1}</span>
+        ),
+        size: 80,
+      },
+      {
+        accessorKey: "title",
+        header: "Task title",
+        cell: ({ row }) => <span className="font-medium">{row.original.title}</span>,
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => (
+          <Badge className={statusStyles[row.original.status] || "bg-gray-100 text-gray-700"}>
+            {row.original.status.replace(/_/g, " ")}
+          </Badge>
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-2">

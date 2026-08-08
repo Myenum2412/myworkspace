@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { env } from "../../config/env.js";
-import { collections } from "./collections.js";
 import { logger } from "../logger/index.js";
+import { collections } from "./collections.js";
 
 export { collections };
 
@@ -23,7 +23,10 @@ export async function connectDb() {
       compressors: ["zstd", "snappy", "zlib"],
       readPreference: "secondaryPreferred",
     });
-    logger.info({ database: mongoose.connection.db?.databaseName, host: mongoose.connection.host }, "Connected to MongoDB");
+    logger.info(
+      { database: mongoose.connection.db?.databaseName, host: mongoose.connection.host },
+      "Connected to MongoDB",
+    );
   } catch (err: any) {
     logger.warn({ err: err.message }, "MongoDB Atlas unavailable, falling back to in-memory");
 

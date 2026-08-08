@@ -1,18 +1,16 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  PlusIcon, ListTodoIcon, SearchIcon,
-} from "@/lib/icons";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { TaskDetailedView } from "@/components/task-detailed-view";
-import { TaskDataTable } from "@/components/task-data-table";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/api";
 import Stats07 from "@/components/stats-07";
+import { TaskDataTable } from "@/components/task-data-table";
+import { TaskDetailedView } from "@/components/task-detailed-view";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { apiFetch } from "@/lib/api";
+import { ListTodoIcon, PlusIcon, SearchIcon } from "@/lib/icons";
 
 type UiTask = {
   _id: string;
@@ -56,7 +54,10 @@ export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId
   const [selectedTask, setSelectedTask] = useState<UiTask | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const queryKey = useMemo(() => ["tasks", "my", orgId, sessionUserId] as const, [orgId, sessionUserId]);
+  const queryKey = useMemo(
+    () => ["tasks", "my", orgId, sessionUserId] as const,
+    [orgId, sessionUserId],
+  );
   const seeded = useRef(false);
   useEffect(() => {
     if (seeded.current || !orgId) return;
@@ -75,7 +76,9 @@ export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId
         if (!res.ok) return [];
         const d = await res.json();
         return d.data || [];
-      } catch { return []; }
+      } catch {
+        return [];
+      }
     },
     staleTime: 30_000,
     gcTime: 5 * 60_000,
@@ -116,17 +119,25 @@ export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId
     return counts;
   }, [filteredTasks]);
 
-  const handleDelete = useCallback(async (t: UiTask) => {
-    try {
-      const res = await apiFetch(`/api/tasks/${t._id}`, { method: "DELETE" });
-      if (res.ok) {
-        setTasks((prev) => prev.filter((x) => x._id !== t._id));
+  const handleDelete = useCallback(
+    async (t: UiTask) => {
+      try {
+        const res = await apiFetch(`/api/tasks/${t._id}`, { method: "DELETE" });
+        if (res.ok) {
+          setTasks((prev) => prev.filter((x) => x._id !== t._id));
+        }
+      } catch (error) {
+        const msg =
+          error instanceof TypeError && error.message === "Failed to fetch"
+            ? "Could not connect to server"
+            : error instanceof Error
+              ? error.message
+              : "Could not delete task";
+        toast.error(msg);
       }
-    } catch (error) {
-      const msg = error instanceof TypeError && error.message === "Failed to fetch" ? "Could not connect to server" : error instanceof Error ? error.message : "Could not delete task";
-      toast.error(msg);
-    }
-  }, [setTasks]);
+    },
+    [setTasks],
+  );
 
   return (
     <>
@@ -134,7 +145,9 @@ export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="w-full sm:w-auto">
             <h1 className="text-xl sm:text-2xl font-bold">All Tasks</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Tasks assigned to you and your teams</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Tasks assigned to you and your teams
+            </p>
           </div>
           <div className="flex-1 flex justify-center max-w-md mx-4">
             <div className="relative w-full">
@@ -147,7 +160,7 @@ export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId
               />
             </div>
           </div>
-          <Button onClick={() => router.push('/createtask')} className="touch-target">
+          <Button onClick={() => router.push("/createtask")} className="touch-target">
             <PlusIcon className="mr-2 size-4" />
             New Task
           </Button>
@@ -155,11 +168,11 @@ export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId
 
         <Stats07
           items={[
-            { name: 'Total Tasks', value: filteredTasks.length, subtitle: 'All tasks' },
+            { name: "Total Tasks", value: filteredTasks.length, subtitle: "All tasks" },
             ...Object.entries(summary).map(([status, count]) => ({
-              name: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+              name: status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
               value: count,
-              subtitle: `${status.replace(/_/g, ' ')} tasks`,
+              subtitle: `${status.replace(/_/g, " ")} tasks`,
             })),
           ]}
         />
@@ -167,13 +180,21 @@ export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId
         <div className="flex flex-col flex-1 min-h-0">
           <div className="flex items-center gap-4 mb-4">
             <h2 className="text-lg font-semibold shrink-0">All Tasks</h2>
-            <span className="text-sm text-muted-foreground shrink-0 ml-auto">{filteredTasks.length} tasks</span>
+            <span className="text-sm text-muted-foreground shrink-0 ml-auto">
+              {filteredTasks.length} tasks
+            </span>
           </div>
           <div className="flex-1 min-h-0">
             <TaskDataTable
               data={filteredTasks}
-              onView={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
-              onEdit={(t) => { setSelectedTask(t as unknown as UiTask); setViewOpen(true); }}
+              onView={(t) => {
+                setSelectedTask(t as unknown as UiTask);
+                setViewOpen(true);
+              }}
+              onEdit={(t) => {
+                setSelectedTask(t as unknown as UiTask);
+                setViewOpen(true);
+              }}
               onDelete={(t) => handleDelete(t as UiTask)}
               searchPlaceholder="Search tasks..."
               emptyMessage="No tasks found."
@@ -192,9 +213,12 @@ export default function AllTasksInteractive({ initialTasks, orgId, sessionUserId
                 task={selectedTask}
                 editable
                 onTaskUpdate={(updated) => {
-                  setTasks((prev) => prev.map((t) => t._id === updated._id ? updated : t));
+                  setTasks((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
                 }}
-                onClose={() => { setViewOpen(false); setSelectedTask(null); }}
+                onClose={() => {
+                  setViewOpen(false);
+                  setSelectedTask(null);
+                }}
               />
             </div>
           </div>

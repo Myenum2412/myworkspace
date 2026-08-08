@@ -12,7 +12,13 @@
   "id": "/",
   "lang": "en-US",
   "dir": "ltr",
-  "categories": ["productivity", "business", "collaboration", "project management", "task management"],
+  "categories": [
+    "productivity",
+    "business",
+    "collaboration",
+    "project management",
+    "task management"
+  ],
   "description": "The complete SaaS platform for workspace management, project management, team collaboration, task management, employee management, and business automation.",
   "iarc_rating_id": "N/A",
   "edge_side_panel": {

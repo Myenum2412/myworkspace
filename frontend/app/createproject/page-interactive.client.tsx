@@ -1,24 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  Loader2,
-  CalendarIcon,
-  AlertCircleIcon,
-  ArrowLeftIcon,
-  PaletteIcon,
-} from "@/lib/icons";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { createProjectAction } from "@/actions/projects";
 
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { GoogleDocsEditor } from "@/components/ui/google-docs-editor";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { GoogleDocsEditor } from "@/components/ui/google-docs-editor";
-
-import { createProjectAction } from "@/actions/projects";
 
 import {
   Select,
@@ -27,15 +20,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { Separator } from "@/components/ui/separator";
+import { AlertCircleIcon, ArrowLeftIcon, CalendarIcon, Loader2, PaletteIcon } from "@/lib/icons";
 
 const colors = [
-  "#93c5fd", "#fca5a5", "#86efac", "#fcd34d", "#c4b5fd",
-  "#f9a8d4", "#67e8f9", "#fdba74", "#6ee7b7", "#a5b4fc",
+  "#93c5fd",
+  "#fca5a5",
+  "#86efac",
+  "#fcd34d",
+  "#c4b5fd",
+  "#f9a8d4",
+  "#67e8f9",
+  "#fdba74",
+  "#6ee7b7",
+  "#a5b4fc",
 ];
 
-function FormField({ label, required, className, children }: { label: string; required?: boolean; className?: string; children: React.ReactNode }) {
+function FormField({
+  label,
+  required,
+  className,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className={`space-y-1.5 ${className || ""}`}>
       <Label className="text-xs font-medium text-muted-foreground">
@@ -64,7 +75,9 @@ export function CreateProjectPageInteractive() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/clients", { credentials: "include" }).then((r) => r.json()).catch(() => []),
+      fetch("/api/clients", { credentials: "include" })
+        .then((r) => r.json())
+        .catch(() => []),
     ]).then(([clientsRes]) => {
       const clientArr = Array.isArray(clientsRes) ? clientsRes : clientsRes?.data || [];
       const names = clientArr.map((c: { name?: string }) => c.name).filter(Boolean);
@@ -117,14 +130,19 @@ export function CreateProjectPageInteractive() {
     <>
       <div className="px-6 py-4 shrink-0">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="" onClick={() => { router.back(); }}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className=""
+            onClick={() => {
+              router.back();
+            }}
+          >
             <ArrowLeftIcon className="size-4" />
           </Button>
           <div>
             <h2 className="text-xl font-semibold">Create New Project</h2>
-            <p className="text-sm text-muted-foreground">
-              Set up a new project for your team
-            </p>
+            <p className="text-sm text-muted-foreground">Set up a new project for your team</p>
           </div>
         </div>
       </div>
@@ -155,10 +173,14 @@ export function CreateProjectPageInteractive() {
                 </SelectTrigger>
                 <SelectContent>
                   {clientList.length === 0 ? (
-                    <div className="px-2 py-4 text-center text-xs text-muted-foreground">No clients</div>
+                    <div className="px-2 py-4 text-center text-xs text-muted-foreground">
+                      No clients
+                    </div>
                   ) : (
                     clientList.map((c) => (
-                      <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
+                      <SelectItem key={c} value={c} className="text-sm">
+                        {c}
+                      </SelectItem>
                     ))
                   )}
                 </SelectContent>
@@ -170,7 +192,13 @@ export function CreateProjectPageInteractive() {
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="justify-between text-sm font-normal">
                     {deadline ? (
-                      <span>{deadline.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      <span>
+                        {deadline.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </span>
                     ) : (
                       <span className="text-muted-foreground">Pick a date</span>
                     )}
@@ -178,7 +206,14 @@ export function CreateProjectPageInteractive() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 rounded-sm" align="start">
-                  <Calendar mode="single" selected={deadline} onSelect={(d) => { setDeadline(d); setDeadlineOpen(false); }} />
+                  <Calendar
+                    mode="single"
+                    selected={deadline}
+                    onSelect={(d) => {
+                      setDeadline(d);
+                      setDeadlineOpen(false);
+                    }}
+                  />
                 </PopoverContent>
               </Popover>
             </FormField>
@@ -191,7 +226,7 @@ export function CreateProjectPageInteractive() {
                       key={c}
                       type="button"
                       onClick={() => setColor(c)}
-                      className={`rounded-sm ring-offset-2 ring-offset-background transition-all ${ color === c ? "ring-2 ring-foreground scale-110" : "" }`}
+                      className={`rounded-sm ring-offset-2 ring-offset-background transition-all ${color === c ? "ring-2 ring-foreground scale-110" : ""}`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
@@ -212,10 +247,7 @@ export function CreateProjectPageInteractive() {
         <fieldset className="border p-4 space-y-4 flex flex-col h-full">
           <legend className="text-sm font-semibold px-2">Description</legend>
           <div className="flex-1 min-h-0">
-            <GoogleDocsEditor
-              value={description}
-              onChange={setDescription}
-            />
+            <GoogleDocsEditor value={description} onChange={setDescription} />
           </div>
         </fieldset>
       </div>
@@ -223,17 +255,19 @@ export function CreateProjectPageInteractive() {
       <div className="flex items-center justify-between gap-3 px-6 py-4 border-t shrink-0">
         <Button
           variant="ghost"
-          onClick={() => { router.back(); }}
+          onClick={() => {
+            router.back();
+          }}
           disabled={isSubmitting}
         >
           Cancel
         </Button>
-        <Button
-          onClick={handleSubmit}
-          disabled={isSubmitting || !name.trim() || !client.trim()}
-        >
+        <Button onClick={handleSubmit} disabled={isSubmitting || !name.trim() || !client.trim()}>
           {isSubmitting ? (
-            <><Loader2 className="animate-spin mr-1.5" />Creating...</>
+            <>
+              <Loader2 className="animate-spin mr-1.5" />
+              Creating...
+            </>
           ) : (
             "Create Project"
           )}

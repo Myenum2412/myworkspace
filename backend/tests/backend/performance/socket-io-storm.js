@@ -34,12 +34,12 @@
  * - Memory growth: < 5% per 1000 connections
  */
 
-describe('Socket.IO connection storm (reference)', () => {
-  it('documents the expected load testing approach', () => {
+describe("Socket.IO connection storm (reference)", () => {
+  it("documents the expected load testing approach", () => {
     expect(true).toBe(true);
   });
 
-  it('performance budgets are defined', () => {
+  it("performance budgets are defined", () => {
     const budgets = {
       connectionTimeP95Ms: 2000,
       eventDeliveryP95Ms: 500,

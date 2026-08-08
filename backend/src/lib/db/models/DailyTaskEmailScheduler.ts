@@ -1,18 +1,18 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 
 export interface IDailyTaskEmailScheduler extends Document {
   id: string;
   orgId: string;
-  
+
   // Global settings
   enabled: boolean;
   paused: boolean;
-  
+
   // Schedule settings
   sendTime: string; // HH:mm format
   timezone: string;
-  
+
   // Day selection (which days to send)
   daysEnabled: {
     monday: boolean;
@@ -23,10 +23,10 @@ export interface IDailyTaskEmailScheduler extends Document {
     saturday: boolean;
     sunday: boolean;
   };
-  
+
   // Recipients
   recipients: "staff" | "users" | "both";
-  
+
   // Email content settings
   includePendingTasks: boolean;
   includeOverdueTasks: boolean;
@@ -35,7 +35,7 @@ export interface IDailyTaskEmailScheduler extends Document {
   includeProjectGrouping: boolean;
   includeTaskLinks: boolean;
   includeCompanyBranding: boolean;
-  
+
   // Stats
   lastSuccessfulRun?: Date;
   lastFailedRun?: Date;
@@ -43,7 +43,7 @@ export interface IDailyTaskEmailScheduler extends Document {
   emailsSentToday: number;
   emailsFailedToday: number;
   totalEmailsSent: number;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -70,13 +70,13 @@ const dailyTaskEmailSchedulerSchema = new Schema<IDailyTaskEmailScheduler>(
   {
     id: { type: String, required: true, unique: true, default: () => uuid() },
     orgId: { type: String, required: true, unique: true, index: true },
-    
+
     enabled: { type: Boolean, default: true },
     paused: { type: Boolean, default: false },
-    
+
     sendTime: { type: String, default: "08:00" },
     timezone: { type: String, default: "UTC" },
-    
+
     daysEnabled: {
       monday: { type: Boolean, default: true },
       tuesday: { type: Boolean, default: true },
@@ -86,9 +86,9 @@ const dailyTaskEmailSchedulerSchema = new Schema<IDailyTaskEmailScheduler>(
       saturday: { type: Boolean, default: false },
       sunday: { type: Boolean, default: false },
     },
-    
+
     recipients: { type: String, enum: ["staff", "users", "both"], default: "both" },
-    
+
     includePendingTasks: { type: Boolean, default: true },
     includeOverdueTasks: { type: Boolean, default: true },
     includeHighPriorityTasks: { type: Boolean, default: true },
@@ -96,7 +96,7 @@ const dailyTaskEmailSchedulerSchema = new Schema<IDailyTaskEmailScheduler>(
     includeProjectGrouping: { type: Boolean, default: true },
     includeTaskLinks: { type: Boolean, default: true },
     includeCompanyBranding: { type: Boolean, default: true },
-    
+
     lastSuccessfulRun: Date,
     lastFailedRun: Date,
     lastError: String,
@@ -104,7 +104,7 @@ const dailyTaskEmailSchedulerSchema = new Schema<IDailyTaskEmailScheduler>(
     emailsFailedToday: { type: Number, default: 0 },
     totalEmailsSent: { type: Number, default: 0 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const emailAuditLogSchema = new Schema<IEmailAuditLog>(
@@ -124,7 +124,7 @@ const emailAuditLogSchema = new Schema<IEmailAuditLog>(
     retryCount: { type: Number, default: 0 },
     sentAt: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 emailAuditLogSchema.index({ orgId: 1, createdAt: -1 });
@@ -133,10 +133,7 @@ emailAuditLogSchema.index({ schedulerId: 1, createdAt: -1 });
 
 export const DailyTaskEmailScheduler = model<IDailyTaskEmailScheduler>(
   "DailyTaskEmailScheduler",
-  dailyTaskEmailSchedulerSchema
+  dailyTaskEmailSchedulerSchema,
 );
 
-export const EmailAuditLog = model<IEmailAuditLog>(
-  "EmailAuditLog",
-  emailAuditLogSchema
-);
+export const EmailAuditLog = model<IEmailAuditLog>("EmailAuditLog", emailAuditLogSchema);

@@ -1,13 +1,19 @@
-import { Notification, NotificationType, NotificationCategory, NotificationPriority, INotificationAction } from "../lib/db/models/Notification.js";
-import { NotificationSettings } from "../lib/db/models/NotificationSettings.js";
-import { EmailLog } from "../lib/db/models/EmailLog.js";
-import { AppError } from "../middleware/error.js";
-import { socketIOManager } from "../lib/socketio/index.js";
-import { cacheManager } from "../lib/cache.js";
-import { sendPushNotification } from "./push.service.js";
-import { eventProducer } from "../lib/queue/producer.js";
-import { logger } from "../lib/logger/index.js";
 import { v4 as uuid } from "uuid";
+import { cacheManager } from "../lib/cache.js";
+import { EmailLog } from "../lib/db/models/EmailLog.js";
+import {
+  type INotificationAction,
+  Notification,
+  type NotificationCategory,
+  type NotificationPriority,
+  type NotificationType,
+} from "../lib/db/models/Notification.js";
+import { NotificationSettings } from "../lib/db/models/NotificationSettings.js";
+import { logger } from "../lib/logger/index.js";
+import { eventProducer } from "../lib/queue/producer.js";
+import { socketIOManager } from "../lib/socketio/index.js";
+import { AppError } from "../middleware/error.js";
+import { sendPushNotification } from "./push.service.js";
 
 export interface CreateNotificationParams {
   userId: string;
@@ -33,81 +39,220 @@ export interface CreateNotificationParams {
 }
 
 const CRITICAL_TYPES: NotificationType[] = [
-  "suspicious_login", "account_locked", "password_changed", "payment_failed",
-  "storage_exceeded", "system_outage", "unauthorized_access_attempt",
+  "suspicious_login",
+  "account_locked",
+  "password_changed",
+  "payment_failed",
+  "storage_exceeded",
+  "system_outage",
+  "unauthorized_access_attempt",
 ];
 
 const CATEGORY_MAP: Record<string, NotificationCategory> = {
-  workspace_registered: "auth", organization_created: "auth", workspace_welcome: "auth",
-  user_invited: "auth", user_account_created: "auth", user_activation: "auth",
-  email_verified: "auth", password_setup_invite: "auth", password_reset: "auth",
-  password_changed: "auth", new_device_login: "auth", failed_login: "auth",
+  workspace_registered: "auth",
+  organization_created: "auth",
+  workspace_welcome: "auth",
+  user_invited: "auth",
+  user_account_created: "auth",
+  user_activation: "auth",
+  email_verified: "auth",
+  password_setup_invite: "auth",
+  password_reset: "auth",
+  password_changed: "auth",
+  new_device_login: "auth",
+  failed_login: "auth",
   account_locked: "auth",
-  account_unlocked: "auth", account_suspended: "auth", account_reactivated: "auth",
-  role_changed: "permissions", permission_updated: "permissions", profile_updated: "auth",
-  account_deleted: "auth", subscription_activated: "billing", subscription_upgraded: "billing",
-  subscription_downgraded: "billing", subscription_renewed: "billing", subscription_expired: "billing",
-  subscription_cancelled: "billing", subscription_nearing_expiration: "billing",
-  project_created: "projects", project_updated: "projects", project_archived: "projects",
-  project_restored: "projects", project_deleted: "projects", project_assigned: "projects",
-  project_ownership_transferred: "projects", project_deadline_changed: "projects",
-  project_status_changed: "projects", project_completed: "projects", project_reopened: "projects",
-  project_budget_updated: "projects", milestone_created: "projects", milestone_updated: "projects",
-  milestone_completed: "projects", milestone_delayed: "projects", project_health_at_risk: "projects",
-  task_created: "tasks", task_assigned: "tasks", task_reassigned: "tasks", task_accepted: "tasks",
-  task_declined: "tasks", task_started: "tasks", task_paused: "tasks", task_resumed: "tasks",
-  task_on_hold: "tasks", task_overdue: "tasks", task_due_today: "tasks", task_due_tomorrow: "tasks",
-  task_completed: "tasks", task_reopened: "tasks", task_rejected: "tasks", task_approved: "tasks",
-  task_priority_changed: "tasks", task_dependencies_completed: "tasks",
-  task_checklist_updated: "tasks", task_comment_added: "tasks", task_attachment_added: "tasks",
-  task_estimated_hours_updated: "tasks", task_actual_hours_submitted: "tasks", task_updated: "tasks",
-  file_uploaded: "files", file_bulk_uploaded: "files", folder_created: "files",
-  folder_renamed: "files", file_renamed: "files", file_moved: "files", file_copied: "files",
-  file_shared: "files", file_downloaded: "files", file_previewed: "files", file_approved: "files",
-  file_rejected: "files", file_deleted: "files", file_restored: "files",
-  file_permanently_deleted: "files", storage_nearing_limit: "files", storage_exceeded: "files",
-  virus_scan_failed: "files", upload_failed: "files", upload_completed: "files",
-  approval_requested: "approvals", approval_pending: "approvals", approval_approved: "approvals",
-  approval_rejected: "approvals", approval_cancelled: "approvals", approval_escalated: "approvals",
-  approval_overdue: "approvals", approval_level_progressed: "approvals",
-  permission_granted: "permissions", permission_revoked: "permissions", role_updated: "permissions",
-  department_access_changed: "permissions", workspace_access_changed: "permissions",
-  client_portal_access_granted: "permissions", api_key_generated: "permissions",
-  api_key_revoked: "permissions", suspicious_permission_change: "permissions",
-  employee_onboarded: "hr", employee_terminated: "hr", leave_request_submitted: "hr",
-  leave_approved: "hr", leave_rejected: "hr", attendance_anomaly: "hr",
-  payroll_processed: "hr", salary_credited: "hr", performance_review_scheduled: "hr",
-  performance_review_completed: "hr", training_assigned: "hr", certification_expired: "hr",
-  client_created: "clients", client_updated: "clients", client_assigned: "clients",
-  client_invitation_sent: "clients", client_invitation_accepted: "clients",
-  client_uploaded_files: "clients", client_approved_deliverables: "clients",
-  client_rejected_deliverables: "clients", contract_signed: "clients",
-  proposal_accepted: "clients", proposal_rejected: "clients",
-  new_comment: "messages", mention: "messages", reply_received: "messages",
-  chat_message: "messages", team_announcement: "messages", broadcast_message: "messages",
-  meeting_scheduled: "messages", meeting_reminder: "messages", meeting_cancelled: "messages",
+  account_unlocked: "auth",
+  account_suspended: "auth",
+  account_reactivated: "auth",
+  role_changed: "permissions",
+  permission_updated: "permissions",
+  profile_updated: "auth",
+  account_deleted: "auth",
+  subscription_activated: "billing",
+  subscription_upgraded: "billing",
+  subscription_downgraded: "billing",
+  subscription_renewed: "billing",
+  subscription_expired: "billing",
+  subscription_cancelled: "billing",
+  subscription_nearing_expiration: "billing",
+  project_created: "projects",
+  project_updated: "projects",
+  project_archived: "projects",
+  project_restored: "projects",
+  project_deleted: "projects",
+  project_assigned: "projects",
+  project_ownership_transferred: "projects",
+  project_deadline_changed: "projects",
+  project_status_changed: "projects",
+  project_completed: "projects",
+  project_reopened: "projects",
+  project_budget_updated: "projects",
+  milestone_created: "projects",
+  milestone_updated: "projects",
+  milestone_completed: "projects",
+  milestone_delayed: "projects",
+  project_health_at_risk: "projects",
+  task_created: "tasks",
+  task_assigned: "tasks",
+  task_reassigned: "tasks",
+  task_accepted: "tasks",
+  task_declined: "tasks",
+  task_started: "tasks",
+  task_paused: "tasks",
+  task_resumed: "tasks",
+  task_on_hold: "tasks",
+  task_overdue: "tasks",
+  task_due_today: "tasks",
+  task_due_tomorrow: "tasks",
+  task_completed: "tasks",
+  task_reopened: "tasks",
+  task_rejected: "tasks",
+  task_approved: "tasks",
+  task_priority_changed: "tasks",
+  task_dependencies_completed: "tasks",
+  task_checklist_updated: "tasks",
+  task_comment_added: "tasks",
+  task_attachment_added: "tasks",
+  task_estimated_hours_updated: "tasks",
+  task_actual_hours_submitted: "tasks",
+  task_updated: "tasks",
+  file_uploaded: "files",
+  file_bulk_uploaded: "files",
+  folder_created: "files",
+  folder_renamed: "files",
+  file_renamed: "files",
+  file_moved: "files",
+  file_copied: "files",
+  file_shared: "files",
+  file_downloaded: "files",
+  file_previewed: "files",
+  file_approved: "files",
+  file_rejected: "files",
+  file_deleted: "files",
+  file_restored: "files",
+  file_permanently_deleted: "files",
+  storage_nearing_limit: "files",
+  storage_exceeded: "files",
+  virus_scan_failed: "files",
+  upload_failed: "files",
+  upload_completed: "files",
+  approval_requested: "approvals",
+  approval_pending: "approvals",
+  approval_approved: "approvals",
+  approval_rejected: "approvals",
+  approval_cancelled: "approvals",
+  approval_escalated: "approvals",
+  approval_overdue: "approvals",
+  approval_level_progressed: "approvals",
+  permission_granted: "permissions",
+  permission_revoked: "permissions",
+  role_updated: "permissions",
+  department_access_changed: "permissions",
+  workspace_access_changed: "permissions",
+  client_portal_access_granted: "permissions",
+  api_key_generated: "permissions",
+  api_key_revoked: "permissions",
+  suspicious_permission_change: "permissions",
+  employee_onboarded: "hr",
+  employee_terminated: "hr",
+  leave_request_submitted: "hr",
+  leave_approved: "hr",
+  leave_rejected: "hr",
+  attendance_anomaly: "hr",
+  payroll_processed: "hr",
+  salary_credited: "hr",
+  performance_review_scheduled: "hr",
+  performance_review_completed: "hr",
+  training_assigned: "hr",
+  certification_expired: "hr",
+  client_created: "clients",
+  client_updated: "clients",
+  client_assigned: "clients",
+  client_invitation_sent: "clients",
+  client_invitation_accepted: "clients",
+  client_uploaded_files: "clients",
+  client_approved_deliverables: "clients",
+  client_rejected_deliverables: "clients",
+  contract_signed: "clients",
+  proposal_accepted: "clients",
+  proposal_rejected: "clients",
+  new_comment: "messages",
+  mention: "messages",
+  reply_received: "messages",
+  chat_message: "messages",
+  team_announcement: "messages",
+  broadcast_message: "messages",
+  meeting_scheduled: "messages",
+  meeting_reminder: "messages",
+  meeting_cancelled: "messages",
   calendar_invitation: "messages",
-  invoice_generated: "billing", invoice_paid: "billing", payment_failed: "billing",
-  refund_processed: "billing", subscription_renewal_reminder: "billing", trial_ending: "billing",
-  storage_upgrade_available: "billing", plan_limit_reached: "billing", additional_users_purchased: "billing",
-  suspicious_login: "security", email_changed: "security", 
-  api_abuse_detected: "security", rate_limit_exceeded: "security", unauthorized_access_attempt: "security",
-  scheduled_maintenance: "system", system_outage: "system", service_restored: "system",
-  backup_completed: "system", backup_failed: "system", database_maintenance: "system",
-  new_feature_announcement: "system", platform_update: "system", version_release: "system",
+  invoice_generated: "billing",
+  invoice_paid: "billing",
+  payment_failed: "billing",
+  refund_processed: "billing",
+  subscription_renewal_reminder: "billing",
+  trial_ending: "billing",
+  storage_upgrade_available: "billing",
+  plan_limit_reached: "billing",
+  additional_users_purchased: "billing",
+  suspicious_login: "security",
+  email_changed: "security",
+  api_abuse_detected: "security",
+  rate_limit_exceeded: "security",
+  unauthorized_access_attempt: "security",
+  scheduled_maintenance: "system",
+  system_outage: "system",
+  service_restored: "system",
+  backup_completed: "system",
+  backup_failed: "system",
+  database_maintenance: "system",
+  new_feature_announcement: "system",
+  platform_update: "system",
+  version_release: "system",
 };
 
 const PRIORITY_MAP: Record<string, NotificationPriority> = {
-  suspicious_login: "critical", account_locked: "critical", system_outage: "critical",
-  storage_exceeded: "critical", payment_failed: "high", password_changed: "high",
-  task_overdue: "high", task_due_today: "high", approval_overdue: "high",
-  project_health_at_risk: "high", virus_scan_failed: "high", failed_login: "high",
-  unauthorized_access_attempt: "critical", api_abuse_detected: "high",
-  task_assigned: "high", mention: "high", approval_requested: "high",
+  suspicious_login: "critical",
+  account_locked: "critical",
+  system_outage: "critical",
+  storage_exceeded: "critical",
+  payment_failed: "high",
+  password_changed: "high",
+  task_overdue: "high",
+  task_due_today: "high",
+  approval_overdue: "high",
+  project_health_at_risk: "high",
+  virus_scan_failed: "high",
+  failed_login: "high",
+  unauthorized_access_attempt: "critical",
+  api_abuse_detected: "high",
+  task_assigned: "high",
+  mention: "high",
+  approval_requested: "high",
 };
 
 export async function createNotification(data: CreateNotificationParams): Promise<any> {
-  const { userId, orgId, createdBy, type, title, message, icon, avatar, link, deepLink, actions, metadata, source, channels, correlationId, snoozedUntil, expiresAt, skipDeduplication } = data;
+  const {
+    userId,
+    orgId,
+    createdBy,
+    type,
+    title,
+    message,
+    icon,
+    avatar,
+    link,
+    deepLink,
+    actions,
+    metadata,
+    source,
+    channels,
+    correlationId,
+    snoozedUntil,
+    expiresAt,
+    skipDeduplication,
+  } = data;
 
   if (!userId || !type || !title) {
     throw new AppError(400, "userId, type, and title are required");
@@ -120,7 +265,7 @@ export async function createNotification(data: CreateNotificationParams): Promis
   const priority = data.priority || PRIORITY_MAP[type] || "medium";
 
   // Load user settings for channel preference check
-  const settings = await NotificationSettings.findOne({ userId }).lean() as any;
+  const settings = (await NotificationSettings.findOne({ userId }).lean()) as any;
   const shouldDeliver = await checkUserNotificationEligibility(userId, type, settings);
 
   if (!shouldDeliver.allowed) {
@@ -171,27 +316,19 @@ export async function createNotification(data: CreateNotificationParams): Promis
   const deliveryPromises: Promise<void>[] = [];
 
   if (deliveryChannels.includes("in_app") || deliveryChannels.includes("in-app")) {
-    deliveryPromises.push(
-      deliverInApp(doc, payload)
-    );
+    deliveryPromises.push(deliverInApp(doc, payload));
   }
 
   if (deliveryChannels.includes("push")) {
-    deliveryPromises.push(
-      deliverPush(doc, payload)
-    );
+    deliveryPromises.push(deliverPush(doc, payload));
   }
 
   if (deliveryChannels.includes("email")) {
-    deliveryPromises.push(
-      queueEmailDelivery(doc, payload)
-    );
+    deliveryPromises.push(queueEmailDelivery(doc, payload));
   }
 
   if (deliveryChannels.includes("webhook")) {
-    deliveryPromises.push(
-      deliverWebhook(doc, payload)
-    );
+    deliveryPromises.push(deliverWebhook(doc, payload));
   }
 
   await Promise.allSettled(deliveryPromises);
@@ -202,7 +339,12 @@ export async function createNotification(data: CreateNotificationParams): Promis
   // Publish to event bus for audit
   try {
     await eventProducer.notificationSend({
-      userId, orgId, type, title, message: message || "", link,
+      userId,
+      orgId,
+      type,
+      title,
+      message: message || "",
+      link,
     });
   } catch (err) {
     logger.error({ err }, "Failed to publish notification event");
@@ -247,29 +389,25 @@ async function deliverPush(doc: any, payload: any): Promise<void> {
 
 async function queueEmailDelivery(doc: any, payload: any): Promise<void> {
   try {
-    await eventProducer.publishEvent(
-      "notification.events",
-      "notification.email.send",
-      {
-        id: uuid(),
-        type: "EmailSend",
-        source: "myworkspace.notifications",
-        subject: `notification:${doc._id}`,
-        data: {
-          notificationId: doc._id.toString(),
-          userId: doc.userId,
-          orgId: doc.orgId,
-          type: doc.type,
-          title: doc.title,
-          message: doc.message,
-          link: doc.link,
-          category: doc.category,
-          correlationId: doc.correlationId,
-        },
-        timestamp: new Date().toISOString(),
-        tenantId: doc.orgId,
-      }
-    );
+    await eventProducer.publishEvent("notification.events", "notification.email.send", {
+      id: uuid(),
+      type: "EmailSend",
+      source: "myworkspace.notifications",
+      subject: `notification:${doc._id}`,
+      data: {
+        notificationId: doc._id.toString(),
+        userId: doc.userId,
+        orgId: doc.orgId,
+        type: doc.type,
+        title: doc.title,
+        message: doc.message,
+        link: doc.link,
+        category: doc.category,
+        correlationId: doc.correlationId,
+      },
+      timestamp: new Date().toISOString(),
+      tenantId: doc.orgId,
+    });
   } catch (err) {
     logger.error({ err, notificationId: doc._id }, "Failed to queue email delivery");
   }
@@ -283,7 +421,7 @@ async function deliverWebhook(doc: any, payload: any): Promise<void> {
 async function checkUserNotificationEligibility(
   userId: string,
   type: string,
-  settings: any
+  settings: any,
 ): Promise<{ allowed: boolean; reason?: string }> {
   if (!settings) return { allowed: true };
 
@@ -329,7 +467,9 @@ async function checkUserNotificationEligibility(
   // Check muted notifications
   if (settings.mutedNotifications?.length > 0) {
     const muted = settings.mutedNotifications.find(
-      (m: any) => m.type === type && (m.mutedForever || (m.mutedUntil && new Date(m.mutedUntil) > new Date()))
+      (m: any) =>
+        m.type === type &&
+        (m.mutedForever || (m.mutedUntil && new Date(m.mutedUntil) > new Date())),
     );
     if (muted) {
       return { allowed: false, reason: "muted" };
@@ -343,7 +483,7 @@ function determineChannels(
   type: string,
   category: string,
   priority: string,
-  settings: any
+  settings: any,
 ): string[] {
   if (!settings) {
     return ["in_app", "push"];
@@ -387,7 +527,7 @@ export async function listNotifications(
     startDate?: string;
     endDate?: string;
     archived?: boolean;
-  }
+  },
 ): Promise<{ notifications: any[]; total: number; unread: number }> {
   const limit = options?.limit || 50;
   const offset = options?.offset || 0;
@@ -417,11 +557,7 @@ export async function listNotifications(
   }
 
   const [docs, total, unread] = await Promise.all([
-    Notification.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(offset)
-      .limit(limit)
-      .lean(),
+    Notification.find(filter).sort({ createdAt: -1 }).skip(offset).limit(limit).lean(),
     Notification.countDocuments(filter),
     Notification.countDocuments({ userId, read: false, archived: { $ne: true } }),
   ]);
@@ -436,7 +572,7 @@ export async function listNotifications(
 export async function searchNotifications(
   userId: string,
   query: string,
-  options?: { limit?: number; offset?: number }
+  options?: { limit?: number; offset?: number },
 ): Promise<{ notifications: any[]; total: number }> {
   const limit = options?.limit || 50;
   const offset = options?.offset || 0;
@@ -450,11 +586,7 @@ export async function searchNotifications(
   };
 
   const [docs, total] = await Promise.all([
-    Notification.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(offset)
-      .limit(limit)
-      .lean(),
+    Notification.find(filter).sort({ createdAt: -1 }).skip(offset).limit(limit).lean(),
     Notification.countDocuments(filter),
   ]);
 
@@ -469,10 +601,7 @@ export async function getUnreadCount(userId: string): Promise<number> {
 }
 
 export async function markAllRead(userId: string): Promise<void> {
-  await Notification.updateMany(
-    { userId, read: false },
-    { read: true, readAt: new Date() }
-  );
+  await Notification.updateMany({ userId, read: false }, { read: true, readAt: new Date() });
   cacheManager.invalidatePattern(`notifications:${userId}`);
   socketIOManager.emitUnreadCount(userId, 0);
 }
@@ -516,7 +645,7 @@ export async function clearAll(userId: string): Promise<void> {
 export async function bulkArchive(userId: string, ids: string[]): Promise<void> {
   await Notification.updateMany(
     { _id: { $in: ids }, userId },
-    { archived: true, archivedAt: new Date() }
+    { archived: true, archivedAt: new Date() },
   );
   cacheManager.invalidatePattern(`notifications:${userId}`);
 }
@@ -526,7 +655,11 @@ export async function bulkDelete(userId: string, ids: string[]): Promise<void> {
   cacheManager.invalidatePattern(`notifications:${userId}`);
 }
 
-export async function snoozeNotification(notificationId: string, userId: string, until: Date): Promise<void> {
+export async function snoozeNotification(
+  notificationId: string,
+  userId: string,
+  until: Date,
+): Promise<void> {
   const notification = await Notification.findById(notificationId);
   if (!notification) throw new AppError(404, "Notification not found");
   if (notification.userId.toString() !== userId) throw new AppError(403, "Not authorized");
@@ -536,7 +669,7 @@ export async function snoozeNotification(notificationId: string, userId: string,
 
 export async function getNotificationAnalytics(
   orgId: string,
-  options?: { startDate?: string; endDate?: string }
+  options?: { startDate?: string; endDate?: string },
 ): Promise<any> {
   const filter: Record<string, any> = { orgId };
   if (options?.startDate || options?.endDate) {
@@ -545,45 +678,38 @@ export async function getNotificationAnalytics(
     if (options?.endDate) filter.createdAt.$lte = new Date(options.endDate);
   }
 
-  const [
-    totalSent,
-    totalRead,
-    totalArchived,
-    byCategory,
-    byType,
-    byPriority,
-    dailyCounts,
-  ] = await Promise.all([
-    Notification.countDocuments(filter),
-    Notification.countDocuments({ ...filter, read: true }),
-    Notification.countDocuments({ ...filter, archived: true }),
-    Notification.aggregate([
-      { $match: filter },
-      { $group: { _id: "$category", count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-    ]),
-    Notification.aggregate([
-      { $match: filter },
-      { $group: { _id: "$type", count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 20 },
-    ]),
-    Notification.aggregate([
-      { $match: filter },
-      { $group: { _id: "$priority", count: { $sum: 1 } } },
-    ]),
-    Notification.aggregate([
-      { $match: filter },
-      {
-        $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          count: { $sum: 1 },
+  const [totalSent, totalRead, totalArchived, byCategory, byType, byPriority, dailyCounts] =
+    await Promise.all([
+      Notification.countDocuments(filter),
+      Notification.countDocuments({ ...filter, read: true }),
+      Notification.countDocuments({ ...filter, archived: true }),
+      Notification.aggregate([
+        { $match: filter },
+        { $group: { _id: "$category", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+      Notification.aggregate([
+        { $match: filter },
+        { $group: { _id: "$type", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 },
+      ]),
+      Notification.aggregate([
+        { $match: filter },
+        { $group: { _id: "$priority", count: { $sum: 1 } } },
+      ]),
+      Notification.aggregate([
+        { $match: filter },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            count: { $sum: 1 },
+          },
         },
-      },
-      { $sort: { _id: 1 } },
-      { $limit: 90 },
-    ]),
-  ]);
+        { $sort: { _id: 1 } },
+        { $limit: 90 },
+      ]),
+    ]);
 
   const readRate = totalSent > 0 ? Math.round((totalRead / totalSent) * 100) : 0;
 

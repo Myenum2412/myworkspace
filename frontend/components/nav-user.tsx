@@ -1,10 +1,8 @@
 "use client";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,19 +18,16 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { getAppContext } from "@/lib/app-context";
+import { logoutAction } from "@/lib/auth/actions";
 import {
-  ChevronsUpDownIcon,
-  SparklesIcon,
   BadgeCheckIcon,
+  ChevronsUpDownIcon,
   CreditCardIcon,
   LogOutIcon,
+  NotificationsActiveIcon,
+  SparklesIcon,
 } from "@/lib/icons";
-import { logoutAction } from "@/lib/auth/actions";
-import { NotificationsActiveIcon } from "@/lib/icons";
-import { useRouter } from "next/navigation";
-import { getAppContext } from "@/lib/app-context";
 import { ROLES } from "@/lib/rbac";
 
 export function NavUser({
@@ -50,7 +45,8 @@ export function NavUser({
   const pathname = usePathname();
 
   const profileHref = (() => {
-    if (user.role === ROLES.STAFFS || user.role === ROLES.HR || user.role === ROLES.CLIENTS) return "/staffs/profile";
+    if (user.role === ROLES.STAFFS || user.role === ROLES.HR || user.role === ROLES.CLIENTS)
+      return "/staffs/profile";
     return "/profile";
   })();
 
@@ -69,9 +65,7 @@ export function NavUser({
               <Link href={profileHref} onClick={() => isMobile && setOpenMobile(false)}>
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback>
-                    {user.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
+                  <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>

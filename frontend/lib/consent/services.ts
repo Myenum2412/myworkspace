@@ -1,4 +1,4 @@
-import { ConsentCategories } from "./store";
+import type { ConsentCategories } from "./store";
 
 const API_BASE = "/api";
 
@@ -31,7 +31,11 @@ export async function getConsentHistory() {
   return res.json();
 }
 
-export async function getConsentAuditLogs(params?: { page?: number; limit?: number; action?: string }) {
+export async function getConsentAuditLogs(params?: {
+  page?: number;
+  limit?: number;
+  action?: string;
+}) {
   const query = new URLSearchParams();
   if (params?.page) query.set("page", String(params.page));
   if (params?.limit) query.set("limit", String(params.limit));
@@ -63,11 +67,13 @@ export async function trackEvent(event: {
   }
 }
 
-export async function trackEvents(events: Array<{
-  eventName: string;
-  eventCategory: string;
-  properties?: Record<string, unknown>;
-}>) {
+export async function trackEvents(
+  events: Array<{
+    eventName: string;
+    eventCategory: string;
+    properties?: Record<string, unknown>;
+  }>,
+) {
   try {
     await fetch(`${API_BASE}/analytics/track/batch`, {
       method: "POST",

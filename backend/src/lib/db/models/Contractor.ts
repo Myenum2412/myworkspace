@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IEmergencyContact {
   name: string;
@@ -17,7 +17,18 @@ export interface IContractor extends Document {
   city: string;
   address?: string;
   contractorType: "Individual" | "Company" | "Subcontractor";
-  mainTrade: "Civil" | "Electrical" | "Plumbing" | "Carpentry" | "Painting" | "Mason" | "Steel" | "HVAC" | "Roofing" | "Flooring" | "Other";
+  mainTrade:
+    | "Civil"
+    | "Electrical"
+    | "Plumbing"
+    | "Carpentry"
+    | "Painting"
+    | "Mason"
+    | "Steel"
+    | "HVAC"
+    | "Roofing"
+    | "Flooring"
+    | "Other";
   otherTrade?: string;
   yearsOfExperience: string;
   numberOfWorkers: string;
@@ -50,7 +61,7 @@ const emergencyContactSchema = new Schema<IEmergencyContact>(
     phoneNumber: { type: String, required: true },
     email: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const contractorSchema = new Schema<IContractor>(
@@ -73,8 +84,17 @@ const contractorSchema = new Schema<IContractor>(
       type: String,
       required: true,
       enum: [
-        "Civil", "Electrical", "Plumbing", "Carpentry", "Painting",
-        "Mason", "Steel", "HVAC", "Roofing", "Flooring", "Other",
+        "Civil",
+        "Electrical",
+        "Plumbing",
+        "Carpentry",
+        "Painting",
+        "Mason",
+        "Steel",
+        "HVAC",
+        "Roofing",
+        "Flooring",
+        "Other",
       ],
     },
     otherTrade: String,
@@ -115,7 +135,7 @@ const contractorSchema = new Schema<IContractor>(
     termsAccepted: { type: Boolean, required: true },
     status: { type: String, default: "Active", enum: ["Active", "Inactive"] },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Contractor = model<IContractor>("Contractor", contractorSchema);

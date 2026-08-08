@@ -8,7 +8,9 @@ export async function GET() {
   }
 
   const clientId = process.env.AUTH_GOOGLE_ID;
-  const redirectUri = process.env.GMAIL_REDIRECT_URI || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/email/gmail/callback`;
+  const redirectUri =
+    process.env.GMAIL_REDIRECT_URI ||
+    `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/email/gmail/callback`;
 
   if (!clientId) {
     return NextResponse.json({ error: "Gmail not configured" }, { status: 500 });
@@ -30,7 +32,5 @@ export async function GET() {
     state: session.user.id,
   });
 
-  return NextResponse.redirect(
-    `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
-  );
+  return NextResponse.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
 }

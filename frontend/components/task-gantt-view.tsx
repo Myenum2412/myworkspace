@@ -1,5 +1,8 @@
 "use client";
 
+import groupBy from "lodash.groupby";
+import { useEffect, useMemo, useState } from "react";
+import type { GanttFeature, GanttStatus } from "@/components/kibo-ui/gantt";
 import {
   GanttFeatureItem,
   GanttFeatureList,
@@ -13,17 +16,14 @@ import {
   GanttTimeline,
   GanttToday,
 } from "@/components/kibo-ui/gantt";
-import type { GanttFeature, GanttStatus } from "@/components/kibo-ui/gantt";
-import groupBy from "lodash.groupby";
-import { EyeIcon, TrashIcon } from "@/lib/icons";
-import { useEffect, useMemo, useState } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { TaskRow } from "./task-data-table";
+import { EyeIcon, TrashIcon } from "@/lib/icons";
+import type { TaskRow } from "./task-data-table";
 
 const statusStyles: Record<string, { name: string; color: string }> = {
   todo: { name: "Todo", color: "#9CA3AF" },
@@ -83,9 +83,7 @@ const TaskGanttView = ({ tasks, onViewTask }: TaskGanttViewProps) => {
 
   const groupedFeatures = groupBy(localFeatures, "status.name");
   const sortedGroupedFeatures = Object.fromEntries(
-    Object.entries(groupedFeatures).sort(([nameA], [nameB]) =>
-      nameA.localeCompare(nameB)
-    )
+    Object.entries(groupedFeatures).sort(([nameA], [nameB]) => nameA.localeCompare(nameB)),
   );
 
   const handleViewFeature = (id: string) => {
@@ -99,9 +97,7 @@ const TaskGanttView = ({ tasks, onViewTask }: TaskGanttViewProps) => {
   const handleMoveFeature = (id: string, startAt: Date, endAt: Date | null) => {
     if (!endAt) return;
     setLocalFeatures((prev) =>
-      prev.map((feature) =>
-        feature.id === id ? { ...feature, startAt, endAt } : feature
-      )
+      prev.map((feature) => (feature.id === id ? { ...feature, startAt, endAt } : feature)),
     );
   };
 
@@ -129,17 +125,9 @@ const TaskGanttView = ({ tasks, onViewTask }: TaskGanttViewProps) => {
                 <div className="flex" key={feature.id}>
                   <ContextMenu>
                     <ContextMenuTrigger asChild>
-                      <button
-                        onClick={() => handleViewFeature(feature.id)}
-                        type="button"
-                      >
-                        <GanttFeatureItem
-                          onMove={handleMoveFeature}
-                          {...feature}
-                        >
-                          <p className="flex-1 truncate text-xs">
-                            {feature.name}
-                          </p>
+                      <button onClick={() => handleViewFeature(feature.id)} type="button">
+                        <GanttFeatureItem onMove={handleMoveFeature} {...feature}>
+                          <p className="flex-1 truncate text-xs">{feature.name}</p>
                         </GanttFeatureItem>
                       </button>
                     </ContextMenuTrigger>

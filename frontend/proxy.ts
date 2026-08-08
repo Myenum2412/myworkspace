@@ -1,6 +1,6 @@
-import { auth } from "@/lib/auth/config";
 import { NextResponse } from "next/server";
-import { ROLES, isAdminRole, isPlatformRole } from "@/lib/rbac";
+import { auth } from "@/lib/auth/config";
+import { isAdminRole, isPlatformRole, ROLES } from "@/lib/rbac";
 
 /**
  * Next.js Proxy (Middleware replacement in Next.js 16)
@@ -15,11 +15,26 @@ const STAFF_PREFIXES = ["/staffs"];
 const CLIENT_PREFIXES = ["/client"];
 
 const PUBLIC_PATHS = new Set([
-  "/login", "/signup", "/signup-mongo", "/forgot-password",
-  "/reset-password", "/verify-email",
-  "/pricing", "/auth/not-found", "/",
-  "/features", "/solutions", "/platform", "/about", "/blog", "/contact",
-  "/careers", "/changelog", "/docs", "/guides", "/new-update",
+  "/login",
+  "/signup",
+  "/signup-mongo",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+  "/pricing",
+  "/auth/not-found",
+  "/",
+  "/features",
+  "/solutions",
+  "/platform",
+  "/about",
+  "/blog",
+  "/contact",
+  "/careers",
+  "/changelog",
+  "/docs",
+  "/guides",
+  "/new-update",
 ]);
 
 const PUBLIC_PREFIXES = new Set(["/share"]);
@@ -27,17 +42,45 @@ const PUBLIC_PREFIXES = new Set(["/share"]);
 // ── Role-Based Route Access Control ──
 
 const WORKSPACE_PREFIXES = [
-  "/dashboard", "/overview", "/employees", "/alltasks", "/mytasks",
-  "/projects", "/teams", "/clients", "/approvals", "/reports",
-  "/calendar", "/time-tracker", "/time-reports", "/my-time",
-  "/teamtasks", "/settings", "/profile", "/admin",
-  "/departments", "/addemployees", "/addprojects",
-  "/savedtasks", "/upcomingtasks", "/terminated",
-  "/createtask", "/createproject",
-  "/upload", "/billing", "/files",
-  "/attendance", "/appointments",
-  "/ai", "/engagement", "/stocks", "/reworks", "/submissions", "/addons",
-  "/chat", "/notifications",
+  "/dashboard",
+  "/overview",
+  "/employees",
+  "/alltasks",
+  "/mytasks",
+  "/projects",
+  "/teams",
+  "/clients",
+  "/approvals",
+  "/reports",
+  "/calendar",
+  "/time-tracker",
+  "/time-reports",
+  "/my-time",
+  "/teamtasks",
+  "/settings",
+  "/profile",
+  "/admin",
+  "/departments",
+  "/addemployees",
+  "/addprojects",
+  "/savedtasks",
+  "/upcomingtasks",
+  "/terminated",
+  "/createtask",
+  "/createproject",
+  "/upload",
+  "/billing",
+  "/files",
+  "/attendance",
+  "/appointments",
+  "/ai",
+  "/engagement",
+  "/stocks",
+  "/reworks",
+  "/submissions",
+  "/addons",
+  "/chat",
+  "/notifications",
 ];
 
 // Route patterns with required roles
@@ -65,40 +108,203 @@ const ROLE_ROUTE_ACCESS: Record<string, string[]> = {
   "/time-reports": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
 
   // Staff routes (broader access)
-  "/dashboard": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE],
-  "/tasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF],
-  "/mytasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF],
+  "/dashboard": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+  ],
+  "/tasks": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+  ],
+  "/mytasks": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+  ],
   "/teamtasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
-  "/savedtasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF],
+  "/savedtasks": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+  ],
   "/alltasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
-  "/upcomingtasks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF],
-  "/createtask": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE, ROLES.CONTRACTORS, ROLES.CLIENTS, ROLES.GUEST],
-  "/projects": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
-  "/teams": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF],
-  "/files": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE],
-  "/upload": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
-  "/calendar": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
-  "/chat": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
-  "/notifications": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE, ROLES.CLIENTS],
-  "/profile": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR, ROLES.FINANCE, ROLES.CLIENTS],
+  "/upcomingtasks": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+  ],
+  "/createtask": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+    ROLES.CONTRACTORS,
+    ROLES.CLIENTS,
+    ROLES.GUEST,
+  ],
+  "/projects": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
+  "/teams": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+  ],
+  "/files": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+  ],
+  "/upload": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
+  "/calendar": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
+  "/chat": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
+  "/notifications": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+    ROLES.CLIENTS,
+  ],
+  "/profile": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+    ROLES.FINANCE,
+    ROLES.CLIENTS,
+  ],
   "/settings": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
   "/overview": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
   "/engagement": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
   "/stocks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.FINANCE],
-  "/reworks": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF],
+  "/reworks": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+  ],
 
   // HR specific
   "/attendance": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR],
-  "/time-off": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR, ROLES.STAFFS, ROLES.TEAM_STAFF],
-  "/my-time": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
-  "/time-tracker": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
+  "/time-off": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.HR,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+  ],
+  "/my-time": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
+  "/time-tracker": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
   "/team-time": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER],
 
   // Staff profile
-  "/staffs": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
+  "/staffs": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
 
   // Appointments
-  "/appointments": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.TEAM_LEADER, ROLES.STAFFS, ROLES.TEAM_STAFF, ROLES.HR],
+  "/appointments": [
+    ROLES.ORG_ADMIN,
+    ROLES.MEMBERS,
+    ROLES.MANAGER,
+    ROLES.TEAM_LEADER,
+    ROLES.STAFFS,
+    ROLES.TEAM_STAFF,
+    ROLES.HR,
+  ],
 };
 
 // Build sets for quick lookup
@@ -129,7 +335,9 @@ function pathMatchesPrefix(pathname: string, prefixes: Set<string>): boolean {
   return false;
 }
 
-function getRouteContext(pathname: string): "origin" | "staff" | "workspace" | "public" | "unknown" | "client" {
+function getRouteContext(
+  pathname: string,
+): "origin" | "staff" | "workspace" | "public" | "unknown" | "client" {
   if (pathMatchesPrefix(pathname, ORIGIN_SET)) return "origin";
   if (pathMatchesPrefix(pathname, STAFF_SET)) return "staff";
   if (PUBLIC_PATHS.has(pathname) || pathMatchesPrefix(pathname, PUBLIC_PREFIXES)) return "public";
@@ -190,7 +398,14 @@ export const proxy = auth((req) => {
     }
     // Allow authenticated users to access auth pages (login, signup, etc.)
     // so they can log out and switch accounts if needed.
-    const AUTH_PAGES = new Set(["/login", "/signup", "/signup-mongo", "/forgot-password", "/reset-password", "/verify-email"]);
+    const AUTH_PAGES = new Set([
+      "/login",
+      "/signup",
+      "/signup-mongo",
+      "/forgot-password",
+      "/reset-password",
+      "/verify-email",
+    ]);
     if (AUTH_PAGES.has(pathname)) {
       return;
     }
@@ -265,18 +480,24 @@ export const proxy = auth((req) => {
   // ── Origin (orgmenu) routes ──
   if (routeContext === "origin") {
     if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/login?error=Please+sign+in+to+access+this+area", req.url));
+      return NextResponse.redirect(
+        new URL("/login?error=Please+sign+in+to+access+this+area", req.url),
+      );
     }
     if (isPlatformRole(userRole || "")) {
       return;
     }
-    return NextResponse.redirect(new URL("/login?error=Access+denied.+You+do+not+have+permission+to+view+this+page", req.url));
+    return NextResponse.redirect(
+      new URL("/login?error=Access+denied.+You+do+not+have+permission+to+view+this+page", req.url),
+    );
   }
 
   // ── Staff routes ──
   if (routeContext === "staff") {
     if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/login?error=Please+sign+in+to+access+this+area", req.url));
+      return NextResponse.redirect(
+        new URL("/login?error=Please+sign+in+to+access+this+area", req.url),
+      );
     }
     if (isPlatformRole(userRole || "")) {
       return NextResponse.redirect(new URL("/orgmenu", req.url));
@@ -309,5 +530,7 @@ export const proxy = auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api/auth|_next/static|_next/image|favicon\\.ico|_vercel|.*\\.(?:js|json|css|png|jpg|jpeg|svg|ico|webmanifest)).*)"],
+  matcher: [
+    "/((?!api/auth|_next/static|_next/image|favicon\\.ico|_vercel|.*\\.(?:js|json|css|png|jpg|jpeg|svg|ico|webmanifest)).*)",
+  ],
 };

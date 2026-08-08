@@ -1,7 +1,20 @@
 export type ViewMode = "grid" | "list";
 export type SortField = "name" | "createdAt" | "updatedAt" | "size" | "uploaderName" | "mimeType";
 export type SortDir = "asc" | "desc";
-export type NavSection = "files" | "shared" | "recent" | "favorites" | "approvals" | "recycle" | "audit" | "starred" | "team" | "client-files" | "staff-files" | "company" | "storage";
+export type NavSection =
+  | "files"
+  | "shared"
+  | "recent"
+  | "favorites"
+  | "approvals"
+  | "recycle"
+  | "audit"
+  | "starred"
+  | "team"
+  | "client-files"
+  | "staff-files"
+  | "company"
+  | "storage";
 
 export type FileItem = {
   id: string;
@@ -158,7 +171,7 @@ export function formatSize(bytes: number): string {
   if (!bytes || bytes === 0) return "0 B";
   const units = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-  return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+  return `${(bytes / 1024 ** i).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
 }
 
 export function getFileExtension(filename: string): string {

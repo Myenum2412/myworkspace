@@ -1,14 +1,14 @@
 "use client";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Engagement } from "@/app/engagement/columns";
+import { columns, makeActionsCell } from "@/app/engagement/columns";
+import { DataTable } from "@/app/engagement/data-table";
+import { EngagementForm } from "@/app/engagement/engagement-form";
+import { PageHeader } from "@/components/page-header";
+import Stats07 from "@/components/stats-07";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusIcon, Loader2, SearchIcon, HeartHandshakeIcon } from "@/lib/icons";
-import { PageHeader } from "@/components/page-header";
-import type { Engagement } from "@/app/engagement/columns";
-import { DataTable } from "@/app/engagement/data-table";
-import { columns, makeActionsCell } from "@/app/engagement/columns";
-import { EngagementForm } from "@/app/engagement/engagement-form";
-import Stats07 from "@/components/stats-07";
+import { HeartHandshakeIcon, Loader2, PlusIcon, SearchIcon } from "@/lib/icons";
 
 type EngagementPageProps = {
   initialEngagements: Engagement[];
@@ -31,7 +31,7 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
         e.contact?.toLowerCase().includes(q) ||
         e.source?.toLowerCase().includes(q) ||
         e.status?.toLowerCase().includes(q) ||
-        e.assignedTo?.toLowerCase().includes(q)
+        e.assignedTo?.toLowerCase().includes(q),
     );
   }, [engagements, searchQuery]);
 
@@ -72,8 +72,7 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
       await refreshEngagements();
       setShowForm(false);
       setEditingEngagement(null);
-    } catch {
-    }
+    } catch {}
   }
 
   async function handleDelete(engagement: Engagement) {
@@ -83,8 +82,7 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
         credentials: "include",
       });
       await refreshEngagements();
-    } catch {
-    }
+    } catch {}
   }
 
   const handleView = useCallback((engagement: Engagement) => setViewingEngagement(engagement), []);
@@ -146,12 +144,12 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
         {/* Stats Overview */}
         <Stats07
           items={[
-            { name: 'Total', value: stats.total, subtitle: 'All interactions' },
-            { name: 'New', value: stats.newCount, subtitle: 'New leads' },
-            { name: 'Won', value: stats.won, subtitle: 'Closed deals' },
-            { name: 'Pending', value: stats.pending, subtitle: 'Awaiting response' },
-            { name: 'Follow-up', value: stats.followUp, subtitle: 'Need follow-up' },
-            { name: 'Lost', value: stats.lost, subtitle: 'Lost deals' },
+            { name: "Total", value: stats.total, subtitle: "All interactions" },
+            { name: "New", value: stats.newCount, subtitle: "New leads" },
+            { name: "Won", value: stats.won, subtitle: "Closed deals" },
+            { name: "Pending", value: stats.pending, subtitle: "Awaiting response" },
+            { name: "Follow-up", value: stats.followUp, subtitle: "Need follow-up" },
+            { name: "Lost", value: stats.lost, subtitle: "Lost deals" },
           ]}
         />
 
@@ -166,24 +164,53 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
       </main>
 
       {viewingEngagement && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setViewingEngagement(null)}>
-          <div className="bg-background rounded-sm shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setViewingEngagement(null)}
+        >
+          <div
+            className="bg-background rounded-sm shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="px-6 py-4 border-b">
               <h2 className="text-lg font-semibold">Interaction Followup Details</h2>
             </div>
             <div className="p-6 space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-2">
-                <div><span className="font-medium text-muted-foreground">Date:</span> {viewingEngagement.date}</div>
-                <div><span className="font-medium text-muted-foreground">Customer:</span> {viewingEngagement.customerName}</div>
-                <div><span className="font-medium text-muted-foreground">Contact:</span> {viewingEngagement.contact || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Source:</span> {viewingEngagement.source || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Status:</span> {viewingEngagement.status || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Assigned To:</span> {viewingEngagement.assignedTo || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Follow-up Date:</span> {viewingEngagement.followUpDate || "—"}</div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Date:</span>{" "}
+                  {viewingEngagement.date}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Customer:</span>{" "}
+                  {viewingEngagement.customerName}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Contact:</span>{" "}
+                  {viewingEngagement.contact || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Source:</span>{" "}
+                  {viewingEngagement.source || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Status:</span>{" "}
+                  {viewingEngagement.status || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Assigned To:</span>{" "}
+                  {viewingEngagement.assignedTo || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Follow-up Date:</span>{" "}
+                  {viewingEngagement.followUpDate || "—"}
+                </div>
               </div>
               <div>
                 <span className="font-medium text-muted-foreground">Remarks:</span>
-                <p className="mt-1 text-muted-foreground">{viewingEngagement.remarks || "No remarks."}</p>
+                <p className="mt-1 text-muted-foreground">
+                  {viewingEngagement.remarks || "No remarks."}
+                </p>
               </div>
             </div>
           </div>
@@ -191,16 +218,30 @@ export default function EngagementPage({ initialEngagements }: EngagementPagePro
       )}
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { setShowForm(false); setEditingEngagement(null); }}>
-          <div className="bg-background rounded-sm shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => {
+            setShowForm(false);
+            setEditingEngagement(null);
+          }}
+        >
+          <div
+            className="bg-background rounded-sm shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold">{editingEngagement ? "Edit Interaction Followup" : "Add Interaction Followup"}</h2>
+              <h2 className="text-lg font-semibold">
+                {editingEngagement ? "Edit Interaction Followup" : "Add Interaction Followup"}
+              </h2>
             </div>
             <div className="p-6">
               <EngagementForm
                 engagement={editingEngagement}
                 onSave={handleSave}
-                onCancel={() => { setShowForm(false); setEditingEngagement(null); }}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingEngagement(null);
+                }}
               />
             </div>
           </div>

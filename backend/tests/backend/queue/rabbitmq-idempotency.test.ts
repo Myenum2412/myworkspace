@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
-import { registerHandler, startConsumers, stopConsumers } from "../../../src/lib/queue/consumer.js";
 import { QUEUES } from "../../../src/lib/queue/connection.js";
+import { registerHandler, startConsumers, stopConsumers } from "../../../src/lib/queue/consumer.js";
 
 jest.mock("../../../src/lib/queue/connection.js", () => ({
   getChannel: jest.fn(),

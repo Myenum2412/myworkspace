@@ -1,16 +1,16 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
-import {
-  PlayIcon,
-  PauseIcon,
-  DownloadIcon,
-  SkipBackIcon,
-  SkipForwardIcon,
-  MusicIcon,
-} from "@/lib/icons";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatSize } from "@/lib/file-system/types";
+import {
+  DownloadIcon,
+  MusicIcon,
+  PauseIcon,
+  PlayIcon,
+  SkipBackIcon,
+  SkipForwardIcon,
+} from "@/lib/icons";
 
 interface AudioViewerProps {
   src: string;
@@ -34,7 +34,10 @@ export function AudioViewer({ src, fileName, fileSize, mimeType }: AudioViewerPr
   const togglePlay = useCallback(() => {
     if (!audioRef.current) return;
     if (audioRef.current.paused) {
-      audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
+      audioRef.current
+        .play()
+        .then(() => setPlaying(true))
+        .catch(() => {});
     } else {
       audioRef.current.pause();
       setPlaying(false);

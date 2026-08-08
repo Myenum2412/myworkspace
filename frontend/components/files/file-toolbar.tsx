@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ViewMode } from "./types";
-import { MuiFolderIcon } from "@/lib/icons";
 import {
-  SearchIcon, ArrowUpIcon, PlusIcon, Building2Icon, UploadIcon,
-  Grid3X3Icon, ListIcon, Loader2Icon, UserPlusIcon,
+  ArrowUpIcon,
+  Building2Icon,
+  Grid3X3Icon,
+  ListIcon,
+  Loader2Icon,
+  MuiFolderIcon,
+  PlusIcon,
+  SearchIcon,
+  UploadIcon,
+  UserPlusIcon,
 } from "@/lib/icons";
+import type { ViewMode } from "./types";
 
 interface FileToolbarProps {
   search: string;
@@ -33,11 +40,23 @@ interface FileToolbarProps {
 }
 
 export function FileToolbar({
-  search, onSearchChange, currentFolderId, onNavigateUp,
-  viewMode, onViewModeChange, sortBy, onSortByChange,
-  showUpload, onToggleUpload, orgId,
-  showNewFolder, newFolderName, onNewFolderNameChange,
-  onToggleNewFolder, onCreateFolder, onCancelNewFolder,
+  search,
+  onSearchChange,
+  currentFolderId,
+  onNavigateUp,
+  viewMode,
+  onViewModeChange,
+  sortBy,
+  onSortByChange,
+  showUpload,
+  onToggleUpload,
+  orgId,
+  showNewFolder,
+  newFolderName,
+  onNewFolderNameChange,
+  onToggleNewFolder,
+  onCreateFolder,
+  onCancelNewFolder,
   onRefresh,
 }: FileToolbarProps) {
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
@@ -46,9 +65,11 @@ export function FileToolbar({
 
   const fetchClients = useCallback(async () => {
     try {
-      const res = await fetch(`/api/clients?orgId=${encodeURIComponent(orgId)}`, { credentials: "include" });
+      const res = await fetch(`/api/clients?orgId=${encodeURIComponent(orgId)}`, {
+        credentials: "include",
+      });
       const d = await res.json();
-      const arr: Record<string, unknown>[] = Array.isArray(d) ? d : (d.data || []);
+      const arr: Record<string, unknown>[] = Array.isArray(d) ? d : d.data || [];
       setClients(arr.map((c) => ({ id: String(c.id), name: String(c.name || c.id) })));
     } catch {}
   }, [orgId]);
@@ -92,7 +113,7 @@ export function FileToolbar({
           <Input
             placeholder=""
             value={search}
-            onChange={e => onSearchChange(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
             className="pl-9"
           />
         </div>
@@ -102,7 +123,13 @@ export function FileToolbar({
         <Button variant="outline" size="sm" onClick={onToggleNewFolder}>
           <PlusIcon className="mr-1" /> Folder
         </Button>
-        <Popover open={clientPickerOpen} onOpenChange={(o) => { setClientPickerOpen(o); if (o && clients.length === 0) fetchClients(); }}>
+        <Popover
+          open={clientPickerOpen}
+          onOpenChange={(o) => {
+            setClientPickerOpen(o);
+            if (o && clients.length === 0) fetchClients();
+          }}
+        >
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm">
               <Building2Icon className="mr-1" /> New Client Folder
@@ -121,9 +148,11 @@ export function FileToolbar({
                   disabled={creatingClientFolder === c.id}
                   onClick={() => createClientFolder(c.id, c.name)}
                 >
-                  {creatingClientFolder === c.id
-                    ? <Loader2Icon className="size-3 animate-spin" />
-                    : <UserPlusIcon className="size-3 text-muted-foreground" />}
+                  {creatingClientFolder === c.id ? (
+                    <Loader2Icon className="size-3 animate-spin" />
+                  ) : (
+                    <UserPlusIcon className="size-3 text-muted-foreground" />
+                  )}
                   {c.name}
                 </button>
               ))}
@@ -137,16 +166,20 @@ export function FileToolbar({
           <button
             className={`p-2 ${viewMode === "grid" ? "bg-muted" : ""}`}
             onClick={() => onViewModeChange("grid")}
-          ><Grid3X3Icon className="size-4" /></button>
+          >
+            <Grid3X3Icon className="size-4" />
+          </button>
           <button
             className={`p-2 ${viewMode === "list" ? "bg-muted" : ""}`}
             onClick={() => onViewModeChange("list")}
-          ><ListIcon className="size-4" /></button>
+          >
+            <ListIcon className="size-4" />
+          </button>
         </div>
         <select
           className="text-sm border rounded-sm px-2 py-1"
           value={sortBy}
-          onChange={e => onSortByChange(e.target.value)}
+          onChange={(e) => onSortByChange(e.target.value)}
         >
           <option value="-createdAt">Newest</option>
           <option value="createdAt">Oldest</option>
@@ -163,13 +196,17 @@ export function FileToolbar({
           <Input
             placeholder=""
             value={newFolderName}
-            onChange={e => onNewFolderNameChange(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && onCreateFolder()}
+            onChange={(e) => onNewFolderNameChange(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onCreateFolder()}
             className="flex-1"
             autoFocus
           />
-          <Button size="sm" onClick={onCreateFolder}>Create</Button>
-          <Button size="sm" variant="ghost" onClick={onCancelNewFolder}>Cancel</Button>
+          <Button size="sm" onClick={onCreateFolder}>
+            Create
+          </Button>
+          <Button size="sm" variant="ghost" onClick={onCancelNewFolder}>
+            Cancel
+          </Button>
         </div>
       )}
     </>

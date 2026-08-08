@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export const NOTIFICATION_TYPES = [
   // User & Authentication
@@ -278,7 +278,7 @@ const NotificationActionSchema = new Schema<INotificationAction>(
     icon: String,
     primary: Boolean,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const notificationSchema = new Schema<INotification>(
@@ -326,7 +326,7 @@ const notificationSchema = new Schema<INotification>(
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 notificationSchema.index({ userId: 1, createdAt: -1 });

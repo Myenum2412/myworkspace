@@ -18,7 +18,10 @@ export function initializeTelemetry() {
     const { OTLPTraceExporter } = require("@opentelemetry/exporter-trace-otlp-http");
     const { OTLPMetricExporter } = require("@opentelemetry/exporter-metrics-otlp-http");
     const { Resource } = require("@opentelemetry/resources");
-    const { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } = require("@opentelemetry/semantic-conventions");
+    const {
+      SEMRESATTRS_SERVICE_NAME,
+      SEMRESATTRS_SERVICE_VERSION,
+    } = require("@opentelemetry/semantic-conventions");
     const { NodeTracerProvider } = require("@opentelemetry/sdk-trace-node");
     const { BatchSpanProcessor } = require("@opentelemetry/sdk-trace-base");
     const { MeterProvider, PeriodicExportingMetricReader } = require("@opentelemetry/sdk-metrics");

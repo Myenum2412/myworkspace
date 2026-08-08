@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { Industry, TermKey, createT, DEFAULT_INDUSTRY } from "@/lib/industry-terms";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
+import { createT, DEFAULT_INDUSTRY, type Industry, type TermKey } from "@/lib/industry-terms";
 
 type IndustryContextType = {
   industry: Industry;
@@ -45,11 +45,7 @@ export function IndustryProvider({ children }: { children: ReactNode }) {
     loading,
   };
 
-  return (
-    <IndustryContext.Provider value={value}>
-      {children}
-    </IndustryContext.Provider>
-  );
+  return <IndustryContext.Provider value={value}>{children}</IndustryContext.Provider>;
 }
 
 export function useIndustry(): IndustryContextType {

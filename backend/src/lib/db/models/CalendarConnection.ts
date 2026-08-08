@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 
 export interface ICalendarConnection extends Document {
@@ -39,7 +39,7 @@ const calendarConnectionSchema = new Schema<ICalendarConnection>(
     webhookExpiration: { type: Date },
     scopes: { type: [String], default: [] },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 calendarConnectionSchema.index({ userId: 1, provider: 1 }, { unique: true });
@@ -48,5 +48,5 @@ calendarConnectionSchema.index({ webhookChannelId: 1 }, { sparse: true });
 
 export const CalendarConnection = model<ICalendarConnection>(
   "CalendarConnection",
-  calendarConnectionSchema
+  calendarConnectionSchema,
 );

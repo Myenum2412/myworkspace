@@ -1,9 +1,13 @@
 import { Notification, NotificationType } from "../lib/db/models/Notification.js";
 import { NotificationSettings } from "../lib/db/models/NotificationSettings.js";
-import { logger } from "../lib/logger/index.js";
-import { sendDailyDigest, sendWeeklyDigest, sendUnreadNotificationsReminder } from "../lib/mail/index.js";
-import { createNotification } from "./notification.service.js";
 import { User } from "../lib/db/models/User.js";
+import { logger } from "../lib/logger/index.js";
+import {
+  sendDailyDigest,
+  sendUnreadNotificationsReminder,
+  sendWeeklyDigest,
+} from "../lib/mail/index.js";
+import { createNotification } from "./notification.service.js";
 
 const DIGEST_BATCH_SIZE = 100;
 
@@ -55,7 +59,11 @@ export async function processWeeklyDigests(): Promise<void> {
   }
 }
 
-async function sendUserDigest(userId: string, orgId: string, frequency: "hourly" | "daily" | "weekly"): Promise<void> {
+async function sendUserDigest(
+  userId: string,
+  orgId: string,
+  frequency: "hourly" | "daily" | "weekly",
+): Promise<void> {
   const period = frequency === "hourly" ? 1 : frequency === "daily" ? 24 : 168;
   const since = new Date(Date.now() - period * 60 * 60 * 1000);
 
@@ -107,9 +115,12 @@ async function sendUserDigest(userId: string, orgId: string, frequency: "hourly"
   const mapItem = (n: any) => ({
     title: n.title,
     description: n.message,
-    status: n.priority === "high" || n.priority === "critical" ? "error" as const
-      : n.priority === "medium" ? "warning" as const
-      : "info" as const,
+    status:
+      n.priority === "high" || n.priority === "critical"
+        ? ("error" as const)
+        : n.priority === "medium"
+          ? ("warning" as const)
+          : ("info" as const),
     url: n.link || "/notifications",
     meta: n.type.replace(/_/g, " "),
   });
@@ -126,7 +137,7 @@ async function sendUserDigest(userId: string, orgId: string, frequency: "hourly"
         0,
         pendingApprovals.length,
         [...pendingApprovals, ...taskUpdates, ...fileUpdates].slice(0, 10).map(mapItem),
-        `${process.env.APP_URL || "http://localhost:3000"}/notifications`
+        `${process.env.APP_URL || "http://localhost:3000"}/notifications`,
       );
     } else if (frequency === "daily") {
       await sendDailyDigest(
@@ -137,7 +148,7 @@ async function sendUserDigest(userId: string, orgId: string, frequency: "hourly"
         pendingApprovals.map(mapItem),
         fileUpdates.map(mapItem),
         unread,
-        `${process.env.APP_URL || "http://localhost:3000"}/notifications`
+        `${process.env.APP_URL || "http://localhost:3000"}/notifications`,
       );
     }
   } catch (err) {
@@ -180,11 +191,14 @@ export async function processUnreadReminders(): Promise<void> {
         topNotifications.map((n: any) => ({
           title: n.title,
           description: n.message,
-          status: n.priority === "high" || n.priority === "critical" ? "error" as const : "info" as const,
+          status:
+            n.priority === "high" || n.priority === "critical"
+              ? ("error" as const)
+              : ("info" as const),
           url: n.link || "/notifications",
           meta: n.type.replace(/_/g, " "),
         })),
-        `${process.env.APP_URL || "http://localhost:3000"}/notifications`
+        `${process.env.APP_URL || "http://localhost:3000"}/notifications`,
       );
     } catch (err) {
       logger.error({ err, userId: user._id }, "Unread reminder failed");

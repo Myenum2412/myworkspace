@@ -1,6 +1,9 @@
 "use client";
 
-import { ColumnDef, Row } from "@tanstack/react-table";
+import type { ColumnDef, Row } from "@tanstack/react-table";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
+import type { Project } from "@/components/projects/project-types";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,11 +12,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { FolderIcon } from "@/lib/icons";
-import { PaletteIcon, TextIcon, CalendarIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon, EyeIcon, AlertCircleIcon, ClockIcon } from "@/lib/icons";
-import type { Project } from "@/components/projects/project-types";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+import {
+  AlertCircleIcon,
+  CalendarIcon,
+  ClockIcon,
+  EyeIcon,
+  FolderIcon,
+  MoreHorizontalIcon,
+  PaletteIcon,
+  PencilIcon,
+  TextIcon,
+  Trash2Icon,
+} from "@/lib/icons";
 import type { TermKey } from "@/lib/industry-terms";
 
 function getProjectDueStatus(project: Project): "overdue" | "due-soon" | "normal" {
@@ -29,199 +39,252 @@ function getProjectDueStatus(project: Project): "overdue" | "due-soon" | "normal
 
 export function buildProjectColumns(t: (key: TermKey) => string): ColumnDef<Project>[] {
   return [
-  {
-    id: "sno",
-    header: t("common.sno"),
-    cell: ({ row }) => <span className="text-muted-foreground">{row.index + 1}</span>,
-    enableSorting: false,
-  },
-  {
-    accessorKey: "name",
-    header: t("common.name"),
-    cell: ({ row }) => <span className="font-medium">{row.getValue("name")}</span>,
-  },
-  {
-    accessorKey: "client",
-    header: t("page.projects.columnClient"),
-    cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("client") || "—"}</span>,
-  },
-  {
-    id: "color",
-    header: () => <span className="flex items-center gap-1"><PaletteIcon className="size-3" /> {t("common.color")}</span>,
-    cell: ({ row }) => {
-      const color = row.original.color;
-      return color
-        ? <span className="inline-block size-5 rounded-sm border" style={{ backgroundColor: color }} title={color} />
-        : <span className="text-muted-foreground">—</span>;
+    {
+      id: "sno",
+      header: t("common.sno"),
+      cell: ({ row }) => <span className="text-muted-foreground">{row.index + 1}</span>,
+      enableSorting: false,
     },
-  },
-  {
-    accessorKey: "priority",
-    header: t("common.priority"),
-    cell: ({ row }) => {
-      const priority = row.getValue<string>("priority") || "medium";
-      const colors: Record<string, string> = {
-        low: "bg-slate-100 text-slate-600",
-        medium: "bg-blue-100 text-blue-600",
-        high: "bg-amber-100 text-amber-600",
-        critical: "bg-red-100 text-red-600",
-      };
-      return (
-        <span className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-medium ${colors[priority] || colors.medium}`}>
-          {priority === "critical" || priority === "high" ? <AlertCircleIcon className="size-2.5" /> : null}
-          {priority}
+    {
+      accessorKey: "name",
+      header: t("common.name"),
+      cell: ({ row }) => <span className="font-medium">{row.getValue("name")}</span>,
+    },
+    {
+      accessorKey: "client",
+      header: t("page.projects.columnClient"),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{row.getValue("client") || "—"}</span>
+      ),
+    },
+    {
+      id: "color",
+      header: () => (
+        <span className="flex items-center gap-1">
+          <PaletteIcon className="size-3" /> {t("common.color")}
         </span>
-      );
+      ),
+      cell: ({ row }) => {
+        const color = row.original.color;
+        return color ? (
+          <span
+            className="inline-block size-5 rounded-sm border"
+            style={{ backgroundColor: color }}
+            title={color}
+          />
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
     },
-  },
-  {
-    accessorKey: "category",
-    header: t("common.category"),
-    cell: ({ row }) => {
-      const category = row.getValue<string>("category");
-      return category
-        ? <span className="text-xs capitalize text-muted-foreground">{category}</span>
-        : <span className="text-muted-foreground">\u2014</span>;
+    {
+      accessorKey: "priority",
+      header: t("common.priority"),
+      cell: ({ row }) => {
+        const priority = row.getValue<string>("priority") || "medium";
+        const colors: Record<string, string> = {
+          low: "bg-slate-100 text-slate-600",
+          medium: "bg-blue-100 text-blue-600",
+          high: "bg-amber-100 text-amber-600",
+          critical: "bg-red-100 text-red-600",
+        };
+        return (
+          <span
+            className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-medium ${colors[priority] || colors.medium}`}
+          >
+            {priority === "critical" || priority === "high" ? (
+              <AlertCircleIcon className="size-2.5" />
+            ) : null}
+            {priority}
+          </span>
+        );
+      },
     },
-  },
-  {
-    id: "description",
-    header: () => <span className="flex items-center gap-1"><TextIcon className="size-3" /> {t("common.description")}</span>,
-    cell: ({ row }) => {
-      const desc = row.original.description;
-      return <span className="text-muted-foreground truncate max-w-[200px] block" title={desc}>{desc || "—"}</span>;
+    {
+      accessorKey: "category",
+      header: t("common.category"),
+      cell: ({ row }) => {
+        const category = row.getValue<string>("category");
+        return category ? (
+          <span className="text-xs capitalize text-muted-foreground">{category}</span>
+        ) : (
+          <span className="text-muted-foreground">\u2014</span>
+        );
+      },
     },
-  },
-  {
-    id: "deadline",
-    header: () => <span className="flex items-center gap-1"><CalendarIcon className="size-3" /> {t("common.deadline")}</span>,
-    cell: ({ row }) => {
-      const project = row.original;
-      const dueStatus = getProjectDueStatus(project);
-      return project.deadline ? (
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground">{new Date(project.deadline).toLocaleDateString()}</span>
-          {dueStatus === "overdue" && (
-            <Badge className="bg-red-100 text-red-700 border-red-200 text-[10px] px-1.5 py-0 gap-1">
-              <AlertCircleIcon className="size-3" /> Overdue
-            </Badge>
-          )}
-          {dueStatus === "due-soon" && (
-            <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-[10px] px-1.5 py-0 gap-1">
-              <ClockIcon className="size-3" /> Due Soon
-            </Badge>
-          )}
-        </div>
-      ) : <span className="text-muted-foreground">—</span>;
+    {
+      id: "description",
+      header: () => (
+        <span className="flex items-center gap-1">
+          <TextIcon className="size-3" /> {t("common.description")}
+        </span>
+      ),
+      cell: ({ row }) => {
+        const desc = row.original.description;
+        return (
+          <span className="text-muted-foreground truncate max-w-[200px] block" title={desc}>
+            {desc || "—"}
+          </span>
+        );
+      },
     },
-  },
-  {
-    accessorKey: "tracked",
-    header: t("common.tracked"),
-    cell: ({ row }) => <span>{row.getValue<number>("tracked")}h</span>,
-  },
-  {
-    accessorKey: "progress",
-    header: t("common.progress"),
-    cell: ({ row }) => {
-      const project = row.original;
-      if (project.headName) {
+    {
+      id: "deadline",
+      header: () => (
+        <span className="flex items-center gap-1">
+          <CalendarIcon className="size-3" /> {t("common.deadline")}
+        </span>
+      ),
+      cell: ({ row }) => {
+        const project = row.original;
+        const dueStatus = getProjectDueStatus(project);
+        return project.deadline ? (
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">
+              {new Date(project.deadline).toLocaleDateString()}
+            </span>
+            {dueStatus === "overdue" && (
+              <Badge className="bg-red-100 text-red-700 border-red-200 text-[10px] px-1.5 py-0 gap-1">
+                <AlertCircleIcon className="size-3" /> Overdue
+              </Badge>
+            )}
+            {dueStatus === "due-soon" && (
+              <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-[10px] px-1.5 py-0 gap-1">
+                <ClockIcon className="size-3" /> Due Soon
+              </Badge>
+            )}
+          </div>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
+    },
+    {
+      accessorKey: "tracked",
+      header: t("common.tracked"),
+      cell: ({ row }) => <span>{row.getValue<number>("tracked")}h</span>,
+    },
+    {
+      accessorKey: "progress",
+      header: t("common.progress"),
+      cell: ({ row }) => {
+        const project = row.original;
+        if (project.headName) {
+          return (
+            <div className="flex items-center gap-2">
+              <div className="size-7 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                {project.headAvatar ? (
+                  <img
+                    src={project.headAvatar}
+                    alt={project.headName}
+                    className="size-full object-cover"
+                  />
+                ) : (
+                  <span className="text-[10px] font-medium text-muted-foreground">
+                    {project.headName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </span>
+                )}
+              </div>
+              <span className="text-sm font-medium">{project.headName}</span>
+            </div>
+          );
+        }
         return (
           <div className="flex items-center gap-2">
-            <div className="size-7 rounded-2xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
-              {project.headAvatar ? (
-                <img src={project.headAvatar} alt={project.headName} className="size-full object-cover" />
-              ) : (
-                <span className="text-[10px] font-medium text-muted-foreground">
-                  {project.headName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
-                </span>
-              )}
+            <div className="h-2 w-20 rounded-sm bg-muted">
+              <div
+                className="h-2 rounded-sm bg-primary transition-all"
+                style={{ width: `${project.progress}%` }}
+              />
             </div>
-            <span className="text-sm font-medium">{project.headName}</span>
+            <span className="text-xs text-muted-foreground">{project.progress}%</span>
           </div>
         );
-      }
-      return (
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-20 rounded-sm bg-muted">
-            <div
-              className="h-2 rounded-sm bg-primary transition-all"
-              style={{ width: `${project.progress}%` }}
-            />
-          </div>
-          <span className="text-xs text-muted-foreground">{project.progress}%</span>
-        </div>
-      );
+      },
     },
-  },
-  {
-    accessorKey: "access",
-    header: t("common.access"),
-    cell: ({ row }) => {
-      const access = row.getValue<string>("access");
-      return (
-        <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
-          access === "Public"
-            ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            : "bg-muted text-muted-foreground"
-        }`}>
-          {access}
-        </span>
-      );
+    {
+      accessorKey: "access",
+      header: t("common.access"),
+      cell: ({ row }) => {
+        const access = row.getValue<string>("access");
+        return (
+          <span
+            className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
+              access === "Public"
+                ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {access}
+          </span>
+        );
+      },
     },
-  },
-  {
-    accessorKey: "status",
-    header: t("common.status"),
-    cell: ({ row }) => {
-      const status = row.getValue<string>("status");
-      const active = status === "Active";
-      return (
-        <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
-          active
-            ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            : "bg-muted text-muted-foreground"
-        }`}>
-          {status}
-        </span>
-      );
+    {
+      accessorKey: "status",
+      header: t("common.status"),
+      cell: ({ row }) => {
+        const status = row.getValue<string>("status");
+        const active = status === "Active";
+        return (
+          <span
+            className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
+              active
+                ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {status}
+          </span>
+        );
+      },
     },
-  },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row, table }) => {
-      const project = row.original;
-      const meta = table.options.meta as { onView?: (project: Project) => void; onEdit?: (project: Project) => void; onDelete?: (project: Project) => void } | undefined;
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="">
-              <MoreHorizontalIcon className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem onClick={() => meta?.onView?.(project)}>
-              <EyeIcon className="size-3.5 mr-2" /> View
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => meta?.onEdit?.(project)}>
-              <PencilIcon className="size-3.5 mr-2" /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DeleteConfirmDialog
-              title="Delete Project"
-              description={`Are you sure you want to delete ${project.name}? This action cannot be undone.`}
-              onConfirm={() => meta?.onDelete?.(project)}
-            >
-              <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50">
-                <Trash2Icon className="size-3.5 mr-2" /> Delete
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row, table }) => {
+        const project = row.original;
+        const meta = table.options.meta as
+          | {
+              onView?: (project: Project) => void;
+              onEdit?: (project: Project) => void;
+              onDelete?: (project: Project) => void;
+            }
+          | undefined;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="">
+                <MoreHorizontalIcon className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={() => meta?.onView?.(project)}>
+                <EyeIcon className="size-3.5 mr-2" /> View
               </DropdownMenuItem>
-            </DeleteConfirmDialog>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+              <DropdownMenuItem onClick={() => meta?.onEdit?.(project)}>
+                <PencilIcon className="size-3.5 mr-2" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DeleteConfirmDialog
+                title="Delete Project"
+                description={`Are you sure you want to delete ${project.name}? This action cannot be undone.`}
+                onConfirm={() => meta?.onDelete?.(project)}
+              >
+                <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50">
+                  <Trash2Icon className="size-3.5 mr-2" /> Delete
+                </DropdownMenuItem>
+              </DeleteConfirmDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
     },
-  },
   ];
 }
 

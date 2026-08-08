@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface StorageStats {
   usedStorage: number;
@@ -49,23 +49,29 @@ export function useStorageStats(orgId?: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStats = useCallback(async (signal?: AbortSignal) => {
-    if (!orgId) {
-      setLoading(false);
-      return;
-    }
-    try {
-      const res = await fetch(`/api/files/storage-stats?orgId=${orgId}`, { credentials: "include", signal });
-      if (!res.ok) throw new Error("Could not load storage stats");
-      const data = await res.json();
-      setStats(data.data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, [orgId]);
+  const fetchStats = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!orgId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/files/storage-stats?orgId=${orgId}`, {
+          credentials: "include",
+          signal,
+        });
+        if (!res.ok) throw new Error("Could not load storage stats");
+        const data = await res.json();
+        setStats(data.data);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [orgId],
+  );
 
   useEffect(() => {
     const controller = new AbortController();

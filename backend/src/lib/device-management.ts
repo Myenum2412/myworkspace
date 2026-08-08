@@ -1,6 +1,6 @@
-import { logger } from "./logger/index.js";
-import { recordAuditLog } from "../services/audit.service.js";
 import mongoose from "mongoose";
+import { recordAuditLog } from "../services/audit.service.js";
+import { logger } from "./logger/index.js";
 
 /**
  * Device Management Service
@@ -72,7 +72,7 @@ export function generateDeviceFingerprint(req: {
   const content = components.join("|");
   for (let i = 0; i < content.length; i++) {
     const char = content.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return Math.abs(hash).toString(36);

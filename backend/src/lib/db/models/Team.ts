@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface ITeam extends Document {
   orgId: string;
@@ -18,7 +18,7 @@ const teamSchema = new Schema<ITeam>(
     createdBy: { type: String, required: true },
     updatedBy: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 teamSchema.index({ name: "text", description: "text" });

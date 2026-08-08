@@ -1,1 +1,1 @@
-export { ProjectDetailedView } from "./project-detailed-view.client"
+export { ProjectDetailedView } from "./project-detailed-view.client";

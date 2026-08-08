@@ -1,21 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { createProjectAction } from "@/actions/projects";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { Loader2Icon, AlertCircleIcon } from "@/lib/icons";
-import { createProjectAction } from "@/actions/projects";
+import { AlertCircleIcon, Loader2Icon } from "@/lib/icons";
 
 const colors = [
-  "#93c5fd", "#fca5a5", "#86efac", "#fcd34d", "#c4b5fd",
-  "#f9a8d4", "#67e8f9", "#fdba74", "#6ee7b7", "#a5b4fc",
+  "#93c5fd",
+  "#fca5a5",
+  "#86efac",
+  "#fcd34d",
+  "#c4b5fd",
+  "#f9a8d4",
+  "#67e8f9",
+  "#fdba74",
+  "#6ee7b7",
+  "#a5b4fc",
 ];
 
-export default function AddProjectsInteractive({ clientList: initialClientList }: { clientList: string[] }) {
+export default function AddProjectsInteractive({
+  clientList: initialClientList,
+}: {
+  clientList: string[];
+}) {
   const router = useRouter();
   const [orgId, setOrgId] = useState("");
   const [name, setName] = useState("");
@@ -103,7 +115,10 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
           <CardDescription>Enter the details for the new project</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4 [&_input]:border-black [&_input]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 [&_input]:border-black [&_input]:bg-white [&_textarea]:border-black [&_textarea]:bg-white"
+          >
             {error && (
               <div className="flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-sm text-destructive">
                 <AlertCircleIcon className="size-4 shrink-0" />
@@ -113,7 +128,14 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
 
             <div className="grid gap-2">
               <Label className="text-xs text-muted-foreground">Project Name</Label>
-              <Input id="name" placeholder="" value={name} onChange={(e) => setName(e.target.value)} required disabled={submitting} />
+              <Input
+                id="name"
+                placeholder=""
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={submitting}
+              />
             </div>
 
             <div className="grid gap-2">
@@ -128,7 +150,9 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
               >
                 <option value="">Select a client</option>
                 {clientList.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
@@ -148,7 +172,13 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
 
             <div className="grid gap-2">
               <Label className="text-xs text-muted-foreground">Deadline</Label>
-              <Input id="deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} disabled={submitting} />
+              <Input
+                id="deadline"
+                type="date"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                disabled={submitting}
+              />
             </div>
 
             <div className="grid gap-2">
@@ -161,7 +191,7 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
                       type="button"
                       onClick={() => setColor(c)}
                       disabled={submitting}
-                      className={`rounded-sm ring-offset-2 ring-offset-background transition-all ${ color === c ? "ring-2 ring-foreground scale-110" : "" }`}
+                      className={`rounded-sm ring-offset-2 ring-offset-background transition-all ${color === c ? "ring-2 ring-foreground scale-110" : ""}`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
@@ -177,7 +207,13 @@ export default function AddProjectsInteractive({ clientList: initialClientList }
             </div>
 
             <div className="flex gap-2 justify-end">
-              <Button type="button" variant="outline" onClick={() => router.push("/projects")} disabled={submitting} className="w-32 h-10">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/projects")}
+                disabled={submitting}
+                className="w-32 h-10"
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={!name || !client || submitting} className="w-32 h-10">

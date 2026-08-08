@@ -1,18 +1,22 @@
 "use client";
 
+import { getFileIcon } from "@/components/files/utils";
+import { Button } from "@/components/ui/button";
 import { useRecentFiles } from "@/hooks/file-system/use-file-data";
 import { useFileSystemStore } from "@/lib/file-system/store";
-import { getFileIcon } from "@/components/files/utils";
 import { formatSize } from "@/lib/file-system/types";
 import { ClockIcon, DownloadIcon, EyeIcon } from "@/lib/icons";
-import { Button } from "@/components/ui/button";
 
 export function RecentView() {
   const { data: files, isLoading } = useRecentFiles();
   const { setPreviewFile } = useFileSystemStore();
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-12"><div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   if (!files || files.length === 0) {
@@ -41,20 +45,35 @@ export function RecentView() {
             className="flex items-center gap-3 p-3 rounded-sm hover:bg-accent/30 cursor-pointer transition-colors"
             onDoubleClick={() => setPreviewFile(file)}
           >
-            <span className="text-[10px] text-muted-foreground w-6 text-right font-mono">{idx + 1}</span>
+            <span className="text-[10px] text-muted-foreground w-6 text-right font-mono">
+              {idx + 1}
+            </span>
             {getFileIcon(file.mimeType)}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{file.originalName}</p>
               <p className="text-[10px] text-muted-foreground">
-                {formatSize(file.size)} &middot; {file.updatedAt ? new Date(file.updatedAt).toLocaleDateString() : new Date(file.createdAt).toLocaleDateString()}
+                {formatSize(file.size)} &middot;{" "}
+                {file.updatedAt
+                  ? new Date(file.updatedAt).toLocaleDateString()
+                  : new Date(file.createdAt).toLocaleDateString()}
                 {file.uploaderName && <> &middot; {file.uploaderName}</>}
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <Button variant="ghost" size="sm" className="p-0" onClick={() => setPreviewFile(file)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-0"
+                onClick={() => setPreviewFile(file)}
+              >
                 <EyeIcon className="size-3.5" />
               </Button>
-              <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-0"
+                onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}
+              >
                 <DownloadIcon className="size-3.5" />
               </Button>
             </div>

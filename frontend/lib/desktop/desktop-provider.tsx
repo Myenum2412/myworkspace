@@ -1,21 +1,21 @@
 "use client";
 
 import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
-  useCallback,
-  useMemo,
-  createContext,
-  useContext,
-  type ReactNode,
 } from "react";
-import { ContextMenuProvider, ContextMenuLayer } from "./context-menu-provider";
-import { KeyboardShortcutProvider } from "./keyboard-shortcuts";
-import { DragEngineProvider } from "./drag-engine";
-import { DevToolsDetector } from "@/lib/security/devtools-detector";
-import { useConnectivity } from "@/lib/offline/use-connectivity";
 import { SetupWizard } from "@/components/setup-wizard/setup-wizard";
+import { useConnectivity } from "@/lib/offline/use-connectivity";
+import { DevToolsDetector } from "@/lib/security/devtools-detector";
+import { ContextMenuLayer, ContextMenuProvider } from "./context-menu-provider";
+import { DragEngineProvider } from "./drag-engine";
+import { KeyboardShortcutProvider } from "./keyboard-shortcuts";
 
 interface DesktopConfig {
   disableContextMenu?: boolean;
@@ -51,13 +51,7 @@ export function useDesktop() {
   return useContext(DesktopContext);
 }
 
-function StatusBar({
-  statusText,
-  isOnline,
-}: {
-  statusText: string;
-  isOnline: boolean;
-}) {
+function StatusBar({ statusText, isOnline }: { statusText: string; isOnline: boolean }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -209,7 +203,12 @@ export function DesktopProvider({
   }, []);
 
   return (
-    <DesktopContext.Provider value={useMemo(() => ({ isOnline, updateStatus, statusText }), [isOnline, updateStatus, statusText])}>
+    <DesktopContext.Provider
+      value={useMemo(
+        () => ({ isOnline, updateStatus, statusText }),
+        [isOnline, updateStatus, statusText],
+      )}
+    >
       <KeyboardShortcutProvider>
         <DragEngineProvider>
           <ContextMenuProvider>

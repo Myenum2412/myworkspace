@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
@@ -160,26 +154,30 @@ export function CircularCarousel({
                 style={{ transformOrigin: "center center" }}
               >
                 {item.tag && (
-                  <span className={cn(
-                    "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-                    isActive
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-neutral-100 text-neutral-600"
-                  )}>
+                  <span
+                    className={cn(
+                      "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                      isActive ? "bg-blue-100 text-blue-700" : "bg-neutral-100 text-neutral-600",
+                    )}
+                  >
                     {item.tag}
                   </span>
                 )}
                 <div className="w-full text-left">
-                  <h3 className={cn(
-                    "font-bold leading-tight transition-colors duration-300",
-                    isActive ? "text-neutral-900 text-base" : "text-neutral-700 text-sm"
-                  )}>
+                  <h3
+                    className={cn(
+                      "font-bold leading-tight transition-colors duration-300",
+                      isActive ? "text-neutral-900 text-base" : "text-neutral-700 text-sm",
+                    )}
+                  >
                     {item.title}
                   </h3>
-                  <p className={cn(
-                    "mt-1 line-clamp-2 text-xs leading-relaxed transition-colors duration-300",
-                    isActive ? "text-neutral-500" : "text-neutral-400"
-                  )}>
+                  <p
+                    className={cn(
+                      "mt-1 line-clamp-2 text-xs leading-relaxed transition-colors duration-300",
+                      isActive ? "text-neutral-500" : "text-neutral-400",
+                    )}
+                  >
                     {item.description}
                   </p>
                 </div>
@@ -200,9 +198,7 @@ export function CircularCarousel({
         <span className="text-5xl font-bold tracking-tight text-blue-600/90">
           {String(activeIndex + 1).padStart(2, "0")}
         </span>
-        <span className="mt-1 text-xs text-neutral-400">
-          of {String(total).padStart(2, "0")}
-        </span>
+        <span className="mt-1 text-xs text-neutral-400">of {String(total).padStart(2, "0")}</span>
       </motion.div>
 
       {/* Controls */}
@@ -227,9 +223,7 @@ export function CircularCarousel({
               onClick={() => goTo(i)}
               className={cn(
                 "h-1.5 rounded-full transition-all duration-300",
-                i === activeIndex
-                  ? "w-6 bg-blue-500"
-                  : "w-1.5 bg-neutral-300 hover:bg-neutral-400",
+                i === activeIndex ? "w-6 bg-blue-500" : "w-1.5 bg-neutral-300 hover:bg-neutral-400",
               )}
               aria-label={`Go to item ${i + 1}`}
             />

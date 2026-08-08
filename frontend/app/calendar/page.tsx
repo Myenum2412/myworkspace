@@ -1,23 +1,34 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import {
-  RiArrowLeftSLine, RiArrowRightSLine, RiCalendarLine,
-  RiMapPinLine, RiTimeLine, RiGoogleLine, RiCheckLine,
-  RiSettings3Line, RiCheckboxCircleLine, RiCheckboxBlankCircleLine,
-  RiRefreshLine,
-} from "@/lib/icons";
-import { Button } from "@/components/ui/button";
+import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Popover, PopoverContent, PopoverDescription,
-  PopoverHeader, PopoverTitle, PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import {
+  Loader2Icon,
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
+  RiCalendarLine,
+  RiCheckboxBlankCircleLine,
+  RiCheckboxCircleLine,
+  RiCheckLine,
+  RiGoogleLine,
+  RiMapPinLine,
+  RiRefreshLine,
+  RiSettings3Line,
+  RiTimeLine,
+} from "@/lib/icons";
 import { cn } from "@/lib/utils";
-import { Loader2Icon } from "@/lib/icons";
 
 type CalendarEvent = {
   id: string;
@@ -111,7 +122,9 @@ export default function CalendarPage() {
   const [connecting, setConnecting] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [showCalendarSettings, setShowCalendarSettings] = useState(false);
-  const [connections, setConnections] = useState<Array<{ id: string; provider: string; lastSyncAt: string | null }>>([]);
+  const [connections, setConnections] = useState<
+    Array<{ id: string; provider: string; lastSyncAt: string | null }>
+  >([]);
 
   const days = getWeekDays(weekStart);
 
@@ -139,7 +152,9 @@ export default function CalendarPage() {
     const timeMax = weekEnd.toISOString();
 
     try {
-      const res = await fetch(`/api/calendar/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`);
+      const res = await fetch(
+        `/api/calendar/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`,
+      );
       if (res.ok) {
         const d = await res.json();
         setEvents(d.data || []);
@@ -164,11 +179,9 @@ export default function CalendarPage() {
   }, []);
 
   useEffect(() => {
-    Promise.all([
-      checkConnection(),
-      fetchCalendars(),
-      fetchEvents(weekStart),
-    ]).finally(() => setLoading(false));
+    Promise.all([checkConnection(), fetchCalendars(), fetchEvents(weekStart)]).finally(() =>
+      setLoading(false),
+    );
   }, [weekStart, checkConnection, fetchCalendars, fetchEvents]);
 
   const handleConnect = () => {
@@ -194,7 +207,7 @@ export default function CalendarPage() {
 
   const handleSync = async () => {
     if (connections.length === 0) return;
-    
+
     setSyncing(true);
     try {
       // Sync the first connection (or all connections)
@@ -311,9 +324,7 @@ export default function CalendarPage() {
             <div className="space-y-4">
               {/* Connection Status */}
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">
-                  Connection Status
-                </p>
+                <p className="text-xs font-medium text-muted-foreground">Connection Status</p>
                 {connections.map((conn) => (
                   <div key={conn.id} className="flex items-center justify-between text-sm">
                     <span className="flex items-center gap-2">
@@ -341,10 +352,7 @@ export default function CalendarPage() {
                 ) : (
                   <div className="space-y-2">
                     {calendars.map((cal) => (
-                      <div
-                        key={cal.id}
-                        className="flex items-center justify-between gap-2"
-                      >
+                      <div key={cal.id} className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <button
                             type="button"
@@ -391,9 +399,7 @@ export default function CalendarPage() {
         <>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <h2 className="text-sm font-semibold tabular-nums">
-                {formatWeekRange(days)}
-              </h2>
+              <h2 className="text-sm font-semibold tabular-nums">{formatWeekRange(days)}</h2>
               <span className="text-xs text-muted-foreground">
                 {totalEvents} {totalEvents === 1 ? "event" : "events"}
               </span>
@@ -403,11 +409,13 @@ export default function CalendarPage() {
                 variant="ghost"
                 size="icon-sm"
                 aria-label="Previous week"
-                onClick={() => setWeekStart((prev) => {
-                  const d = new Date(prev);
-                  d.setDate(d.getDate() - 7);
-                  return d;
-                })}
+                onClick={() =>
+                  setWeekStart((prev) => {
+                    const d = new Date(prev);
+                    d.setDate(d.getDate() - 7);
+                    return d;
+                  })
+                }
               >
                 <RiArrowLeftSLine />
               </Button>
@@ -427,11 +435,13 @@ export default function CalendarPage() {
                 variant="ghost"
                 size="icon-sm"
                 aria-label="Next week"
-                onClick={() => setWeekStart((prev) => {
-                  const d = new Date(prev);
-                  d.setDate(d.getDate() + 7);
-                  return d;
-                })}
+                onClick={() =>
+                  setWeekStart((prev) => {
+                    const d = new Date(prev);
+                    d.setDate(d.getDate() + 7);
+                    return d;
+                  })
+                }
               >
                 <RiArrowRightSLine />
               </Button>
@@ -444,10 +454,24 @@ export default function CalendarPage() {
                 <div key={day.date.toISOString()}>
                   <div className={cn("flex gap-4 px-4 py-3", day.isToday && "bg-primary/5")}>
                     <div className="flex w-11 shrink-0 flex-col items-center gap-1 pt-1">
-                      <span className={cn("text-[10px] font-semibold tracking-widest uppercase", day.isToday ? "text-primary" : dayColor(day.date) || "text-muted-foreground")}>
+                      <span
+                        className={cn(
+                          "text-[10px] font-semibold tracking-widest uppercase",
+                          day.isToday
+                            ? "text-primary"
+                            : dayColor(day.date) || "text-muted-foreground",
+                        )}
+                      >
                         {day.label}
                       </span>
-                      <span className={cn("flex size-8 items-center justify-center text-sm font-semibold tabular-nums", day.isToday ? "bg-primary text-primary-foreground" : dayColor(day.date) || "text-foreground")}>
+                      <span
+                        className={cn(
+                          "flex size-8 items-center justify-center text-sm font-semibold tabular-nums",
+                          day.isToday
+                            ? "bg-primary text-primary-foreground"
+                            : dayColor(day.date) || "text-foreground",
+                        )}
+                      >
                         {day.date.getDate()}
                       </span>
                     </div>
@@ -463,10 +487,16 @@ export default function CalendarPage() {
                                 type="button"
                                 className="group flex w-full items-stretch gap-3 px-2 py-1.5 text-left transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none"
                               >
-                                <span className={cn(
-                                  "w-1 shrink-0",
-                                  event.status === "cancelled" ? "bg-destructive" : event.status === "tentative" ? "bg-muted-foreground" : "bg-primary"
-                                )} />
+                                <span
+                                  className={cn(
+                                    "w-1 shrink-0",
+                                    event.status === "cancelled"
+                                      ? "bg-destructive"
+                                      : event.status === "tentative"
+                                        ? "bg-muted-foreground"
+                                        : "bg-primary",
+                                  )}
+                                />
                                 <div className="flex w-14 shrink-0 flex-col">
                                   <span className="text-xs font-medium text-foreground tabular-nums">
                                     {event.allDay ? "All day" : formatTime(event.start)}
@@ -478,10 +508,14 @@ export default function CalendarPage() {
                                   )}
                                 </div>
                                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                                  <span className={cn(
-                                    "truncate text-sm leading-snug font-medium",
-                                    event.status === "cancelled" ? "text-muted-foreground line-through" : "text-foreground"
-                                  )}>
+                                  <span
+                                    className={cn(
+                                      "truncate text-sm leading-snug font-medium",
+                                      event.status === "cancelled"
+                                        ? "text-muted-foreground line-through"
+                                        : "text-foreground",
+                                    )}
+                                  >
                                     {event.title}
                                   </span>
                                   {event.calendarEmail && (
@@ -496,7 +530,9 @@ export default function CalendarPage() {
                             </PopoverTrigger>
                             <PopoverContent align="start" className="w-72">
                               <PopoverHeader>
-                                <PopoverTitle className={cn(event.status === "cancelled" && "line-through")}>
+                                <PopoverTitle
+                                  className={cn(event.status === "cancelled" && "line-through")}
+                                >
                                   {event.title}
                                 </PopoverTitle>
                                 <PopoverDescription>
@@ -507,7 +543,9 @@ export default function CalendarPage() {
                               <div className="flex flex-col gap-2 text-muted-foreground">
                                 <span className="flex items-center gap-1.5">
                                   <RiTimeLine className="size-3.5 shrink-0" />
-                                  {event.allDay ? "All day" : `${formatTime(event.start)} - ${formatTime(event.end)} (${formatDuration(event.start, event.end)})`}
+                                  {event.allDay
+                                    ? "All day"
+                                    : `${formatTime(event.start)} - ${formatTime(event.end)} (${formatDuration(event.start, event.end)})`}
                                 </span>
                                 {event.location && (
                                   <span className="flex items-center gap-1.5">

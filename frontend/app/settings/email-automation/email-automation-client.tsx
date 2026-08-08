@@ -1,23 +1,8 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import {
-  RiMailLine,
-  RiCalendarLine,
-  RiTimeLine,
-  RiSettings3Line,
-  RiCheckLine,
-  RiCloseLine,
-  RiRefreshLine,
-  RiPlayLine,
-  RiPauseLine,
-  RiHistoryLine,
-  RiUserLine,
-  RiTeamLine,
-} from "@/lib/icons"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { useCallback, useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -25,81 +10,96 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Loader2Icon } from "@/lib/icons"
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import {
+  Loader2Icon,
+  RiCalendarLine,
+  RiCheckLine,
+  RiCloseLine,
+  RiHistoryLine,
+  RiMailLine,
+  RiPauseLine,
+  RiPlayLine,
+  RiRefreshLine,
+  RiSettings3Line,
+  RiTeamLine,
+  RiTimeLine,
+  RiUserLine,
+} from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 type SchedulerSettings = {
-  enabled: boolean
-  paused: boolean
-  sendTime: string
-  timezone: string
+  enabled: boolean;
+  paused: boolean;
+  sendTime: string;
+  timezone: string;
   daysEnabled: {
-    monday: boolean
-    tuesday: boolean
-    wednesday: boolean
-    thursday: boolean
-    friday: boolean
-    saturday: boolean
-    sunday: boolean
-  }
-  recipients: "staff" | "users" | "both"
-  includePendingTasks: boolean
-  includeOverdueTasks: boolean
-  includeHighPriorityTasks: boolean
-  includeTodayTasks: boolean
-}
+    monday: boolean;
+    tuesday: boolean;
+    wednesday: boolean;
+    thursday: boolean;
+    friday: boolean;
+    saturday: boolean;
+    sunday: boolean;
+  };
+  recipients: "staff" | "users" | "both";
+  includePendingTasks: boolean;
+  includeOverdueTasks: boolean;
+  includeHighPriorityTasks: boolean;
+  includeTodayTasks: boolean;
+};
 
 type SchedulerStats = {
-  enabled: boolean
-  paused: boolean
-  sendTime: string
-  timezone: string
-  lastSuccessfulRun: string | null
-  lastFailedRun: string | null
-  lastError: string | null
-  emailsSentToday: number
-  emailsFailedToday: number
-  totalEmailsSent: number
-  nextScheduledRun: string
+  enabled: boolean;
+  paused: boolean;
+  sendTime: string;
+  timezone: string;
+  lastSuccessfulRun: string | null;
+  lastFailedRun: string | null;
+  lastError: string | null;
+  emailsSentToday: number;
+  emailsFailedToday: number;
+  totalEmailsSent: number;
+  nextScheduledRun: string;
   auditStats: {
-    totalSent: number
-    totalFailed: number
-    sentToday: number
-    failedToday: number
-  }
-}
+    totalSent: number;
+    totalFailed: number;
+    sentToday: number;
+    failedToday: number;
+  };
+};
 
 type AuditLog = {
-  id: string
-  userEmail: string
-  status: string
-  subject: string
-  taskCount: number
-  pendingCount: number
-  overdueCount: number
-  highPriorityCount: number
-  errorMessage?: string
-  sentAt?: string
-  createdAt: string
-}
+  id: string;
+  userEmail: string;
+  status: string;
+  subject: string;
+  taskCount: number;
+  pendingCount: number;
+  overdueCount: number;
+  highPriorityCount: number;
+  errorMessage?: string;
+  sentAt?: string;
+  createdAt: string;
+};
 
 type UserPreferences = {
-  dailyTaskEmail: boolean
-  weekendEmails: boolean
-  overdueReminders: boolean
-  highPriorityAlerts: boolean
-}
+  dailyTaskEmail: boolean;
+  weekendEmails: boolean;
+  overdueReminders: boolean;
+  highPriorityAlerts: boolean;
+};
 
 const timezones = [
   "UTC",
@@ -114,23 +114,23 @@ const timezones = [
   "Asia/Shanghai",
   "Asia/Kolkata",
   "Australia/Sydney",
-]
+];
 
 export default function EmailAutomationClient() {
-  const [settings, setSettings] = useState<SchedulerSettings | null>(null)
-  const [stats, setStats] = useState<SchedulerStats | null>(null)
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
+  const [settings, setSettings] = useState<SchedulerSettings | null>(null);
+  const [stats, setStats] = useState<SchedulerStats | null>(null);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
     dailyTaskEmail: true,
     weekendEmails: true,
     overdueReminders: true,
     highPriorityAlerts: true,
-  })
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [running, setRunning] = useState(false)
-  const [retrying, setRetrying] = useState(false)
-  const [activeTab, setActiveTab] = useState<"admin" | "preferences" | "history">("admin")
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [activeTab, setActiveTab] = useState<"admin" | "preferences" | "history">("admin");
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -139,101 +139,101 @@ export default function EmailAutomationClient() {
         fetch("/api/daily-task-email-scheduler/admin/stats"),
         fetch("/api/daily-task-email-scheduler/preferences"),
         fetch("/api/daily-task-email-scheduler/admin/audit-logs?limit=20"),
-      ])
+      ]);
 
       if (settingsRes.ok) {
-        const data = await settingsRes.json()
-        setSettings(data.data)
+        const data = await settingsRes.json();
+        setSettings(data.data);
       }
 
       if (statsRes.ok) {
-        const data = await statsRes.json()
-        setStats(data.data)
+        const data = await statsRes.json();
+        setStats(data.data);
       }
 
       if (prefsRes.ok) {
-        const data = await prefsRes.json()
-        setUserPreferences(data.data)
+        const data = await prefsRes.json();
+        setUserPreferences(data.data);
       }
 
       if (logsRes.ok) {
-        const data = await logsRes.json()
-        setAuditLogs(data.data.logs || [])
+        const data = await logsRes.json();
+        setAuditLogs(data.data.logs || []);
       }
     } catch {
       // silent
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchSettings()
-  }, [fetchSettings])
+    fetchSettings();
+  }, [fetchSettings]);
 
   const handleSaveSettings = async () => {
-    if (!settings) return
-    setSaving(true)
+    if (!settings) return;
+    setSaving(true);
     try {
       await fetch("/api/daily-task-email-scheduler/admin/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
-      })
-      await fetchSettings()
+      });
+      await fetchSettings();
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleSavePreferences = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
       await fetch("/api/daily-task-email-scheduler/preferences", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userPreferences),
-      })
+      });
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleRunNow = async () => {
-    setRunning(true)
+    setRunning(true);
     try {
       await fetch("/api/daily-task-email-scheduler/admin/run", {
         method: "POST",
-      })
-      await fetchSettings()
+      });
+      await fetchSettings();
     } finally {
-      setRunning(false)
+      setRunning(false);
     }
-  }
+  };
 
   const handleRetryFailed = async () => {
-    setRetrying(true)
+    setRetrying(true);
     try {
       await fetch("/api/daily-task-email-scheduler/admin/retry-failed", {
         method: "POST",
-      })
-      await fetchSettings()
+      });
+      await fetchSettings();
     } finally {
-      setRetrying(false)
+      setRetrying(false);
     }
-  }
+  };
 
   const formatDate = (date: string | null) => {
-    if (!date) return "Never"
-    return new Date(date).toLocaleString()
-  }
+    if (!date) return "Never";
+    return new Date(date).toLocaleString();
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
       </div>
-    )
+    );
   }
 
   return (
@@ -345,7 +345,9 @@ export default function EmailAutomationClient() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label>Enable Daily Task Emails</Label>
-                  <p className="text-sm text-muted-foreground">Send daily task summary emails to users</p>
+                  <p className="text-sm text-muted-foreground">
+                    Send daily task summary emails to users
+                  </p>
                 </div>
                 <Switch
                   checked={settings.enabled}
@@ -359,7 +361,9 @@ export default function EmailAutomationClient() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label>Pause All Emails</Label>
-                  <p className="text-sm text-muted-foreground">Temporarily pause all scheduled emails</p>
+                  <p className="text-sm text-muted-foreground">
+                    Temporarily pause all scheduled emails
+                  </p>
                 </div>
                 <Switch
                   checked={settings.paused}
@@ -467,7 +471,9 @@ export default function EmailAutomationClient() {
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={settings.includeHighPriorityTasks}
-                      onCheckedChange={(v) => setSettings({ ...settings, includeHighPriorityTasks: v })}
+                      onCheckedChange={(v) =>
+                        setSettings({ ...settings, includeHighPriorityTasks: v })
+                      }
                     />
                     <Label>Include High Priority Tasks</Label>
                   </div>
@@ -506,22 +512,30 @@ export default function EmailAutomationClient() {
             <div className="flex items-center justify-between">
               <div>
                 <Label>Receive Daily Task Email</Label>
-                <p className="text-sm text-muted-foreground">Get daily summary of your assigned tasks</p>
+                <p className="text-sm text-muted-foreground">
+                  Get daily summary of your assigned tasks
+                </p>
               </div>
               <Switch
                 checked={userPreferences.dailyTaskEmail}
-                onCheckedChange={(v) => setUserPreferences({ ...userPreferences, dailyTaskEmail: v })}
+                onCheckedChange={(v) =>
+                  setUserPreferences({ ...userPreferences, dailyTaskEmail: v })
+                }
               />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div>
                 <Label>Receive Weekend Emails</Label>
-                <p className="text-sm text-muted-foreground">Get emails on weekends (Saturday & Sunday)</p>
+                <p className="text-sm text-muted-foreground">
+                  Get emails on weekends (Saturday & Sunday)
+                </p>
               </div>
               <Switch
                 checked={userPreferences.weekendEmails}
-                onCheckedChange={(v) => setUserPreferences({ ...userPreferences, weekendEmails: v })}
+                onCheckedChange={(v) =>
+                  setUserPreferences({ ...userPreferences, weekendEmails: v })
+                }
               />
             </div>
             <Separator />
@@ -532,7 +546,9 @@ export default function EmailAutomationClient() {
               </div>
               <Switch
                 checked={userPreferences.overdueReminders}
-                onCheckedChange={(v) => setUserPreferences({ ...userPreferences, overdueReminders: v })}
+                onCheckedChange={(v) =>
+                  setUserPreferences({ ...userPreferences, overdueReminders: v })
+                }
               />
             </div>
             <Separator />
@@ -543,7 +559,9 @@ export default function EmailAutomationClient() {
               </div>
               <Switch
                 checked={userPreferences.highPriorityAlerts}
-                onCheckedChange={(v) => setUserPreferences({ ...userPreferences, highPriorityAlerts: v })}
+                onCheckedChange={(v) =>
+                  setUserPreferences({ ...userPreferences, highPriorityAlerts: v })
+                }
               />
             </div>
           </CardContent>
@@ -583,8 +601,8 @@ export default function EmailAutomationClient() {
                           log.status === "sent"
                             ? "default"
                             : log.status === "failed"
-                            ? "destructive"
-                            : "secondary"
+                              ? "destructive"
+                              : "secondary"
                         }
                       >
                         {log.status}
@@ -592,7 +610,8 @@ export default function EmailAutomationClient() {
                       <div>
                         <p className="text-sm font-medium">{log.userEmail}</p>
                         <p className="text-xs text-muted-foreground">
-                          {log.taskCount} tasks • {log.overdueCount} overdue • {log.highPriorityCount} high priority
+                          {log.taskCount} tasks • {log.overdueCount} overdue •{" "}
+                          {log.highPriorityCount} high priority
                         </p>
                       </div>
                     </div>
@@ -610,5 +629,5 @@ export default function EmailAutomationClient() {
         </Card>
       )}
     </div>
-  )
+  );
 }

@@ -1,23 +1,24 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { cn } from "@/lib/utils";
-import { Upload, FileText, X, CheckCircle, AlertCircle, Loader2 } from "@/lib/icons";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { apiFetch } from "@/lib/api";
+import { useFileSystemStore } from "@/lib/file-system/store";
+import { AlertCircle, CheckCircle, FileText, Loader2, Upload, X } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
-let uploadConfig = {
+const uploadConfig = {
   maxFileSize: 500 * 1024 * 1024,
   chunkSize: 5 * 1024 * 1024,
   maxConcurrency: 4,
@@ -32,7 +33,8 @@ function ensureConfig() {
         if (cfg.maxFileSize) uploadConfig.maxFileSize = cfg.maxFileSize;
         if (cfg.chunkSize) uploadConfig.chunkSize = cfg.chunkSize;
         if (cfg.maxConcurrency) uploadConfig.maxConcurrency = cfg.maxConcurrency;
-        if (cfg.directUploadThreshold) uploadConfig.directUploadThreshold = cfg.directUploadThreshold;
+        if (cfg.directUploadThreshold)
+          uploadConfig.directUploadThreshold = cfg.directUploadThreshold;
       })
       .catch(() => {});
   }
@@ -66,7 +68,8 @@ function formatSize(bytes: number) {
 
 export function UploadDialog() {
   const queryClient = useQueryClient();
-  const { showUpload, setShowUpload, orgId, currentFolderId, pendingFiles, setPendingFiles } = useFileSystemStore();
+  const { showUpload, setShowUpload, orgId, currentFolderId, pendingFiles, setPendingFiles } =
+    useFileSystemStore();
 
   const [items, setItems] = useState<UploadItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -83,9 +86,7 @@ export function UploadDialog() {
     async (item: UploadItem, file: File) => {
       try {
         const totalChunks = Math.ceil(file.size / uploadConfig.chunkSize);
-        setItems((prev) =>
-          prev.map((i) => (i.id === item.id ? { ...i, progress: 0 } : i))
-        );
+        setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, progress: 0 } : i)));
 
         const initRes = await apiFetch("/api/files/multipart/init", {
           method: "POST",
@@ -115,7 +116,7 @@ export function UploadDialog() {
         }
 
         const uploadedParts: { PartNumber: number; ETag: string }[] = [];
-        let aborted = false;
+        const aborted = false;
 
         const uploadChunk = async (partNumber: number, retries = 3): Promise<void> => {
           const start = (partNumber - 1) * uploadConfig.chunkSize;
@@ -132,9 +133,15 @@ export function UploadDialog() {
                 await new Promise((r) => setTimeout(r, Math.min(1000 * attempt, 5000)));
                 continue;
               }
-              if (!res.ok) throw new Error(`Part ${partNumber} upload failed after ${retries} retries: ${res.status}`);
+              if (!res.ok)
+                throw new Error(
+                  `Part ${partNumber} upload failed after ${retries} retries: ${res.status}`,
+                );
               const etag = res.headers.get("ETag") || "";
-              uploadedParts.push({ PartNumber: partNumber, ETag: etag.replace(/^"/, "").replace(/"$/, "") });
+              uploadedParts.push({
+                PartNumber: partNumber,
+                ETag: etag.replace(/^"/, "").replace(/"$/, ""),
+              });
               return;
             } catch (err) {
               if (attempt < retries) {
@@ -178,9 +185,7 @@ export function UploadDialog() {
           });
           if (!completeRes.ok) throw new Error("Failed to complete multipart upload");
           setItems((prev) =>
-            prev.map((i) =>
-              i.id === item.id ? { ...i, progress: 100, status: "done" } : i
-            )
+            prev.map((i) => (i.id === item.id ? { ...i, progress: 100, status: "done" } : i)),
           );
           toast.success(`${file.name} uploaded`);
           refreshFiles();
@@ -189,13 +194,17 @@ export function UploadDialog() {
         setItems((prev) =>
           prev.map((i) =>
             i.id === item.id
-              ? { ...i, status: "error", error: err instanceof Error ? err.message : "Upload failed" }
-              : i
-          )
+              ? {
+                  ...i,
+                  status: "error",
+                  error: err instanceof Error ? err.message : "Upload failed",
+                }
+              : i,
+          ),
         );
       }
     },
-    [orgId, currentFolderId, refreshFiles]
+    [orgId, currentFolderId, refreshFiles],
   );
 
   const uploadViaDirect = useCallback(
@@ -211,17 +220,13 @@ export function UploadDialog() {
         if (orgId) formData.append("orgId", orgId);
 
         const xhr = new XMLHttpRequest();
-        setItems((prev) =>
-          prev.map((i) => (i.id === item.id ? { ...i, xhr } : i))
-        );
+        setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, xhr } : i)));
 
         await new Promise<void>((resolve, reject) => {
           xhr.upload.onprogress = (e) => {
             if (e.lengthComputable) {
               const pct = Math.round((e.loaded / e.total) * 100);
-              setItems((prev) =>
-                prev.map((i) => (i.id === item.id ? { ...i, progress: pct } : i))
-              );
+              setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, progress: pct } : i)));
             }
           };
           xhr.onload = () => {
@@ -259,9 +264,7 @@ export function UploadDialog() {
             }
 
             setItems((prev) =>
-              prev.map((i) =>
-                i.id === item.id ? { ...i, progress: 100, status: "done" } : i
-              )
+              prev.map((i) => (i.id === item.id ? { ...i, progress: 100, status: "done" } : i)),
             );
             refreshFiles();
             resolve();
@@ -277,13 +280,17 @@ export function UploadDialog() {
         setItems((prev) =>
           prev.map((i) =>
             i.id === item.id
-              ? { ...i, status: "error", error: err instanceof Error ? err.message : "Upload failed" }
-              : i
-          )
+              ? {
+                  ...i,
+                  status: "error",
+                  error: err instanceof Error ? err.message : "Upload failed",
+                }
+              : i,
+          ),
         );
       }
     },
-    [orgId, currentFolderId, refreshFiles]
+    [orgId, currentFolderId, refreshFiles],
   );
 
   const uploadFile = useCallback(
@@ -294,7 +301,7 @@ export function UploadDialog() {
         await uploadViaDirect(item, file);
       }
     },
-    [uploadViaDirect, uploadViaPresigned]
+    [uploadViaDirect, uploadViaPresigned],
   );
 
   const addFiles = useCallback(
@@ -313,7 +320,7 @@ export function UploadDialog() {
         uploadFile(item, Array.from(fileList)[idx]);
       });
     },
-    [uploadFile]
+    [uploadFile],
   );
 
   // Process pending files dropped on the page
@@ -352,7 +359,7 @@ export function UploadDialog() {
       setIsDragging(false);
       addFiles(event.dataTransfer.files);
     },
-    [addFiles]
+    [addFiles],
   );
 
   const handleClose = useCallback(() => {
@@ -367,13 +374,16 @@ export function UploadDialog() {
   const hasActiveUploads = items.some((i) => i.status === "uploading");
 
   return (
-    <Dialog open={showUpload} onOpenChange={(o) => { if (!o) handleClose(); }}>
+    <Dialog
+      open={showUpload}
+      onOpenChange={(o) => {
+        if (!o) handleClose();
+      }}
+    >
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Upload assets</DialogTitle>
-          <DialogDescription>
-            Drag and drop your files or browse to attach them.
-          </DialogDescription>
+          <DialogDescription>Drag and drop your files or browse to attach them.</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-5">
@@ -387,7 +397,9 @@ export function UploadDialog() {
                 inputRef.current?.click();
               }
             }}
-            onDragOver={(event) => { event.preventDefault(); }}
+            onDragOver={(event) => {
+              event.preventDefault();
+            }}
             onDragEnter={(event) => {
               event.preventDefault();
               dragDepth.current += 1;
@@ -407,7 +419,7 @@ export function UploadDialog() {
               "focus-visible:ring-[3px] focus-visible:ring-ring/50",
               isDragging
                 ? "border-primary bg-primary/5"
-                : "border-border bg-muted/40 hover:bg-muted/60"
+                : "border-border bg-muted/40 hover:bg-muted/60",
             )}
           >
             <input
@@ -425,7 +437,7 @@ export function UploadDialog() {
                 "flex size-12 items-center justify-center border transition-colors rounded-sm",
                 isDragging
                   ? "border-primary bg-background text-primary"
-                  : "border-border bg-background text-muted-foreground"
+                  : "border-border bg-background text-muted-foreground",
               )}
             >
               <Upload className="size-6" />
@@ -484,11 +496,15 @@ export function UploadDialog() {
                       <p className="text-sm font-medium truncate">{item.name}</p>
                       {item.status === "uploading" ? (
                         <>
-                          <p className="text-xs text-muted-foreground">Uploading {Math.round(item.progress)}%</p>
+                          <p className="text-xs text-muted-foreground">
+                            Uploading {Math.round(item.progress)}%
+                          </p>
                           <Progress className="mt-1 h-1.5" value={item.progress} />
                         </>
                       ) : item.status === "done" ? (
-                        <p className="text-xs text-muted-foreground">Uploaded {formatSize(item.size)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Uploaded {formatSize(item.size)}
+                        </p>
                       ) : (
                         <p className="text-xs text-destructive">{item.error || "Upload failed"}</p>
                       )}
@@ -508,9 +524,7 @@ export function UploadDialog() {
 
         <div className="flex items-center justify-end gap-2 mt-2">
           {items.length > 0 && hasActiveUploads && (
-            <span className="text-xs text-muted-foreground mr-auto">
-              Uploading in progress...
-            </span>
+            <span className="text-xs text-muted-foreground mr-auto">Uploading in progress...</span>
           )}
           <Button variant="outline" onClick={handleClose}>
             {items.length > 0 ? "Close" : "Cancel"}

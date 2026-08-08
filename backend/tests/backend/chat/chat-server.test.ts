@@ -1,6 +1,6 @@
-import http from "http";
-import { Server as IOServer } from "socket.io";
-import { io as ioClient, Socket as ClientSocket } from "socket.io-client";
+import type http from "http";
+import type { Server as IOServer } from "socket.io";
+import { type Socket as ClientSocket, io as ioClient } from "socket.io-client";
 import request from "supertest";
 import { v4 as uuid } from "uuid";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
@@ -42,7 +42,20 @@ async function startTestChatServer() {
 
     socket.on("send-message", (data: any) => {
       if (!data.conversationId || !data.text?.trim()) return;
-      const msg = { id: uuid(), conversationId: data.conversationId, senderId: userId, senderName: userName, text: data.text.trim(), replyTo: data.replyTo || null, reactions: [], readBy: [], edited: false, deleted: false, attachments: [], createdAt: new Date().toISOString() };
+      const msg = {
+        id: uuid(),
+        conversationId: data.conversationId,
+        senderId: userId,
+        senderName: userName,
+        text: data.text.trim(),
+        replyTo: data.replyTo || null,
+        reactions: [],
+        readBy: [],
+        edited: false,
+        deleted: false,
+        attachments: [],
+        createdAt: new Date().toISOString(),
+      };
       const list = messages.get(data.conversationId) || [];
       list.push(msg);
       messages.set(data.conversationId, list);
@@ -50,7 +63,9 @@ async function startTestChatServer() {
     });
 
     socket.on("typing", (data: any) => {
-      socket.to(`conv:${data.conversationId}`).emit("typing", { conversationId: data.conversationId, userName, isTyping: data.isTyping });
+      socket
+        .to(`conv:${data.conversationId}`)
+        .emit("typing", { conversationId: data.conversationId, userName, isTyping: data.isTyping });
     });
 
     socket.on("join-conversation", (convId: string) => {
@@ -66,17 +81,29 @@ async function startTestChatServer() {
   app.get("/api/contacts", (req, res) => {
     const userId = req.query.userId as string;
     if (!userId) return res.status(400).json({ error: "userId required" });
-    res.json({ data: [{ id: "contact-1", name: "Alice", type: "employee", presence: { status: "online" } }] });
+    res.json({
+      data: [{ id: "contact-1", name: "Alice", type: "employee", presence: { status: "online" } }],
+    });
   });
 
   app.get("/api/conversations", (req, res) => {
     const userId = req.query.userId as string;
-    const userConvs = Array.from(conversations.values()).filter((c) => c.participants.includes(userId));
+    const userConvs = Array.from(conversations.values()).filter((c) =>
+      c.participants.includes(userId),
+    );
     res.json({ data: userConvs });
   });
 
   app.post("/api/conversations", (req, res) => {
-    const conv = { id: uuid(), type: "direct", name: req.body.name || "Chat", participants: [req.body.participantId], lastMessage: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    const conv = {
+      id: uuid(),
+      type: "direct",
+      name: req.body.name || "Chat",
+      participants: [req.body.participantId],
+      lastMessage: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
     conversations.set(conv.id, conv);
     res.status(201).json({ data: conv });
   });
@@ -104,7 +131,12 @@ describe("Chat Server REST API", () => {
   });
 
   afterAll(async () => {
-    await new Promise<void>((resolve) => httpServer.close(() => { io.close(); resolve(); }));
+    await new Promise<void>((resolve) =>
+      httpServer.close(() => {
+        io.close();
+        resolve();
+      }),
+    );
   });
 
   it("GET /api/contacts returns contacts list", async () => {
@@ -125,7 +157,9 @@ describe("Chat Server REST API", () => {
   });
 
   it("POST /api/conversations creates a conversation", async () => {
-    const res = await request(chatApp).post("/api/conversations").send({ participantId: "user-2", name: "Test Chat" });
+    const res = await request(chatApp)
+      .post("/api/conversations")
+      .send({ participantId: "user-2", name: "Test Chat" });
     expect(res.status).toBe(201);
     expect(res.body.data.id).toBeDefined();
   });
@@ -146,7 +180,12 @@ describe("Chat Server Socket.IO", () => {
   });
 
   afterAll(async () => {
-    await new Promise<void>((resolve) => testSrv.httpServer.close(() => { testSrv.io.close(); resolve(); }));
+    await new Promise<void>((resolve) =>
+      testSrv.httpServer.close(() => {
+        testSrv.io.close();
+        resolve();
+      }),
+    );
   });
 
   afterEach(() => {
@@ -155,7 +194,11 @@ describe("Chat Server Socket.IO", () => {
 
   it("connects successfully", async () => {
     const userId = uuid();
-    clientSocket = ioClient(`http://127.0.0.1:${testSrv.port}`, { auth: { userId, userName: "TestUser" }, transports: ["websocket"], forceNew: true });
+    clientSocket = ioClient(`http://127.0.0.1:${testSrv.port}`, {
+      auth: { userId, userName: "TestUser" },
+      transports: ["websocket"],
+      forceNew: true,
+    });
     await new Promise<void>((resolve, reject) => {
       clientSocket.on("connect", resolve);
       clientSocket.on("connect_error", reject);
@@ -166,19 +209,28 @@ describe("Chat Server Socket.IO", () => {
   });
 
   it("rejects connection without userId", async () => {
-    const client = ioClient(`http://127.0.0.1:${testSrv.port}`, { transports: ["websocket"], forceNew: true });
-    await expect(new Promise<void>((resolve, reject) => {
-      client.on("connect", resolve);
-      client.on("connect_error", (err) => reject(err));
-      setTimeout(() => reject(new Error("timeout")), 5000);
-    })).rejects.toThrow();
+    const client = ioClient(`http://127.0.0.1:${testSrv.port}`, {
+      transports: ["websocket"],
+      forceNew: true,
+    });
+    await expect(
+      new Promise<void>((resolve, reject) => {
+        client.on("connect", resolve);
+        client.on("connect_error", (err) => reject(err));
+        setTimeout(() => reject(new Error("timeout")), 5000);
+      }),
+    ).rejects.toThrow();
     client.close();
   });
 
   it("sends and receives messages via socket", async () => {
     const userId = uuid();
     const convId = uuid();
-    clientSocket = ioClient(`http://127.0.0.1:${testSrv.port}`, { auth: { userId, userName: "TestUser" }, transports: ["websocket"], forceNew: true });
+    clientSocket = ioClient(`http://127.0.0.1:${testSrv.port}`, {
+      auth: { userId, userName: "TestUser" },
+      transports: ["websocket"],
+      forceNew: true,
+    });
     await new Promise<void>((resolve, reject) => {
       clientSocket.on("connect", resolve);
       clientSocket.on("connect_error", reject);
@@ -189,7 +241,10 @@ describe("Chat Server Socket.IO", () => {
 
     const msgPromise = new Promise<any>((resolve, reject) => {
       const t = setTimeout(() => reject(new Error("timeout waiting for message")), 5000);
-      clientSocket.once("new-message", (d: any) => { clearTimeout(t); resolve(d); });
+      clientSocket.once("new-message", (d: any) => {
+        clearTimeout(t);
+        resolve(d);
+      });
     });
 
     clientSocket.emit("send-message", { conversationId: convId, text: "Hello via socket!" });
@@ -201,7 +256,11 @@ describe("Chat Server Socket.IO", () => {
   it("delivers typing indicator", async () => {
     const userId = uuid();
     const convId = uuid();
-    clientSocket = ioClient(`http://127.0.0.1:${testSrv.port}`, { auth: { userId, userName: "TestUser" }, transports: ["websocket"], forceNew: true });
+    clientSocket = ioClient(`http://127.0.0.1:${testSrv.port}`, {
+      auth: { userId, userName: "TestUser" },
+      transports: ["websocket"],
+      forceNew: true,
+    });
     await new Promise<void>((resolve, reject) => {
       clientSocket.on("connect", resolve);
       clientSocket.on("connect_error", reject);
@@ -209,7 +268,11 @@ describe("Chat Server Socket.IO", () => {
     });
 
     const userId2 = uuid();
-    const client2 = ioClient(`http://127.0.0.1:${testSrv.port}`, { auth: { userId: userId2, userName: "User2" }, transports: ["websocket"], forceNew: true });
+    const client2 = ioClient(`http://127.0.0.1:${testSrv.port}`, {
+      auth: { userId: userId2, userName: "User2" },
+      transports: ["websocket"],
+      forceNew: true,
+    });
     await new Promise<void>((resolve, reject) => {
       client2.on("connect", resolve);
       client2.on("connect_error", reject);
@@ -221,7 +284,10 @@ describe("Chat Server Socket.IO", () => {
 
     const typingPromise = new Promise<any>((resolve, reject) => {
       const t = setTimeout(() => reject(new Error("timeout")), 5000);
-      clientSocket.once("typing", (d: any) => { clearTimeout(t); resolve(d); });
+      clientSocket.once("typing", (d: any) => {
+        clearTimeout(t);
+        resolve(d);
+      });
     });
 
     client2.emit("typing", { conversationId: convId, isTyping: true });

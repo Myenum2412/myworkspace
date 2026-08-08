@@ -1,5 +1,5 @@
+import { type Enforcer, newEnforcer } from "casbin";
 import path from "path";
-import { newEnforcer, Enforcer } from "casbin";
 import { logger } from "../lib/logger/index.js";
 
 let enforcer: Enforcer | null = null;
@@ -52,19 +52,21 @@ export async function getEnforcer(): Promise<Enforcer> {
 
   const policyPath = path.join(_dirname, "casbin-policies.csv");
 
-  const useMongoAdapter = process.env.CASINB_MONGO_ADAPTER === "1" && process.env.NODE_ENV !== "test";
+  const useMongoAdapter =
+    process.env.CASINB_MONGO_ADAPTER === "1" && process.env.NODE_ENV !== "test";
 
   if (useMongoAdapter) {
     try {
       const { MongooseAdapter } = await import("casbin-mongoose-adapter");
-      const adapter = await MongooseAdapter.newAdapter(
-        process.env.MONGODB_URI || "",
-      );
+      const adapter = await MongooseAdapter.newAdapter(process.env.MONGODB_URI || "");
       enforcer = await newEnforcer(modelPath, adapter);
       enforcer.enableLog(false);
       return enforcer;
     } catch (err: any) {
-      logger.warn({ err: err.message }, "Casbin MongoDB adapter failed, falling back to file policies");
+      logger.warn(
+        { err: err.message },
+        "Casbin MongoDB adapter failed, falling back to file policies",
+      );
     }
   }
 
@@ -83,11 +85,7 @@ export async function checkPermission(
   return { allowed, role: sub };
 }
 
-export async function enforce(
-  sub: string,
-  obj: string,
-  act: string,
-): Promise<boolean> {
+export async function enforce(sub: string, obj: string, act: string): Promise<boolean> {
   const result = await checkPermission(sub, obj, act);
   return result.allowed;
 }
@@ -102,19 +100,12 @@ export async function addPolicy(
   return await e.addPolicy(sub, obj, act, eft);
 }
 
-export async function removePolicy(
-  sub: string,
-  obj: string,
-  act: string,
-): Promise<boolean> {
+export async function removePolicy(sub: string, obj: string, act: string): Promise<boolean> {
   const e = await getEnforcer();
   return await e.removePolicy(sub, obj, act);
 }
 
-export async function addRoleForUser(
-  user: string,
-  role: string,
-): Promise<boolean> {
+export async function addRoleForUser(user: string, role: string): Promise<boolean> {
   const e = await getEnforcer();
   return await e.addRoleForUser(user, role);
 }
@@ -129,9 +120,7 @@ export async function getUsersForRole(role: string): Promise<string[]> {
   return await e.getUsersForRole(role);
 }
 
-export async function getPermissionsForUser(
-  user: string,
-): Promise<string[][]> {
+export async function getPermissionsForUser(user: string): Promise<string[][]> {
   const e = await getEnforcer();
   return await e.getPermissionsForUser(user);
 }

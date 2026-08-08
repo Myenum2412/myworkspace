@@ -1,10 +1,10 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
-import { isAdminRole } from "../lib/rbac/index.js";
+import { type Response, Router } from "express";
 import { requireOrgMembership } from "../lib/org-utils.js";
+import { isAdminRole } from "../lib/rbac/index.js";
+import { optionalArray, optionalString, requireString } from "../lib/validate.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
-import { requireString, optionalString, optionalArray } from "../lib/validate.js";
+import { AppError } from "../middleware/error.js";
 import * as blogService from "../services/blog.service.js";
 
 const router = Router();
@@ -21,17 +21,28 @@ router.get("/", cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["blog"] }), asy
   const search = req.query.search as string | undefined;
   const featured = req.query.featured === "true";
 
-  const result = await blogService.getPublishedPosts({ orgId, page, limit, category, search, featured });
+  const result = await blogService.getPublishedPosts({
+    orgId,
+    page,
+    limit,
+    category,
+    search,
+    featured,
+  });
   res.json({ success: true, data: result.data, pagination: result.pagination });
 });
 
-router.get("/categories", cacheEnhanced({ ttl: 60, varyByOrg: true, tags: ["blog"] }), async (req, res) => {
-  const orgId = req.query.orgId as string;
-  if (!orgId) throw new AppError(400, "orgId is required");
+router.get(
+  "/categories",
+  cacheEnhanced({ ttl: 60, varyByOrg: true, tags: ["blog"] }),
+  async (req, res) => {
+    const orgId = req.query.orgId as string;
+    if (!orgId) throw new AppError(400, "orgId is required");
 
-  const categories = await blogService.getCategories(orgId);
-  res.json({ success: true, data: categories });
-});
+    const categories = await blogService.getCategories(orgId);
+    res.json({ success: true, data: categories });
+  },
+);
 
 router.get("/sitemap", async (req, res) => {
   const orgId = req.query.orgId as string;
@@ -41,13 +52,17 @@ router.get("/sitemap", async (req, res) => {
   res.json({ success: true, data });
 });
 
-router.get("/:slug", cacheEnhanced({ ttl: 60, varyByOrg: true, tags: ["blog"] }), async (req, res) => {
-  const orgId = req.query.orgId as string;
-  if (!orgId) throw new AppError(400, "orgId is required");
+router.get(
+  "/:slug",
+  cacheEnhanced({ ttl: 60, varyByOrg: true, tags: ["blog"] }),
+  async (req, res) => {
+    const orgId = req.query.orgId as string;
+    if (!orgId) throw new AppError(400, "orgId is required");
 
-  const post = await blogService.getPostBySlug(req.params.slug, orgId);
-  res.json({ success: true, data: post });
-});
+    const post = await blogService.getPostBySlug(req.params.slug, orgId);
+    res.json({ success: true, data: post });
+  },
+);
 
 // ── Admin Routes (auth required) ──
 
@@ -64,7 +79,14 @@ router.get("/admin", async (req: AuthRequest, res: Response) => {
   const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
 
   const result = await blogService.getAdminPosts({
-    orgId, page, limit, status, category, search, sortBy, sortOrder,
+    orgId,
+    page,
+    limit,
+    status,
+    category,
+    search,
+    sortBy,
+    sortOrder,
   });
 
   res.json({ success: true, data: result.data, pagination: result.pagination });
@@ -89,7 +111,7 @@ router.post("/admin", async (req: AuthRequest, res: Response) => {
   const tags = (optionalArray(req.body.tags, "tags") || []) as string[];
   const seoTitle = optionalString(req.body.seoTitle, "seoTitle", { max: 200 });
   const seoDescription = optionalString(req.body.seoDescription, "seoDescription", { max: 500 });
-  const seoKeywords = (optionalArray(req.body.seoKeywords, "seoKeywords")) as string[] | undefined;
+  const seoKeywords = optionalArray(req.body.seoKeywords, "seoKeywords") as string[] | undefined;
   const canonicalUrl = optionalString(req.body.canonicalUrl, "canonicalUrl");
   const featured = req.body.featured === true;
 
@@ -147,7 +169,8 @@ router.delete("/admin/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.post("/admin/:id/permanent-delete", async (req: AuthRequest, res: Response) => {
-  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can permanently delete blog posts");
+  if (!isAdminRole(req.user!.role))
+    throw new AppError(403, "Only admins can permanently delete blog posts");
 
   const orgId = await requireOrgMembership(req.user!.userId);
   await blogService.permanentDeletePost(req.params.id, orgId, req.user!.userId);

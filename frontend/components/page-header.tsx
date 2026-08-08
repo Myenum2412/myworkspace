@@ -1,4 +1,4 @@
-import * as React from "react";
+import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -11,14 +11,7 @@ type PageHeaderProps = {
   className?: string;
 };
 
-export function PageHeader({
-  icon,
-  title,
-  subtitle,
-  actions,
-  search,
-  className,
-}: PageHeaderProps) {
+export function PageHeader({ icon, title, subtitle, actions, search, className }: PageHeaderProps) {
   return (
     <div className={cn("rounded-lg border bg-white shadow-sm p-4 sm:p-5", className)}>
       <div className="flex flex-col gap-3 md:flex-row md:items-center">

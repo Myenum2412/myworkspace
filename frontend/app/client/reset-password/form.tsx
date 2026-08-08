@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeftIcon, LockIcon, CheckCircleIcon, Loader2Icon } from "@/lib/icons";
-import Link from "next/link";
+import { ArrowLeftIcon, CheckCircleIcon, Loader2Icon, LockIcon } from "@/lib/icons";
 
 export function ClientResetPasswordForm({ token, email }: { token?: string; email?: string }) {
   const router = useRouter();
@@ -20,8 +20,12 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-sm text-center">
-          <p className="text-sm text-muted-foreground mb-4">Invalid or missing reset link. Please request a new one.</p>
-          <Button asChild className="w-full"><Link href="/client/forgot-password">Request reset link</Link></Button>
+          <p className="text-sm text-muted-foreground mb-4">
+            Invalid or missing reset link. Please request a new one.
+          </p>
+          <Button asChild className="w-full">
+            <Link href="/client/forgot-password">Request reset link</Link>
+          </Button>
         </div>
       </div>
     );
@@ -35,8 +39,12 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
             <CheckCircleIcon className="size-12 text-success" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight mb-2">Password reset!</h1>
-          <p className="text-sm text-muted-foreground mb-6">Your password has been updated successfully.</p>
-          <Button asChild className="w-full"><Link href="/login">Sign in</Link></Button>
+          <p className="text-sm text-muted-foreground mb-6">
+            Your password has been updated successfully.
+          </p>
+          <Button asChild className="w-full">
+            <Link href="/login">Sign in</Link>
+          </Button>
         </div>
       </div>
     );
@@ -80,7 +88,9 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-2 text-center mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Set new password</h1>
-          <p className="text-sm text-muted-foreground">Choose a strong password for your client account.</p>
+          <p className="text-sm text-muted-foreground">
+            Choose a strong password for your client account.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -113,12 +123,19 @@ export function ClientResetPasswordForm({ token, email }: { token?: string; emai
             />
           </div>
           <Button type="submit" className="w-full font-semibold" disabled={loading}>
-            {loading ? <Loader2Icon className="size-4 mr-1.5 animate-spin" /> : <LockIcon className="size-4 mr-1.5" />}
+            {loading ? (
+              <Loader2Icon className="size-4 mr-1.5 animate-spin" />
+            ) : (
+              <LockIcon className="size-4 mr-1.5" />
+            )}
             Reset password
           </Button>
         </form>
 
-        <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6">
+        <Link
+          href="/login"
+          className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6"
+        >
           <ArrowLeftIcon className="size-3.5" />
           Back to sign in
         </Link>

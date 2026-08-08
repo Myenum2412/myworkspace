@@ -1,22 +1,9 @@
 "use client";
 
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { cn } from "@/lib/utils";
-import {
-  SearchIcon,
-  Grid3X3Icon,
-  ListIcon,
-  UploadIcon,
-  FolderPlusIcon,
-  ArrowUpIcon,
-  SlidersHorizontalIcon,
-  XIcon,
-  CopyIcon,
-  ScissorsIcon,
-  ClipboardPasteIcon,
-} from "@/lib/icons";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -24,13 +11,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useState, useCallback } from "react";
 import { useFileMutations } from "@/hooks/file-system/use-file-data";
+import { useFileSystemStore } from "@/lib/file-system/store";
+import {
+  ArrowUpIcon,
+  ClipboardPasteIcon,
+  CopyIcon,
+  FolderPlusIcon,
+  Grid3X3Icon,
+  ListIcon,
+  ScissorsIcon,
+  SearchIcon,
+  SlidersHorizontalIcon,
+  UploadIcon,
+  XIcon,
+} from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 export function Toolbar({ readonly }: { readonly?: boolean }) {
   const {
@@ -71,7 +67,9 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
         });
       }
       setClipboard(null);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
   }, [clipboard, currentFolderId, cutPasteMutation, copyFileMutation, setClipboard]);
 
   return (
@@ -103,10 +101,7 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
             value={`${sortDir === "desc" ? "-" : ""}${sortField}`}
             onValueChange={(v) => {
               const desc = v.startsWith("-");
-              setSort(
-                v.replace("-", "") as typeof sortField,
-                desc ? "desc" : "asc",
-              );
+              setSort(v.replace("-", "") as typeof sortField, desc ? "desc" : "asc");
             }}
           >
             <SelectTrigger className="h-8 w-[140px] text-xs">
@@ -135,7 +130,9 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
               <div className="space-y-2">
                 <Select
                   value={filters.category || "all"}
-                  onValueChange={(v) => setFilters({ ...filters, category: v === "all" ? undefined : v })}
+                  onValueChange={(v) =>
+                    setFilters({ ...filters, category: v === "all" ? undefined : v })
+                  }
                 >
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue placeholder="Category" />
@@ -198,14 +195,20 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
           <span className="font-medium text-foreground">{selectedIds.size}</span> selected
           <div className="flex items-center gap-1 ml-2">
             {!readonly && (
-              <Button size="sm" variant="ghost" className="text-xs gap-1"
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs gap-1"
                 onClick={() => setClipboard({ ids: Array.from(selectedIds), action: "copy" })}
               >
                 <CopyIcon className="size-3" /> Copy
               </Button>
             )}
             {!readonly && (
-              <Button size="sm" variant="ghost" className="text-xs gap-1"
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs gap-1"
                 onClick={() => setClipboard({ ids: Array.from(selectedIds), action: "cut" })}
               >
                 <ScissorsIcon className="size-3" /> Cut
@@ -221,14 +224,21 @@ export function Toolbar({ readonly }: { readonly?: boolean }) {
       {/* Clipboard paste bar */}
       {clipboard && selectedIds.size === 0 && (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/30 rounded-sm text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">{clipboard.ids.length}</span> item{clipboard.ids.length !== 1 ? "s" : ""} on clipboard ({clipboard.action === "cut" ? "Cut" : "Copy"})
+          <span className="font-medium text-foreground">{clipboard.ids.length}</span> item
+          {clipboard.ids.length !== 1 ? "s" : ""} on clipboard (
+          {clipboard.action === "cut" ? "Cut" : "Copy"})
           <div className="flex items-center gap-1 ml-2">
             {!readonly && (
               <Button size="sm" variant="secondary" className="text-xs gap-1" onClick={handlePaste}>
                 <ClipboardPasteIcon className="size-3" /> Paste here
               </Button>
             )}
-            <Button size="sm" variant="ghost" className="text-xs" onClick={() => setClipboard(null)}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-xs"
+              onClick={() => setClipboard(null)}
+            >
               Clear
             </Button>
           </div>

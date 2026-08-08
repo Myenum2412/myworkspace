@@ -1,31 +1,35 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { optionalAuth } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
-import { cacheEnhanced } from "../middleware/cache-enhanced.js";
+import { type Response, Router } from "express";
+import { EmailLog } from "../lib/db/models/EmailLog.js";
+import { Notification } from "../lib/db/models/Notification.js";
+import { NotificationSettings } from "../lib/db/models/NotificationSettings.js";
+import { logger } from "../lib/logger/index.js";
+import { broadcastNotification } from "../lib/notifications/notify-broadcast.js";
+import { type AuthRequest, authenticate, optionalAuth } from "../middleware/auth.js";
 import { orgAdminOnly } from "../middleware/authorize.js";
+import { cacheEnhanced } from "../middleware/cache-enhanced.js";
+import { AppError } from "../middleware/error.js";
 import {
-  createNotification,
-  listNotifications,
-  searchNotifications,
-  getUnreadCount,
-  markAllRead,
-  markRead,
   archiveNotification,
-  deleteNotification,
-  clearAll,
   bulkArchive,
   bulkDelete,
-  snoozeNotification,
+  clearAll,
+  createNotification,
+  deleteNotification,
   getNotificationAnalytics,
+  getUnreadCount,
+  listNotifications,
+  markAllRead,
+  markRead,
+  searchNotifications,
+  snoozeNotification,
 } from "../services/notification.service.js";
-import { configureVapid, getPushConfig, subscribeUser, unsubscribeUser } from "../services/push.service.js";
 import { getUserTopic } from "../services/ntfy.service.js";
-import { NotificationSettings } from "../lib/db/models/NotificationSettings.js";
-import { Notification } from "../lib/db/models/Notification.js";
-import { EmailLog } from "../lib/db/models/EmailLog.js";
-import { broadcastNotification } from "../lib/notifications/notify-broadcast.js";
-import { logger } from "../lib/logger/index.js";
+import {
+  configureVapid,
+  getPushConfig,
+  subscribeUser,
+  unsubscribeUser,
+} from "../services/push.service.js";
 
 const router = Router();
 
@@ -56,7 +60,23 @@ router.get("/push/topic", (req: AuthRequest, res: Response) => {
 
 // Create notification (for system/API use)
 router.post("/", async (req: AuthRequest, res: Response) => {
-  const { type, title, message, link, deepLink, category, priority, icon, avatar, actions, metadata, userId, channels, correlationId, expiresAt } = req.body;
+  const {
+    type,
+    title,
+    message,
+    link,
+    deepLink,
+    category,
+    priority,
+    icon,
+    avatar,
+    actions,
+    metadata,
+    userId,
+    channels,
+    correlationId,
+    expiresAt,
+  } = req.body;
   if (!type || !title) {
     throw new AppError(400, "type and title are required");
   }
@@ -95,7 +115,18 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 
 // List notifications with advanced filtering
 router.get("/", async (req: AuthRequest, res: Response) => {
-  const { limit, offset, unreadOnly, category, type, priority, search, startDate, endDate, archived } = req.query;
+  const {
+    limit,
+    offset,
+    unreadOnly,
+    category,
+    type,
+    priority,
+    search,
+    startDate,
+    endDate,
+    archived,
+  } = req.query;
   const result = await listNotifications(req.user!.userId, {
     limit: limit ? parseInt(limit as string, 10) : 50,
     offset: offset ? parseInt(offset as string, 10) : 0,
@@ -123,10 +154,14 @@ router.get("/search", async (req: AuthRequest, res: Response) => {
 });
 
 // Unread count
-router.get("/unread-count", cacheEnhanced({ ttl: 15, varyByUser: true, tags: ["notifications"] }), async (req: AuthRequest, res: Response) => {
-  const count = await getUnreadCount(req.user!.userId);
-  res.json({ success: true, data: { count } });
-});
+router.get(
+  "/unread-count",
+  cacheEnhanced({ ttl: 15, varyByUser: true, tags: ["notifications"] }),
+  async (req: AuthRequest, res: Response) => {
+    const count = await getUnreadCount(req.user!.userId);
+    res.json({ success: true, data: { count } });
+  },
+);
 
 // Mark all as read
 router.post("/read-all", async (req: AuthRequest, res: Response) => {
@@ -211,24 +246,44 @@ router.post("/push/unsubscribe", async (req: AuthRequest, res: Response) => {
 
 router.get("/settings", async (req: AuthRequest, res: Response) => {
   const userId = req.user!.userId;
-  let settings = await NotificationSettings.findOne({ userId }).lean() as any;
+  let settings = (await NotificationSettings.findOne({ userId }).lean()) as any;
   if (!settings) {
-    settings = (await NotificationSettings.create({
-      userId,
-      orgId: req.user!.orgId,
-      typeSettings: [],
-      desktopEnabled: true,
-      soundEnabled: true,
-      frequency: "instant",
-      language: "en",
-    })).toObject();
+    settings = (
+      await NotificationSettings.create({
+        userId,
+        orgId: req.user!.orgId,
+        typeSettings: [],
+        desktopEnabled: true,
+        soundEnabled: true,
+        frequency: "instant",
+        language: "en",
+      })
+    ).toObject();
   }
   res.json({ success: true, data: settings });
 });
 
 router.put("/settings", async (req: AuthRequest, res: Response) => {
   const userId = req.user!.userId;
-  const { settings, typeSettings, categorySettings, frequency, quietHoursEnabled, quietHoursStart, quietHoursEnd, quietHoursTimezone, doNotDisturb, dndUntil, snoozeSchedules, mutedNotifications, desktopEnabled, soundEnabled, emailDigestTime, emailDigestTimezone, language } = req.body;
+  const {
+    settings,
+    typeSettings,
+    categorySettings,
+    frequency,
+    quietHoursEnabled,
+    quietHoursStart,
+    quietHoursEnd,
+    quietHoursTimezone,
+    doNotDisturb,
+    dndUntil,
+    snoozeSchedules,
+    mutedNotifications,
+    desktopEnabled,
+    soundEnabled,
+    emailDigestTime,
+    emailDigestTimezone,
+    language,
+  } = req.body;
   const updated = await NotificationSettings.findOneAndUpdate(
     { userId },
     {
@@ -252,7 +307,7 @@ router.put("/settings", async (req: AuthRequest, res: Response) => {
         updatedAt: new Date(),
       },
     },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
   res.json({ success: true, data: updated });
 });
@@ -265,7 +320,12 @@ router.post("/broadcast", orgAdminOnly(), async (req: AuthRequest, res: Response
     throw new AppError(400, "title and message are required");
   }
   await broadcastNotification(req.user!.orgId!, req.user!.userId!, title, message, {
-    type, category, priority, link, userIds, roles,
+    type,
+    category,
+    priority,
+    link,
+    userIds,
+    roles,
   });
   res.json({ success: true });
 });

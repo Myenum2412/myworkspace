@@ -22,9 +22,7 @@ export interface OfflineFormResult {
   queueLength: number;
 }
 
-function buildHeaders(
-  base: Record<string, string> | undefined
-): Record<string, string> {
+function buildHeaders(base: Record<string, string> | undefined): Record<string, string> {
   return { "Content-Type": "application/json", ...(base || {}) };
 }
 
@@ -35,13 +33,7 @@ function isNetworkError(err: unknown): boolean {
 }
 
 export function useOfflineForm(options: OfflineFormOptions): OfflineFormResult {
-  const {
-    endpoint,
-    method = "POST",
-    headers,
-    idempotencyKey,
-    maxRetries = 5,
-  } = options;
+  const { endpoint, method = "POST", headers, idempotencyKey, maxRetries = 5 } = options;
 
   const onSuccessRef = React.useRef(options.onSuccess);
   const onErrorRef = React.useRef(options.onError);
@@ -53,9 +45,7 @@ export function useOfflineForm(options: OfflineFormOptions): OfflineFormResult {
 
   const [isPending, setIsPending] = React.useState(false);
   const [isOfflineQueued, setIsOfflineQueued] = React.useState(false);
-  const [lastSyncStatus, setLastSyncStatus] = React.useState<
-    "idle" | "success" | "failed"
-  >("idle");
+  const [lastSyncStatus, setLastSyncStatus] = React.useState<"idle" | "success" | "failed">("idle");
   const [queueLength, setQueueLength] = React.useState(0);
 
   React.useEffect(() => {
@@ -66,7 +56,9 @@ export function useOfflineForm(options: OfflineFormOptions): OfflineFormResult {
       if (!cancelled) setQueueLength(len);
     }
     void load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isOfflineQueued, lastSyncStatus]);
 
   const submit = React.useCallback(
@@ -108,9 +100,7 @@ export function useOfflineForm(options: OfflineFormOptions): OfflineFormResult {
           return;
         }
 
-        const key =
-          idempotencyKey ||
-          `${endpoint}:${method}:${JSON.stringify(body ?? "")}`;
+        const key = idempotencyKey || `${endpoint}:${method}:${JSON.stringify(body ?? "")}`;
 
         const existing = await findByIdempotencyKey(key);
         if (!existing) {
@@ -133,7 +123,7 @@ export function useOfflineForm(options: OfflineFormOptions): OfflineFormResult {
         setIsPending(false);
       }
     },
-    [endpoint, method, headers, idempotencyKey, maxRetries]
+    [endpoint, method, headers, idempotencyKey, maxRetries],
   );
 
   return { submit, isPending, isOfflineQueued, lastSyncStatus, queueLength };

@@ -1,15 +1,15 @@
-import type { HTMLAttributes } from "react"
+import type { HTMLAttributes } from "react";
 
-const SAFARI_WIDTH = 1203
-const TOOLBAR_HEIGHT = 52
+const SAFARI_WIDTH = 1203;
+const TOOLBAR_HEIGHT = 52;
 
-type SafariMode = "default" | "simple"
+type SafariMode = "default" | "simple";
 
 export interface SafariProps extends HTMLAttributes<HTMLDivElement> {
-  url?: string
-  imageSrc?: string
-  videoSrc?: string
-  mode?: SafariMode
+  url?: string;
+  imageSrc?: string;
+  videoSrc?: string;
+  mode?: SafariMode;
 }
 
 export function Safari({
@@ -127,9 +127,7 @@ export function Safari({
           preload="metadata"
         />
       )}
-      {!videoSrc && imageSrc && (
-        <img src={imageSrc} alt="" className="block w-full" />
-      )}
+      {!videoSrc && imageSrc && <img src={imageSrc} alt="" className="block w-full" />}
     </div>
-  )
+  );
 }

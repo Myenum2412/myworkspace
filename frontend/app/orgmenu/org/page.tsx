@@ -1,27 +1,9 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Building2Icon,
-  SearchIcon,
-  XIcon,
-  ChevronLeft,
-  ChevronRight,
-  Trash2Icon,
-  Loader2Icon,
-} from "@/lib/icons";
+import { useSession } from "next-auth/react";
+import { useEffect, useMemo, useState } from "react";
+import { PageHeader } from "@/components/page-header";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +14,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { PageHeader } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Building2Icon,
+  ChevronLeft,
+  ChevronRight,
+  Loader2Icon,
+  SearchIcon,
+  Trash2Icon,
+  XIcon,
+} from "@/lib/icons";
 
 interface Member {
   userId: string;
@@ -67,8 +67,8 @@ export default function OrgPage() {
   useEffect(() => {
     if (status !== "authenticated") return;
     fetch("/api/orgmenu/org")
-      .then(r => r.json())
-      .then(d => setMembers(d.members || []))
+      .then((r) => r.json())
+      .then((d) => setMembers(d.members || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [status]);
@@ -77,13 +77,14 @@ export default function OrgPage() {
     if (!searchQuery) return members;
     const q = searchQuery.toLowerCase();
     return members.filter(
-      m => (m.name || "").toLowerCase().includes(q) ||
-           (m.email || "").toLowerCase().includes(q) ||
-           (m.role || "").toLowerCase().includes(q) ||
-           (m.companyName || "").toLowerCase().includes(q) ||
-           (m.department || "").toLowerCase().includes(q) ||
-           (m.designation || "").toLowerCase().includes(q) ||
-           (m.phone || "").toLowerCase().includes(q)
+      (m) =>
+        (m.name || "").toLowerCase().includes(q) ||
+        (m.email || "").toLowerCase().includes(q) ||
+        (m.role || "").toLowerCase().includes(q) ||
+        (m.companyName || "").toLowerCase().includes(q) ||
+        (m.department || "").toLowerCase().includes(q) ||
+        (m.designation || "").toLowerCase().includes(q) ||
+        (m.phone || "").toLowerCase().includes(q),
     );
   }, [members, searchQuery]);
 
@@ -92,7 +93,7 @@ export default function OrgPage() {
   const hasActiveFilters = searchQuery.length > 0;
 
   const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -104,7 +105,7 @@ export default function OrgPage() {
     if (selectedIds.size === paginatedMembers.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(paginatedMembers.map(m => m.userId)));
+      setSelectedIds(new Set(paginatedMembers.map((m) => m.userId)));
     }
   };
 
@@ -119,8 +120,12 @@ export default function OrgPage() {
         body: JSON.stringify({ userId: member.userId }),
       });
       if (res.ok) {
-        setMembers(prev => prev.filter(m => m.userId !== member.userId));
-        setSelectedIds(prev => { const n = new Set(prev); n.delete(member.userId); return n; });
+        setMembers((prev) => prev.filter((m) => m.userId !== member.userId));
+        setSelectedIds((prev) => {
+          const n = new Set(prev);
+          n.delete(member.userId);
+          return n;
+        });
       }
     } catch {}
     setDeleting(false);
@@ -129,7 +134,15 @@ export default function OrgPage() {
 
   const getInitials = (name: string) => {
     if (!name) return "U";
-    return name.split(" ").map(n => n[0]).filter(Boolean).join("").toUpperCase().slice(0, 2) || "U";
+    return (
+      name
+        .split(" ")
+        .map((n) => n[0])
+        .filter(Boolean)
+        .join("")
+        .toUpperCase()
+        .slice(0, 2) || "U"
+    );
   };
 
   const displayStatus = (s: string) => {
@@ -139,7 +152,11 @@ export default function OrgPage() {
 
   const formatDate = (d: string) => {
     if (!d) return "—";
-    return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return new Date(d).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   if (status === "loading" || loading) {
@@ -157,22 +174,30 @@ export default function OrgPage() {
         className="mb-4 sm:mb-6"
         icon={<Building2Icon className="size-6" />}
         title={<h1>Organization</h1>}
-        subtitle={<p>
-          {filteredMembers.length} {filteredMembers.length === 1 ? "member" : "members"}
-          {hasActiveFilters ? " found" : " total"}
-        </p>}
+        subtitle={
+          <p>
+            {filteredMembers.length} {filteredMembers.length === 1 ? "member" : "members"}
+            {hasActiveFilters ? " found" : " total"}
+          </p>
+        }
         search={
           <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search..."
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(0);
+              }}
               className="pl-9 h-9 border-0 shadow-none focus-visible:ring-0 w-full"
             />
             {searchQuery && (
               <button
-                onClick={() => { setSearchQuery(""); setPage(0); }}
+                onClick={() => {
+                  setSearchQuery("");
+                  setPage(0);
+                }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
               >
                 <XIcon className="size-4" />
@@ -188,12 +213,18 @@ export default function OrgPage() {
           <Input
             placeholder="Search..."
             value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(0);
+            }}
             className="pl-9 h-10 border-0 shadow-none focus-visible:ring-0 w-full"
           />
           {searchQuery && (
             <button
-              onClick={() => { setSearchQuery(""); setPage(0); }}
+              onClick={() => {
+                setSearchQuery("");
+                setPage(0);
+              }}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
             >
               <XIcon className="size-4" />
@@ -208,18 +239,43 @@ export default function OrgPage() {
             <thead className="sticky top-0 z-10">
               <tr>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-10">
-                  <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} aria-label="Select all" className="border-white" />
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Select all"
+                    className="border-white"
+                  />
                 </th>
-                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Name</span></th>
-                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Company Name</span></th>
-                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Email ID</span></th>
-                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Phone</span></th>
-                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Department</span></th>
-                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Designation</span></th>
-                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Role</span></th>
-                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Status</span></th>
-                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Registered</span></th>
-                <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap"><span className="text-white">Action</span></th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-white">Name</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-white">Company Name</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-white">Email ID</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-white">Phone</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-white">Department</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-white">Designation</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-white">Role</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-white">Status</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-white">Registered</span>
+                </th>
+                <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-white">Action</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -242,60 +298,99 @@ export default function OrgPage() {
                 paginatedMembers.map((m) => {
                   const selected = selectedIds.has(m.userId);
                   return (
-                  <tr key={m.userId} className={`group border-b bg-white hover:bg-slate-50 transition-colors${selected ? " selected" : ""}`}>
-                    <td className="px-4 py-3 w-10">
-                      <Checkbox checked={selected} onCheckedChange={() => toggleSelect(m.userId)} className="border-black" />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        {m.avatar ? (
-                          <img src={m.avatar} alt={m.name} className="size-8 rounded-sm object-cover ring-2 ring-background" />
+                    <tr
+                      key={m.userId}
+                      className={`group border-b bg-white hover:bg-slate-50 transition-colors${selected ? " selected" : ""}`}
+                    >
+                      <td className="px-4 py-3 w-10">
+                        <Checkbox
+                          checked={selected}
+                          onCheckedChange={() => toggleSelect(m.userId)}
+                          className="border-black"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          {m.avatar ? (
+                            <img
+                              src={m.avatar}
+                              alt={m.name}
+                              className="size-8 rounded-sm object-cover ring-2 ring-background"
+                            />
+                          ) : (
+                            <div className="size-8 rounded-sm flex items-center justify-center text-xs font-semibold bg-primary/10 text-primary">
+                              {getInitials(m.name)}
+                            </div>
+                          )}
+                          <span className="font-medium text-gray-900 whitespace-nowrap">
+                            {m.name || "Unknown"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-gray-700">{m.companyName || "—"}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-gray-700">{m.email || "—"}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-gray-700">{m.phone || "—"}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {m.department ? (
+                          <span className="inline-flex items-center rounded-sm bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-medium">
+                            {m.department}
+                          </span>
                         ) : (
-                          <div className="size-8 rounded-sm flex items-center justify-center text-xs font-semibold bg-primary/10 text-primary">
-                            {getInitials(m.name)}
-                          </div>
+                          <span className="text-gray-300">—</span>
                         )}
-                        <span className="font-medium text-gray-900 whitespace-nowrap">{m.name || "Unknown"}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3"><span className="text-gray-700">{m.companyName || "—"}</span></td>
-                    <td className="px-4 py-3"><span className="text-gray-700">{m.email || "—"}</span></td>
-                    <td className="px-4 py-3"><span className="text-gray-700">{m.phone || "—"}</span></td>
-                    <td className="px-4 py-3">
-                      {m.department ? (
-                        <span className="inline-flex items-center rounded-sm bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-medium">{m.department}</span>
-                      ) : <span className="text-gray-300">—</span>}
-                    </td>
-                    <td className="px-4 py-3"><span className="text-gray-800">{m.designation || <span className="text-gray-300">—</span>}</span></td>
-                    <td className="px-4 py-3">
-                      <span className="inline-flex items-center rounded-sm border border-gray-200 text-gray-700 px-2 py-0.5 text-xs font-medium capitalize">{m.role || "—"}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-medium ${
-                        m.status === "online" ? "bg-green-50 text-green-700" :
-                        m.status === "away" ? "bg-yellow-50 text-yellow-700" :
-                        "bg-gray-50 text-gray-500"
-                      }`}>
-                        <span className={`size-1.5 rounded-sm ${
-                          m.status === "online" ? "bg-green-500" :
-                          m.status === "away" ? "bg-yellow-500" :
-                          "bg-gray-400"
-                        }`} />
-                        {displayStatus(m.status)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3"><span className="text-gray-500 text-xs">{formatDate(m.registeredAt)}</span></td>
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => setDeleteTarget(m)}
-                      >
-                        <Trash2Icon className="size-4" />
-                      </Button>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-gray-800">
+                          {m.designation || <span className="text-gray-300">—</span>}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center rounded-sm border border-gray-200 text-gray-700 px-2 py-0.5 text-xs font-medium capitalize">
+                          {m.role || "—"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-medium ${
+                            m.status === "online"
+                              ? "bg-green-50 text-green-700"
+                              : m.status === "away"
+                                ? "bg-yellow-50 text-yellow-700"
+                                : "bg-gray-50 text-gray-500"
+                          }`}
+                        >
+                          <span
+                            className={`size-1.5 rounded-sm ${
+                              m.status === "online"
+                                ? "bg-green-500"
+                                : m.status === "away"
+                                  ? "bg-yellow-500"
+                                  : "bg-gray-400"
+                            }`}
+                          />
+                          {displayStatus(m.status)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-gray-500 text-xs">{formatDate(m.registeredAt)}</span>
+                      </td>
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => setDeleteTarget(m)}
+                        >
+                          <Trash2Icon className="size-4" />
+                        </Button>
+                      </td>
+                    </tr>
                   );
                 })
               )}
@@ -310,9 +405,19 @@ export default function OrgPage() {
           </span>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
-              <Select value={String(rowsPerPage)} onValueChange={(v) => { setRowsPerPage(Number(v)); setPage(0); }}>
-                <SelectTrigger className="h-8 w-[70px]"><SelectValue /></SelectTrigger>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Rows per page:
+              </span>
+              <Select
+                value={String(rowsPerPage)}
+                onValueChange={(v) => {
+                  setRowsPerPage(Number(v));
+                  setPage(0);
+                }}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="30">30</SelectItem>
                   <SelectItem value="60">60</SelectItem>
@@ -322,10 +427,22 @@ export default function OrgPage() {
               </Select>
             </div>
             <div className="flex items-center gap-1">
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+              >
                 <ChevronLeft className="size-4" />
               </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={(page + 1) * rowsPerPage >= filteredMembers.length}>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={(page + 1) * rowsPerPage >= filteredMembers.length}
+              >
                 <ChevronRight className="size-4" />
               </Button>
             </div>
@@ -333,22 +450,37 @@ export default function OrgPage() {
         </div>
       </div>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => {
+          if (!o) setDeleteTarget(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Member</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove <strong>{deleteTarget?.name}</strong> ({deleteTarget?.email}) from the organization.
+              This will permanently remove <strong>{deleteTarget?.name}</strong> (
+              {deleteTarget?.email}) from the organization.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={deleting}
-              onClick={(e) => { e.preventDefault(); if (deleteTarget) handleDelete(deleteTarget); }}
+              onClick={(e) => {
+                e.preventDefault();
+                if (deleteTarget) handleDelete(deleteTarget);
+              }}
               className="bg-red-600 hover:bg-red-700"
             >
-              {deleting ? <><Loader2Icon className="size-4 animate-spin mr-1" /> Deleting...</> : "Delete"}
+              {deleting ? (
+                <>
+                  <Loader2Icon className="size-4 animate-spin mr-1" /> Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

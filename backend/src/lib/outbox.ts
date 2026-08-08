@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
 import { logger } from "./logger/index.js";
 
@@ -25,7 +25,12 @@ const outboxSchema = new Schema<IOutboxMessage>({
   eventType: { type: String, required: true, index: true },
   payload: { type: Schema.Types.Mixed, required: true },
   headers: { type: Schema.Types.Mixed, default: {} },
-  status: { type: String, enum: ["pending", "published", "failed"], default: "pending", index: true },
+  status: {
+    type: String,
+    enum: ["pending", "published", "failed"],
+    default: "pending",
+    index: true,
+  },
   publishedAt: { type: Date },
   failedAt: { type: Date },
   error: { type: String },
@@ -78,10 +83,7 @@ export class TransactionalOutbox {
     );
   }
 
-  async getPendingMessages(
-    batchSize = 100,
-    olderThanSeconds = 5,
-  ): Promise<any[]> {
+  async getPendingMessages(batchSize = 100, olderThanSeconds = 5): Promise<any[]> {
     const cutoff = new Date(Date.now() - olderThanSeconds * 1000);
     return OutboxMessage.find({
       status: "pending",
@@ -94,10 +96,7 @@ export class TransactionalOutbox {
   }
 
   async getFailedMessages(limit = 50): Promise<any[]> {
-    return OutboxMessage.find({ status: "failed" })
-      .sort({ failedAt: -1 })
-      .limit(limit)
-      .lean();
+    return OutboxMessage.find({ status: "failed" }).sort({ failedAt: -1 }).limit(limit).lean();
   }
 
   async getStats(): Promise<{
@@ -110,7 +109,10 @@ export class TransactionalOutbox {
       OutboxMessage.countDocuments({ status: "pending" }),
       OutboxMessage.countDocuments({ status: "published" }),
       OutboxMessage.countDocuments({ status: "failed" }),
-      OutboxMessage.findOne({ status: "pending" }).sort({ createdAt: 1 }).select("createdAt").lean(),
+      OutboxMessage.findOne({ status: "pending" })
+        .sort({ createdAt: 1 })
+        .select("createdAt")
+        .lean(),
     ]);
     return { pending, published, failed, oldestPending: oldest?.createdAt };
   }

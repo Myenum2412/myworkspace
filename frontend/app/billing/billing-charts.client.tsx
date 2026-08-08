@@ -1,6 +1,17 @@
 "use client";
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Invoice {
@@ -56,7 +67,10 @@ export default function BillingCharts({ invoices, pieData }: BillingChartsProps)
               <div className="flex flex-row sm:flex-col gap-3 sm:gap-2 flex-wrap justify-center">
                 {pieData.map((entry) => (
                   <div key={entry.name} className="flex items-center gap-2 text-sm">
-                    <div className="size-3 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+                    <div
+                      className="size-3 rounded-full shrink-0"
+                      style={{ backgroundColor: entry.color }}
+                    />
                     <span className="text-muted-foreground">{entry.name}</span>
                     <span className="font-medium ml-auto">{entry.value}</span>
                   </div>
@@ -80,8 +94,22 @@ export default function BillingCharts({ invoices, pieData }: BillingChartsProps)
             <ResponsiveContainer width="100%" height={220}>
               <BarChart
                 data={(() => {
-                  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                  const months: Record<number, { name: string; paid: number; pending: number }> = {};
+                  const monthNames = [
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                  ];
+                  const months: Record<number, { name: string; paid: number; pending: number }> =
+                    {};
 
                   // Initialize all 12 months
                   for (let i = 0; i < 12; i++) {
@@ -92,8 +120,10 @@ export default function BillingCharts({ invoices, pieData }: BillingChartsProps)
                   invoices.forEach((inv) => {
                     const d = new Date(inv.createdAt);
                     const monthIndex = d.getMonth();
-                    if (inv.status === "paid") months[monthIndex].paid += (inv.amountPaid || 0) / 100;
-                    else if (inv.status === "open") months[monthIndex].pending += (inv.amountPaid || 0) / 100;
+                    if (inv.status === "paid")
+                      months[monthIndex].paid += (inv.amountPaid || 0) / 100;
+                    else if (inv.status === "open")
+                      months[monthIndex].pending += (inv.amountPaid || 0) / 100;
                   });
 
                   return Object.values(months);
@@ -106,7 +136,13 @@ export default function BillingCharts({ invoices, pieData }: BillingChartsProps)
                 <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip />
                 <Bar dataKey="paid" fill="#22c55e" name="Paid" radius={[3, 3, 0, 0]} barSize={12} />
-                <Bar dataKey="pending" fill="#3b82f6" name="Pending" radius={[3, 3, 0, 0]} barSize={12} />
+                <Bar
+                  dataKey="pending"
+                  fill="#3b82f6"
+                  name="Pending"
+                  radius={[3, 3, 0, 0]}
+                  barSize={12}
+                />
               </BarChart>
             </ResponsiveContainer>
           )}

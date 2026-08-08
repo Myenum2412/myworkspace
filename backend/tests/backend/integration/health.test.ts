@@ -1,9 +1,11 @@
-import request from "supertest";
 import type { Server } from "http";
+import request from "supertest";
 import app from "../../../src/app.js";
 
 let server: Server;
-beforeAll(() => { server = app.listen(0); });
+beforeAll(() => {
+  server = app.listen(0);
+});
 afterAll((done) => {
   server.close(done);
 });

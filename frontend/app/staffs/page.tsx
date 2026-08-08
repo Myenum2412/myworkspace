@@ -1,14 +1,14 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
-import { Card } from "@/components/ui/card";
+import { useSession } from "next-auth/react";
+import { useEffect, useMemo, useState } from "react";
 import Stats07 from "@/components/stats-07";
+import { Card } from "@/components/ui/card";
+import { apiFetch } from "@/lib/api";
 import { StaffRecentAllocatedTasks } from "./staff-recent-allocated-tasks";
 import { StaffRecentRevisions } from "./staff-recent-revisions";
 import { StaffRecentSubmissions } from "./staff-recent-submissions";
-import { apiFetch } from "@/lib/api";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -34,7 +34,9 @@ export default function StaffsPage() {
   }, []);
 
   useEffect(() => {
-    if (status === "unauthenticated") { router.push("/login"); }
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
   }, [status, router]);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function StaffsPage() {
     let cancelled = false;
     setLoading(true);
     apiFetch("/api/staffs/tasks")
-      .then((r) => r.ok ? r.json() : null)
+      .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (cancelled) return;
         const initialTasks = Array.isArray(d?.initialTasks) ? d.initialTasks : [];
@@ -55,11 +57,16 @@ export default function StaffsPage() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [status]);
 
   const taskStats = useMemo(() => {
-    let total = 0, overdue = 0, dueToday = 0, dueWeek = 0;
+    let total = 0,
+      overdue = 0,
+      dueToday = 0,
+      dueWeek = 0;
     const now = new Date();
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
     const weekEnd = new Date(todayEnd.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -77,7 +84,12 @@ export default function StaffsPage() {
     return { total, overdue, dueToday, dueWeek };
   }, [tasks]);
 
-  if (status === "loading" || loading) return <div className="flex flex-1 items-center justify-center p-8"><div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" /></div>;
+  if (status === "loading" || loading)
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </div>
+    );
   if (!session?.user) return null;
 
   return (

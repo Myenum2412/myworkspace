@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
 
@@ -15,8 +15,10 @@ export interface IOperationEvent extends Document {
 const operationEventSchema = new Schema<IOperationEvent>({
   eventType: { type: String, required: true, index: true },
   category: {
-    type: String, enum: ["performance", "error", "security", "business", "infrastructure"],
-    required: true, index: true,
+    type: String,
+    enum: ["performance", "error", "security", "business", "infrastructure"],
+    required: true,
+    index: true,
   },
   severity: { type: String, enum: ["info", "warning", "critical"], default: "info" },
   source: { type: String, required: true },
@@ -39,39 +41,58 @@ export class OperationalAnalytics {
   ): Promise<void> {
     try {
       await OperationEvent.create({
-        eventType, category, severity, source, data, timestamp: new Date(),
+        eventType,
+        category,
+        severity,
+        source,
+        data,
+        timestamp: new Date(),
       });
     } catch (err) {
       logger.warn({ err, eventType }, "Failed to record operation event");
     }
   }
 
-  async recordPerformance(operation: string, durationMs: number, meta: Record<string, unknown> = {}) {
+  async recordPerformance(
+    operation: string,
+    durationMs: number,
+    meta: Record<string, unknown> = {},
+  ) {
     metricsRegistry.observeHistogram("operation_duration_ms", { operation }, durationMs);
     if (durationMs > 10000) {
-      await this.recordEvent("slow_operation", "performance", {
-        operation, durationMs, ...meta,
-      }, "warning", "perf-monitor");
+      await this.recordEvent(
+        "slow_operation",
+        "performance",
+        {
+          operation,
+          durationMs,
+          ...meta,
+        },
+        "warning",
+        "perf-monitor",
+      );
     }
   }
 
   async recordError(errorType: string, error: Error, meta: Record<string, unknown> = {}) {
-    await this.recordEvent(errorType, "error", {
-      message: error.message,
-      stack: error.stack?.slice(0, 500),
-      ...meta,
-    }, "warning", "error-monitor");
+    await this.recordEvent(
+      errorType,
+      "error",
+      {
+        message: error.message,
+        stack: error.stack?.slice(0, 500),
+        ...meta,
+      },
+      "warning",
+      "error-monitor",
+    );
   }
 
   async recordSecurityEvent(eventType: string, data: Record<string, unknown>) {
     await this.recordEvent(eventType, "security", data, "critical", "security-monitor");
   }
 
-  async getRecentEvents(
-    category?: string,
-    limit = 50,
-    severity?: string,
-  ): Promise<any[]> {
+  async getRecentEvents(category?: string, limit = 50, severity?: string): Promise<any[]> {
     const filter: Record<string, unknown> = {};
     if (category) filter.category = category;
     if (severity) filter.severity = severity;
@@ -86,16 +107,21 @@ export class OperationalAnalytics {
     ]);
   }
 
-  async detectAnomalies(): Promise<Array<{
-    type: string;
-    metric: string;
-    currentValue: number;
-    threshold: number;
-    severity: string;
-  }>> {
+  async detectAnomalies(): Promise<
+    Array<{
+      type: string;
+      metric: string;
+      currentValue: number;
+      threshold: number;
+      severity: string;
+    }>
+  > {
     const anomalies: Array<{
-      type: string; metric: string; currentValue: number;
-      threshold: number; severity: string;
+      type: string;
+      metric: string;
+      currentValue: number;
+      threshold: number;
+      severity: string;
     }> = [];
 
     const recentErrors = await OperationEvent.countDocuments({
@@ -133,7 +159,10 @@ export class OperationalAnalytics {
     const cutoff = new Date(Date.now() - retentionHours * 60 * 60 * 1000);
     const result = await OperationEvent.deleteMany({ timestamp: { $lt: cutoff } });
     if (result.deletedCount > 0) {
-      logger.info({ deleted: result.deletedCount, retentionHours }, "Cleaned up old operation events");
+      logger.info(
+        { deleted: result.deletedCount, retentionHours },
+        "Cleaned up old operation events",
+      );
     }
     return result.deletedCount;
   }

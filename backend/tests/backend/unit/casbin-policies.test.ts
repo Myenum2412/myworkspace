@@ -1,4 +1,4 @@
-import { newEnforcer, Enforcer } from "casbin";
+import { type Enforcer, newEnforcer } from "casbin";
 import path from "path";
 import { fileURLToPath } from "url";
 import { buildFileResource, buildFolderResource } from "../../../src/config/casbin.js";
@@ -256,7 +256,9 @@ describe("buildFileResource", () => {
   });
 
   it("prioritizes clientId over projectId and orgId", () => {
-    expect(buildFileResource({ orgId: "org-1", projectId: "proj-1", clientId: "client-1" })).toBe(":client_file");
+    expect(buildFileResource({ orgId: "org-1", projectId: "proj-1", clientId: "client-1" })).toBe(
+      ":client_file",
+    );
   });
 
   it("prioritizes projectId over orgId", () => {

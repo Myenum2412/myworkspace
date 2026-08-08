@@ -1,11 +1,8 @@
 "use client";
 
-import { useSharedFiles } from "@/hooks/file-system/use-file-data";
-import { formatSize } from "@/lib/file-system/types";
 import { getFileIcon } from "@/components/files/utils";
-import { DownloadIcon, Share2Icon, UserIcon, ClockIcon } from "@/lib/icons";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -14,12 +11,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useSharedFiles } from "@/hooks/file-system/use-file-data";
+import { formatSize } from "@/lib/file-system/types";
+import { ClockIcon, DownloadIcon, Share2Icon, UserIcon } from "@/lib/icons";
 
 export function SharedWithMe() {
   const { data: shares, isLoading, refetch } = useSharedFiles();
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-12"><div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   if (!shares || shares.length === 0) {
@@ -34,12 +38,13 @@ export function SharedWithMe() {
 
   return (
     <div className="space-y-4">
-      
       <div>
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Share2Icon className="size-4" /> Shared with Me
         </h2>
-        <p className="text-sm text-muted-foreground">{shares.length} shared file{shares.length !== 1 ? "s" : ""}</p>
+        <p className="text-sm text-muted-foreground">
+          {shares.length} shared file{shares.length !== 1 ? "s" : ""}
+        </p>
       </div>
 
       <div className="border">
@@ -58,7 +63,11 @@ export function SharedWithMe() {
               <TableRow key={share.id}>
                 <TableCell>
                   <div className="flex items-center gap-2.5">
-                    {share.file ? getFileIcon(share.file.mimeType) : <Share2Icon className="size-4" />}
+                    {share.file ? (
+                      getFileIcon(share.file.mimeType)
+                    ) : (
+                      <Share2Icon className="size-4" />
+                    )}
                     <span className="text-sm font-medium truncate max-w-[200px]">
                       {share.file?.originalName || "Unknown file"}
                     </span>
@@ -85,7 +94,9 @@ export function SharedWithMe() {
                       variant="ghost"
                       size="sm"
                       className="p-0"
-                      onClick={() => share.file && window.open(`/api/files/${share.file.id}/download`, "_blank")}
+                      onClick={() =>
+                        share.file && window.open(`/api/files/${share.file.id}/download`, "_blank")
+                      }
                     >
                       <DownloadIcon className="size-3.5" />
                     </Button>

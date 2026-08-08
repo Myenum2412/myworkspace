@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, useEffect, type ReactNode } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 export interface MarqueeState {
   isSelecting: boolean;
@@ -124,10 +124,7 @@ export function useMarqueeSelection(options: {
     }
   }, []);
 
-  const isSelected = useCallback(
-    (id: string) => selectedIds.has(id),
-    [selectedIds],
-  );
+  const isSelected = useCallback((id: string) => selectedIds.has(id), [selectedIds]);
 
   const clearSelection = useCallback(() => {
     setSelectedIds(new Set());

@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
+import { v4 as uuid } from "uuid";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { v4 as uuid } from "uuid";
 
 export async function GET() {
   try {
-    const services = await db.collection(collections.services).find({}).sort({ createdAt: -1 }).toArray();
+    const services = await db
+      .collection(collections.services)
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray();
     return NextResponse.json({ data: services });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch services" }, { status: 500 });

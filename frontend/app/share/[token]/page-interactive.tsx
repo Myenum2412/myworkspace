@@ -1,1 +1,1 @@
-export { ShareTokenPageInteractive } from "./page-interactive.client"
+export { ShareTokenPageInteractive } from "./page-interactive.client";

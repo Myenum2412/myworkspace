@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { type ColumnDef } from "@tanstack/react-table";
+import { useMemo } from "react";
+import { DataTable } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, FolderKanbanIcon } from "@/lib/icons";
-import { DataTable } from "@/components/data-table";
 
 const statusStyles: Record<string, string> = {
   FFU: "bg-blue-100 text-blue-700 border-blue-200",
@@ -27,50 +27,53 @@ interface SubmissionRow {
 export function StaffRecentSubmissions({ tasks = [] }: { tasks?: any[] }) {
   const submissions = useMemo(() => {
     if (!Array.isArray(tasks)) return [];
-    return tasks
-      .slice(0, MAX_ROWS)
-      .map((task, index) => ({
-        id: String(task.id || task._id || `task-${index}`),
-        projectName: task.project || "No project",
-        drawNo: task.id || task._id || `#${index + 1}`,
-        element: task.title || "Untitled task",
-        status: task.status || "todo",
-      }));
+    return tasks.slice(0, MAX_ROWS).map((task, index) => ({
+      id: String(task.id || task._id || `task-${index}`),
+      projectName: task.project || "No project",
+      drawNo: task.id || task._id || `#${index + 1}`,
+      element: task.title || "Untitled task",
+      status: task.status || "todo",
+    }));
   }, [tasks]);
 
   const visible = useMemo(() => submissions.slice(0, MAX_ROWS), [submissions]);
 
-  const columns = useMemo<ColumnDef<SubmissionRow>[]>(() => [
-    {
-      accessorKey: "projectName",
-      header: "Project",
-      cell: ({ row }) => <span className="font-medium">{row.original.projectName}</span>,
-    },
-    {
-      accessorKey: "drawNo",
-      header: "Draw No",
-      cell: ({ row }) => (
-        <span className="font-mono text-xs text-muted-foreground">
-          {row.original.drawNo}
-        </span>
-      ),
-      size: 120,
-    },
-    {
-      accessorKey: "element",
-      header: "Element",
-      cell: ({ row }) => <span>{row.original.element}</span>,
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => (
-        <Badge className={statusStyles[row.original.status] || "bg-gray-100 text-gray-700 border-gray-200"}>
-          {row.original.status}
-        </Badge>
-      ),
-    },
-  ], []);
+  const columns = useMemo<ColumnDef<SubmissionRow>[]>(
+    () => [
+      {
+        accessorKey: "projectName",
+        header: "Project",
+        cell: ({ row }) => <span className="font-medium">{row.original.projectName}</span>,
+      },
+      {
+        accessorKey: "drawNo",
+        header: "Draw No",
+        cell: ({ row }) => (
+          <span className="font-mono text-xs text-muted-foreground">{row.original.drawNo}</span>
+        ),
+        size: 120,
+      },
+      {
+        accessorKey: "element",
+        header: "Element",
+        cell: ({ row }) => <span>{row.original.element}</span>,
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => (
+          <Badge
+            className={
+              statusStyles[row.original.status] || "bg-gray-100 text-gray-700 border-gray-200"
+            }
+          >
+            {row.original.status}
+          </Badge>
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-2">

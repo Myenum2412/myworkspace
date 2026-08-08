@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
@@ -15,10 +15,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId") || session.user.id;
 
-    const user = await db.collection(collections.users).findOne(
-      { id: userId },
-      { projection: { status: 1, statusNote: 1, statusUpdatedAt: 1, customStatus: 1 } }
-    ) as { status?: string; statusNote?: string; statusUpdatedAt?: Date; customStatus?: string } | null;
+    const user = (await db
+      .collection(collections.users)
+      .findOne(
+        { id: userId },
+        { projection: { status: 1, statusNote: 1, statusUpdatedAt: 1, customStatus: 1 } },
+      )) as {
+      status?: string;
+      statusNote?: string;
+      statusUpdatedAt?: Date;
+      customStatus?: string;
+    } | null;
 
     return NextResponse.json({
       data: {
@@ -29,7 +36,9 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch {
-    return NextResponse.json({ data: { status: "offline", statusNote: "", statusUpdatedAt: null, customStatus: "" } });
+    return NextResponse.json({
+      data: { status: "offline", statusNote: "", statusUpdatedAt: null, customStatus: "" },
+    });
   }
 }
 
@@ -60,12 +69,17 @@ export async function POST(request: NextRequest) {
     if (statusNote !== undefined) updateFields.statusNote = statusNote;
     if (customStatus !== undefined) updateFields.customStatus = customStatus;
 
-    await db.collection(collections.users).updateOne(
-      { id: targetUserId },
-      { $set: updateFields }
-    );
+    await db.collection(collections.users).updateOne({ id: targetUserId }, { $set: updateFields });
 
-    return NextResponse.json({ success: true, data: { status: normalizedStatus, statusNote, statusUpdatedAt: updateFields.statusUpdatedAt, customStatus } });
+    return NextResponse.json({
+      success: true,
+      data: {
+        status: normalizedStatus,
+        statusNote,
+        statusUpdatedAt: updateFields.statusUpdatedAt,
+        customStatus,
+      },
+    });
   } catch {
     return NextResponse.json({ error: "Failed to update status" }, { status: 500 });
   }

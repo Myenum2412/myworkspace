@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { recordAuditLog } from "../services/audit.service.js";
 
 export type CalendarAuditAction =
@@ -29,7 +29,7 @@ interface CalendarAuditRequest extends Request {
 
 export function calendarAuditMiddleware(
   action: CalendarAuditAction,
-  entityType: string = "calendar"
+  entityType: string = "calendar",
 ) {
   return async (req: CalendarAuditRequest, res: Response, next: NextFunction) => {
     // Store audit info for later use
@@ -42,7 +42,7 @@ export function calendarAuditMiddleware(
     // Capture the original json method
     const originalJson = res.json.bind(res);
 
-    res.json = function (body: unknown) {
+    res.json = (body: unknown) => {
       // Record audit log after response
       if (req.user) {
         const responseBody = body as Record<string, unknown>;
@@ -84,7 +84,7 @@ export function setCalendarAuditInfo(
   info: {
     entityId?: string;
     metadata?: Record<string, unknown>;
-  }
+  },
 ) {
   if (req.calendarAudit) {
     if (info.entityId) {

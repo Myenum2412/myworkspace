@@ -1,23 +1,9 @@
 "use client";
-import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useCallback, useMemo, useState } from "react";
+import { FileExplorer } from "@/components/file-explorer";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -26,17 +12,26 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { FolderIcon } from "@/lib/icons";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   AlertCircleIcon,
   Building2Icon,
   ChevronRightIcon,
   FileIcon,
+  FolderIcon,
   Loader2Icon,
   PlusIcon,
   SearchIcon,
 } from "@/lib/icons";
-import { FileExplorer } from "@/components/file-explorer";
 
 type ClientFolder = {
   id: string;
@@ -75,7 +70,13 @@ interface ClientFileManagerProps {
  *
  * Data is now passed from the server component via props (SSR).
  */
-export function ClientFileManager({ orgId, userId, clients, foldersByClient, statsByClient }: ClientFileManagerProps) {
+export function ClientFileManager({
+  orgId,
+  userId,
+  clients,
+  foldersByClient,
+  statsByClient,
+}: ClientFileManagerProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
@@ -155,7 +156,8 @@ export function ClientFileManager({ orgId, userId, clients, foldersByClient, sta
             Client File Management
           </h1>
           <p className="text-sm text-muted-foreground">
-            {clients.length} client{clients.length !== 1 ? "s" : ""} · folders are shared with the client workspace
+            {clients.length} client{clients.length !== 1 ? "s" : ""} · folders are shared with the
+            client workspace
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -185,7 +187,9 @@ export function ClientFileManager({ orgId, userId, clients, foldersByClient, sta
           <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
             <Building2Icon className="size-16 text-muted-foreground/20" />
             <p className="text-sm text-muted-foreground">
-              {search ? "No clients match your search." : "No clients yet. Create a client to provision folders."}
+              {search
+                ? "No clients match your search."
+                : "No clients yet. Create a client to provision folders."}
             </p>
             {!search && (
               <Button asChild size="sm">
@@ -212,7 +216,9 @@ export function ClientFileManager({ orgId, userId, clients, foldersByClient, sta
                     <Building2Icon className="size-4 text-muted-foreground" />
                     <span className="truncate">{c.name}</span>
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground truncate">{c.company} · {c.email}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {c.company} · {c.email}
+                  </p>
                 </CardHeader>
                 <CardContent className="space-y-3 pt-0">
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -227,7 +233,10 @@ export function ClientFileManager({ orgId, userId, clients, foldersByClient, sta
                   {folders.length > 0 ? (
                     <div className="space-y-1">
                       {folders.slice(0, 4).map((f) => (
-                        <div key={f.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <div
+                          key={f.id}
+                          className="flex items-center gap-2 text-xs text-muted-foreground"
+                        >
                           <FolderIcon className="size-3 shrink-0" />
                           <span className="truncate">{f.name}</span>
                         </div>
@@ -241,7 +250,10 @@ export function ClientFileManager({ orgId, userId, clients, foldersByClient, sta
                   )}
 
                   <div className="flex items-center gap-2 pt-1">
-                    <Badge variant={c.status === "Active Client" ? "default" : "secondary"} className="text-[10px]">
+                    <Badge
+                      variant={c.status === "Active Client" ? "default" : "secondary"}
+                      className="text-[10px]"
+                    >
                       {c.status || "No status"}
                     </Badge>
                     <ChevronRightIcon className="size-3 text-muted-foreground ml-auto group-hover:text-primary transition-colors" />

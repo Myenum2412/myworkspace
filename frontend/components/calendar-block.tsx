@@ -1,15 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import {
-  RiArrowLeftSLine,
-  RiArrowRightSLine,
-  RiCalendarLine,
-  RiMapPinLine,
-  RiTimeLine,
-} from "@/lib/icons"
-
-import { Button } from "@/components/ui/button"
+import * as React from "react";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
@@ -17,30 +9,37 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import {
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
+  RiCalendarLine,
+  RiMapPinLine,
+  RiTimeLine,
+} from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
-type EventStatus = "confirmed" | "tentative" | "cancelled"
+type EventStatus = "confirmed" | "tentative" | "cancelled";
 
 interface CalEvent {
-  time: string
-  duration: string
-  title: string
-  location?: string
-  status: EventStatus
+  time: string;
+  duration: string;
+  title: string;
+  location?: string;
+  status: EventStatus;
 }
 
 interface AgendaDay {
-  label: string
-  date: number
-  isToday: boolean
-  events: CalEvent[]
+  label: string;
+  date: number;
+  isToday: boolean;
+  events: CalEvent[];
 }
 
 interface Week {
-  range: string
-  days: AgendaDay[]
+  range: string;
+  days: AgendaDay[];
 }
 
 const STANDUP: CalEvent = {
@@ -49,7 +48,7 @@ const STANDUP: CalEvent = {
   title: "Daily standup",
   location: "Zoom",
   status: "confirmed",
-}
+};
 
 const WEEKS: Week[] = [
   {
@@ -251,26 +250,26 @@ const WEEKS: Week[] = [
       { label: "Sun", date: 29, isToday: false, events: [] },
     ],
   },
-]
+];
 
-const TODAY_WEEK = 1
+const TODAY_WEEK = 1;
 
 const STATUS_ACCENT: Record<EventStatus, string> = {
   confirmed: "bg-primary",
   tentative: "bg-muted-foreground",
   cancelled: "bg-destructive",
-}
+};
 
 const STATUS_LABEL: Record<EventStatus, string> = {
   confirmed: "Confirmed",
   tentative: "Tentative",
   cancelled: "Cancelled",
-}
+};
 
 export default function CalendarBlock() {
-  const [weekIdx, setWeekIdx] = React.useState(TODAY_WEEK)
-  const week = WEEKS[weekIdx]
-  const totalEvents = week.days.reduce((n, d) => n + d.events.length, 0)
+  const [weekIdx, setWeekIdx] = React.useState(TODAY_WEEK);
+  const week = WEEKS[weekIdx];
+  const totalEvents = week.days.reduce((n, d) => n + d.events.length, 0);
 
   return (
     <section className="flex w-full items-center justify-center bg-background px-6 py-12 text-foreground">
@@ -282,12 +281,9 @@ export default function CalendarBlock() {
                 <RiCalendarLine className="size-5" aria-hidden="true" />
               </span>
               <div className="flex flex-col">
-                <h1 className="text-sm font-semibold tracking-tight tabular-nums">
-                  {week.range}
-                </h1>
+                <h1 className="text-sm font-semibold tracking-tight tabular-nums">{week.range}</h1>
                 <p className="text-xs text-muted-foreground tabular-nums">
-                  {totalEvents} {totalEvents === 1 ? "event" : "events"} this
-                  week
+                  {totalEvents} {totalEvents === 1 ? "event" : "events"} this week
                 </p>
               </div>
             </div>
@@ -301,11 +297,7 @@ export default function CalendarBlock() {
               >
                 <RiArrowLeftSLine aria-hidden="true" />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setWeekIdx(TODAY_WEEK)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setWeekIdx(TODAY_WEEK)}>
                 Today
               </Button>
               <Button
@@ -313,9 +305,7 @@ export default function CalendarBlock() {
                 size="icon-sm"
                 aria-label="Next week"
                 disabled={weekIdx === WEEKS.length - 1}
-                onClick={() =>
-                  setWeekIdx((i) => Math.min(WEEKS.length - 1, i + 1))
-                }
+                onClick={() => setWeekIdx((i) => Math.min(WEEKS.length - 1, i + 1))}
               >
                 <RiArrowRightSLine aria-hidden="true" />
               </Button>
@@ -327,17 +317,12 @@ export default function CalendarBlock() {
           <div>
             {week.days.map((day, dayIdx) => (
               <div key={day.date}>
-                <div
-                  className={cn(
-                    "flex gap-4 px-4 py-3",
-                    day.isToday && "bg-primary/5"
-                  )}
-                >
+                <div className={cn("flex gap-4 px-4 py-3", day.isToday && "bg-primary/5")}>
                   <div className="flex shrink-0 flex-col items-center gap-1 pt-1">
                     <span
                       className={cn(
                         "text-[10px] font-semibold tracking-widest uppercase",
-                        day.isToday ? "text-primary" : "text-muted-foreground"
+                        day.isToday ? "text-primary" : "text-muted-foreground",
                       )}
                     >
                       {day.label}
@@ -345,9 +330,7 @@ export default function CalendarBlock() {
                     <span
                       className={cn(
                         "flex size-8 items-center justify-center text-sm font-semibold tabular-nums",
-                        day.isToday
-                          ? "bg-primary text-primary-foreground"
-                          : "text-foreground"
+                        day.isToday ? "bg-primary text-primary-foreground" : "text-foreground",
                       )}
                     >
                       {day.date}
@@ -356,9 +339,7 @@ export default function CalendarBlock() {
 
                   <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
                     {day.events.length === 0 ? (
-                      <p className="py-1.5 text-xs text-muted-foreground/70">
-                        No events
-                      </p>
+                      <p className="py-1.5 text-xs text-muted-foreground/70">No events</p>
                     ) : (
                       day.events.map((event) => (
                         <Popover key={`${event.time}-${event.title}`}>
@@ -367,49 +348,43 @@ export default function CalendarBlock() {
                               type="button"
                               className="group flex w-full items-stretch gap-3 px-2 py-1.5 text-left transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none"
                             >
-                            <span
-                              className={cn(
-                                "w-1 shrink-0",
-                                STATUS_ACCENT[event.status]
-                              )}
-                              aria-label={STATUS_LABEL[event.status]}
-                            />
-
-                            <div className="flex w-14 shrink-0 flex-col">
-                              <span className="text-xs font-medium text-foreground tabular-nums">
-                                {event.time}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                {event.duration}
-                              </span>
-                            </div>
-
-                            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                               <span
-                                className={cn(
-                                  "truncate text-sm leading-snug font-medium",
-                                  event.status === "cancelled"
-                                    ? "text-muted-foreground line-through"
-                                    : "text-foreground"
-                                )}
-                              >
-                                {event.title}
-                              </span>
-                              {event.location && (
-                                <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                  <RiMapPinLine
-                                    className="size-3 shrink-0"
-                                    aria-hidden="true"
-                                  />
-                                  {event.location}
-                                </span>
-                              )}
-                            </div>
+                                className={cn("w-1 shrink-0", STATUS_ACCENT[event.status])}
+                                aria-label={STATUS_LABEL[event.status]}
+                              />
 
-                            <RiArrowRightSLine
-                              className="size-4 shrink-0 self-center text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
-                              aria-hidden="true"
-                            />
+                              <div className="flex w-14 shrink-0 flex-col">
+                                <span className="text-xs font-medium text-foreground tabular-nums">
+                                  {event.time}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground">
+                                  {event.duration}
+                                </span>
+                              </div>
+
+                              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                                <span
+                                  className={cn(
+                                    "truncate text-sm leading-snug font-medium",
+                                    event.status === "cancelled"
+                                      ? "text-muted-foreground line-through"
+                                      : "text-foreground",
+                                  )}
+                                >
+                                  {event.title}
+                                </span>
+                                {event.location && (
+                                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                    <RiMapPinLine className="size-3 shrink-0" aria-hidden="true" />
+                                    {event.location}
+                                  </span>
+                                )}
+                              </div>
+
+                              <RiArrowRightSLine
+                                className="size-4 shrink-0 self-center text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                                aria-hidden="true"
+                              />
                             </button>
                           </PopoverTrigger>
 
@@ -418,7 +393,7 @@ export default function CalendarBlock() {
                               <PopoverTitle
                                 className={cn(
                                   event.status === "cancelled" &&
-                                    "text-muted-foreground line-through"
+                                    "text-muted-foreground line-through",
                                 )}
                               >
                                 {event.title}
@@ -430,27 +405,18 @@ export default function CalendarBlock() {
                             <Separator />
                             <div className="flex flex-col gap-1.5 text-muted-foreground">
                               <span className="flex items-center gap-1.5">
-                                <RiTimeLine
-                                  className="size-3.5 shrink-0"
-                                  aria-hidden="true"
-                                />
+                                <RiTimeLine className="size-3.5 shrink-0" aria-hidden="true" />
                                 {event.time} ({event.duration})
                               </span>
                               {event.location && (
                                 <span className="flex items-center gap-1.5">
-                                  <RiMapPinLine
-                                    className="size-3.5 shrink-0"
-                                    aria-hidden="true"
-                                  />
+                                  <RiMapPinLine className="size-3.5 shrink-0" aria-hidden="true" />
                                   {event.location}
                                 </span>
                               )}
                               <span className="flex items-center gap-1.5">
                                 <span
-                                  className={cn(
-                                    "size-1.5 shrink-0",
-                                    STATUS_ACCENT[event.status]
-                                  )}
+                                  className={cn("size-1.5 shrink-0", STATUS_ACCENT[event.status])}
                                   aria-hidden="true"
                                 />
                                 {STATUS_LABEL[event.status]}
@@ -479,18 +445,13 @@ export default function CalendarBlock() {
               ] as [EventStatus, string][]
             ).map(([status, label]) => (
               <div key={status} className="flex items-center gap-1.5">
-                <span
-                  className={cn("size-1.5", STATUS_ACCENT[status])}
-                  aria-hidden="true"
-                />
-                <span className="text-[10px] text-muted-foreground">
-                  {label}
-                </span>
+                <span className={cn("size-1.5", STATUS_ACCENT[status])} aria-hidden="true" />
+                <span className="text-[10px] text-muted-foreground">{label}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }

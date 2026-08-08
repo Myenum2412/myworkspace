@@ -6,7 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  FileIcon, DownloadIcon, LockIcon, Loader2Icon, AlertCircleIcon, FileTextIcon, ImageIcon,
+  AlertCircleIcon,
+  DownloadIcon,
+  FileIcon,
+  FileTextIcon,
+  ImageIcon,
+  Loader2Icon,
+  LockIcon,
 } from "@/lib/icons";
 
 type ShareFileInfo = {
@@ -18,7 +24,13 @@ type ShareFileInfo = {
   allowDownload: boolean;
 } | null;
 
-export function ShareTokenPageInteractive({ token, fileInfo }: { token: string; fileInfo: ShareFileInfo }) {
+export function ShareTokenPageInteractive({
+  token,
+  fileInfo,
+}: {
+  token: string;
+  fileInfo: ShareFileInfo;
+}) {
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
   const [needsPassword, setNeedsPassword] = useState(fileInfo?.hasPassword ?? false);
@@ -74,7 +86,9 @@ export function ShareTokenPageInteractive({ token, fileInfo }: { token: string; 
               <FileIcon className="size-16 text-muted-foreground" />
             )}
           </div>
-          <CardTitle className="text-xl truncate">{fileInfo.originalName || "Shared File"}</CardTitle>
+          <CardTitle className="text-xl truncate">
+            {fileInfo.originalName || "Shared File"}
+          </CardTitle>
           <p className="text-sm text-muted-foreground">
             {fileInfo.mimeType} · {fileInfo.size ? formatSize(fileInfo.size) : "Unknown size"}
           </p>
@@ -82,12 +96,17 @@ export function ShareTokenPageInteractive({ token, fileInfo }: { token: string; 
         <CardContent className="space-y-4">
           {needsPassword && (
             <div>
-              <Label className="text-xs text-muted-foreground">This file is password-protected</Label>
+              <Label className="text-xs text-muted-foreground">
+                This file is password-protected
+              </Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
-                onChange={e => { setPassword(e.target.value); setError(""); }}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError("");
+                }}
                 placeholder=""
                 className="mt-1"
               />
@@ -100,11 +119,19 @@ export function ShareTokenPageInteractive({ token, fileInfo }: { token: string; 
             </div>
           )}
 
-          <Button className="" onClick={verifyAndDownload} disabled={downloading || (needsPassword && !password)}>
+          <Button
+            className=""
+            onClick={verifyAndDownload}
+            disabled={downloading || (needsPassword && !password)}
+          >
             {downloading ? (
-              <><Loader2Icon className="mr-2 size-4 animate-spin" /> Downloading...</>
+              <>
+                <Loader2Icon className="mr-2 size-4 animate-spin" /> Downloading...
+              </>
             ) : (
-              <><DownloadIcon className="mr-2 size-4" /> Download File</>
+              <>
+                <DownloadIcon className="mr-2 size-4" /> Download File
+              </>
             )}
           </Button>
 

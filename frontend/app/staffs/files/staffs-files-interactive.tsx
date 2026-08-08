@@ -1,1 +1,1 @@
-export { default } from "./staffs-files-interactive.client"
+export { default } from "./staffs-files-interactive.client";

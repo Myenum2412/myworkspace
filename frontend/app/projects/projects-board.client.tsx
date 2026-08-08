@@ -1,14 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import {
-  ClockIcon, AlertCircleIcon, CheckCircle2Icon, CircleIcon,
-  PlusIcon,
-} from "@/lib/icons";
 import type { Project } from "@/components/projects/project-types";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { AlertCircleIcon, CheckCircle2Icon, CircleIcon, ClockIcon, PlusIcon } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 interface BoardProps {
   projects: Project[];
@@ -69,7 +66,7 @@ function ProjectCard({ project, onView }: { project: Project; onView: (p: Projec
       onClick={() => onView(project)}
       className={cn(
         "w-full text-left rounded-sm border border-l-4 bg-white p-3 shadow-sm hover:shadow-md transition-all",
-        PRIORITY_BORDERS[priority] || "border-l-blue-400"
+        PRIORITY_BORDERS[priority] || "border-l-blue-400",
       )}
     >
       <div className="flex items-start gap-2">
@@ -105,12 +102,23 @@ function ProjectCard({ project, onView }: { project: Project; onView: (p: Projec
 
       <div className="flex items-center justify-between mt-2">
         {daysLeft !== null && (
-          <span className={cn("text-[10px] font-medium", daysLeft < 0 ? "text-red-500" : daysLeft <= 7 ? "text-amber-500" : "text-muted-foreground")}>
+          <span
+            className={cn(
+              "text-[10px] font-medium",
+              daysLeft < 0
+                ? "text-red-500"
+                : daysLeft <= 7
+                  ? "text-amber-500"
+                  : "text-muted-foreground",
+            )}
+          >
             {daysLeft < 0 ? "Overdue" : `${daysLeft}d left`}
           </span>
         )}
         {project.members && project.members.length > 0 && (
-          <span className="text-[10px] text-muted-foreground">{project.members.length} member{project.members.length > 1 ? "s" : ""}</span>
+          <span className="text-[10px] text-muted-foreground">
+            {project.members.length} member{project.members.length > 1 ? "s" : ""}
+          </span>
         )}
       </div>
     </button>
@@ -124,7 +132,10 @@ export default function ProjectsBoard({ projects, onView, onEdit }: BoardProps) 
         const colProjects = projects.filter(col.filter);
         const Icon = col.icon;
         return (
-          <div key={col.id} className={cn("flex flex-col rounded-sm border-t-4", col.color, col.bgColor)}>
+          <div
+            key={col.id}
+            className={cn("flex flex-col rounded-sm border-t-4", col.color, col.bgColor)}
+          >
             <div className="flex items-center justify-between px-3 py-3 border-b">
               <div className="flex items-center gap-2">
                 <Icon className="size-4 text-muted-foreground" />

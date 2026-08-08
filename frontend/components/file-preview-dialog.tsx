@@ -1,16 +1,35 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-  FileIcon, DownloadIcon, LockIcon, UnlockIcon, HistoryIcon,
-  Trash2Icon, RotateCcwIcon, CopyIcon, Share2Icon, FileTextIcon,
-  AlertCircleIcon, Loader2Icon, ImageIcon, FilmIcon, MusicIcon,
-  FileArchiveIcon, FileSpreadsheetIcon, FileTypeIcon, FolderIcon,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertCircleIcon,
+  CopyIcon,
+  DownloadIcon,
+  FileArchiveIcon,
+  FileIcon,
+  FileSpreadsheetIcon,
+  FileTextIcon,
+  FileTypeIcon,
+  FilmIcon,
+  FolderIcon,
+  HistoryIcon,
+  ImageIcon,
+  Loader2Icon,
+  LockIcon,
+  MusicIcon,
+  RotateCcwIcon,
+  Share2Icon,
+  Trash2Icon,
+  UnlockIcon,
 } from "@/lib/icons";
 
 type FileItem = {
@@ -49,10 +68,12 @@ function formatSize(bytes: number) {
 }
 
 function isPreviewable(mimeType: string) {
-  return /^(image|text|video|audio)\//.test(mimeType)
-    || mimeType.includes("pdf")
-    || mimeType === "application/json"
-    || mimeType === "application/xml";
+  return (
+    /^(image|text|video|audio)\//.test(mimeType) ||
+    mimeType.includes("pdf") ||
+    mimeType === "application/json" ||
+    mimeType === "application/xml"
+  );
 }
 
 const FILE_ICONS: Record<string, React.ReactNode> = {
@@ -73,14 +94,26 @@ function getFileIcon(mimeType: string) {
   if (mimeType.startsWith("video/")) return FILE_ICONS.video;
   if (mimeType.startsWith("audio/")) return FILE_ICONS.audio;
   if (mimeType.includes("pdf")) return FILE_ICONS.pdf;
-  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar")) return FILE_ICONS.archive;
+  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar"))
+    return FILE_ICONS.archive;
   if (mimeType.includes("sheet") || mimeType.includes("excel")) return FILE_ICONS.spreadsheet;
   if (mimeType.includes("document") || mimeType.includes("word")) return FILE_ICONS.document;
   if (mimeType.startsWith("text/")) return FILE_ICONS.text;
   return FILE_ICONS.file;
 }
 
-export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, onRestore, onDuplicate, onLockToggle, onShare, trashed }: FilePreviewDialogProps) {
+export function FilePreviewDialog({
+  file,
+  open,
+  onOpenChange,
+  orgId,
+  onDelete,
+  onRestore,
+  onDuplicate,
+  onLockToggle,
+  onShare,
+  trashed,
+}: FilePreviewDialogProps) {
   const [versions, setVersions] = useState<any[]>([]);
   const [showVersions, setShowVersions] = useState(false);
   const [loadingVersions, setLoadingVersions] = useState(false);
@@ -111,7 +144,12 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
   const downloadUrl = `/api/files/${file.id}?download=true`;
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onOpenChange(false); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onOpenChange(false);
+      }}
+    >
       <DialogContent className="max-w-screen-xl w-full min-w-[95vw] max-h-[95vh] h-[90vh] p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
           <DialogTitle className="flex items-center gap-2 text-lg">
@@ -119,7 +157,9 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
             <span className="truncate max-w-[60vw]">{file.originalName}</span>
             {file.isLocked && <LockIcon className="size-4 text-warning" />}
             {file.currentVersion && file.currentVersion > 1 && (
-              <Badge variant="outline" className="text-xs">v{file.currentVersion}</Badge>
+              <Badge variant="outline" className="text-xs">
+                v{file.currentVersion}
+              </Badge>
             )}
           </DialogTitle>
           <DialogDescription className="flex flex-wrap items-center gap-2 mt-1">
@@ -141,7 +181,9 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
           {file.tags && file.tags.length > 0 && (
             <div className="flex gap-1 mt-1 flex-wrap">
               {file.tags.map((tag, i) => (
-                <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
+                <Badge key={i} variant="secondary" className="text-xs">
+                  {tag}
+                </Badge>
               ))}
             </div>
           )}
@@ -161,7 +203,11 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
                   </audio>
                 </div>
               ) : (
-                <iframe src={previewUrl} className="w-full h-full border rounded-sm" title={file.originalName} />
+                <iframe
+                  src={previewUrl}
+                  className="w-full h-full border rounded-sm"
+                  title={file.originalName}
+                />
               )
             ) : (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
@@ -184,7 +230,9 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
                     <div className="font-medium">v{v.versionNumber}</div>
                     <div className="text-muted-foreground">{formatSize(v.size)}</div>
                     {v.comment && <div className="text-muted-foreground mt-1">"{v.comment}"</div>}
-                    <div className="text-muted-foreground mt-1">{new Date(v.createdAt).toLocaleDateString()}</div>
+                    <div className="text-muted-foreground mt-1">
+                      {new Date(v.createdAt).toLocaleDateString()}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -205,8 +253,20 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
                 </Button>
               )}
               {onLockToggle && (
-                <Button variant="outline" size="sm" onClick={() => onLockToggle(file.id, !!file.isLocked)}>
-                  {file.isLocked ? <><UnlockIcon className="mr-1" /> Unlock</> : <><LockIcon className="mr-1 size-4" /> Lock</>}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onLockToggle(file.id, !!file.isLocked)}
+                >
+                  {file.isLocked ? (
+                    <>
+                      <UnlockIcon className="mr-1" /> Unlock
+                    </>
+                  ) : (
+                    <>
+                      <LockIcon className="mr-1 size-4" /> Lock
+                    </>
+                  )}
                 </Button>
               )}
               {onShare && (
@@ -218,7 +278,12 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
                 <HistoryIcon className="mr-1" /> Versions
               </Button>
               {onDelete && (
-                <Button variant="destructive" size="sm" className="ml-auto" onClick={() => onDelete(file.id)}>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="ml-auto"
+                  onClick={() => onDelete(file.id)}
+                >
                   <Trash2Icon className="mr-1 size-4" /> Delete
                 </Button>
               )}
@@ -226,7 +291,12 @@ export function FilePreviewDialog({ file, open, onOpenChange, orgId, onDelete, o
           )}
 
           {trashed && onRestore && (
-            <Button variant="outline" size="sm" className="ml-auto" onClick={() => onRestore(file.id)}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto"
+              onClick={() => onRestore(file.id)}
+            >
               <RotateCcwIcon className="mr-1 size-4" /> Restore
             </Button>
           )}

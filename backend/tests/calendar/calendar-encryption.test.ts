@@ -1,7 +1,12 @@
-import { encryptToken, decryptToken, isTokenEncrypted } from "../../src/lib/security/token-encryption";
+import {
+  decryptToken,
+  encryptToken,
+  isTokenEncrypted,
+} from "../../src/lib/security/token-encryption";
 
 // Mock environment variable
-process.env.CALENDAR_TOKEN_ENCRYPTION_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+process.env.CALENDAR_TOKEN_ENCRYPTION_KEY =
+  "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
 describe("Token Encryption", () => {
   describe("encryptToken", () => {

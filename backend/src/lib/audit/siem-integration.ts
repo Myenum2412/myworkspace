@@ -1,5 +1,5 @@
+import { AuditLog, type IAuditLog } from "../db/models/AuditLog.js";
 import { logger } from "../logger/index.js";
-import { AuditLog, IAuditLog } from "../db/models/AuditLog.js";
 
 /**
  * SIEM (Security Information and Event Management) Integration
@@ -189,10 +189,13 @@ async function flushEvents(): Promise<void> {
 
   // Always log to structured logger for SIEM collection
   for (const event of events) {
-    logger.info({
-      siem: true,
-      ...event,
-    }, `SIEM: ${event.action}`);
+    logger.info(
+      {
+        siem: true,
+        ...event,
+      },
+      `SIEM: ${event.action}`,
+    );
   }
 }
 

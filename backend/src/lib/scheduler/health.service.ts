@@ -1,7 +1,7 @@
-import { schedulerService } from "./scheduler.service.js";
 import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
-import { SchedulerHealth } from "./types.js";
+import { schedulerService } from "./scheduler.service.js";
+import type { SchedulerHealth } from "./types.js";
 
 class SchedulerHealthService {
   private checkInterval: ReturnType<typeof setInterval> | null = null;
@@ -44,13 +44,16 @@ class SchedulerHealthService {
         this.consecutiveFailures = 0;
       } else {
         this.consecutiveFailures++;
-        logger.warn({ health, consecutiveFailures: this.consecutiveFailures }, "Scheduler health degraded");
+        logger.warn(
+          { health, consecutiveFailures: this.consecutiveFailures },
+          "Scheduler health degraded",
+        );
       }
 
       if (this.consecutiveFailures >= this.MAX_CONSECUTIVE_FAILURES) {
         logger.error(
           { consecutiveFailures: this.consecutiveFailures, health },
-          "Scheduler unhealthy - attempting recovery"
+          "Scheduler unhealthy - attempting recovery",
         );
         await this.attemptRecovery();
       }

@@ -1,15 +1,15 @@
-"use client"
+"use client";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Calendar, FileText, Tag, User, CheckCircle2, XCircle } from "@/lib/icons";
+import { Calendar, CheckCircle2, Clock, FileText, Tag, User, XCircle } from "@/lib/icons";
 
 interface TimeEntry {
   id: string;
@@ -32,13 +32,23 @@ type TimeEntryViewDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: string }>; label: string; value?: string | number | null | boolean }) {
+function Field({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon?: React.FC<{ className?: string }>;
+  label: string;
+  value?: string | number | null | boolean;
+}) {
   const displayValue = typeof value === "boolean" ? (value ? "Yes" : "No") : (value ?? "\u2014");
   return (
     <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
       {Icon && <Icon className="size-4 text-muted-foreground shrink-0 mt-0.5" />}
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          {label}
+        </p>
         <p className="text-sm font-medium mt-0.5 break-words">{displayValue}</p>
       </div>
     </div>
@@ -74,11 +84,31 @@ export function TimeEntryViewDialog({ entry, open, onOpenChange }: TimeEntryView
             <Field icon={FileText} label="Description" value={entry.description} />
             <Field icon={Tag} label="Project" value={entry.projectName} />
             <Field icon={Calendar} label="Date" value={new Date(entry.date).toLocaleDateString()} />
-            <Field icon={Clock} label="Time Range" value={entry.startTime && entry.endTime ? `${entry.startTime} - ${entry.endTime}` : null} />
-            <Field icon={Clock} label="Duration" value={`${Math.floor(entry.duration / 60)}h ${entry.duration % 60}m`} />
+            <Field
+              icon={Clock}
+              label="Time Range"
+              value={
+                entry.startTime && entry.endTime ? `${entry.startTime} - ${entry.endTime}` : null
+              }
+            />
+            <Field
+              icon={Clock}
+              label="Duration"
+              value={`${Math.floor(entry.duration / 60)}h ${entry.duration % 60}m`}
+            />
             <Field icon={User} label="User ID" value={entry.userId} />
             <Field icon={Tag} label="Billable" value={entry.billable} />
-            <Field icon={entry.status === "approved" ? CheckCircle2 : entry.status === "rejected" ? XCircle : Clock} label="Status" value={entry.status} />
+            <Field
+              icon={
+                entry.status === "approved"
+                  ? CheckCircle2
+                  : entry.status === "rejected"
+                    ? XCircle
+                    : Clock
+              }
+              label="Status"
+              value={entry.status}
+            />
           </div>
           {entry.createdAt && (
             <p className="text-[11px] text-muted-foreground pt-2 border-t">
@@ -88,7 +118,9 @@ export function TimeEntryViewDialog({ entry, open, onOpenChange }: TimeEntryView
         </div>
 
         <DialogFooter className="shrink-0 border-t px-4 sm:px-6 py-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="touch-target">Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="touch-target">
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

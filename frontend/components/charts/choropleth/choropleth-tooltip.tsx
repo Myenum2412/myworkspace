@@ -12,19 +12,13 @@ import {
 
 export interface ChoroplethTooltipProps {
   /** Custom content renderer for feature tooltips */
-  content?: (props: {
-    feature: ChoroplethFeature;
-    index: number;
-  }) => React.ReactNode;
+  content?: (props: { feature: ChoroplethFeature; index: number }) => React.ReactNode;
   /** Value formatter function */
   formatValue?: (value: number) => string;
   /** Get the display name for a feature. Default: uses feature.properties.name */
   getFeatureName?: (feature: ChoroplethFeature, index: number) => string;
   /** Get the value for a feature (for display in tooltip) */
-  getFeatureValue?: (
-    feature: ChoroplethFeature,
-    index: number
-  ) => number | undefined;
+  getFeatureValue?: (feature: ChoroplethFeature, index: number) => number | undefined;
   /** Label for the value row. Default: "Value" */
   valueLabel?: string;
   /** Custom class name */

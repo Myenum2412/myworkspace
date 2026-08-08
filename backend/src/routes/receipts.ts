@@ -1,9 +1,9 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
-import { isAdminRole } from "../lib/rbac/index.js";
-import { Receipt, RECEIPT_STATUSES } from "../lib/db/models/Receipt.js";
+import { type Response, Router } from "express";
 import { Counter } from "../lib/db/models/Counter.js";
+import { RECEIPT_STATUSES, Receipt } from "../lib/db/models/Receipt.js";
+import { isAdminRole } from "../lib/rbac/index.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
 
 const router = Router();
 router.use(authenticate);
@@ -12,7 +12,7 @@ async function nextReceiptNumber(orgId: string): Promise<string> {
   const counter = await Counter.findByIdAndUpdate(
     `receipt_${orgId}`,
     { $inc: { seq: 1 } },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
   return `RCPT-${String(counter.seq).padStart(5, "0")}`;
 }
@@ -30,7 +30,14 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   const offsetNum = parseInt(offset as string) || 0;
 
   const [docs, total] = await Promise.all([
-    Receipt.find(filter).sort({ createdAt: -1 }).skip(offsetNum).limit(limitNum).select("orgId receiptNumber invoiceId invoiceNumber customerName customerEmail amount currency paymentMethod status notes paidAt createdAt updatedAt").lean(),
+    Receipt.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(offsetNum)
+      .limit(limitNum)
+      .select(
+        "orgId receiptNumber invoiceId invoiceNumber customerName customerEmail amount currency paymentMethod status notes paidAt createdAt updatedAt",
+      )
+      .lean(),
     Receipt.countDocuments(filter),
   ]);
 
@@ -54,7 +61,17 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   const orgId = req.user!.orgId;
   if (!orgId) throw new AppError(400, "Organization ID required");
 
-  const { invoiceId, invoiceNumber, customerName, customerEmail, amount, currency, paymentMethod, paidAt, notes } = req.body;
+  const {
+    invoiceId,
+    invoiceNumber,
+    customerName,
+    customerEmail,
+    amount,
+    currency,
+    paymentMethod,
+    paidAt,
+    notes,
+  } = req.body;
   if (!customerName || !amount) {
     throw new AppError(400, "customerName and amount are required");
   }
@@ -77,12 +94,15 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     createdAt: new Date(),
   });
 
-  res.status(201).json({ success: true, data: { ...receipt.toObject(), id: receipt._id.toString() } });
+  res
+    .status(201)
+    .json({ success: true, data: { ...receipt.toObject(), id: receipt._id.toString() } });
 });
 
 // Update receipt status
 router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
-  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update receipt status");
+  if (!isAdminRole(req.user!.role))
+    throw new AppError(403, "Only admins can update receipt status");
   const { status } = req.body;
   if (!status || !RECEIPT_STATUSES.includes(status)) {
     throw new AppError(400, `Invalid status. Must be one of: ${RECEIPT_STATUSES.join(", ")}`);
@@ -106,7 +126,8 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
 // Update receipt
 router.put("/:id", async (req: AuthRequest, res: Response) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update receipts");
-  const { customerName, customerEmail, amount, currency, paymentMethod, paidAt, notes, status } = req.body;
+  const { customerName, customerEmail, amount, currency, paymentMethod, paidAt, notes, status } =
+    req.body;
   const receipt = await Receipt.findOne({ _id: req.params.id, orgId: req.user!.orgId });
   if (!receipt) throw new AppError(404, "Receipt not found");
 

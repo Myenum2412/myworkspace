@@ -1,13 +1,18 @@
-import http from "http";
-import { Server as IOServer } from "socket.io";
 import type { Server } from "http";
+import http from "http";
 import type { AddressInfo } from "net";
+import type { Server as IOServer } from "socket.io";
 
 // Boots the real Express app (backend/src/app.ts) and attaches a Socket.IO
 // server identical to index.ts's socketIOManager.initialize() wiring, sharing
 // the same HTTP server so supertest + socket.io share one port. Returns the
 // server, the underlying http.Server, and a `port`.
-export async function startAppWithSockets(): Promise<{ app: any; httpServer: Server; io: IOServer; port: number }> {
+export async function startAppWithSockets(): Promise<{
+  app: any;
+  httpServer: Server;
+  io: IOServer;
+  port: number;
+}> {
   process.env.__TEST_DISABLE_RATE_LIMIT__ = "1"; // tests opt in explicitly
   const appModule = await import("../../../src/app.js");
   const app = appModule.default || appModule;
@@ -21,7 +26,9 @@ export async function startAppWithSockets(): Promise<{ app: any; httpServer: Ser
   try {
     const wsServer = await import("../../../src/lib/ws/server.js");
     if (wsServer?.wsManager?.initialize) wsServer.wsManager.initialize(httpServer);
-  } catch { /* if ws module isn't loadable in test env, continue with io-only */ }
+  } catch {
+    /* if ws module isn't loadable in test env, continue with io-only */
+  }
 
   await new Promise<void>((resolve) => httpServer.listen(0, () => resolve()));
   const addr = httpServer.address() as AddressInfo;

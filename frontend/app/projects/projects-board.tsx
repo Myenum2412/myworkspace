@@ -1,1 +1,1 @@
-export { default } from "./projects-board.client"
+export { default } from "./projects-board.client";

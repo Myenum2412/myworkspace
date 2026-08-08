@@ -1,25 +1,38 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { FolderKanbanIcon, PlusIcon, ChevronLeft, ChevronRight } from "@/lib/icons";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useCallback, useMemo, useState } from "react";
+import { createProjectAction } from "@/actions/projects";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { createProjectAction } from "@/actions/projects";
+import { Textarea } from "@/components/ui/textarea";
+import { ChevronLeft, ChevronRight, FolderKanbanIcon, PlusIcon } from "@/lib/icons";
 
 type StaffMember = {
   _id: string;
@@ -41,7 +54,16 @@ type Project = {
   createdAt: string;
 };
 
-const PROJECT_COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"];
+const PROJECT_COLORS = [
+  "#3b82f6",
+  "#ef4444",
+  "#10b981",
+  "#f59e0b",
+  "#8b5cf6",
+  "#ec4899",
+  "#06b6d4",
+  "#84cc16",
+];
 const priorityStyles: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
   medium: "bg-gray-200 text-gray-800",
@@ -122,7 +144,13 @@ export default function StaffProjects({
             <FolderKanbanIcon className="size-4" />
             Projects ({projects.length})
           </CardTitle>
-          <Button size="sm" onClick={() => { resetForm(); setOpen(true); }}>
+          <Button
+            size="sm"
+            onClick={() => {
+              resetForm();
+              setOpen(true);
+            }}
+          >
             <PlusIcon className="mr-1" />
             Add Project
           </Button>
@@ -149,16 +177,23 @@ export default function StaffProjects({
                 paginated.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell>
-                      <span className="block size-4 rounded-full" style={{ backgroundColor: p.color }} />
+                      <span
+                        className="block size-4 rounded-full"
+                        style={{ backgroundColor: p.color }}
+                      />
                     </TableCell>
                     <TableCell className="font-medium">{p.name}</TableCell>
                     <TableCell>
-                      <Badge className={`font-medium ${priorityStyles[p.priority] || priorityStyles.medium}`}>
+                      <Badge
+                        className={`font-medium ${priorityStyles[p.priority] || priorityStyles.medium}`}
+                      >
                         {p.priority}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className={`font-medium ${statusStyles[p.status] || statusStyles.Active}`}>
+                      <Badge
+                        className={`font-medium ${statusStyles[p.status] || statusStyles.Active}`}
+                      >
                         {p.status}
                       </Badge>
                     </TableCell>
@@ -178,7 +213,9 @@ export default function StaffProjects({
             </span>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Rows per page:
+                </span>
                 <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
                   <SelectTrigger className="h-8 w-[70px]">
                     <SelectValue />
@@ -224,21 +261,39 @@ export default function StaffProjects({
           <div className="grid gap-4 py-2">
             <div className="grid gap-2">
               <Label htmlFor="name">Project Name</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter project name" />
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter project name"
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="desc">Description</Label>
-              <Textarea id="desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description" rows={3} />
+              <Textarea
+                id="desc"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Brief description"
+                rows={3}
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="deadline">Deadline</Label>
-                <Input id="deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+                <Input
+                  id="deadline"
+                  type="date"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="priority">Priority</Label>
                 <Select value={priority} onValueChange={setPriority}>
-                  <SelectTrigger id="priority"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="priority">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="low">Low</SelectItem>
                     <SelectItem value="medium">Medium</SelectItem>
@@ -266,7 +321,10 @@ export default function StaffProjects({
               <Label>Team Members</Label>
               <div className="max-h-40 overflow-y-auto border rounded-md p-2 space-y-1">
                 {members.map((m) => (
-                  <label key={m._id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted rounded px-1 py-0.5">
+                  <label
+                    key={m._id}
+                    className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted rounded px-1 py-0.5"
+                  >
                     <Checkbox
                       checked={selectedMembers.has(m._id)}
                       onCheckedChange={(chk) => {
@@ -281,14 +339,22 @@ export default function StaffProjects({
                   </label>
                 ))}
                 {members.length === 0 && (
-                  <p className="text-xs text-muted-foreground py-2 text-center">No members available</p>
+                  <p className="text-xs text-muted-foreground py-2 text-center">
+                    No members available
+                  </p>
                 )}
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)} className="w-32 h-10">Cancel</Button>
-            <Button onClick={handleCreate} disabled={!name.trim() || creating} className="w-32 h-10">
+            <Button variant="outline" onClick={() => setOpen(false)} className="w-32 h-10">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreate}
+              disabled={!name.trim() || creating}
+              className="w-32 h-10"
+            >
               {creating ? "Creating..." : "Create Project"}
             </Button>
           </DialogFooter>

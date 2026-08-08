@@ -1,30 +1,30 @@
-import { AppError } from "../middleware/error.js";
+import path from "node:path";
 import { fileTypeFromBuffer } from "file-type";
 import { logger } from "../lib/logger/index.js";
-import path from "node:path";
+import { AppError } from "../middleware/error.js";
 
 const EXTENSION_TO_MIME: Record<string, string[]> = {
-  '.pdf': ['application/pdf'],
-  '.doc': ['application/msword'],
-  '.docx': ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-  '.xls': ['application/vnd.ms-excel'],
-  '.xlsx': ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-  '.png': ['image/png'],
-  '.jpg': ['image/jpeg'],
-  '.jpeg': ['image/jpeg'],
-  '.gif': ['image/gif'],
-  '.svg': ['image/svg+xml'],
-  '.webp': ['image/webp'],
-  '.mp4': ['video/mp4'],
-  '.mp3': ['audio/mpeg'],
-  '.zip': ['application/zip'],
-  '.gz': ['application/gzip'],
-  '.txt': ['text/plain'],
-  '.csv': ['text/csv'],
-  '.json': ['application/json'],
-  '.ts': ['application/typescript', 'text/typescript'],
-  '.tsx': ['application/typescript', 'text/typescript'],
-  '.js': ['application/javascript', 'text/javascript'],
+  ".pdf": ["application/pdf"],
+  ".doc": ["application/msword"],
+  ".docx": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+  ".xls": ["application/vnd.ms-excel"],
+  ".xlsx": ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+  ".png": ["image/png"],
+  ".jpg": ["image/jpeg"],
+  ".jpeg": ["image/jpeg"],
+  ".gif": ["image/gif"],
+  ".svg": ["image/svg+xml"],
+  ".webp": ["image/webp"],
+  ".mp4": ["video/mp4"],
+  ".mp3": ["audio/mpeg"],
+  ".zip": ["application/zip"],
+  ".gz": ["application/gzip"],
+  ".txt": ["text/plain"],
+  ".csv": ["text/csv"],
+  ".json": ["application/json"],
+  ".ts": ["application/typescript", "text/typescript"],
+  ".tsx": ["application/typescript", "text/typescript"],
+  ".js": ["application/javascript", "text/javascript"],
 };
 
 export function validateFileExtension(filename: string, detectedMimeType: string): boolean {
@@ -36,10 +36,26 @@ export function validateFileExtension(filename: string, detectedMimeType: string
 }
 
 const COMMON_PASSWORDS = new Set([
-  "password", "password123", "password1234", "12345678", "123456789",
-  "qwerty123", "abc123456", "letmein", "welcome", "admin123",
-  "monkey123", "dragon123", "master123", "hello123", "shadow123",
-  "sunshine", "trustno1", "iloveyou", "princess", "football",
+  "password",
+  "password123",
+  "password1234",
+  "12345678",
+  "123456789",
+  "qwerty123",
+  "abc123456",
+  "letmein",
+  "welcome",
+  "admin123",
+  "monkey123",
+  "dragon123",
+  "master123",
+  "hello123",
+  "shadow123",
+  "sunshine",
+  "trustno1",
+  "iloveyou",
+  "princess",
+  "football",
 ]);
 
 const PASSWORD_MIN_LENGTH = 8;
@@ -121,19 +137,19 @@ export function isAllowedMimeType(mimeType: string): boolean {
 }
 
 const MAGIC_BYTE_CHECKERS: Array<{ bytes: number[]; offset: number; mime: string }> = [
-  { bytes: [0xFF, 0xD8, 0xFF], offset: 0, mime: "image/jpeg" },
-  { bytes: [0x89, 0x50, 0x4E, 0x47], offset: 0, mime: "image/png" },
+  { bytes: [0xff, 0xd8, 0xff], offset: 0, mime: "image/jpeg" },
+  { bytes: [0x89, 0x50, 0x4e, 0x47], offset: 0, mime: "image/png" },
   { bytes: [0x47, 0x49, 0x46], offset: 0, mime: "image/gif" },
   { bytes: [0x25, 0x50, 0x44, 0x46], offset: 0, mime: "application/pdf" },
-  { bytes: [0x50, 0x4B, 0x03, 0x04], offset: 0, mime: "application/zip" },
+  { bytes: [0x50, 0x4b, 0x03, 0x04], offset: 0, mime: "application/zip" },
   { bytes: [0x52, 0x61, 0x72, 0x21], offset: 0, mime: "application/x-rar-compressed" },
-  { bytes: [0x1F, 0x8B], offset: 0, mime: "application/gzip" },
+  { bytes: [0x1f, 0x8b], offset: 0, mime: "application/gzip" },
   { bytes: [0x25, 0x21], offset: 0, mime: "application/postscript" },
   { bytes: [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70], offset: 0, mime: "video/mp4" },
   { bytes: [0x52, 0x49, 0x46, 0x46], offset: 0, mime: "image/webp" },
-  { bytes: [0x42, 0x4D], offset: 0, mime: "image/bmp" },
-  { bytes: [0x49, 0x49, 0x2A, 0x00], offset: 0, mime: "image/tiff" },
-  { bytes: [0x4D, 0x4D, 0x00, 0x2A], offset: 0, mime: "image/tiff" },
+  { bytes: [0x42, 0x4d], offset: 0, mime: "image/bmp" },
+  { bytes: [0x49, 0x49, 0x2a, 0x00], offset: 0, mime: "image/tiff" },
+  { bytes: [0x4d, 0x4d, 0x00, 0x2a], offset: 0, mime: "image/tiff" },
 ];
 
 export function detectMimeTypeFromBuffer(buffer: Buffer): string | null {
@@ -159,7 +175,10 @@ export function detectMimeTypeFromBuffer(buffer: Buffer): string | null {
  *
  * @returns The detected MIME type (falls back to declared on miss).
  */
-export async function validateFileMagicBytesAsync(buffer: Buffer, declaredMime: string): Promise<string> {
+export async function validateFileMagicBytesAsync(
+  buffer: Buffer,
+  declaredMime: string,
+): Promise<string> {
   try {
     const detected = await fileTypeFromBuffer(buffer);
     if (detected) {

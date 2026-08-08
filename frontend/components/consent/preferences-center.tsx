@@ -1,20 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, Cookie, Check, RotateCcw, Trash2 } from "@/lib/icons";
-import { useConsentStore, ConsentCategories } from "@/lib/consent/store";
-import { getConsentHistory } from "@/lib/consent/services";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+import { getConsentHistory } from "@/lib/consent/services";
+import { type ConsentCategories, useConsentStore } from "@/lib/consent/store";
+import { Check, Cookie, RotateCcw, Shield, Trash2 } from "@/lib/icons";
 
 const CATEGORIES: { key: keyof ConsentCategories; title: string; description: string }[] = [
-  { key: "essential", title: "Essential", description: "Required for the website to function. Includes authentication, security, and session management." },
-  { key: "functional", title: "Functional", description: "Enables enhanced functionality like live chat, support widgets, and personalization." },
-  { key: "analytics", title: "Analytics", description: "Helps us understand how visitors interact with the platform through anonymous usage data." },
-  { key: "performance", title: "Performance", description: "Tracks performance metrics to improve speed, reliability, and user experience." },
-  { key: "personalization", title: "Personalization", description: "Remembers your preferences, language, and region for a tailored experience." },
-  { key: "marketing", title: "Marketing", description: "Used for marketing campaigns, retargeting, and advertising personalization." },
+  {
+    key: "essential",
+    title: "Essential",
+    description:
+      "Required for the website to function. Includes authentication, security, and session management.",
+  },
+  {
+    key: "functional",
+    title: "Functional",
+    description:
+      "Enables enhanced functionality like live chat, support widgets, and personalization.",
+  },
+  {
+    key: "analytics",
+    title: "Analytics",
+    description:
+      "Helps us understand how visitors interact with the platform through anonymous usage data.",
+  },
+  {
+    key: "performance",
+    title: "Performance",
+    description: "Tracks performance metrics to improve speed, reliability, and user experience.",
+  },
+  {
+    key: "personalization",
+    title: "Personalization",
+    description: "Remembers your preferences, language, and region for a tailored experience.",
+  },
+  {
+    key: "marketing",
+    title: "Marketing",
+    description: "Used for marketing campaigns, retargeting, and advertising personalization.",
+  },
 ];
 
 export function PreferencesCenter() {
@@ -25,14 +52,17 @@ export function PreferencesCenter() {
   const [updating, setUpdating] = useState(false);
   const [localCats, setLocalCats] = useState<ConsentCategories | null>(null);
 
-  const categories = localCats || consent?.categories || {
-    essential: true,
-    functional: false,
-    analytics: false,
-    performance: false,
-    personalization: false,
-    marketing: false,
-  } as ConsentCategories;
+  const categories =
+    localCats ||
+    consent?.categories ||
+    ({
+      essential: true,
+      functional: false,
+      analytics: false,
+      performance: false,
+      personalization: false,
+      marketing: false,
+    } as ConsentCategories);
 
   const handleToggle = (key: keyof ConsentCategories) => {
     if (key === "essential") return;
@@ -61,9 +91,14 @@ export function PreferencesCenter() {
     }
   };
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString("en-US", {
-    year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
-  });
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -73,7 +108,9 @@ export function PreferencesCenter() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-foreground">Cookie Preferences</h1>
-          <p className="text-sm text-muted-foreground">Manage how we use cookies and tracking technologies</p>
+          <p className="text-sm text-muted-foreground">
+            Manage how we use cookies and tracking technologies
+          </p>
         </div>
       </div>
 
@@ -81,10 +118,15 @@ export function PreferencesCenter() {
         {CATEGORIES.map(({ key, title, description }) => (
           <div key={key} className="flex items-start gap-4 p-4">
             <div className="flex-1 min-w-0">
-              <label htmlFor={`pref-${key}`} className="text-sm font-medium text-foreground cursor-pointer">
+              <label
+                htmlFor={`pref-${key}`}
+                className="text-sm font-medium text-foreground cursor-pointer"
+              >
                 {title}
                 {key === "essential" && (
-                  <span className="ml-2 text-xs text-muted-foreground font-normal">(Always active)</span>
+                  <span className="ml-2 text-xs text-muted-foreground font-normal">
+                    (Always active)
+                  </span>
                 )}
               </label>
               <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
@@ -137,12 +179,21 @@ export function PreferencesCenter() {
               <div key={h.id} className="p-3 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-foreground">Version {h.consentVersion}</span>
-                  <span className="text-xs text-muted-foreground">{formatDate(h.consentTimestamp)}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatDate(h.consentTimestamp)}
+                  </span>
                 </div>
                 <div className="mt-1 flex flex-wrap gap-1">
-                  {Object.entries(h.categories || {}).filter(([, v]) => v).map(([k]) => (
-                    <span key={k} className="px-1.5 py-0.5 bg-primary/5 text-primary text-[10px] rounded">{k}</span>
-                  ))}
+                  {Object.entries(h.categories || {})
+                    .filter(([, v]) => v)
+                    .map(([k]) => (
+                      <span
+                        key={k}
+                        className="px-1.5 py-0.5 bg-primary/5 text-primary text-[10px] rounded"
+                      >
+                        {k}
+                      </span>
+                    ))}
                 </div>
               </div>
             ))}

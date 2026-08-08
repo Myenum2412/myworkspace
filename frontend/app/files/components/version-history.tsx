@@ -1,27 +1,27 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { formatSize, type FileItem, type FileVersion } from "@/lib/file-system/types";
-import * as api from "@/lib/file-system/api";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import * as api from "@/lib/file-system/api";
+import { type FileItem, type FileVersion, formatSize } from "@/lib/file-system/types";
 import {
+  ClockIcon,
+  DownloadIcon,
+  HardDriveIcon,
   HistoryIcon,
   RotateCcwIcon,
-  DownloadIcon,
   UploadIcon,
   UserIcon,
-  ClockIcon,
-  HardDriveIcon,
 } from "@/lib/icons";
 
 interface VersionHistoryProps {
@@ -58,7 +58,8 @@ export function VersionHistory({ file, open, onOpenChange }: VersionHistoryProps
   }
 
   async function handleRollback(versionId: string, versionNumber: number) {
-    if (!confirm(`Restore version ${versionNumber}? This will create a new current version.`)) return;
+    if (!confirm(`Restore version ${versionNumber}? This will create a new current version.`))
+      return;
     setRollingBack(versionNumber);
     try {
       await api.rollbackVersion(file.id, versionId);
@@ -81,7 +82,7 @@ export function VersionHistory({ file, open, onOpenChange }: VersionHistoryProps
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-2 py-2">
-          {(!versions || versions.length === 0) ? (
+          {!versions || versions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-2">
               <HistoryIcon className="size-8 text-muted-foreground/20" />
               <p className="text-xs">No version history</p>
@@ -101,26 +102,50 @@ export function VersionHistory({ file, open, onOpenChange }: VersionHistoryProps
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">Version {version.versionNumber}</span>
                       {version.versionNumber === file.currentVersion && (
-                        <Badge variant="secondary" className="text-[9px]">Current</Badge>
+                        <Badge variant="secondary" className="text-[9px]">
+                          Current
+                        </Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
                       {version.uploaderName && (
-                        <span className="flex items-center gap-1"><UserIcon className="size-3" /> {version.uploaderName}</span>
+                        <span className="flex items-center gap-1">
+                          <UserIcon className="size-3" /> {version.uploaderName}
+                        </span>
                       )}
-                      <span className="flex items-center gap-1"><HardDriveIcon className="size-3" /> {formatSize(version.size)}</span>
-                      <span className="flex items-center gap-1"><ClockIcon className="size-3" /> {new Date(version.createdAt).toLocaleDateString()}</span>
+                      <span className="flex items-center gap-1">
+                        <HardDriveIcon className="size-3" /> {formatSize(version.size)}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <ClockIcon className="size-3" />{" "}
+                        {new Date(version.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
-                    {version.comment && <p className="text-xs text-muted-foreground mt-1 italic">{version.comment}</p>}
+                    {version.comment && (
+                      <p className="text-xs text-muted-foreground mt-1 italic">{version.comment}</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button variant="ghost" size="sm" className="p-0"
-                      onClick={() => window.open(`/api/files/${file.id}?version=${version.versionNumber}`, "_blank")}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="p-0"
+                      onClick={() =>
+                        window.open(
+                          `/api/files/${file.id}?version=${version.versionNumber}`,
+                          "_blank",
+                        )
+                      }
+                    >
                       <DownloadIcon className="size-3" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="p-0"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="p-0"
                       onClick={() => handleRollback(version.id, version.versionNumber)}
-                      disabled={rollingBack === version.versionNumber}>
+                      disabled={rollingBack === version.versionNumber}
+                    >
                       <RotateCcwIcon className="size-3" />
                     </Button>
                   </div>
@@ -142,7 +167,9 @@ export function VersionHistory({ file, open, onOpenChange }: VersionHistoryProps
               />
             </label>
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

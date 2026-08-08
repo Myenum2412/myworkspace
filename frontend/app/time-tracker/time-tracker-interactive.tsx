@@ -1,1 +1,1 @@
-export { default } from "./time-tracker-interactive.client"
+export { default } from "./time-tracker-interactive.client";

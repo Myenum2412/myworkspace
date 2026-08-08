@@ -1,5 +1,5 @@
-import { registerHandler } from "../lib/queue/consumer.js";
 import { logger } from "../lib/logger/index.js";
+import { registerHandler } from "../lib/queue/consumer.js";
 import { queueNotificationEmail } from "./email-queue.service.js";
 
 export function registerEmailQueueWorker(): void {

@@ -1,1 +1,1 @@
-export { AddEmployeePageInteractive } from "./page-interactive.client"
+export { AddEmployeePageInteractive } from "./page-interactive.client";

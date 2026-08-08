@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
+import { useEffect, useRef } from "react";
 import { useBootstrapStore } from "@/stores/bootstrap-store";
 
 const CRITICAL_QUERIES = [

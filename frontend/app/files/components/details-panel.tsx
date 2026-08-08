@@ -1,17 +1,33 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { formatSize, type FileItem } from "@/lib/file-system/types";
+import { useState } from "react";
 import * as api from "@/lib/file-system/api";
+import { useFileSystemStore } from "@/lib/file-system/store";
+import { type FileItem, formatSize } from "@/lib/file-system/types";
+import {
+  ActivityIcon,
+  ClockIcon,
+  HardDriveIcon,
+  HistoryIcon,
+  InfoIcon,
+  ShieldIcon,
+  TagIcon,
+  UserIcon,
+  XIcon,
+} from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { DriveTile } from "./drive-menu";
-import { XIcon, HistoryIcon, ActivityIcon, InfoIcon, UserIcon, ClockIcon, HardDriveIcon, ShieldIcon, TagIcon } from "@/lib/icons";
 
 type Tab = "details" | "activity" | "versions";
 
-function SectionLabel({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
+function SectionLabel({
+  icon: Icon,
+  children,
+}: {
+  icon: React.ElementType;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
       <Icon className="size-3.5" />
@@ -24,7 +40,9 @@ function Field({ label, value }: { label: string; value?: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-3 py-2">
       <span className="shrink-0 text-xs text-muted-foreground">{label}</span>
-      <span className="truncate text-right text-xs font-medium text-foreground">{value ?? <span className="text-muted-foreground/50">—</span>}</span>
+      <span className="truncate text-right text-xs font-medium text-foreground">
+        {value ?? <span className="text-muted-foreground/50">—</span>}
+      </span>
     </div>
   );
 }
@@ -70,7 +88,9 @@ export function DetailsPanel({ file, onClose }: { file: FileItem | null; onClose
               onClick={() => setTab(t.id)}
               className={cn(
                 "flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
-                tab === t.id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                tab === t.id
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <t.icon className="size-3.5" />
@@ -78,7 +98,10 @@ export function DetailsPanel({ file, onClose }: { file: FileItem | null; onClose
             </button>
           ))}
         </div>
-        <button onClick={onClose} className="grid size-7 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+        <button
+          onClick={onClose}
+          className="grid size-7 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
           <XIcon className="size-4" />
         </button>
       </div>
@@ -98,13 +121,23 @@ export function DetailsPanel({ file, onClose }: { file: FileItem | null; onClose
             <Field label="Size" value={formatSize(file.size)} />
             <Field label="Type" value={file.mimeType} />
             <Field label="Version" value={file.currentVersion ? `v${file.currentVersion}` : "v1"} />
-            <Field label="Modified" value={file.updatedAt ? new Date(file.updatedAt).toLocaleString() : "—"} />
-            <Field label="Created" value={file.createdAt ? new Date(file.createdAt).toLocaleString() : "—"} />
+            <Field
+              label="Modified"
+              value={file.updatedAt ? new Date(file.updatedAt).toLocaleString() : "—"}
+            />
+            <Field
+              label="Created"
+              value={file.createdAt ? new Date(file.createdAt).toLocaleString() : "—"}
+            />
             <div className="border-t border-border/60 pt-2">
               <SectionLabel icon={ShieldIcon}>Permissions</SectionLabel>
               <div className="mt-1 rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-                {file.isLocked ? `Locked${file.lockedBy ? ` by ${file.lockedBy}` : ""}` : "Available to you"}
-                {file.approvalStatus && file.approvalStatus !== "none" ? ` · Approval: ${file.approvalStatus}` : ""}
+                {file.isLocked
+                  ? `Locked${file.lockedBy ? ` by ${file.lockedBy}` : ""}`
+                  : "Available to you"}
+                {file.approvalStatus && file.approvalStatus !== "none"
+                  ? ` · Approval: ${file.approvalStatus}`
+                  : ""}
               </div>
             </div>
             {file.tags && file.tags.length > 0 && (
@@ -112,7 +145,12 @@ export function DetailsPanel({ file, onClose }: { file: FileItem | null; onClose
                 <SectionLabel icon={TagIcon}>Tags</SectionLabel>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {file.tags.map((t) => (
-                    <span key={t} className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">{t}</span>
+                    <span
+                      key={t}
+                      className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground"
+                    >
+                      {t}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -120,7 +158,9 @@ export function DetailsPanel({ file, onClose }: { file: FileItem | null; onClose
             {file.description && (
               <div className="border-t border-border/60 pt-2">
                 <SectionLabel icon={TagIcon}>Description</SectionLabel>
-                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{file.description}</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                  {file.description}
+                </p>
               </div>
             )}
           </div>
@@ -130,7 +170,9 @@ export function DetailsPanel({ file, onClose }: { file: FileItem | null; onClose
           <div className="mt-4 border-t border-border/60 pt-3">
             {activity.isLoading && <ActivitySkeleton />}
             {!activity.isLoading && (!activity.data || activity.data.length === 0) && (
-              <div className="py-8 text-center text-xs text-muted-foreground">No activity recorded</div>
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                No activity recorded
+              </div>
             )}
             <div className="relative ml-1.5 space-y-4 border-l-2 border-border/50 pl-4">
               {(activity.data || []).map((entry, i) => (
@@ -154,29 +196,42 @@ export function DetailsPanel({ file, onClose }: { file: FileItem | null; onClose
             </div>
             {versions.isLoading && <ActivitySkeleton />}
             {!versions.isLoading && (!versions.data || versions.data.length === 0) && (
-              <div className="py-8 text-center text-xs text-muted-foreground">No prior versions</div>
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                No prior versions
+              </div>
             )}
             <div className="mt-3 space-y-2">
-              {(versions.data || []).sort((a, b) => b.versionNumber - a.versionNumber).map((v) => (
-                <div key={v.id} className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-card px-3 py-2">
-                  <div className="grid size-7 shrink-0 place-items-center rounded-full bg-muted text-[10px] font-bold text-foreground">
-                    v{v.versionNumber}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="truncate text-xs font-medium text-foreground">Version {v.versionNumber}</span>
-                      {v.versionNumber === file.currentVersion && (
-                        <span className="rounded-full bg-primary/10 px-1.5 py-px text-[9px] font-semibold text-primary">current</span>
-                      )}
+              {(versions.data || [])
+                .sort((a, b) => b.versionNumber - a.versionNumber)
+                .map((v) => (
+                  <div
+                    key={v.id}
+                    className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-card px-3 py-2"
+                  >
+                    <div className="grid size-7 shrink-0 place-items-center rounded-full bg-muted text-[10px] font-bold text-foreground">
+                      v{v.versionNumber}
                     </div>
-                    <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                      <ClockIcon className="size-3" />
-                      {new Date(v.createdAt).toLocaleDateString()}
-                    </p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate text-xs font-medium text-foreground">
+                          Version {v.versionNumber}
+                        </span>
+                        {v.versionNumber === file.currentVersion && (
+                          <span className="rounded-full bg-primary/10 px-1.5 py-px text-[9px] font-semibold text-primary">
+                            current
+                          </span>
+                        )}
+                      </div>
+                      <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <ClockIcon className="size-3" />
+                        {new Date(v.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-[10px] text-muted-foreground">
+                      {formatSize(v.size)}
+                    </span>
                   </div>
-                  <span className="shrink-0 text-[10px] text-muted-foreground">{formatSize(v.size)}</span>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}
@@ -184,7 +239,6 @@ export function DetailsPanel({ file, onClose }: { file: FileItem | null; onClose
     </div>
   );
 }
-
 
 function ActivitySkeleton() {
   return (

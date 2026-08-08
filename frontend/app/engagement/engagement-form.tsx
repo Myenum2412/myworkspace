@@ -1,14 +1,14 @@
-"use client"
-import { useState, useEffect } from "react";
+"use client";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
-  SelectValue,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "@/lib/icons";
 
@@ -76,7 +76,10 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white"
+    >
       <fieldset className="border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Customer Details</legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -86,11 +89,20 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Customer Name *</Label>
-            <Input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Enter customer name" required />
+            <Input
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              placeholder="Enter customer name"
+              required
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Contact</Label>
-            <Input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Phone or email" />
+            <Input
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              placeholder="Phone or email"
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Source</Label>
@@ -100,7 +112,9 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
               </SelectTrigger>
               <SelectContent>
                 {SOURCES.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -113,14 +127,20 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
               </SelectTrigger>
               <SelectContent>
                 {employees.map((emp) => (
-                  <SelectItem key={emp.id} value={emp.name}>{emp.name}</SelectItem>
+                  <SelectItem key={emp.id} value={emp.name}>
+                    {emp.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Follow-up Date</Label>
-            <Input type="date" value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} />
+            <Input
+              type="date"
+              value={followUpDate}
+              onChange={(e) => setFollowUpDate(e.target.value)}
+            />
           </div>
         </div>
       </fieldset>
@@ -136,7 +156,9 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
               </SelectTrigger>
               <SelectContent>
                 {STATUS_OPTIONS.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -154,7 +176,9 @@ export function EngagementForm({ engagement, onSave, onCancel }: EngagementFormP
       </fieldset>
 
       <div className="flex justify-end gap-3 pt-2 border-t">
-        <Button type="button" variant="outline" onClick={onCancel} className="w-32 h-10">Cancel</Button>
+        <Button type="button" variant="outline" onClick={onCancel} className="w-32 h-10">
+          Cancel
+        </Button>
         <Button type="submit" disabled={saving || !customerName.trim()} className="w-32 h-10">
           {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
           {engagement ? "Update" : "Save"}

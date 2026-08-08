@@ -1,13 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import {
-  DownloadIcon,
-  MaximizeIcon,
-  MinimizeIcon,
-  BoxIcon,
-} from "@/lib/icons";
 import { Button } from "@/components/ui/button";
+import { BoxIcon, DownloadIcon, MaximizeIcon, MinimizeIcon } from "@/lib/icons";
 
 interface ModelViewerProps {
   src: string;
@@ -23,9 +18,15 @@ export function ModelViewer({ src, fileName, mimeType }: ModelViewerProps) {
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
     if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+      containerRef.current
+        .requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch(() => {});
     } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+      document
+        .exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch(() => {});
     }
   };
 
@@ -38,9 +39,18 @@ export function ModelViewer({ src, fileName, mimeType }: ModelViewerProps) {
         </div>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" className="p-0" onClick={toggleFullscreen}>
-            {isFullscreen ? <MinimizeIcon className="size-3.5" /> : <MaximizeIcon className="size-3.5" />}
+            {isFullscreen ? (
+              <MinimizeIcon className="size-3.5" />
+            ) : (
+              <MaximizeIcon className="size-3.5" />
+            )}
           </Button>
-          <Button variant="ghost" size="sm" className="p-0" onClick={() => window.open(src, "_blank")}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-0"
+            onClick={() => window.open(src, "_blank")}
+          >
             <DownloadIcon className="size-3.5" />
           </Button>
         </div>

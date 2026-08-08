@@ -1,10 +1,10 @@
-import request from "supertest";
 import type { Server } from "http";
+import request from "supertest";
 import { v4 as uuid } from "uuid";
 import app from "../../../src/app.js";
+import { Task } from "../../../src/lib/db/models/Task.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin, seedTask } from "../../__helpers__/fixtures.js";
-import { Task } from "../../../src/lib/db/models/Task.js";
 
 let server: Server;
 let ctx: Awaited<ReturnType<typeof seedOrgWithAdmin>>;
@@ -58,9 +58,7 @@ describe("Concurrency and race conditions", () => {
 
       // Fire 6 concurrent failed login attempts (threshold is 5)
       const attempts = Array.from({ length: 6 }, () =>
-        request(server)
-          .post("/api/auth/login")
-          .send({ email, password: "wrongpassword" }),
+        request(server).post("/api/auth/login").send({ email, password: "wrongpassword" }),
       );
       const results = await Promise.all(attempts);
 
@@ -113,9 +111,7 @@ describe("Concurrency and race conditions", () => {
       const ctx2 = await seedOrgWithAdmin({ email: `orgswitch-${Date.now()}@example.com` });
 
       // Use first token to access second org's resources
-      const res = await request(server)
-        .get("/api/tasks")
-        .set(ctx.headers);
+      const res = await request(server).get("/api/tasks").set(ctx.headers);
 
       // Should still succeed (token is valid, just scoped to its org)
       expect([200, 403]).toContain(res.status);

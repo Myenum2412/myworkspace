@@ -1,12 +1,16 @@
-import { Response } from "express";
+import type { Response } from "express";
 import { createReadStream, statSync } from "fs";
-import path from "path";
 import fs from "fs/promises";
-import { Readable, PassThrough } from "stream";
+import path from "path";
+import { PassThrough, Readable } from "stream";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
-import { getStorageProviderFor, readFromStorage, IStorageProvider } from "../lib/storage/providers.js";
 import { logger } from "../lib/logger/index.js";
 import { metricsRegistry } from "../lib/monitoring/index.js";
+import {
+  getStorageProviderFor,
+  IStorageProvider,
+  readFromStorage,
+} from "../lib/storage/providers.js";
 
 const CHUNK_SIZE = 1024 * 1024;
 
@@ -21,7 +25,10 @@ function fileProviderType(record: { storageProvider?: string | null }): string |
   return p === "local" || p === "r2" ? p : null;
 }
 
-async function getLocalPath(storagePath: string, providerType?: string | null): Promise<string | null> {
+async function getLocalPath(
+  storagePath: string,
+  providerType?: string | null,
+): Promise<string | null> {
   // Only proven-local files stream straight from disk. When the record is
   // "local", verify the file actually exists on disk; if it does not (e.g. it
   // was actually stored in R2), return null so the resilient read is used.
@@ -85,10 +92,14 @@ export async function streamFile(
       const status = range ? 206 : 200;
       res.status(status);
       res.set({
-        ...(range ? {
-          "Content-Range": `bytes ${rangeStart(range, fileSize)}-${rangeEnd(range, fileSize)}/${fileSize}`,
-        } : {}),
-        "Content-Length": String(range ? rangeEnd(range, fileSize) - rangeStart(range, fileSize) + 1 : fileSize),
+        ...(range
+          ? {
+              "Content-Range": `bytes ${rangeStart(range, fileSize)}-${rangeEnd(range, fileSize)}/${fileSize}`,
+            }
+          : {}),
+        "Content-Length": String(
+          range ? rangeEnd(range, fileSize) - rangeStart(range, fileSize) + 1 : fileSize,
+        ),
         "Content-Type": mimeType,
         "Content-Disposition": `inline; filename="${fileName}"`,
         "Accept-Ranges": "bytes",
@@ -99,7 +110,13 @@ export async function streamFile(
       readStream.pipe(res);
     } else {
       const provider = getStorageProviderFor(fileProviderType(file));
-      const rangeResult = range ? await provider.getStreamRange(file.storagePath, rangeStart(range, fileSize), rangeEnd(range, fileSize)) : null;
+      const rangeResult = range
+        ? await provider.getStreamRange(
+            file.storagePath,
+            rangeStart(range, fileSize),
+            rangeEnd(range, fileSize),
+          )
+        : null;
       if (rangeResult && range) {
         res.status(206);
         res.set({

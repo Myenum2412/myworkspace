@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { model, Schema } from "mongoose";
 
 export interface IAnalyticsEvent {
   id: string;
@@ -63,7 +63,7 @@ const analyticsEventSchema = new Schema<IAnalyticsEvent>(
     },
     processed: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 analyticsEventSchema.index({ eventName: 1, timestamp: -1 });
@@ -73,4 +73,5 @@ analyticsEventSchema.index({ "utm.source": 1, timestamp: -1 });
 analyticsEventSchema.index({ "attribution.channel": 1, timestamp: -1 });
 
 export const AnalyticsEvent =
-  mongoose.models.AnalyticsEvent || model("AnalyticsEvent", analyticsEventSchema, "analytics_events");
+  mongoose.models.AnalyticsEvent ||
+  model("AnalyticsEvent", analyticsEventSchema, "analytics_events");

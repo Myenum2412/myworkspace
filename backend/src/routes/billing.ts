@@ -1,9 +1,10 @@
-import { Router, Response } from "express";
-import { Invoice } from "../lib/db/models/Invoice.js";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
-import { isAdminRole } from "../lib/rbac/index.js";
+import { type Response, Router } from "express";
 import { v4 as uuid } from "uuid";
+import { Invoice } from "../lib/db/models/Invoice.js";
+import { isAdminRole } from "../lib/rbac/index.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
+
 const router = Router();
 
 router.use(authenticate);
@@ -21,7 +22,14 @@ router.get("/invoices", async (req: AuthRequest, res: Response) => {
     if (status) filter.status = status;
 
     const [invoices, total] = await Promise.all([
-      Invoice.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).select("id orgId number customerId customerName customerEmail amountPaid currency status pdfUrl hostedUrl periodStart periodEnd subTotal discountPercent discountAmount tdsTcsType tdsTcsRate tdsTcsAmount adjustmentValue total isSimplifiedView createdAt updatedAt").lean(),
+      Invoice.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .select(
+          "id orgId number customerId customerName customerEmail amountPaid currency status pdfUrl hostedUrl periodStart periodEnd subTotal discountPercent discountAmount tdsTcsType tdsTcsRate tdsTcsAmount adjustmentValue total isSimplifiedView createdAt updatedAt",
+        )
+        .lean(),
       Invoice.countDocuments(filter),
     ]);
 
@@ -46,7 +54,11 @@ router.get("/invoices", async (req: AuthRequest, res: Response) => {
 // GET /api/billing/invoices/:id — Get single invoice
 router.get("/invoices/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const invoice = await Invoice.findOne({ id: req.params.id, orgId: req.user!.orgId }).select("id orgId number customerId customerName customerEmail amountPaid currency status pdfUrl hostedUrl periodStart periodEnd items subTotal discountPercent discountAmount tdsTcsType tdsTcsRate tdsTcsAmount adjustmentValue total isSimplifiedView createdAt updatedAt").lean();
+    const invoice = await Invoice.findOne({ id: req.params.id, orgId: req.user!.orgId })
+      .select(
+        "id orgId number customerId customerName customerEmail amountPaid currency status pdfUrl hostedUrl periodStart periodEnd items subTotal discountPercent discountAmount tdsTcsType tdsTcsRate tdsTcsAmount adjustmentValue total isSimplifiedView createdAt updatedAt",
+      )
+      .lean();
     if (!invoice) throw new AppError(404, "Invoice not found");
     res.json({ success: true, data: invoice });
   } catch (err: any) {
@@ -82,7 +94,7 @@ router.patch("/invoices/:id", async (req: AuthRequest, res: Response) => {
     const invoice = await Invoice.findOneAndUpdate(
       { id: req.params.id, orgId: req.user!.orgId },
       { $set: safeBody },
-      { new: true }
+      { new: true },
     ).lean();
     if (!invoice) throw new AppError(404, "Invoice not found");
     res.json({ success: true, data: invoice });

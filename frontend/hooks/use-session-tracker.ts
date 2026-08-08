@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface ActiveSession {
   sessionId: string;
@@ -35,17 +35,21 @@ export function useSessionTracker() {
       if (!res.ok) return;
       const json = await res.json();
       if (json.success && json.data) {
-        setActiveSession(prev => {
-          if (prev?.sessionId === json.data.sessionId && prev?.currentStatus === json.data.currentStatus) return prev;
+        setActiveSession((prev) => {
+          if (
+            prev?.sessionId === json.data.sessionId &&
+            prev?.currentStatus === json.data.currentStatus
+          )
+            return prev;
           return json.data;
         });
         if (json.data.currentStatus === "online") {
           const loginMs = new Date(json.data.loginTime).getTime();
           setElapsed(Date.now() - loginMs - json.data.totalBreakDuration);
         } else if (json.data.currentStatus === "break") {
-          const lastBreak = json.data.statusTransitions.filter(
-            (t: any) => t.status === "break"
-          ).pop();
+          const lastBreak = json.data.statusTransitions
+            .filter((t: any) => t.status === "break")
+            .pop();
           if (lastBreak) {
             setBreakElapsed(Date.now() - new Date(lastBreak.timestamp).getTime());
           }
@@ -66,7 +70,9 @@ export function useSessionTracker() {
       if (json.success && json.data) {
         setTodaySummary(json.data.summary);
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   useEffect(() => {

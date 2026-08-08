@@ -1,7 +1,13 @@
-'use client';
-import { AlertTriangleIcon, Trash2Icon } from '@/lib/icons';
-import { useState, cloneElement, isValidElement, type ReactElement, type MouseEvent, type SyntheticEvent } from 'react';
-import { Button } from '@/components/ui/button';
+"use client";
+import {
+  cloneElement,
+  isValidElement,
+  type MouseEvent,
+  type ReactElement,
+  type SyntheticEvent,
+  useState,
+} from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -11,7 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
+import { AlertTriangleIcon, Trash2Icon } from "@/lib/icons";
 
 export type DeleteConfirmDialogProps = {
   title?: string;
@@ -76,15 +83,17 @@ export function DeleteConfirmDialog({
               Cancel
             </Button>
           </DialogClose>
-          <Button
-            onClick={handleConfirm}
-            variant="destructive"
-            disabled={disabled || loading}
-          >
+          <Button onClick={handleConfirm} variant="destructive" disabled={disabled || loading}>
             {loading ? (
-              <><span className="animate-spin rounded-full border-2 border-current border-t-transparent mr-1.5" />Deleting...</>
+              <>
+                <span className="animate-spin rounded-full border-2 border-current border-t-transparent mr-1.5" />
+                Deleting...
+              </>
             ) : (
-              <><Trash2Icon className="size-3.5 mr-1.5" />{confirmLabel}</>
+              <>
+                <Trash2Icon className="size-3.5 mr-1.5" />
+                {confirmLabel}
+              </>
             )}
           </Button>
         </DialogFooter>

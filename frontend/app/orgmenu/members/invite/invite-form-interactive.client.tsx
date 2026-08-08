@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import { Loader2Icon, MailIcon, PlusIcon, XIcon } from "@/lib/icons";
 
 export function InviteMemberFormInteractive() {
@@ -46,8 +46,15 @@ export function InviteMemberFormInteractive() {
       setSending(false);
       setSent(true);
     } catch (err: any) {
-      toast.error(err?.message === "Validation failed" ? "Please provide valid email addresses." : (err?.message || "Failed to send invitations"));
-      const msg = err?.message === "Validation failed" ? "Please provide valid email addresses." : (err?.message || "Failed to send invitations. Please try again.");
+      toast.error(
+        err?.message === "Validation failed"
+          ? "Please provide valid email addresses."
+          : err?.message || "Failed to send invitations",
+      );
+      const msg =
+        err?.message === "Validation failed"
+          ? "Please provide valid email addresses."
+          : err?.message || "Failed to send invitations. Please try again.";
       setError(msg);
       setSending(false);
     }
@@ -61,7 +68,14 @@ export function InviteMemberFormInteractive() {
         <p className="text-sm text-muted-foreground mt-1">
           Invitations have been sent to the provided email addresses.
         </p>
-        <Button variant="outline" className="mt-4" onClick={() => { setSent(false); setEmails([""]); }}>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => {
+            setSent(false);
+            setEmails([""]);
+          }}
+        >
           Send more invites
         </Button>
       </div>
@@ -69,7 +83,10 @@ export function InviteMemberFormInteractive() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white"
+    >
       <p className="text-sm text-muted-foreground">
         Enter email addresses to invite new members to your organization.
       </p>

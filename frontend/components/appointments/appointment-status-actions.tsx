@@ -1,13 +1,14 @@
-"use client"
+"use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -16,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Loader2 } from "@/lib/icons";
 import type { Appointment, AppointmentStatus } from "./appointment-types";
 
@@ -27,7 +27,12 @@ interface Props {
   onStatusChanged: (appt: Appointment) => void;
 }
 
-export function AppointmentStatusDialog({ appointment: propAppointment, open, onOpenChange, onStatusChanged }: Props) {
+export function AppointmentStatusDialog({
+  appointment: propAppointment,
+  open,
+  onOpenChange,
+  onStatusChanged,
+}: Props) {
   if (!propAppointment) return null;
   const appt = propAppointment;
   const [status, setStatus] = useState<AppointmentStatus>(appt.status);
@@ -74,7 +79,9 @@ export function AppointmentStatusDialog({ appointment: propAppointment, open, on
           </Select>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={handleUpdate} disabled={loading}>
             {loading && <Loader2 className="mr-2 animate-spin" />}
             Update Status

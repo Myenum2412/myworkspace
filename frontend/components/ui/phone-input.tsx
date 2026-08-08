@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Check, ChevronsUpDown, Search, X, Phone } from "@/lib/icons";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { countries, parsePhone, formatPhone, Country } from "@/lib/countries";
+import { type Country, countries, formatPhone, parsePhone } from "@/lib/countries";
+import { Check, ChevronsUpDown, Phone, Search, X } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 interface PhoneInputProps {
   value: string;
@@ -34,11 +34,15 @@ export function PhoneInput({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const parsed = parsePhone(value, defaultCountry);
-  const selectedCountry = countries.find((c) => c.code === parsed.countryCode) || countries.find((c) => c.code === defaultCountry);
+  const selectedCountry =
+    countries.find((c) => c.code === parsed.countryCode) ||
+    countries.find((c) => c.code === defaultCountry);
 
   const filtered = countries.filter((c) => {
     const q = search.toLowerCase();
-    return c.name.toLowerCase().includes(q) || c.code.includes(q) || c.iso.toLowerCase().includes(q);
+    return (
+      c.name.toLowerCase().includes(q) || c.code.includes(q) || c.iso.toLowerCase().includes(q)
+    );
   });
 
   useEffect(() => {
@@ -93,14 +97,19 @@ export function PhoneInput({
               className="h-10 border-0 bg-transparent px-0 py-0 shadow-none outline-none focus-visible:ring-0"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="shrink-0 opacity-50 hover:opacity-100 p-1">
+              <button
+                onClick={() => setSearch("")}
+                className="shrink-0 opacity-50 hover:opacity-100 p-1"
+              >
                 <X className="size-4" />
               </button>
             )}
           </div>
           <div className="max-h-60 overflow-y-auto">
             {filtered.length === 0 ? (
-              <div className="py-6 text-center text-sm text-muted-foreground">No countries found.</div>
+              <div className="py-6 text-center text-sm text-muted-foreground">
+                No countries found.
+              </div>
             ) : (
               filtered.map((country) => (
                 <button
@@ -108,13 +117,13 @@ export function PhoneInput({
                   onClick={() => handleCountrySelect(country)}
                   className={cn(
                     "flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-                    selectedCountry?.iso === country.iso && "bg-accent font-medium"
+                    selectedCountry?.iso === country.iso && "bg-accent font-medium",
                   )}
                 >
                   <Check
                     className={cn(
                       "size-4 shrink-0",
-                      selectedCountry?.iso === country.iso ? "opacity-100" : "opacity-0"
+                      selectedCountry?.iso === country.iso ? "opacity-100" : "opacity-0",
                     )}
                   />
                   <span className="text-base leading-none">{country.flag}</span>

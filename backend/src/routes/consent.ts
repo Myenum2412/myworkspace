@@ -1,26 +1,29 @@
-import { Router, Response } from "express";
+import { type Response, Router } from "express";
 import { v4 as uuid } from "uuid";
+import { logger } from "../lib/logger/index.js";
 import { authenticate, optionalAuth } from "../middleware/auth.js";
-import { AuthRequest } from "../types/index.js";
 import { AppError } from "../middleware/error.js";
 import { consentService } from "../services/consent/consent.service.js";
 import { detectRegionFromRequest } from "../services/consent/region-detector.js";
-import { logger } from "../lib/logger/index.js";
+import type { AuthRequest } from "../types/index.js";
 
 const router = Router();
 
 function extractConsentPayload(req: AuthRequest) {
-  const {
-    categories,
-    source = "banner",
-    policyVersion = 1,
-  } = req.body;
+  const { categories, source = "banner", policyVersion = 1 } = req.body;
 
   if (!categories || typeof categories !== "object") {
     throw new AppError(400, "Missing required field: categories");
   }
 
-  const validCategories = ["essential", "functional", "analytics", "performance", "personalization", "marketing"];
+  const validCategories = [
+    "essential",
+    "functional",
+    "analytics",
+    "performance",
+    "personalization",
+    "marketing",
+  ];
   for (const key of validCategories) {
     if (typeof categories[key] !== "boolean") {
       throw new AppError(400, `Invalid or missing category: ${key}`);
@@ -43,7 +46,8 @@ function extractConsentPayload(req: AuthRequest) {
       marketing: categories.marketing,
     },
     source,
-    ipAddress: (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress,
+    ipAddress:
+      (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress,
     userAgent: req.headers["user-agent"],
     region: regionInfo.region,
     regionInfo,
@@ -56,11 +60,14 @@ router.post("/save", optionalAuth, async (req: AuthRequest, res: Response) => {
     const payload = extractConsentPayload(req);
     const preference = await consentService.saveConsent(payload);
 
-    res.setHeader("Set-Cookie", `consent_preferences=${JSON.stringify({
-      categories: preference.categories,
-      version: preference.consentVersion,
-      timestamp: preference.consentTimestamp.toISOString(),
-    })}; Path=/; Max-Age=${365 * 24 * 60 * 60}; SameSite=Lax; Secure`);
+    res.setHeader(
+      "Set-Cookie",
+      `consent_preferences=${JSON.stringify({
+        categories: preference.categories,
+        version: preference.consentVersion,
+        timestamp: preference.consentTimestamp.toISOString(),
+      })}; Path=/; Max-Age=${365 * 24 * 60 * 60}; SameSite=Lax; Secure`,
+    );
 
     res.json({ success: true, data: preference });
   } catch (err) {
@@ -71,7 +78,7 @@ router.post("/save", optionalAuth, async (req: AuthRequest, res: Response) => {
 });
 
 router.get("/current", optionalAuth, async (req: AuthRequest, res: Response) => {
-  const anonymousId = req.cookies?.anonymous_id || req.query.anonymousId as string;
+  const anonymousId = req.cookies?.anonymous_id || (req.query.anonymousId as string);
 
   const preference = await consentService.getCurrentConsent({
     userId: req.user?.userId,
@@ -90,11 +97,11 @@ router.get("/current", optionalAuth, async (req: AuthRequest, res: Response) => 
 });
 
 router.post("/withdraw", optionalAuth, async (req: AuthRequest, res: Response) => {
-  const anonymousId = req.cookies?.anonymous_id || req.body.anonymousId as string;
+  const anonymousId = req.cookies?.anonymous_id || (req.body.anonymousId as string);
 
   await consentService.withdrawConsent(
     { userId: req.user?.userId, anonymousId: req.user?.userId ? undefined : anonymousId },
-    req.body.source || "preferences-center"
+    req.body.source || "preferences-center",
   );
 
   res.clearCookie("consent_preferences", { path: "/" });
@@ -102,13 +109,16 @@ router.post("/withdraw", optionalAuth, async (req: AuthRequest, res: Response) =
 });
 
 router.get("/history", optionalAuth, async (req: AuthRequest, res: Response) => {
-  const anonymousId = req.cookies?.anonymous_id || req.query.anonymousId as string;
+  const anonymousId = req.cookies?.anonymous_id || (req.query.anonymousId as string);
   const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
 
-  const history = await consentService.getConsentHistory({
-    userId: req.user?.userId,
-    anonymousId: req.user?.userId ? undefined : anonymousId,
-  }, limit);
+  const history = await consentService.getConsentHistory(
+    {
+      userId: req.user?.userId,
+      anonymousId: req.user?.userId ? undefined : anonymousId,
+    },
+    limit,
+  );
 
   res.json({ success: true, data: history });
 });

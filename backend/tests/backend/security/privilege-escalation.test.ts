@@ -1,5 +1,5 @@
 import { enforce } from "../../../src/config/casbin.js";
-import { ROLES, getEffectivePermissions } from "../../../src/lib/rbac/index.js";
+import { getEffectivePermissions, ROLES } from "../../../src/lib/rbac/index.js";
 
 describe("Privilege Escalation Security Tests", () => {
   describe("Vertical privilege escalation prevention", () => {

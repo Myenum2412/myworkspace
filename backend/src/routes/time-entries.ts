@@ -1,12 +1,12 @@
-import { Router, Response } from "express";
-import { TimeEntry } from "../lib/db/models/TimeEntry.js";
+import { type Response, Router } from "express";
+import type { PipelineStage } from "mongoose";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { TimeEntry } from "../lib/db/models/TimeEntry.js";
 import { User } from "../lib/db/models/User.js";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
+import { requireOrgMembership } from "../lib/org-utils.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { verifyOwnership } from "../middleware/ownership.js";
-import { requireOrgMembership } from "../lib/org-utils.js";
-import type { PipelineStage } from "mongoose";
 
 const router = Router();
 
@@ -15,7 +15,7 @@ router.use(authenticate);
 // Get team summary - aggregated time entries scoped to the current user
 router.get("/team-summary", async (req: AuthRequest, res: Response) => {
   try {
-    const orgId = (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
+    const orgId = (req.query.orgId as string) || (await requireOrgMembership(req.user!.userId));
     const userId = req.user!.userId;
     const date = req.query.date as string;
 
@@ -98,7 +98,7 @@ router.get("/team-summary", async (req: AuthRequest, res: Response) => {
 // Get time entries with pagination, filtering, and sorting
 router.get("/", async (req: AuthRequest, res: Response) => {
   try {
-    const orgId = (req.query.orgId as string) || await requireOrgMembership(req.user!.userId);
+    const orgId = (req.query.orgId as string) || (await requireOrgMembership(req.user!.userId));
 
     // Pagination
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -130,7 +130,15 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     }
 
     // Sorting
-    const allowedSortFields = ["date", "startTime", "endTime", "duration", "status", "createdAt", "description"];
+    const allowedSortFields = [
+      "date",
+      "startTime",
+      "endTime",
+      "duration",
+      "status",
+      "createdAt",
+      "description",
+    ];
     const sortBy = allowedSortFields.includes(req.query.sortBy as string)
       ? (req.query.sortBy as string)
       : "date";
@@ -169,10 +177,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
       },
     ];
 
-    const countPipeline: PipelineStage[] = [
-      { $match: matchStage },
-      { $count: "total" },
-    ];
+    const countPipeline: PipelineStage[] = [{ $match: matchStage }, { $count: "total" }];
 
     const [entries, countResult] = await Promise.all([
       TimeEntry.aggregate(pipeline).exec(),
@@ -221,13 +226,22 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 // Create time entry — always owned by the requesting user
 router.post("/", async (req: AuthRequest, res: Response) => {
   try {
-    const { orgId: bodyOrgId, date, startTime, endTime, duration, description, billable, status } = req.body;
+    const {
+      orgId: bodyOrgId,
+      date,
+      startTime,
+      endTime,
+      duration,
+      description,
+      billable,
+      status,
+    } = req.body;
 
-    const orgId = bodyOrgId || await requireOrgMembership(req.user!.userId);
+    const orgId = bodyOrgId || (await requireOrgMembership(req.user!.userId));
     const userId = req.user!.userId;
 
-  const membership = await OrgMember.findOne({ userId, orgId }).select("_id").lean();
-  if (!membership) throw new AppError(403, "Not authorized");
+    const membership = await OrgMember.findOne({ userId, orgId }).select("_id").lean();
+    if (!membership) throw new AppError(403, "Not authorized");
 
     const entry = await TimeEntry.create({
       orgId,
@@ -250,33 +264,49 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 });
 
 // Update time entry — must own the entry
-router.put("/:id", verifyOwnership(TimeEntry, "userId"), async (req: AuthRequest, res: Response) => {
-  try {
-    const updates: Record<string, unknown> = {};
-    const allowed = ["date", "startTime", "endTime", "duration", "description", "billable", "status"];
-    for (const field of allowed) {
-      if (req.body[field] !== undefined) {
-        updates[field] = field === "date" ? new Date(req.body[field]) : req.body[field];
+router.put(
+  "/:id",
+  verifyOwnership(TimeEntry, "userId"),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const updates: Record<string, unknown> = {};
+      const allowed = [
+        "date",
+        "startTime",
+        "endTime",
+        "duration",
+        "description",
+        "billable",
+        "status",
+      ];
+      for (const field of allowed) {
+        if (req.body[field] !== undefined) {
+          updates[field] = field === "date" ? new Date(req.body[field]) : req.body[field];
+        }
       }
-    }
 
-    await TimeEntry.findByIdAndUpdate(req.params.id, updates);
-    res.json({ success: true });
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    throw new AppError(500, "Failed to update time entry");
-  }
-});
+      await TimeEntry.findByIdAndUpdate(req.params.id, updates);
+      res.json({ success: true });
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError(500, "Failed to update time entry");
+    }
+  },
+);
 
 // Delete time entry — must own the entry
-router.delete("/:id", verifyOwnership(TimeEntry, "userId"), async (req: AuthRequest, res: Response) => {
-  try {
-    await TimeEntry.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    throw new AppError(500, "Failed to delete time entry");
-  }
-});
+router.delete(
+  "/:id",
+  verifyOwnership(TimeEntry, "userId"),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      await TimeEntry.findByIdAndDelete(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError(500, "Failed to delete time entry");
+    }
+  },
+);
 
 export default router;

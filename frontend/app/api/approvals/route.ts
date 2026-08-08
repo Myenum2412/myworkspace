@@ -6,14 +6,20 @@ import { getUserOrgId } from "@/lib/org";
 
 export async function GET() {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
   if (!orgId) return NextResponse.json({ items: [] });
   try {
-    const raw = await db.collection(collections.tasks)
+    const raw = await db
+      .collection(collections.tasks)
       .find({ orgId, status: { $in: ["review", "done", "rejected"] } })
-      .sort({ createdAt: -1 }).toArray();
+      .sort({ createdAt: -1 })
+      .toArray();
     const items = raw.map((t: any) => ({
       _id: t._id?.toString() || "",
       itemType: "task",
@@ -37,5 +43,7 @@ export async function GET() {
       rejectionReason: t.rejectionReason || "",
     }));
     return NextResponse.json({ items });
-  } catch { return NextResponse.json({ items: [] }); }
+  } catch {
+    return NextResponse.json({ items: [] });
+  }
 }

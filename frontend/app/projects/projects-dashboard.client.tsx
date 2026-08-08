@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import Stats07 from "@/components/stats-07";
-import type { Project } from "@/components/projects/project-types";
 import { useIndustry } from "@/components/industry-provider";
+import type { Project } from "@/components/projects/project-types";
+import Stats07 from "@/components/stats-07";
 
 interface DashboardProps {
   projects: Project[];
@@ -28,7 +28,8 @@ export default function ProjectsDashboard({ projects }: DashboardProps) {
       const diff = deadline - Date.now();
       return diff < 7 * 24 * 60 * 60 * 1000;
     }).length;
-    const avgProgress = total > 0 ? Math.round(projects.reduce((s, p) => s + p.progress, 0) / total) : 0;
+    const avgProgress =
+      total > 0 ? Math.round(projects.reduce((s, p) => s + p.progress, 0) / total) : 0;
 
     return { total, active, completed, inProgress, notStarted, overdue, atRisk, avgProgress };
   }, [projects]);
@@ -36,12 +37,32 @@ export default function ProjectsDashboard({ projects }: DashboardProps) {
   return (
     <Stats07
       items={[
-        { name: t("page.projects.statsTotal"), value: stats.total, subtitle: t("page.projects.statsTotalSub") },
+        {
+          name: t("page.projects.statsTotal"),
+          value: stats.total,
+          subtitle: t("page.projects.statsTotalSub"),
+        },
         { name: t("common.active"), value: stats.active, subtitle: t("page.dashboard.inProgress") },
-        { name: t("page.projects.statsCompleted"), value: stats.completed, subtitle: t("page.projects.statsCompletedSub") },
-        { name: t("page.dashboard.inProgress"), value: stats.inProgress, subtitle: t("page.projects.statsInProgressSub") },
-        { name: t("page.dashboard.overdue"), value: stats.overdue, subtitle: t("page.projects.statsOverdueSub") },
-        { name: t("page.projects.statsAvgProgress"), value: stats.avgProgress, subtitle: t("page.projects.statsAvgProgressSub") },
+        {
+          name: t("page.projects.statsCompleted"),
+          value: stats.completed,
+          subtitle: t("page.projects.statsCompletedSub"),
+        },
+        {
+          name: t("page.dashboard.inProgress"),
+          value: stats.inProgress,
+          subtitle: t("page.projects.statsInProgressSub"),
+        },
+        {
+          name: t("page.dashboard.overdue"),
+          value: stats.overdue,
+          subtitle: t("page.projects.statsOverdueSub"),
+        },
+        {
+          name: t("page.projects.statsAvgProgress"),
+          value: stats.avgProgress,
+          subtitle: t("page.projects.statsAvgProgressSub"),
+        },
       ]}
     />
   );

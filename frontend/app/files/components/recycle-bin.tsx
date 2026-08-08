@@ -1,19 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRecycleBin } from "@/hooks/file-system/use-file-data";
-import { formatSize, getFileExtension } from "@/lib/file-system/types";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { getFileIcon } from "@/components/files/utils";
-import {
-  Trash2Icon,
-  RotateCcwIcon,
-  AlertTriangleIcon,
-  SearchIcon,
-  FileIcon,
-} from "@/lib/icons";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -22,9 +14,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useFileSystemStore } from "@/lib/file-system/store";
+import { useRecycleBin } from "@/hooks/file-system/use-file-data";
 import * as api from "@/lib/file-system/api";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+import { useFileSystemStore } from "@/lib/file-system/store";
+import { formatSize, getFileExtension } from "@/lib/file-system/types";
+import { AlertTriangleIcon, FileIcon, RotateCcwIcon, SearchIcon, Trash2Icon } from "@/lib/icons";
 
 export function RecycleBin() {
   const { orgId, search, setSearch } = useFileSystemStore();
@@ -34,20 +28,37 @@ export function RecycleBin() {
 
   async function handleRestore(id: string) {
     setRestoring(id);
-    try { await api.restoreFile(id); refetch(); } catch (e) { console.error(e); }
-    finally { setRestoring(null); }
+    try {
+      await api.restoreFile(id);
+      refetch();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setRestoring(null);
+    }
   }
 
   async function handlePermanentDelete(id: string) {
     setDeleting(id);
-    try { await api.permanentDeleteFile(id); refetch(); } catch (e) { console.error(e); }
-    finally { setDeleting(null); }
+    try {
+      await api.permanentDeleteFile(id);
+      refetch();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setDeleting(null);
+    }
   }
 
   async function handleEmptyBin() {
     if (!files) return;
     const ids = files.map((f) => f.id);
-    try { await api.bulkPermanentDelete(ids); refetch(); } catch (e) { console.error(e); }
+    try {
+      await api.bulkPermanentDelete(ids);
+      refetch();
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return (
@@ -113,7 +124,9 @@ export function RecycleBin() {
                   <TableCell>
                     <div className="flex items-center gap-2.5">
                       {getFileIcon(file.mimeType)}
-                      <span className="font-medium text-sm truncate max-w-[200px]">{file.originalName}</span>
+                      <span className="font-medium text-sm truncate max-w-[200px]">
+                        {file.originalName}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell text-muted-foreground">
@@ -121,7 +134,9 @@ export function RecycleBin() {
                       {getFileExtension(file.originalName).toUpperCase() || "FILE"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground">{formatSize(file.size)}</TableCell>
+                  <TableCell className="hidden md:table-cell text-muted-foreground">
+                    {formatSize(file.size)}
+                  </TableCell>
                   <TableCell className="hidden lg:table-cell text-muted-foreground text-xs">
                     {file.deletedAt ? new Date(file.deletedAt).toLocaleString() : "—"}
                   </TableCell>

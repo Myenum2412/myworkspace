@@ -1,12 +1,12 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
-import { logger } from "../logger/index.js";
-import { Organization } from "../db/models/Organization.js";
+import { ActivityLog } from "../db/models/ActivityLog.js";
 import { FileAttachment } from "../db/models/FileAttachment.js";
 import { FileMetadata } from "../db/models/FileMetadata.js";
+import { Organization } from "../db/models/Organization.js";
 import { Project } from "../db/models/Project.js";
 import { Task } from "../db/models/Task.js";
-import { ActivityLog } from "../db/models/ActivityLog.js";
+import { logger } from "../logger/index.js";
 
 export type HoldScope = "org" | "project" | "user" | "file" | "legal_case";
 
@@ -52,37 +52,47 @@ export interface IPreservationRecord extends Document {
   snapshot: Record<string, unknown>;
 }
 
-const legalHoldSchema = new Schema<ILegalHold>({
-  id: { type: String, required: true, unique: true },
-  orgId: { type: String, required: true, index: true },
-  name: { type: String, required: true },
-  caseNumber: String,
-  scope: { type: String, enum: ["org", "project", "user", "file", "legal_case"], required: true },
-  scopeIds: [{ type: String }],
-  custodians: [{ type: String }],
-  reason: { type: String, required: true },
-  issuedBy: { type: String, required: true },
-  issuedAt: { type: Date, default: Date.now },
-  expiresAt: Date,
-  isActive: { type: Boolean, default: true },
-  releasedAt: Date,
-}, { timestamps: true });
+const legalHoldSchema = new Schema<ILegalHold>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    name: { type: String, required: true },
+    caseNumber: String,
+    scope: { type: String, enum: ["org", "project", "user", "file", "legal_case"], required: true },
+    scopeIds: [{ type: String }],
+    custodians: [{ type: String }],
+    reason: { type: String, required: true },
+    issuedBy: { type: String, required: true },
+    issuedAt: { type: Date, default: Date.now },
+    expiresAt: Date,
+    isActive: { type: Boolean, default: true },
+    releasedAt: Date,
+  },
+  { timestamps: true },
+);
 
 legalHoldSchema.index({ orgId: 1, isActive: 1 });
 legalHoldSchema.index({ custodians: 1 });
 
-const retentionScheduleSchema = new Schema<IRetentionSchedule>({
-  id: { type: String, required: true, unique: true },
-  orgId: { type: String, required: true, index: true },
-  name: { type: String, required: true },
-  entityType: { type: String, enum: ["file", "task", "project", "activity", "audit"], required: true },
-  retentionDays: { type: Number, required: true },
-  action: { type: String, enum: ["delete", "archive", "export", "anonymize"], required: true },
-  conditions: { type: Schema.Types.Mixed, default: {} },
-  isActive: { type: Boolean, default: true },
-  lastRunAt: Date,
-  createdBy: String,
-}, { timestamps: true });
+const retentionScheduleSchema = new Schema<IRetentionSchedule>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    name: { type: String, required: true },
+    entityType: {
+      type: String,
+      enum: ["file", "task", "project", "activity", "audit"],
+      required: true,
+    },
+    retentionDays: { type: Number, required: true },
+    action: { type: String, enum: ["delete", "archive", "export", "anonymize"], required: true },
+    conditions: { type: Schema.Types.Mixed, default: {} },
+    isActive: { type: Boolean, default: true },
+    lastRunAt: Date,
+    createdBy: String,
+  },
+  { timestamps: true },
+);
 
 const preservationRecordSchema = new Schema<IPreservationRecord>({
   id: { type: String, required: true, unique: true },
@@ -95,18 +105,30 @@ const preservationRecordSchema = new Schema<IPreservationRecord>({
 });
 
 export const LegalHold = model<ILegalHold>("LegalHold", legalHoldSchema);
-export const RetentionSchedule = model<IRetentionSchedule>("RetentionSchedule", retentionScheduleSchema);
-export const PreservationRecord = model<IPreservationRecord>("PreservationRecord", preservationRecordSchema);
+export const RetentionSchedule = model<IRetentionSchedule>(
+  "RetentionSchedule",
+  retentionScheduleSchema,
+);
+export const PreservationRecord = model<IPreservationRecord>(
+  "PreservationRecord",
+  preservationRecordSchema,
+);
 
 export class RetentionGovernance {
   async createLegalHold(params: {
-    orgId: string; name: string; scope: HoldScope;
-    scopeIds?: string[]; custodians?: string[];
-    reason: string; issuedBy: string; caseNumber?: string;
+    orgId: string;
+    name: string;
+    scope: HoldScope;
+    scopeIds?: string[];
+    custodians?: string[];
+    reason: string;
+    issuedBy: string;
+    caseNumber?: string;
     expiresAt?: Date;
   }): Promise<ILegalHold> {
     return LegalHold.create({
-      id: uuid(), ...params,
+      id: uuid(),
+      ...params,
       scopeIds: params.scopeIds || [],
       custodians: params.custodians || [],
     });
@@ -156,29 +178,42 @@ export class RetentionGovernance {
     }
 
     return PreservationRecord.create({
-      id: uuid(), orgId, holdId, entityType, entityId,
+      id: uuid(),
+      orgId,
+      holdId,
+      entityType,
+      entityId,
       preservedAt: new Date(),
       snapshot,
     });
   }
 
   async createRetentionSchedule(params: {
-    orgId: string; name: string; entityType: IRetentionSchedule["entityType"];
-    retentionDays: number; action: IRetentionSchedule["action"];
-    conditions?: Record<string, unknown>; createdBy: string;
+    orgId: string;
+    name: string;
+    entityType: IRetentionSchedule["entityType"];
+    retentionDays: number;
+    action: IRetentionSchedule["action"];
+    conditions?: Record<string, unknown>;
+    createdBy: string;
   }): Promise<IRetentionSchedule> {
     return RetentionSchedule.create({
-      id: uuid(), ...params,
+      id: uuid(),
+      ...params,
       conditions: params.conditions || {},
       isActive: true,
     });
   }
 
   async executeRetentionPolicies(orgId: string): Promise<{
-    deleted: number; archived: number; errors: number;
+    deleted: number;
+    archived: number;
+    errors: number;
   }> {
     const schedules = await RetentionSchedule.find({ orgId, isActive: true }).lean();
-    let deleted = 0, archived = 0, errors = 0;
+    let deleted = 0,
+      archived = 0,
+      errors = 0;
 
     for (const schedule of schedules) {
       try {
@@ -224,13 +259,13 @@ export class RetentionGovernance {
           }
         }
 
-        await RetentionSchedule.updateOne(
-          { id: schedule.id },
-          { $set: { lastRunAt: new Date() } },
-        );
+        await RetentionSchedule.updateOne({ id: schedule.id }, { $set: { lastRunAt: new Date() } });
       } catch (err) {
         errors++;
-        logger.error({ scheduleId: schedule.id, error: (err as Error).message }, "Retention policy execution failed");
+        logger.error(
+          { scheduleId: schedule.id, error: (err as Error).message },
+          "Retention policy execution failed",
+        );
       }
     }
 
@@ -243,14 +278,16 @@ export class RetentionGovernance {
     const ids = new Set<string>();
     for (const hold of holds) {
       if (hold.scope === "org") return [];
-      if (hold.scope === entityType) hold.scopeIds.forEach(id => ids.add(id));
+      if (hold.scope === entityType) hold.scopeIds.forEach((id) => ids.add(id));
     }
     return Array.from(ids);
   }
 
   async getLegalHoldReport(orgId: string): Promise<{
-    totalHolds: number; activeHolds: number;
-    totalCustodians: number; totalPreserved: number;
+    totalHolds: number;
+    activeHolds: number;
+    totalCustodians: number;
+    totalPreserved: number;
     holds: any[];
   }> {
     const [holds, totalPreserved, activeHolds] = await Promise.all([
@@ -261,7 +298,7 @@ export class RetentionGovernance {
 
     const custodianSet = new Set<string>();
     for (const hold of holds) {
-      hold.custodians.forEach(c => custodianSet.add(c));
+      hold.custodians.forEach((c) => custodianSet.add(c));
     }
 
     return {
@@ -274,7 +311,8 @@ export class RetentionGovernance {
   }
 
   async getRetentionScheduleReport(orgId: string): Promise<{
-    total: number; active: number;
+    total: number;
+    active: number;
     byEntity: Record<string, number>;
     byAction: Record<string, number>;
   }> {

@@ -5,7 +5,7 @@ async function test() {
     await sendVerificationEmail(
       "amarnathenu2412@gmail.com",
       "Amarnath",
-      "http://localhost:3000/verify-email?token=123&email=amarnathenu2412@gmail.com"
+      "http://localhost:3000/verify-email?token=123&email=amarnathenu2412@gmail.com",
     );
     console.log("Success");
   } catch (err) {

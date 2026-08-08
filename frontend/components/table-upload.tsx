@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Upload, X, FileText } from "@/lib/icons";
+import { useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { FileText, Upload, X } from "@/lib/icons";
 
 interface TableUploadProps {
   onFilesChange?: (files: any[]) => void;
@@ -38,17 +38,16 @@ export default function TableUpload({ onFilesChange, compactImage }: TableUpload
       <Card
         className="group flex cursor-pointer flex-col items-center justify-center gap-3 border-dashed py-6 text-sm shadow-none transition-colors hover:bg-muted/50"
         onClick={() => inputRef.current?.click()}
-        onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
+        onDrop={(e) => {
+          e.preventDefault();
+          handleFiles(e.dataTransfer.files);
+        }}
         onDragOver={(e) => e.preventDefault()}
       >
         <Upload className="size-5 text-muted-foreground" />
         <div className="text-center">
-          <p className="text-sm text-muted-foreground">
-            Drop files here or click to browse
-          </p>
-          <p className="text-xs text-muted-foreground/60 mt-0.5">
-            PDF, DOC, XLS, images
-          </p>
+          <p className="text-sm text-muted-foreground">Drop files here or click to browse</p>
+          <p className="text-xs text-muted-foreground/60 mt-0.5">PDF, DOC, XLS, images</p>
         </div>
       </Card>
       <input

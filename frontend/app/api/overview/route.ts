@@ -4,7 +4,11 @@ import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
 import { getUserOrgId } from "@/lib/org";
 
-function buildTaskLookupPipeline(match: Record<string, any>, sort: Record<string, any>, limit: number) {
+function buildTaskLookupPipeline(
+  match: Record<string, any>,
+  sort: Record<string, any>,
+  limit: number,
+) {
   return [
     { $match: match },
     { $sort: sort },
@@ -83,19 +87,51 @@ const mapTask = (t: any) => ({
 
 export async function GET() {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
-  if (!orgId) return NextResponse.json({ overviewTasks: [], currentUserId: "", teamTasks: [], allTasks: [], orgId: "", myTasks: [], userId: "", upcomingTasks: [] });
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
+  if (!orgId)
+    return NextResponse.json({
+      overviewTasks: [],
+      currentUserId: "",
+      teamTasks: [],
+      allTasks: [],
+      orgId: "",
+      myTasks: [],
+      userId: "",
+      upcomingTasks: [],
+    });
   try {
     const userId = session.user.id;
     const now = new Date();
     const coll = db.collection(collections.tasks);
     const [tasksRaw, teamTasksRaw, myTasksRaw, upcomingRaw] = await Promise.all([
       coll.aggregate(buildTaskLookupPipeline({ orgId }, { createdAt: -1 }, 10)).toArray(),
-      coll.aggregate(buildTaskLookupPipeline({ orgId, teamId: { $exists: true, $nin: [null, ""] } }, { createdAt: -1 }, 50)).toArray(),
-      coll.aggregate(buildTaskLookupPipeline({ orgId, assigneeId: userId }, { createdAt: -1 }, 10)).toArray(),
-      coll.aggregate(buildTaskLookupPipeline({ orgId, dueDate: { $gte: now }, status: { $nin: ["done", "cancelled"] } }, { dueDate: 1 }, 10)).toArray(),
+      coll
+        .aggregate(
+          buildTaskLookupPipeline(
+            { orgId, teamId: { $exists: true, $nin: [null, ""] } },
+            { createdAt: -1 },
+            50,
+          ),
+        )
+        .toArray(),
+      coll
+        .aggregate(buildTaskLookupPipeline({ orgId, assigneeId: userId }, { createdAt: -1 }, 10))
+        .toArray(),
+      coll
+        .aggregate(
+          buildTaskLookupPipeline(
+            { orgId, dueDate: { $gte: now }, status: { $nin: ["done", "cancelled"] } },
+            { dueDate: 1 },
+            10,
+          ),
+        )
+        .toArray(),
     ]);
     return NextResponse.json({
       overviewTasks: tasksRaw.map(mapTask),
@@ -107,5 +143,16 @@ export async function GET() {
       userId,
       upcomingTasks: upcomingRaw.map(mapTask),
     });
-  } catch { return NextResponse.json({ overviewTasks: [], currentUserId: "", teamTasks: [], allTasks: [], orgId: "", myTasks: [], userId: "", upcomingTasks: [] }); }
+  } catch {
+    return NextResponse.json({
+      overviewTasks: [],
+      currentUserId: "",
+      teamTasks: [],
+      allTasks: [],
+      orgId: "",
+      myTasks: [],
+      userId: "",
+      upcomingTasks: [],
+    });
+  }
 }

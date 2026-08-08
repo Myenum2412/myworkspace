@@ -1,6 +1,6 @@
-import { Model, Query, Aggregate, Document, PipelineStage } from "mongoose";
-import { logger } from "../logger/index.js";
+import type { Aggregate, Document, Model, PipelineStage, Query } from "mongoose";
 import { recordAuditLog } from "../../services/audit.service.js";
+import { logger } from "../logger/index.js";
 
 /**
  * Tenant-Safe Query Wrapper
@@ -36,25 +36,29 @@ function validateOrgScope(
   }
 
   if (!filter.orgId && filter.orgId !== 0) {
-    logger.error({
-      orgId: context.orgId,
-      userId: context.userId,
-      filter,
-    }, "Tenant isolation violation: query missing orgId");
-
-    throw new Error(
-      options.errorMessage || "Query must include orgId for tenant isolation"
+    logger.error(
+      {
+        orgId: context.orgId,
+        userId: context.userId,
+        filter,
+      },
+      "Tenant isolation violation: query missing orgId",
     );
+
+    throw new Error(options.errorMessage || "Query must include orgId for tenant isolation");
   }
 
   // Verify the orgId matches the context
   if (filter.orgId && filter.orgId !== context.orgId) {
-    logger.error({
-      requestedOrgId: filter.orgId,
-      contextOrgId: context.orgId,
-      userId: context.userId,
-      filter,
-    }, "Tenant isolation violation: orgId mismatch");
+    logger.error(
+      {
+        requestedOrgId: filter.orgId,
+        contextOrgId: context.orgId,
+        userId: context.userId,
+        filter,
+      },
+      "Tenant isolation violation: orgId mismatch",
+    );
 
     // Audit log for cross-tenant access attempt
     recordAuditLog({
@@ -74,9 +78,7 @@ function validateOrgScope(
       tags: ["security", "tenant-isolation"],
     });
 
-    throw new Error(
-      options.errorMessage || "Access denied: organization mismatch"
-    );
+    throw new Error(options.errorMessage || "Access denied: organization mismatch");
   }
 }
 
@@ -118,17 +120,20 @@ export function tenantFindById<T extends Document>(
   options: TenantQueryOptions = {},
 ): Query<T | null, T> {
   // First find the document, then validate orgId
-  return model.findById(id).then(doc => {
+  return model.findById(id).then((doc) => {
     if (!doc) return null;
 
     const docOrgId = (doc as any).orgId;
     if (!options.allowGlobal && docOrgId && docOrgId !== context.orgId) {
-      logger.error({
-        documentOrgId: docOrgId,
-        contextOrgId: context.orgId,
-        userId: context.userId,
-        documentId: id,
-      }, "Tenant isolation violation: document belongs to different org");
+      logger.error(
+        {
+          documentOrgId: docOrgId,
+          contextOrgId: context.orgId,
+          userId: context.userId,
+          documentId: id,
+        },
+        "Tenant isolation violation: document belongs to different org",
+      );
 
       recordAuditLog({
         orgId: context.orgId,

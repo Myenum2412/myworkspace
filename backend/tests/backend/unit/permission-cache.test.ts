@@ -1,4 +1,9 @@
-import { permissionCache, resolvePermissions, onRoleChanged, onOrgPolicyChanged } from "../../../src/lib/permission-cache.js";
+import {
+  onOrgPolicyChanged,
+  onRoleChanged,
+  permissionCache,
+  resolvePermissions,
+} from "../../../src/lib/permission-cache.js";
 import { ROLES } from "../../../src/lib/rbac/index.js";
 
 describe("PermissionCache", () => {
@@ -106,7 +111,9 @@ describe("PermissionCache", () => {
 
       permissionCache.invalidateUser("user1");
 
-      expect(permissionCache.getPermissions("user2", ROLES.STAFFS, "org1")).toEqual(["access:files"]);
+      expect(permissionCache.getPermissions("user2", ROLES.STAFFS, "org1")).toEqual([
+        "access:files",
+      ]);
     });
   });
 
@@ -128,7 +135,9 @@ describe("PermissionCache", () => {
 
       permissionCache.invalidateOrg("org1");
 
-      expect(permissionCache.getPermissions("user1", ROLES.STAFFS, "org2")).toEqual(["access:files"]);
+      expect(permissionCache.getPermissions("user1", ROLES.STAFFS, "org2")).toEqual([
+        "access:files",
+      ]);
     });
   });
 

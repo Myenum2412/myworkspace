@@ -13,7 +13,9 @@ export default function SecurityDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Security monitoring is available in the admin panel.</p>
+          <p className="text-sm text-muted-foreground">
+            Security monitoring is available in the admin panel.
+          </p>
         </CardContent>
       </Card>
     </div>

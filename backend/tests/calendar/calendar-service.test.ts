@@ -1,23 +1,24 @@
-import { encryptToken, decryptToken } from "../../src/lib/security/token-encryption";
+import { decryptToken, encryptToken } from "../../src/lib/security/token-encryption";
 
 // Mock environment variable
-process.env.CALENDAR_TOKEN_ENCRYPTION_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+process.env.CALENDAR_TOKEN_ENCRYPTION_KEY =
+  "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
 describe("Calendar Service", () => {
   describe("Token Management", () => {
     it("should encrypt and decrypt OAuth tokens", () => {
       const accessToken = "ya29.a0AfH6SMBx...";
       const refreshToken = "1//0gX2Z3...";
-      
+
       const encryptedAccess = encryptToken(accessToken);
       const encryptedRefresh = encryptToken(refreshToken);
-      
+
       expect(encryptedAccess).not.toBe(accessToken);
       expect(encryptedRefresh).not.toBe(refreshToken);
-      
+
       const decryptedAccess = decryptToken(encryptedAccess);
       const decryptedRefresh = decryptToken(encryptedRefresh);
-      
+
       expect(decryptedAccess).toBe(accessToken);
       expect(decryptedRefresh).toBe(refreshToken);
     });
@@ -46,7 +47,7 @@ describe("Calendar Service", () => {
     it("should detect ETag changes", () => {
       const localEtag = '"abc123"';
       const remoteEtag = '"def456"';
-      
+
       const hasConflict = localEtag !== remoteEtag;
       expect(hasConflict).toBe(true);
     });
@@ -54,7 +55,7 @@ describe("Calendar Service", () => {
     it("should detect version changes", () => {
       const localVersion = 1;
       const remoteVersion = 2;
-      
+
       const hasConflict = remoteVersion > localVersion;
       expect(hasConflict).toBe(true);
     });

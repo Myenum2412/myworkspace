@@ -49,7 +49,9 @@ export const taskService = {
     const searchParams = new URLSearchParams();
     if (orgId) searchParams.set("orgId", orgId);
     if (params) {
-      Object.entries(params).forEach(([k, v]) => { if (v) searchParams.set(k, v); });
+      Object.entries(params).forEach(([k, v]) => {
+        if (v) searchParams.set(k, v);
+      });
     }
     const qs = searchParams.toString();
     const url = qs ? `/api/tasks?${qs}` : "/api/tasks";
@@ -69,7 +71,11 @@ export const taskService = {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Failed to create task" }));
-        throw new Error(err.error === "Validation failed" ? "Please fill in all required fields." : (err.error || "Failed to create task"));
+        throw new Error(
+          err.error === "Validation failed"
+            ? "Please fill in all required fields."
+            : err.error || "Failed to create task",
+        );
       }
       const data = await res.json();
       return data.data || data;
@@ -89,7 +95,8 @@ export const taskService = {
 
   async assignTask(taskId: string, assigneeId: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/assign`, {
-      method: "POST", headers: { "Content-Type": "application/json", ...(await csrfHeaders()) },
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(await csrfHeaders()) },
       credentials: "include",
       body: JSON.stringify({ assigneeId }),
     });
@@ -98,14 +105,17 @@ export const taskService = {
 
   async submitForVerification(taskId: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/submit-verification`, {
-      method: "POST", headers: await csrfHeaders(), credentials: "include",
+      method: "POST",
+      headers: await csrfHeaders(),
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Failed to submit for verification");
   },
 
   async approveTask(taskId: string, note?: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/approve`, {
-      method: "POST", headers: { "Content-Type": "application/json", ...(await csrfHeaders()) },
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(await csrfHeaders()) },
       credentials: "include",
       body: JSON.stringify({ note }),
     });
@@ -114,7 +124,8 @@ export const taskService = {
 
   async rejectTask(taskId: string, reason: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/reject`, {
-      method: "POST", headers: { "Content-Type": "application/json", ...(await csrfHeaders()) },
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(await csrfHeaders()) },
       credentials: "include",
       body: JSON.stringify({ reason }),
     });
@@ -123,16 +134,19 @@ export const taskService = {
 
   async publishCommonTask(taskId: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/publish`, {
-      method: "POST", headers: await csrfHeaders(), credentials: "include",
+      method: "POST",
+      headers: await csrfHeaders(),
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Failed to publish task");
   },
 
   async activateUpcomingTask(taskId: string): Promise<void> {
     const res = await fetch(`/api/tasks/${taskId}/activate`, {
-      method: "POST", headers: await csrfHeaders(), credentials: "include",
+      method: "POST",
+      headers: await csrfHeaders(),
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Failed to activate task");
   },
-
 };

@@ -1,1 +1,1 @@
-export { default } from "./appointments.client"
+export { default } from "./appointments.client";

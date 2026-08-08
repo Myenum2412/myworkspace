@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from "express";
+import type { NextFunction, Request, Response } from "express";
 
-const isMongooseError = (err: Error & { name?: string; errors?: Record<string, { message: string; path: string }> }): boolean =>
-  err.name === "ValidationError" && !!err.errors;
+const isMongooseError = (
+  err: Error & { name?: string; errors?: Record<string, { message: string; path: string }> },
+): boolean => err.name === "ValidationError" && !!err.errors;
 
 export class AppError extends Error {
   constructor(

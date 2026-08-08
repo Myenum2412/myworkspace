@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { type Team } from "./columns";
-import { type OrgMember, type TeamDetail } from "@/components/teams/team-types";
-import { TeamList } from "@/components/teams/team-list";
 import { TeamForm } from "@/components/teams/team-form";
+import { TeamList } from "@/components/teams/team-list";
 import { TeamMembers } from "@/components/teams/team-members";
+import type { OrgMember, TeamDetail } from "@/components/teams/team-types";
+import type { Team } from "./columns";
 
-
-export default function TeamsClient({ teams: initialTeams, members: initialMembers, orgId: initialOrgId }: { teams: Team[]; members: OrgMember[]; orgId?: string }) {
+export default function TeamsClient({
+  teams: initialTeams,
+  members: initialMembers,
+  orgId: initialOrgId,
+}: {
+  teams: Team[];
+  members: OrgMember[];
+  orgId?: string;
+}) {
   const [teams, setTeams] = useState<Team[]>(initialTeams);
   const members = initialMembers;
   const orgId = initialOrgId || "";
@@ -44,7 +51,7 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
       const query = oid ? `?orgId=${oid}` : "";
       const res = await fetch(`/api/teams${query}`, { credentials: "include" });
       const data = await res.json();
-      const result = Array.isArray(data) ? data : (data.teams || data.data || []);
+      const result = Array.isArray(data) ? data : data.teams || data.data || [];
       setTeams(result);
     } catch (error) {
       toast.error("Could not load teams. Please try again.");
@@ -53,7 +60,12 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
 
   function openCreateForm() {
     setEditingTeam(null);
-    setTeamName(""); setTeamDescription(""); setTeamHeadId(""); setTeamHeadName(""); setSelectedMemberIds([]); setFormError("");
+    setTeamName("");
+    setTeamDescription("");
+    setTeamHeadId("");
+    setTeamHeadName("");
+    setSelectedMemberIds([]);
+    setFormError("");
     setShowForm(true);
   }
 
@@ -85,15 +97,29 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
         });
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
-          setFormError(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Failed to update team"));
+          setFormError(
+            d.error === "Validation failed"
+              ? "Please fill in all required fields."
+              : d.error || "Failed to update team",
+          );
           hasError = true;
         }
         if (!hasError) {
-          setTeams((prev) => prev.map((t) =>
-            t.id === editingTeam.id
-              ? { ...t, name: teamName.trim(), description: teamDescription.trim(), leadId: teamHeadId, leadName: teamHeadName, memberIds: selectedMemberIds, memberCount: selectedMemberIds.length }
-              : t
-          ));
+          setTeams((prev) =>
+            prev.map((t) =>
+              t.id === editingTeam.id
+                ? {
+                    ...t,
+                    name: teamName.trim(),
+                    description: teamDescription.trim(),
+                    leadId: teamHeadId,
+                    leadName: teamHeadName,
+                    memberIds: selectedMemberIds,
+                    memberCount: selectedMemberIds.length,
+                  }
+                : t,
+            ),
+          );
         }
       } else {
         const res = await fetch("/api/teams", {
@@ -104,7 +130,11 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
         });
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
-          setFormError(d.error === "Validation failed" ? "Please fill in all required fields." : (d.error || "Failed to create team"));
+          setFormError(
+            d.error === "Validation failed"
+              ? "Please fill in all required fields."
+              : d.error || "Failed to create team",
+          );
           hasError = true;
         }
         if (!hasError) {
@@ -112,7 +142,9 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
           const teamId = data?.data?.id || `team_${Date.now()}`;
 
           const memberIdsToAdd = teamHeadId
-            ? selectedMemberIds.includes(teamHeadId) ? selectedMemberIds : [...selectedMemberIds, teamHeadId]
+            ? selectedMemberIds.includes(teamHeadId)
+              ? selectedMemberIds
+              : [...selectedMemberIds, teamHeadId]
             : selectedMemberIds;
 
           for (const uid of memberIdsToAdd) {
@@ -138,16 +170,27 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
           }
 
           const newTeam: Team = {
-            id: teamId, name: teamName.trim(), description: teamDescription.trim(),
-            memberCount: memberIdsToAdd.length, leadName: teamHeadName, leadAvatar: "",
-            leadId: teamHeadId, memberIds: memberIdsToAdd, createdAt: new Date().toISOString(),
+            id: teamId,
+            name: teamName.trim(),
+            description: teamDescription.trim(),
+            memberCount: memberIdsToAdd.length,
+            leadName: teamHeadName,
+            leadAvatar: "",
+            leadId: teamHeadId,
+            memberIds: memberIdsToAdd,
+            createdAt: new Date().toISOString(),
           };
           setTeams((prev) => [newTeam, ...prev]);
         }
       }
       if (!hasError) {
-        setShowForm(false); setEditingTeam(null);
-        setTeamName(""); setTeamDescription(""); setTeamHeadId(""); setTeamHeadName(""); setSelectedMemberIds([]);
+        setShowForm(false);
+        setEditingTeam(null);
+        setTeamName("");
+        setTeamDescription("");
+        setTeamHeadId("");
+        setTeamHeadName("");
+        setSelectedMemberIds([]);
         fetchTeams(orgId);
       }
     } catch {
@@ -155,19 +198,38 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
         if (editingTeam) {
           return prev.map((t) =>
             t.id === editingTeam.id
-              ? { ...t, name: teamName.trim(), description: teamDescription.trim(), leadId: teamHeadId, leadName: teamHeadName, memberIds: selectedMemberIds, memberCount: selectedMemberIds.length }
-              : t
+              ? {
+                  ...t,
+                  name: teamName.trim(),
+                  description: teamDescription.trim(),
+                  leadId: teamHeadId,
+                  leadName: teamHeadName,
+                  memberIds: selectedMemberIds,
+                  memberCount: selectedMemberIds.length,
+                }
+              : t,
           );
         }
         const newTeam: Team = {
-          id: `team_${Date.now()}`, name: teamName.trim(), description: teamDescription.trim(),
-          memberCount: selectedMemberIds.length, leadName: teamHeadName, leadAvatar: "",
-          leadId: teamHeadId, memberIds: selectedMemberIds, createdAt: new Date().toISOString(),
+          id: `team_${Date.now()}`,
+          name: teamName.trim(),
+          description: teamDescription.trim(),
+          memberCount: selectedMemberIds.length,
+          leadName: teamHeadName,
+          leadAvatar: "",
+          leadId: teamHeadId,
+          memberIds: selectedMemberIds,
+          createdAt: new Date().toISOString(),
         };
         return [newTeam, ...prev];
       });
-      setShowForm(false); setEditingTeam(null);
-      setTeamName(""); setTeamDescription(""); setTeamHeadId(""); setTeamHeadName(""); setSelectedMemberIds([]);
+      setShowForm(false);
+      setEditingTeam(null);
+      setTeamName("");
+      setTeamDescription("");
+      setTeamHeadId("");
+      setTeamHeadName("");
+      setSelectedMemberIds([]);
     } finally {
       setSubmitting(false);
     }
@@ -211,9 +273,17 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
       setTeams((prev) =>
         prev.map((t) =>
           t.id === updatedTeam.id
-            ? { ...t, name: updatedTeam.name, description: updatedTeam.description, memberCount: updatedTeam.memberCount, leadName: updatedLeadName, leadAvatar: updatedLeadAvatar, leadId: updatedLeadId }
-            : t
-        )
+            ? {
+                ...t,
+                name: updatedTeam.name,
+                description: updatedTeam.description,
+                memberCount: updatedTeam.memberCount,
+                leadName: updatedLeadName,
+                leadAvatar: updatedLeadAvatar,
+                leadId: updatedLeadId,
+              }
+            : t,
+        ),
       );
       setMemberPage(0);
     } catch (_) {}
@@ -233,7 +303,8 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
         await openTeamDetail(selectedTeam);
         setShowAddMember(false);
       }
-    } catch (_) {} finally {
+    } catch (_) {
+    } finally {
       setAddingMember(false);
     }
   }
@@ -241,7 +312,10 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
   async function handleRemoveMember(userId: string) {
     if (!selectedTeam) return;
     try {
-      const res = await fetch(`/api/teams/${selectedTeam.id}/members/${userId}`, { method: "DELETE", credentials: "include" });
+      const res = await fetch(`/api/teams/${selectedTeam.id}/members/${userId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (res.ok) await openTeamDetail(selectedTeam);
     } catch (_) {}
   }
@@ -304,7 +378,10 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
         teamDescription={teamDescription}
         onTeamDescriptionChange={setTeamDescription}
         teamHeadId={teamHeadId}
-        onTeamHeadChange={(id, name) => { setTeamHeadId(id); setTeamHeadName(name); }}
+        onTeamHeadChange={(id, name) => {
+          setTeamHeadId(id);
+          setTeamHeadName(name);
+        }}
         selectedMemberIds={selectedMemberIds}
         onSelectedMemberIdsChange={setSelectedMemberIds}
         memberSearch={memberSearch}
@@ -312,7 +389,10 @@ export default function TeamsClient({ teams: initialTeams, members: initialMembe
         submitting={submitting}
         formError={formError}
         onSubmit={handleSubmit}
-        onCancel={() => { setShowForm(false); setMemberSearch(""); }}
+        onCancel={() => {
+          setShowForm(false);
+          setMemberSearch("");
+        }}
         members={members}
       />
     </main>

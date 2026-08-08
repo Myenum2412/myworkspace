@@ -7,13 +7,23 @@ import { enrichTasks } from "@/lib/tasks";
 
 export async function GET() {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
   if (!orgId) return NextResponse.json({ initialTasks: [] });
   try {
-    const raw = await db.collection(collections.tasks).find({ orgId }).sort({ createdAt: -1 }).toArray();
+    const raw = await db
+      .collection(collections.tasks)
+      .find({ orgId })
+      .sort({ createdAt: -1 })
+      .toArray();
     const initialTasks = await enrichTasks(raw);
     return NextResponse.json({ initialTasks, orgId, sessionUserId: session.user.id });
-  } catch { return NextResponse.json({ initialTasks: [] }); }
+  } catch {
+    return NextResponse.json({ initialTasks: [] });
+  }
 }

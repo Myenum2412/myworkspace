@@ -1,7 +1,7 @@
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { getR2Client, getR2Config } from "./r2-client.js";
 import { logger } from "../logger/index.js";
+import { getR2Client, getR2Config } from "./r2-client.js";
 
 export class SignedUrlService {
   async getDownloadUrl(key: string, expiresIn = 3600): Promise<string> {

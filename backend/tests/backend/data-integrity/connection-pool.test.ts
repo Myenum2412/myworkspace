@@ -1,7 +1,7 @@
-import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { User } from "../../../src/lib/db/models/User.js";
+import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
+import { User } from "../../../src/lib/db/models/User.js";
 
 describe("MongoDB connection resilience", () => {
   let mongoServer: MongoMemoryServer;

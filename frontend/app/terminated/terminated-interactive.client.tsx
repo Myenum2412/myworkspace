@@ -2,28 +2,38 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TerminatedViewDialog } from "@/components/employees/terminated-view-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { UserX, Undo2, Loader2Icon, EyeIcon } from "@/lib/icons";
-import { TerminatedViewDialog } from "@/components/employees/terminated-view-dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { EyeIcon, Loader2Icon, Undo2, UserX } from "@/lib/icons";
 import type { TerminatedEmployee } from "../employees/columns";
 
-const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
-export default function TerminatedInteractive({ terminated: initial }: { terminated: TerminatedEmployee[] }) {
+export default function TerminatedInteractive({
+  terminated: initial,
+}: {
+  terminated: TerminatedEmployee[];
+}) {
   const [terminated, setTerminated] = useState<TerminatedEmployee[]>(initial);
   const [viewEmployee, setViewEmployee] = useState<TerminatedEmployee | null>(null);
   const [reactivateEmp, setReactivateEmp] = useState<TerminatedEmployee | null>(null);
@@ -36,7 +46,8 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
   const totalPages = Math.ceil(terminated.length / rowsPerPage);
   const paginatedTerminated = terminated.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
-  const allSelected = paginatedTerminated.length > 0 && paginatedTerminated.every((emp) => selectedRows.has(emp.id));
+  const allSelected =
+    paginatedTerminated.length > 0 && paginatedTerminated.every((emp) => selectedRows.has(emp.id));
   const someSelected = paginatedTerminated.some((emp) => selectedRows.has(emp.id));
 
   function toggleAllRows() {
@@ -106,7 +117,9 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
           </div>
           <div>
             <h1 className="text-2xl font-bold">Terminated</h1>
-            <p className="text-sm text-muted-foreground mt-1">Track and manage terminated employees</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Track and manage terminated employees
+            </p>
           </div>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white border border-gray-200 shadow-sm min-h-[400px] rounded-lg">
@@ -128,7 +141,9 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
           </div>
           <div>
             <h1 className="text-2xl font-bold">Terminated</h1>
-            <p className="text-sm text-muted-foreground mt-1">Track and manage terminated employees</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Track and manage terminated employees
+            </p>
           </div>
         </div>
         {terminated.length === 0 ? (
@@ -136,10 +151,15 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
             <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
               <UserX className="size-6 text-muted-foreground/50" />
             </div>
-            <p className="text-sm font-medium text-muted-foreground mt-4">No terminated employees.</p>
+            <p className="text-sm font-medium text-muted-foreground mt-4">
+              No terminated employees.
+            </p>
           </div>
         ) : (
-          <div className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm flex flex-col" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+          <div
+            className="border border-gray-200 bg-white shadow-sm overflow-hidden rounded-sm flex flex-col"
+            style={{ maxHeight: "calc(100vh - 220px)" }}
+          >
             <div className="overflow-x-auto overflow-y-auto flex-1">
               <table className="table-premium w-full text-sm text-left" style={{ minWidth: 900 }}>
                 <thead className="sticky top-0 z-10">
@@ -151,17 +171,31 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                         aria-label="Select all"
                       />
                     </th>
-                    <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">Employee</th>
-                    <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">Department</th>
+                    <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                      Employee
+                    </th>
+                    <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                      Department
+                    </th>
                     <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">Role</th>
-                    <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">End Date</th>
-                    <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">Reason</th>
-                    <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap">Action</th>
+                    <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                      End Date
+                    </th>
+                    <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                      Reason
+                    </th>
+                    <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedTerminated.map((emp) => (
-                    <tr key={emp.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group cursor-pointer" onClick={() => setViewEmployee(emp)}>
+                    <tr
+                      key={emp.id}
+                      className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white group cursor-pointer"
+                      onClick={() => setViewEmployee(emp)}
+                    >
                       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={selectedRows.has(emp.id)}
@@ -172,7 +206,11 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {emp.avatar ? (
-                            <img src={emp.avatar} alt={emp.name} className="size-8 rounded-full object-cover ring-2 ring-background opacity-60" />
+                            <img
+                              src={emp.avatar}
+                              alt={emp.name}
+                              className="size-8 rounded-full object-cover ring-2 ring-background opacity-60"
+                            />
                           ) : (
                             <div className="size-8 rounded-full flex items-center justify-center text-xs font-semibold bg-gray-100 text-gray-600 opacity-60">
                               {getInitials(emp.name)}
@@ -185,9 +223,17 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                         </div>
                       </td>
                       <td className="px-4 py-3 text-gray-700">{emp.department || "—"}</td>
-                      <td className="px-4 py-3 text-gray-600">{emp.designation || emp.role || "—"}</td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {emp.designation || emp.role || "—"}
+                      </td>
                       <td className="px-4 py-3 text-gray-500 text-xs">
-                        {emp.terminateDate ? new Date(emp.terminateDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                        {emp.terminateDate
+                          ? new Date(emp.terminateDate).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "—"}
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center rounded-sm border border-gray-200 px-2 py-0.5 text-xs text-gray-600">
@@ -221,7 +267,6 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                 </tbody>
               </table>
             </div>
-
           </div>
         )}
       </main>
@@ -229,12 +274,19 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
       <TerminatedViewDialog
         employee={viewEmployee}
         open={!!viewEmployee}
-        onOpenChange={(open) => { if (!open) setViewEmployee(null); }}
+        onOpenChange={(open) => {
+          if (!open) setViewEmployee(null);
+        }}
       />
 
       <Dialog
         open={!!reactivateEmp}
-        onOpenChange={(o) => { if (!o && !reactivating) { setReactivateEmp(null); setReactivateReason(""); } }}
+        onOpenChange={(o) => {
+          if (!o && !reactivating) {
+            setReactivateEmp(null);
+            setReactivateReason("");
+          }
+        }}
       >
         <DialogContent className="max-w-[700px] max-h-[85vh] p-6">
           <DialogHeader className="pb-4 border-b">
@@ -254,7 +306,11 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
           <div className="py-6 space-y-5">
             <div className="flex items-center gap-3 p-4 rounded-sm bg-muted/50 border">
               {reactivateEmp?.avatar ? (
-                <img src={reactivateEmp.avatar} alt={reactivateEmp.name} className="size-10 rounded-full object-cover ring-2 ring-background" />
+                <img
+                  src={reactivateEmp.avatar}
+                  alt={reactivateEmp.name}
+                  className="size-10 rounded-full object-cover ring-2 ring-background"
+                />
               ) : (
                 <div className="size-10 rounded-full flex items-center justify-center text-sm font-semibold bg-gray-100 text-gray-600">
                   {getInitials(reactivateEmp?.name || "")}
@@ -267,7 +323,9 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
             </div>
 
             <div className="space-y-1.5 px-2">
-              <Label className="text-xs text-muted-foreground">Reason for reactivation <span className="text-destructive">*</span></Label>
+              <Label className="text-xs text-muted-foreground">
+                Reason for reactivation <span className="text-destructive">*</span>
+              </Label>
               <Textarea
                 className="flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Enter the reason for reactivating this employee..."
@@ -275,7 +333,9 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                 onChange={(e) => setReactivateReason(e.target.value)}
                 rows={5}
               />
-              <p className="text-xs text-muted-foreground">Please provide a detailed reason for reactivating this employee.</p>
+              <p className="text-xs text-muted-foreground">
+                Please provide a detailed reason for reactivating this employee.
+              </p>
             </div>
           </div>
 
@@ -283,7 +343,10 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
             <div className="flex w-full gap-4 px-2">
               <Button
                 variant="outline"
-                onClick={() => { setReactivateEmp(null); setReactivateReason(""); }}
+                onClick={() => {
+                  setReactivateEmp(null);
+                  setReactivateReason("");
+                }}
                 disabled={reactivating}
                 className="flex-1 py-3 text-base font-medium"
               >
@@ -295,7 +358,11 @@ export default function TerminatedInteractive({ terminated: initial }: { termina
                 onClick={handleReactivateConfirm}
                 className="flex-1 py-3 text-base font-medium bg-green-600 hover:bg-green-700 text-white"
               >
-                {reactivating ? <Loader2Icon className="size-4 animate-spin mr-2" /> : <Undo2 className="size-4 mr-2" />}
+                {reactivating ? (
+                  <Loader2Icon className="size-4 animate-spin mr-2" />
+                ) : (
+                  <Undo2 className="size-4 mr-2" />
+                )}
                 Reactivate Employee
               </Button>
             </div>

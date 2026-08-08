@@ -1,19 +1,19 @@
-import { Router, Response } from "express";
-import { hash, compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import crypto from "crypto";
+import { type Response, Router } from "express";
 import { v4 as uuid } from "uuid";
-import { ClientUser } from "../lib/db/models/ClientUser.js";
+import { signToken } from "../config/auth.js";
+import { env } from "../config/env.js";
 import { Client } from "../lib/db/models/Client.js";
 import { ClientAuditLog } from "../lib/db/models/ClientAuditLog.js";
-import { Folder } from "../lib/db/models/Folder.js";
+import { ClientUser } from "../lib/db/models/ClientUser.js";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
-import { Organization } from "../lib/db/models/Organization.js";
+import { Folder } from "../lib/db/models/Folder.js";
 import { Invoice } from "../lib/db/models/Invoice.js";
-import { signToken } from "../config/auth.js";
+import { Organization } from "../lib/db/models/Organization.js";
+import { sendPasswordResetEmail } from "../lib/mail/index.js";
 import { optionalAuth } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
-import { env } from "../config/env.js";
-import { sendPasswordResetEmail } from "../lib/mail/index.js";
 import { validatePasswordStrength } from "../services/validation.service.js";
 import type { AuthRequest } from "../types/index.js";
 
@@ -172,13 +172,15 @@ router.get("/billing-status", optionalAuth, async (req: AuthRequest, res: Respon
     return;
   }
 
-  const invoices = await     Invoice.find({
+  const invoices = await Invoice.find({
     orgId,
     status: { $in: ["open", "past_due"] },
   })
     .sort({ createdAt: -1 })
     .limit(50)
-    .select("id number total amountPaid currency status pdfUrl hostedUrl createdAt periodStart periodEnd")
+    .select(
+      "id number total amountPaid currency status pdfUrl hostedUrl createdAt periodStart periodEnd",
+    )
     .lean();
 
   const totalDue = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
@@ -211,12 +213,18 @@ router.get("/me", optionalAuth, async (req: AuthRequest, res: Response) => {
     throw new AppError(401, "Authentication required");
   }
 
-  const clientUser = await ClientUser.findOne({ id: clientUserId }).select("id username name email isActive emailVerified mustChangePassword lastLogin createdAt orgId clientId").lean();
+  const clientUser = await ClientUser.findOne({ id: clientUserId })
+    .select(
+      "id username name email isActive emailVerified mustChangePassword lastLogin createdAt orgId clientId",
+    )
+    .lean();
   if (!clientUser) {
     throw new AppError(404, "Client user not found");
   }
 
-  const client = await Client.findOne({ id: clientUser.clientId, orgId: clientUser.orgId }).select("id name company status projects").lean();
+  const client = await Client.findOne({ id: clientUser.clientId, orgId: clientUser.orgId })
+    .select("id name company status projects")
+    .lean();
 
   res.json({
     success: true,
@@ -232,13 +240,15 @@ router.get("/me", optionalAuth, async (req: AuthRequest, res: Response) => {
         lastLogin: clientUser.lastLogin,
         createdAt: clientUser.createdAt,
       },
-      client: client ? {
-        id: client.id,
-        name: client.name,
-        company: client.company,
-        status: client.status,
-        projects: client.projects,
-      } : null,
+      client: client
+        ? {
+            id: client.id,
+            name: client.name,
+            company: client.company,
+            status: client.status,
+            projects: client.projects,
+          }
+        : null,
       orgId: clientUser.orgId,
     },
   });
@@ -269,7 +279,7 @@ router.put("/profile", optionalAuth, async (req: AuthRequest, res: Response) => 
   if (updates.mobileNumber || updates.preferredContactMethod || updates.preferredTimeZone) {
     await Client.findOneAndUpdate(
       { id: clientUser.clientId, orgId: clientUser.orgId },
-      { $set: updates }
+      { $set: updates },
     );
   }
 
@@ -318,7 +328,10 @@ router.post("/forgot-password", async (req: AuthRequest, res: Response) => {
   if (clientUser) {
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetTokenExpires = new Date(Date.now() + 3600000);
-    await ClientUser.updateOne({ _id: clientUser._id }, { $set: { resetToken, resetTokenExpires } });
+    await ClientUser.updateOne(
+      { _id: clientUser._id },
+      { $set: { resetToken, resetTokenExpires } },
+    );
 
     const resetLink = `${env.APP_URL}/client/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
     sendPasswordResetEmail(email, clientUser.name, resetLink).catch((err) => {
@@ -339,7 +352,13 @@ router.post("/reset-password", async (req: AuthRequest, res: Response) => {
 
   validatePasswordStrength(password);
 
-  const clientUser = await ClientUser.findOne({ email: email.toLowerCase().trim(), resetToken: token, resetTokenExpires: { $gt: new Date() } }).select("_id name orgId clientId").lean();
+  const clientUser = await ClientUser.findOne({
+    email: email.toLowerCase().trim(),
+    resetToken: token,
+    resetTokenExpires: { $gt: new Date() },
+  })
+    .select("_id name orgId clientId")
+    .lean();
   if (!clientUser) {
     throw new AppError(400, "Invalid or expired reset token");
   }
@@ -347,7 +366,14 @@ router.post("/reset-password", async (req: AuthRequest, res: Response) => {
   const hashedPassword = await hash(password, 12);
   await ClientUser.updateOne(
     { _id: clientUser._id },
-    { $set: { password: hashedPassword, resetToken: null, resetTokenExpires: null, mustChangePassword: false } }
+    {
+      $set: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpires: null,
+        mustChangePassword: false,
+      },
+    },
   );
 
   await ClientAuditLog.create({

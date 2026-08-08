@@ -1,12 +1,12 @@
-import { Router, Response } from "express";
+import { type Response, Router } from "express";
 import { v4 as uuid } from "uuid";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { requireOrgMembershipFromRequest } from "../lib/org-utils.js";
-import { UploadSession } from "../lib/db/models/UploadSession.js";
-import { getTusServer, Metadata } from "../lib/tus/server.js";
 import { env } from "../config/env.js";
-import { checkUploadPermission } from "../lib/uploads/upload-auth.js";
+import { UploadSession } from "../lib/db/models/UploadSession.js";
 import { logger } from "../lib/logger/index.js";
+import { requireOrgMembershipFromRequest } from "../lib/org-utils.js";
+import { getTusServer, Metadata } from "../lib/tus/server.js";
+import { checkUploadPermission } from "../lib/uploads/upload-auth.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -58,14 +58,19 @@ router.use(async (req: AuthRequest, res: Response) => {
   if (req.method === "POST") {
     const ctx = decodeContext(req.headers[CONTEXT_HEADER] as string | undefined);
     if (!ctx) {
-      res.status(400).json({ success: false, error: `Missing or invalid ${CONTEXT_HEADER} header` });
+      res
+        .status(400)
+        .json({ success: false, error: `Missing or invalid ${CONTEXT_HEADER} header` });
       return;
     }
 
     try {
       await requireOrgMembershipFromRequest(req, ctx.orgId);
     } catch {
-      res.status(403).json({ success: false, error: "You don't have permission to upload to this organization" });
+      res.status(403).json({
+        success: false,
+        error: "You don't have permission to upload to this organization",
+      });
       return;
     }
 

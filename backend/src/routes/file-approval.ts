@@ -1,12 +1,12 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
+import { type Response, Router } from "express";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { UploadApproval } from "../lib/db/models/UploadApproval.js";
-import { verifyOrgAccess } from "../lib/org-utils.js";
-import { recordAuditLog } from "../services/audit.service.js";
-import { isAdminRole } from "../lib/rbac/index.js";
 import { User } from "../lib/db/models/User.js";
+import { verifyOrgAccess } from "../lib/org-utils.js";
+import { isAdminRole } from "../lib/rbac/index.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
+import { recordAuditLog } from "../services/audit.service.js";
 import { processEvent } from "../services/notification-engine.service.js";
 
 const router = Router();
@@ -28,7 +28,9 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
 // Approve a file upload
 router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
-  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).select("orgId fileName uploadedBy").lean();
+  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" })
+    .select("orgId fileName uploadedBy")
+    .lean();
   if (!approval) throw new AppError(404, "Pending approval not found");
 
   await verifyOrgAccess(req.user!.userId, approval.orgId);
@@ -60,7 +62,14 @@ router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
     description: `File "${approval.fileName}" approved for upload`,
   });
 
-  processEvent({ type: "file_approved", category: "files", userId: (approval as any).uploadedBy, orgId: approval.orgId, createdBy: req.user!.userId, title: "File approved" }).catch(() => {});
+  processEvent({
+    type: "file_approved",
+    category: "files",
+    userId: (approval as any).uploadedBy,
+    orgId: approval.orgId,
+    createdBy: req.user!.userId,
+    title: "File approved",
+  }).catch(() => {});
 
   res.json({ success: true, message: "File approved" });
 });
@@ -68,7 +77,9 @@ router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
 // Reject a file upload
 router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
   const { reason } = req.body;
-  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" }).select("orgId fileName uploadedBy").lean();
+  const approval = await UploadApproval.findOne({ uploadId: req.params.id, status: "pending" })
+    .select("orgId fileName uploadedBy")
+    .lean();
   if (!approval) throw new AppError(404, "Pending approval not found");
 
   await verifyOrgAccess(req.user!.userId, approval.orgId);
@@ -82,7 +93,12 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
   await Promise.all([
     UploadApproval.updateOne(
       { uploadId: req.params.id },
-      { status: "rejected", approvedBy: req.user!.userId, reviewedAt: new Date(), rejectionReason: reason || "" },
+      {
+        status: "rejected",
+        approvedBy: req.user!.userId,
+        reviewedAt: new Date(),
+        rejectionReason: reason || "",
+      },
     ),
     FileAttachment.updateOne(
       { id: req.params.id },
@@ -100,7 +116,14 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
     description: `File "${approval.fileName}" rejected: ${reason || "No reason given"}`,
   });
 
-  processEvent({ type: "file_rejected", category: "files", userId: (approval as any).uploadedBy, orgId: approval.orgId, createdBy: req.user!.userId, title: "File rejected" }).catch(() => {});
+  processEvent({
+    type: "file_rejected",
+    category: "files",
+    userId: (approval as any).uploadedBy,
+    orgId: approval.orgId,
+    createdBy: req.user!.userId,
+    title: "File rejected",
+  }).catch(() => {});
 
   res.json({ success: true, message: "File rejected" });
 });

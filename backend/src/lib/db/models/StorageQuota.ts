@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IStorageQuota extends Document {
   orgId: string;
@@ -26,7 +26,7 @@ const storageQuotaSchema = new Schema<IStorageQuota>(
     versioningEnabled: { type: Boolean, default: true },
     retentionDays: { type: Number, default: 30 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const StorageQuota = model<IStorageQuota>("StorageQuota", storageQuotaSchema);

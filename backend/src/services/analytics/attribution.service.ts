@@ -57,7 +57,7 @@ export class AttributionService {
     const attribution = await this.getStoredAttribution(params.userId || params.anonymousId || "");
     const now = new Date();
 
-    let firstTouch = attribution?.firstTouch || {
+    const firstTouch = attribution?.firstTouch || {
       source: params.utm?.source || "direct",
       medium: params.utm?.medium || "none",
       campaign: params.utm?.campaign || "",
@@ -76,7 +76,7 @@ export class AttributionService {
 
   private detectChannel(
     utm?: { source?: string; medium?: string; campaign?: string },
-    referrer?: string
+    referrer?: string,
   ): string {
     if (!utm || !utm.source) {
       if (!referrer || referrer === "") return "direct";
@@ -102,8 +102,20 @@ export class AttributionService {
   }
 
   async getStoredAttribution(userKey: string): Promise<{
-    firstTouch: { source: string; medium: string; campaign: string; channel: string; timestamp: Date };
-    lastTouch: { source: string; medium: string; campaign: string; channel: string; timestamp: Date };
+    firstTouch: {
+      source: string;
+      medium: string;
+      campaign: string;
+      channel: string;
+      timestamp: Date;
+    };
+    lastTouch: {
+      source: string;
+      medium: string;
+      campaign: string;
+      channel: string;
+      timestamp: Date;
+    };
   } | null> {
     const query = {
       $or: [{ userId: userKey }, { anonymousId: userKey }],
@@ -111,8 +123,14 @@ export class AttributionService {
     };
 
     const [firstEvent, lastEvent] = await Promise.all([
-      AnalyticsEvent.findOne(query).sort({ timestamp: 1 }).lean() as Promise<Record<string, unknown> | null>,
-      AnalyticsEvent.findOne(query).sort({ timestamp: -1 }).lean() as Promise<Record<string, unknown> | null>,
+      AnalyticsEvent.findOne(query).sort({ timestamp: 1 }).lean() as Promise<Record<
+        string,
+        unknown
+      > | null>,
+      AnalyticsEvent.findOne(query).sort({ timestamp: -1 }).lean() as Promise<Record<
+        string,
+        unknown
+      > | null>,
     ]);
 
     if (!firstEvent && !lastEvent) return null;
@@ -126,8 +144,14 @@ export class AttributionService {
         medium: (fu?.medium as string) || "none",
         campaign: (fu?.campaign as string) || "",
         channel: this.detectChannel(
-          fu ? { source: fu.source as string, medium: fu.medium as string, campaign: fu.campaign as string } : undefined,
-          firstEvent?.referrer as string
+          fu
+            ? {
+                source: fu.source as string,
+                medium: fu.medium as string,
+                campaign: fu.campaign as string,
+              }
+            : undefined,
+          firstEvent?.referrer as string,
         ),
         timestamp: (firstEvent?.timestamp as Date) || new Date(),
       },
@@ -136,15 +160,25 @@ export class AttributionService {
         medium: (lu?.medium as string) || "none",
         campaign: (lu?.campaign as string) || "",
         channel: this.detectChannel(
-          lu ? { source: lu.source as string, medium: lu.medium as string, campaign: lu.campaign as string } : undefined,
-          lastEvent?.referrer as string
+          lu
+            ? {
+                source: lu.source as string,
+                medium: lu.medium as string,
+                campaign: lu.campaign as string,
+              }
+            : undefined,
+          lastEvent?.referrer as string,
         ),
         timestamp: (lastEvent?.timestamp as Date) || new Date(),
       },
     };
   }
 
-  async getCampaignPerformance(filters?: { from?: Date; to?: Date; orgId?: string }): Promise<CampaignPerformance[]> {
+  async getCampaignPerformance(filters?: {
+    from?: Date;
+    to?: Date;
+    orgId?: string;
+  }): Promise<CampaignPerformance[]> {
     const match: Record<string, unknown> = {
       "utm.campaign": { $exists: true, $ne: "" },
     };
@@ -168,7 +202,7 @@ export class AttributionService {
       { $sort: { count: -1 } },
     ]);
 
-    return campaigns.map(c => {
+    return campaigns.map((c) => {
       const conversions = c.uniqueUsers.length;
       return {
         campaign: c._id,
@@ -184,11 +218,20 @@ export class AttributionService {
     });
   }
 
-  async getConversionFunnel(funnelName: string, orgId: string, filters?: { from?: Date; to?: Date }) {
-    const funnel = await ConversionFunnel.findOne({ orgId, name: funnelName }).lean() as Record<string, unknown> | null;
+  async getConversionFunnel(
+    funnelName: string,
+    orgId: string,
+    filters?: { from?: Date; to?: Date },
+  ) {
+    const funnel = (await ConversionFunnel.findOne({ orgId, name: funnelName }).lean()) as Record<
+      string,
+      unknown
+    > | null;
     if (!funnel) return null;
 
-    const stepsData = funnel.steps as Array<{ name: string; eventName: string; order: number }> | undefined;
+    const stepsData = funnel.steps as
+      | Array<{ name: string; eventName: string; order: number }>
+      | undefined;
     if (!stepsData) return null;
 
     const match: Record<string, unknown> = { orgId };
@@ -199,37 +242,60 @@ export class AttributionService {
     }
 
     const steps = await Promise.all(
-      stepsData.sort((a, b) => a.order - b.order).map(async step => {
-        const count = await AnalyticsEvent.countDocuments({
-          ...match,
-          eventName: step.eventName,
-        });
-        const uniqueUsers = (await AnalyticsEvent.distinct("userId", {
-          ...match,
-          eventName: step.eventName,
-        })).length;
+      stepsData
+        .sort((a, b) => a.order - b.order)
+        .map(async (step) => {
+          const count = await AnalyticsEvent.countDocuments({
+            ...match,
+            eventName: step.eventName,
+          });
+          const uniqueUsers = (
+            await AnalyticsEvent.distinct("userId", {
+              ...match,
+              eventName: step.eventName,
+            })
+          ).length;
 
-        return {
-          name: step.name,
-          eventName: step.eventName,
-          order: step.order,
-          count,
-          uniqueUsers,
-        };
-      })
+          return {
+            name: step.name,
+            eventName: step.eventName,
+            order: step.order,
+            count,
+            uniqueUsers,
+          };
+        }),
     );
 
     let previousUsers = steps[0]?.uniqueUsers || 0;
-    const stepsWithConversion = steps.map((step: { name: string; eventName: string; order: number; count: number; uniqueUsers: number }, i: number) => {
-      const conversion = i === 0 ? 100 : previousUsers > 0 ? Math.round((step.uniqueUsers / previousUsers) * 10000) / 100 : 0;
-      previousUsers = step.uniqueUsers;
-      return { ...step, conversionRate: conversion };
-    });
+    const stepsWithConversion = steps.map(
+      (
+        step: {
+          name: string;
+          eventName: string;
+          order: number;
+          count: number;
+          uniqueUsers: number;
+        },
+        i: number,
+      ) => {
+        const conversion =
+          i === 0
+            ? 100
+            : previousUsers > 0
+              ? Math.round((step.uniqueUsers / previousUsers) * 10000) / 100
+              : 0;
+        previousUsers = step.uniqueUsers;
+        return { ...step, conversionRate: conversion };
+      },
+    );
 
     return {
       funnelName,
       steps: stepsWithConversion,
-      overallConversion: stepsWithConversion.length > 1 ? stepsWithConversion[stepsWithConversion.length - 1].conversionRate : 100,
+      overallConversion:
+        stepsWithConversion.length > 1
+          ? stepsWithConversion[stepsWithConversion.length - 1].conversionRate
+          : 100,
     };
   }
 
@@ -255,7 +321,7 @@ export class AttributionService {
       { $sort: { count: -1 } },
     ]);
 
-    return channels.map(c => ({
+    return channels.map((c) => ({
       channel: c._id || "direct",
       events: c.count,
       uniqueUsers: c.uniqueUsers.length,
@@ -319,12 +385,14 @@ export class AttributionService {
       return sum + (typeof e.properties?.amount === "number" ? e.properties.amount : 0);
     }, 0);
 
-    const uniqueUsers = new Set(revenueEvents.map(e => e.userId).filter(Boolean));
-    return uniqueUsers.size > 0 ? Math.round(totalRevenue / uniqueUsers.size * 100) / 100 : 0;
+    const uniqueUsers = new Set(revenueEvents.map((e) => e.userId).filter(Boolean));
+    return uniqueUsers.size > 0 ? Math.round((totalRevenue / uniqueUsers.size) * 100) / 100 : 0;
   }
 
   async getChurnRate(filters?: { from?: Date; to?: Date; orgId?: string }): Promise<number> {
-    const match: Record<string, unknown> = { eventName: { $in: ["user_churn", "subscription_cancelled"] } };
+    const match: Record<string, unknown> = {
+      eventName: { $in: ["user_churn", "subscription_cancelled"] },
+    };
     if (filters?.from || filters?.to) {
       match.timestamp = {};
       if (filters.from) (match.timestamp as Record<string, unknown>).$gte = filters.from;
@@ -348,7 +416,10 @@ export class AttributionService {
     if (filters?.orgId) match.orgId = filters.orgId;
 
     const signedUp = await AnalyticsEvent.countDocuments({ ...match, eventName: "sign_up" });
-    const activated = await AnalyticsEvent.countDocuments({ ...match, eventName: "onboarding_complete" });
+    const activated = await AnalyticsEvent.countDocuments({
+      ...match,
+      eventName: "onboarding_complete",
+    });
 
     return signedUp > 0 ? Math.round((activated / signedUp) * 10000) / 100 : 0;
   }

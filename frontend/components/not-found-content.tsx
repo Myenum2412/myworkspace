@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Home } from "@/lib/icons";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft, Home } from "@/lib/icons";
 
 export function NotFoundContent() {
   const router = useRouter();
@@ -24,9 +24,7 @@ export function NotFoundContent() {
           </div>
         </div>
         <div className="mt-12 space-y-3">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            404
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">404</h1>
         </div>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button variant="outline" className="group" onClick={() => router.back()}>

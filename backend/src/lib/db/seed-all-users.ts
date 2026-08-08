@@ -1,17 +1,32 @@
-import { connectDb, mongoose } from "./index.js";
+import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
-import { User } from "./models/User.js";
-import { ClientUser } from "./models/ClientUser.js";
+import { connectDb, mongoose } from "./index.js";
 import { Client } from "./models/Client.js";
+import { ClientUser } from "./models/ClientUser.js";
+import { Counter } from "./models/Counter.js";
 import { Organization } from "./models/Organization.js";
 import { OrgMember } from "./models/OrgMember.js";
-import { Counter } from "./models/Counter.js";
-import bcrypt from "bcryptjs";
+import { User } from "./models/User.js";
 
 const STAFF_USERS = [
-  { name: "Pallath Arjun", email: "pallatharjun119@gmail.com", password: "So-Different06", role: "staffs" },
-  { name: "Arjun Jilla", email: "arjunjilla119@gmail.com", password: "As_you_wish06", role: "staffs" },
-  { name: "Nisha Kerala", email: "nishakerala2003@gmail.com", password: "kerala_nisha_2412", role: "staffs" },
+  {
+    name: "Pallath Arjun",
+    email: "pallatharjun119@gmail.com",
+    password: "So-Different06",
+    role: "staffs",
+  },
+  {
+    name: "Arjun Jilla",
+    email: "arjunjilla119@gmail.com",
+    password: "As_you_wish06",
+    role: "staffs",
+  },
+  {
+    name: "Nisha Kerala",
+    email: "nishakerala2003@gmail.com",
+    password: "kerala_nisha_2412",
+    role: "staffs",
+  },
 ];
 
 const CLIENT_USERS = [
@@ -37,7 +52,7 @@ async function seedAllUsers() {
     return;
   }
 
-  let org = await Organization.findOne({}).sort({ createdAt: 1 }).lean();
+  const org = await Organization.findOne({}).sort({ createdAt: 1 }).lean();
   let targetOrgId = org?.id || org?._id?.toString();
 
   if (!targetOrgId) {
@@ -53,10 +68,10 @@ async function seedAllUsers() {
     targetOrgId = newOrgId;
   }
 
-  let seq = await Counter.findOneAndUpdate(
+  const seq = await Counter.findOneAndUpdate(
     { name: "userNumber" },
     { $inc: { seq: STAFF_USERS.length + CLIENT_USERS.length } },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
   let userNumber = seq!.seq;
 
@@ -133,9 +148,9 @@ async function seedAllUsers() {
 
   console.log("\n✨ All users seeded successfully!");
   console.log("\nStaff panel login (3 users):");
-  STAFF_USERS.forEach(u => console.log(`  ${u.email} / ${u.password}`));
+  STAFF_USERS.forEach((u) => console.log(`  ${u.email} / ${u.password}`));
   console.log("\nClient panel login (3 users):");
-  CLIENT_USERS.forEach(u => console.log(`  ${u.email} / ${u.password}`));
+  CLIENT_USERS.forEach((u) => console.log(`  ${u.email} / ${u.password}`));
   console.log(`\nOrg ID: ${targetOrgId}`);
 
   await mongoose.disconnect();

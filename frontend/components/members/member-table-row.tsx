@@ -3,22 +3,22 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  MoreHorizontalIcon,
-  UsersIcon,
-  PencilIcon,
-  Trash2Icon,
-  CheckCircle2Icon,
-  XCircleIcon,
-} from "@/lib/icons";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  CheckCircle2Icon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  Trash2Icon,
+  UsersIcon,
+  XCircleIcon,
+} from "@/lib/icons";
 import type { MemberData } from "./member-types";
-import { statusConfig, getInitials, getAvatarColor } from "./member-types";
+import { getAvatarColor, getInitials, statusConfig } from "./member-types";
 
 type MemberTableRowProps = {
   member: MemberData;
@@ -32,10 +32,22 @@ type MemberTableRowProps = {
 
 function fmt(d?: Date): string {
   if (!d) return "\u2014";
-  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
-export function MemberTableRow({ member: m, selected, onToggleSelect, onView, onEdit, onDelete, showOrgColumn }: MemberTableRowProps) {
+export function MemberTableRow({
+  member: m,
+  selected,
+  onToggleSelect,
+  onView,
+  onEdit,
+  onDelete,
+  showOrgColumn,
+}: MemberTableRowProps) {
   const status = statusConfig[m.status] || statusConfig.offline;
 
   return (
@@ -44,7 +56,12 @@ export function MemberTableRow({ member: m, selected, onToggleSelect, onView, on
       onClick={() => onView(m)}
     >
       <td className="px-4 py-3 w-10" onClick={(e) => e.stopPropagation()}>
-        <Checkbox checked={selected} onCheckedChange={() => onToggleSelect(m.id)} aria-label={`Select ${m.name}`} className="border-black" />
+        <Checkbox
+          checked={selected}
+          onCheckedChange={() => onToggleSelect(m.id)}
+          aria-label={`Select ${m.name}`}
+          className="border-black"
+        />
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
@@ -55,13 +72,13 @@ export function MemberTableRow({ member: m, selected, onToggleSelect, onView, on
               className="size-8 rounded-2xl object-cover ring-2 ring-background"
             />
           ) : (
-            <div className={`size-8 rounded-2xl flex items-center justify-center text-xs font-semibold ${getAvatarColor(m.name)}`}>
+            <div
+              className={`size-8 rounded-2xl flex items-center justify-center text-xs font-semibold ${getAvatarColor(m.name)}`}
+            >
               {getInitials(m.name)}
             </div>
           )}
-          <span className="font-medium text-gray-900 whitespace-nowrap">
-            {m.name}
-          </span>
+          <span className="font-medium text-gray-900 whitespace-nowrap">{m.name}</span>
         </div>
       </td>
 
@@ -92,7 +109,9 @@ export function MemberTableRow({ member: m, selected, onToggleSelect, onView, on
       </td>
 
       <td className="px-4 py-3">
-        <span className={`inline-flex items-center gap-1.5 rounded-2xl px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-2xl px-2.5 py-1 text-xs font-medium ${status.bg} ${status.text}`}
+        >
           <span className={`size-1.5 rounded-2xl ${status.dot}`} />
           {status.label}
         </span>

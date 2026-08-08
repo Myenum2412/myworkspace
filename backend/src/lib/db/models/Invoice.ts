@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IInvoiceItem {
   id: string;
@@ -38,13 +38,16 @@ export interface IInvoice extends Document {
   updatedAt: Date;
 }
 
-const invoiceItemSchema = new Schema<IInvoiceItem>({
-  id: { type: String, required: true },
-  description: { type: String, default: "" },
-  quantity: { type: Number, default: 1 },
-  rate: { type: Number, default: 0 },
-  tax: { type: String, default: "" },
-}, { _id: false });
+const invoiceItemSchema = new Schema<IInvoiceItem>(
+  {
+    id: { type: String, required: true },
+    description: { type: String, default: "" },
+    quantity: { type: Number, default: 1 },
+    rate: { type: Number, default: 0 },
+    tax: { type: String, default: "" },
+  },
+  { _id: false },
+);
 
 const invoiceSchema = new Schema<IInvoice>(
   {
@@ -79,7 +82,7 @@ const invoiceSchema = new Schema<IInvoice>(
     createdBy: { type: String, required: true },
     updatedBy: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 invoiceSchema.index({ orgId: 1, createdAt: -1 });

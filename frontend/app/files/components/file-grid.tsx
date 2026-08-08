@@ -1,18 +1,18 @@
 "use client";
 
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { cn } from "@/lib/utils";
-import type { FileItem, FolderItem } from "@/lib/file-system/types";
-import { formatSize } from "@/lib/file-system/types";
-import { ROLES } from "@/lib/rbac";
-import { CheckIcon, FolderPlusIcon } from "@/lib/icons";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { DriveTile, DriveFolderTile, DriveOverflowMenu, FileMenu, FolderMenu } from "./drive-menu";
+import { useFileSystemStore } from "@/lib/file-system/store";
+import type { FileItem, FolderItem } from "@/lib/file-system/types";
+import { formatSize } from "@/lib/file-system/types";
+import { CheckIcon, FolderPlusIcon } from "@/lib/icons";
+import { ROLES } from "@/lib/rbac";
+import { cn } from "@/lib/utils";
+import { DriveFolderTile, DriveOverflowMenu, DriveTile, FileMenu, FolderMenu } from "./drive-menu";
 
 function useListState() {
   const selectedIds = useFileSystemStore((s) => s.selectedIds);
@@ -22,15 +22,27 @@ function useListState() {
   const setPreviewPaneFile = useFileSystemStore((s) => s.setPreviewPaneFile);
   const setIsCreatingFolder = useFileSystemStore((s) => s.setIsCreatingFolder);
   const selectedIdsInList = useFileSystemStore((s) => s.selectedIds);
-  return { selectedIds, toggleSelection, setCurrentFolder, setPreviewFile, setPreviewPaneFile, setIsCreatingFolder };
+  return {
+    selectedIds,
+    toggleSelection,
+    setCurrentFolder,
+    setPreviewFile,
+    setPreviewPaneFile,
+    setIsCreatingFolder,
+  };
 }
 
 function formatDate(value?: string) {
   if (!value) return "—";
   const d = new Date(value);
   const now = new Date();
-  if (d.toDateString() === now.toDateString()) return `Today at ${d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined });
+  if (d.toDateString() === now.toDateString())
+    return `Today at ${d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+  });
 }
 
 function FolderCard({ folder, onOpen }: { folder: FolderItem; onOpen: () => void }) {
@@ -48,7 +60,7 @@ function FolderCard({ folder, onOpen }: { folder: FolderItem; onOpen: () => void
             "group relative flex cursor-pointer select-none flex-col overflow-hidden rounded-xl border transition-all duration-200",
             selected
               ? "border-primary bg-primary/[0.04] ring-2 ring-primary/30"
-              : "border-border/80 bg-card hover:border-primary/30 hover:shadow-md hover:-translate-y-px"
+              : "border-border/80 bg-card hover:border-primary/30 hover:shadow-md hover:-translate-y-px",
           )}
         >
           <div className="relative h-32 w-full border-b border-border/50">
@@ -59,7 +71,7 @@ function FolderCard({ folder, onOpen }: { folder: FolderItem; onOpen: () => void
           </div>
           <div className="px-3 py-2.5">
             <p className={cn("truncate text-[13px] font-medium text-foreground")}>{folder.name}</p>
-<p className="mt-0.5 text-[11px] text-muted-foreground">
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
               {formatDate(folder.updatedAt || folder.createdAt)}
             </p>
           </div>
@@ -92,7 +104,7 @@ function FileCard({ file }: { file: FileItem }) {
             "group relative flex cursor-pointer select-none flex-col overflow-hidden rounded-xl border transition-all duration-200",
             selected
               ? "border-primary bg-primary/[0.04] ring-2 ring-primary/30"
-              : "border-border/80 bg-card hover:border-primary/30 hover:shadow-md hover:-translate-y-px"
+              : "border-border/80 bg-card hover:border-primary/30 hover:shadow-md hover:-translate-y-px",
           )}
         >
           <div className="relative aspect-[4/3] w-full overflow-hidden">
@@ -116,7 +128,9 @@ function FileCard({ file }: { file: FileItem }) {
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-56">
-        <ContextMenuItem onClick={() => useFileSystemStore.getState().setPreviewFile(file)}>Open preview</ContextMenuItem>
+        <ContextMenuItem onClick={() => useFileSystemStore.getState().setPreviewFile(file)}>
+          Open preview
+        </ContextMenuItem>
         <FileMenu file={file} variant="context" />
       </ContextMenuContent>
     </ContextMenu>
@@ -124,12 +138,15 @@ function FileCard({ file }: { file: FileItem }) {
 }
 
 export function DriveGrid() {
-  const { folders, files, setCurrentFolder, breadcrumbs, setIsCreatingFolder } = useFileSystemStore();
+  const { folders, files, setCurrentFolder, breadcrumbs, setIsCreatingFolder } =
+    useFileSystemStore();
   const readonly = useFileSystemStore((s) => s.userRole) === ROLES.CLIENTS;
 
   const openFolder = (folder: FolderItem) => {
     setCurrentFolder(folder.id);
-    useFileSystemStore.getState().setBreadcrumbs([...breadcrumbs, { id: folder.id, name: folder.name }]);
+    useFileSystemStore
+      .getState()
+      .setBreadcrumbs([...breadcrumbs, { id: folder.id, name: folder.name }]);
   };
 
   return (

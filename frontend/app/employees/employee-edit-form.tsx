@@ -1,1 +1,1 @@
-export { EmployeeEditForm } from "./employee-edit-form.client"
+export { EmployeeEditForm } from "./employee-edit-form.client";

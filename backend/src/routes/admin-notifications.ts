@@ -1,11 +1,11 @@
-import { Router, Response } from "express";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { orgAdminOnly, platformAdminOnly } from "../middleware/authorize.js";
-import { checkNotificationHealth } from "../services/notification-health.service.js";
-import { notificationMetrics } from "../services/notification-metrics.service.js";
+import { type Response, Router } from "express";
 import { EmailLog } from "../lib/db/models/EmailLog.js";
 import { Notification } from "../lib/db/models/Notification.js";
 import { logger } from "../lib/logger/index.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { orgAdminOnly, platformAdminOnly } from "../middleware/authorize.js";
+import { checkNotificationHealth } from "../services/notification-health.service.js";
+import { notificationMetrics } from "../services/notification-metrics.service.js";
 
 const router = Router();
 
@@ -71,27 +71,44 @@ router.get("/email-logs", async (req: AuthRequest, res: Response) => {
 // Template management endpoints
 router.get("/templates", async (_req: AuthRequest, res: Response) => {
   const TEMPLATE_MAP = {
-    "task_assigned": "Task Assigned", "task_updated": "Task Updated",
-    "task_due_soon": "Due Reminder", "task_overdue": "Overdue Notice",
-    "task_completed": "Task Completed", "task_reopened": "Task Reopened",
-    "task_comment_added": "New Comment", "task_priority_changed": "Priority Changed",
-    "project_created": "Project Created", "project_updated": "Project Updated",
-    "project_completed": "Project Completed",
-    "approval_requested": "Approval Requested", "approval_approved": "Approved",
-    "approval_rejected": "Rejected", "file_uploaded": "File Uploaded",
-    "file_shared": "File Shared", "file_downloaded": "File Downloaded",
-    "file_deleted": "File Deleted", "password_reset": "Password Reset",
-    "password_changed": "Password Changed", "new_device_login": "New Device Login",
-    "account_locked": "Account Locked", "account_suspended": "Account Suspended",
-    "subscription_nearing_expiration": "Subscription Expiring",
-    "leave_request_submitted": "Leave Request", "leave_approved": "Leave Approved",
-    "leave_rejected": "Leave Rejected",
-    "invoice_generated": "Invoice Generated", "invoice_paid": "Invoice Paid",
-    "payment_failed": "Payment Failed",
-    "system_outage": "System Outage", "scheduled_maintenance": "Scheduled Maintenance",
-    "meeting_scheduled": "Meeting Scheduled", "meeting_reminder": "Meeting Reminder",
-    "mention": "Mention", "chat_message": "New Message",
-    "contract_signed": "Contract Signed", "client_invitation_sent": "Client Invitation",
+    task_assigned: "Task Assigned",
+    task_updated: "Task Updated",
+    task_due_soon: "Due Reminder",
+    task_overdue: "Overdue Notice",
+    task_completed: "Task Completed",
+    task_reopened: "Task Reopened",
+    task_comment_added: "New Comment",
+    task_priority_changed: "Priority Changed",
+    project_created: "Project Created",
+    project_updated: "Project Updated",
+    project_completed: "Project Completed",
+    approval_requested: "Approval Requested",
+    approval_approved: "Approved",
+    approval_rejected: "Rejected",
+    file_uploaded: "File Uploaded",
+    file_shared: "File Shared",
+    file_downloaded: "File Downloaded",
+    file_deleted: "File Deleted",
+    password_reset: "Password Reset",
+    password_changed: "Password Changed",
+    new_device_login: "New Device Login",
+    account_locked: "Account Locked",
+    account_suspended: "Account Suspended",
+    subscription_nearing_expiration: "Subscription Expiring",
+    leave_request_submitted: "Leave Request",
+    leave_approved: "Leave Approved",
+    leave_rejected: "Leave Rejected",
+    invoice_generated: "Invoice Generated",
+    invoice_paid: "Invoice Paid",
+    payment_failed: "Payment Failed",
+    system_outage: "System Outage",
+    scheduled_maintenance: "Scheduled Maintenance",
+    meeting_scheduled: "Meeting Scheduled",
+    meeting_reminder: "Meeting Reminder",
+    mention: "Mention",
+    chat_message: "New Message",
+    contract_signed: "Contract Signed",
+    client_invitation_sent: "Client Invitation",
   };
 
   res.json({

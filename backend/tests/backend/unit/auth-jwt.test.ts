@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { signToken, verifyToken } from "../../../src/config/auth.js";
 import type { JwtPayload } from "../../../src/types/index.js";
-import { tamperedJWT, algorithmNoneJWT, expiredJWT } from "../../__helpers__/fixtures.js";
+import { algorithmNoneJWT, expiredJWT, tamperedJWT } from "../../__helpers__/fixtures.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "test-secret";
 

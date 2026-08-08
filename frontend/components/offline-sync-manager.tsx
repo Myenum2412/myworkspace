@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
-import { syncOfflineRequests } from "@/lib/offline-sync";
+import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { syncOfflineRequests } from "@/lib/offline-sync";
 
 export function OfflineSyncManager() {
   const syncInProgress = useRef(false);

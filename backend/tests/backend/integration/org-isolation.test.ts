@@ -1,5 +1,5 @@
-import request from "supertest";
 import type { Server } from "http";
+import request from "supertest";
 import app from "../../../src/app.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin } from "../../__helpers__/users.js";
@@ -23,7 +23,10 @@ describe("cross-org isolation", () => {
     const a = await seedOrgWithAdmin({ email: `a-${Date.now()}@ex.com` });
     const b = await seedOrgWithAdmin({ email: `b-${Date.now()}@ex.com` });
 
-    const task = await agent().post("/api/tasks").set(a.headers).send({ orgId: a.orgId, title: "A task", priority: "medium" });
+    const task = await agent()
+      .post("/api/tasks")
+      .set(a.headers)
+      .send({ orgId: a.orgId, title: "A task", priority: "medium" });
     expect(task.status).toBe(201);
     const taskId = task.body.data.taskId;
 
@@ -45,14 +48,23 @@ describe("cross-org isolation", () => {
     expect([400, 403, 404]).toContain(del.status);
 
     // Projects isolation (no GET /:id; use PUT as the cross-org probe)
-    const proj = await agent().post("/api/projects").set(a.headers).send({ orgId: a.orgId, name: "A Proj" });
+    const proj = await agent()
+      .post("/api/projects")
+      .set(a.headers)
+      .send({ orgId: a.orgId, name: "A Proj" });
     expect(proj.status).toBe(201);
     const pid = proj.body.data.id;
-    const projUpd = await agent().put(`/api/projects/${pid}`).set(b.headers).send({ name: "Hijack" });
+    const projUpd = await agent()
+      .put(`/api/projects/${pid}`)
+      .set(b.headers)
+      .send({ name: "Hijack" });
     expect([400, 403, 404]).toContain(projUpd.status);
 
     // Teams isolation — teams use findById on _id
-    const team = await agent().post("/api/teams").set(a.headers).send({ orgId: a.orgId, name: "A Team" });
+    const team = await agent()
+      .post("/api/teams")
+      .set(a.headers)
+      .send({ orgId: a.orgId, name: "A Team" });
     expect(team.status).toBe(201);
     const createdTeam = await agent().get(`/api/teams?orgId=${a.orgId}`).set(a.headers);
     const tid = createdTeam.body.data[0]._id;

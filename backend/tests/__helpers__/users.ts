@@ -1,10 +1,10 @@
+import { hash } from "bcryptjs";
 import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
-import { User } from "../../src/lib/db/models/User.js";
+import { signToken } from "../../src/config/auth.js";
 import { Organization } from "../../src/lib/db/models/Organization.js";
 import { OrgMember } from "../../src/lib/db/models/OrgMember.js";
-import { hash } from "bcryptjs";
-import { signToken } from "../../src/config/auth.js";
+import { User } from "../../src/lib/db/models/User.js";
 
 /**
  * Seed an org with an admin user directly (bypasses mail + throttling concerns
@@ -33,7 +33,14 @@ export async function seedOrgWithAdmin(opts: {
     userNumber: Math.floor(Math.random() * 900000) + 100000,
     createdBy: userId,
   });
-  await Organization.create({ id: orgId, name: `${name}'s Org`, slug: `slug-${userId.slice(0, 8)}`, plan: "free", ownerId: userId, createdBy: userId });
+  await Organization.create({
+    id: orgId,
+    name: `${name}'s Org`,
+    slug: `slug-${userId.slice(0, 8)}`,
+    plan: "free",
+    ownerId: userId,
+    createdBy: userId,
+  });
   await OrgMember.create({ orgId, userId, role: "members", createdBy: userId });
 
   const token = signToken({ userId, email, role: "members", permissions: [], orgId });

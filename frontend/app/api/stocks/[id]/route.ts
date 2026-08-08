@@ -6,13 +6,21 @@ import { getUserOrgId } from "@/lib/org";
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
   if (!orgId) return NextResponse.json({ error: "No organization found" }, { status: 400 });
 
   let body: Record<string, unknown>;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 }); }
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
   const { id } = await params;
   try {
@@ -28,7 +36,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         category: body.category || "",
         brand: body.brand || "",
         unit: body.unit || "",
-        openingStock, stockIn, stockOut,
+        openingStock,
+        stockIn,
+        stockOut,
         availableStock: openingStock + stockIn - stockOut,
         quantity: openingStock + stockIn - stockOut,
         reorderLevel: Number(body.reorderLevel ?? 0),
@@ -46,7 +56,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       },
     };
     const result = await db.collection(collections.stocks).updateOne({ id, orgId }, update);
-    if (result.matchedCount === 0) return NextResponse.json({ error: "Stock item not found" }, { status: 404 });
+    if (result.matchedCount === 0)
+      return NextResponse.json({ error: "Stock item not found" }, { status: 404 });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[PUT /api/stocks/:id]", err);
@@ -56,14 +67,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   let session;
-  try { session = await auth(); } catch { return NextResponse.json({ error: "Auth unavailable" }, { status: 503 }); }
+  try {
+    session = await auth();
+  } catch {
+    return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
+  }
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const orgId = session.user.orgId || await getUserOrgId(session.user.id, session.user.email);
+  const orgId = session.user.orgId || (await getUserOrgId(session.user.id, session.user.email));
   if (!orgId) return NextResponse.json({ error: "No organization found" }, { status: 400 });
   const { id } = await params;
   try {
     const result = await db.collection(collections.stocks).deleteOne({ id, orgId });
-    if (result.deletedCount === 0) return NextResponse.json({ error: "Stock item not found" }, { status: 404 });
+    if (result.deletedCount === 0)
+      return NextResponse.json({ error: "Stock item not found" }, { status: 404 });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[DELETE /api/stocks/:id]", err);

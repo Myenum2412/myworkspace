@@ -1,1 +1,1 @@
-export { default } from "./approved.client"
+export { default } from "./approved.client";

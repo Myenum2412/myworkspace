@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface SliderProps {
@@ -70,10 +70,7 @@ export function Slider({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
     >
-      <div
-        className="absolute h-full bg-primary rounded-full"
-        style={{ width: `${pct}%` }}
-      />
+      <div className="absolute h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
       <div
         className={cn(
           "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-3.5 rounded-full bg-primary border-2 border-background shadow-sm transition-shadow",

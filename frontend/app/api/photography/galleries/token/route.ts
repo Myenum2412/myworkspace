@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
-import { requireUserOrgId } from "@/lib/org";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import crypto from "crypto";
+import { requireUserOrgId } from "@/lib/org";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -18,7 +18,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Gallery ID is required" }, { status: 400 });
   }
 
-  const gallery = await db.collection(collections.qrGalleries).findOne({ id: body.galleryId, orgId });
+  const gallery = await db
+    .collection(collections.qrGalleries)
+    .findOne({ id: body.galleryId, orgId });
   if (!gallery) {
     return NextResponse.json({ error: "Gallery not found" }, { status: 404 });
   }
@@ -39,10 +41,9 @@ export async function POST(request: NextRequest) {
 
   await db.collection(collections.galleryAccessTokens).insertOne(doc);
 
-  await db.collection(collections.qrGalleries).updateOne(
-    { id: body.galleryId },
-    { $inc: { tokenCount: 1 } }
-  );
+  await db
+    .collection(collections.qrGalleries)
+    .updateOne({ id: body.galleryId }, { $inc: { tokenCount: 1 } });
 
   return NextResponse.json({ token: doc });
 }

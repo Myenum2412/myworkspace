@@ -1,6 +1,5 @@
-
-import { PreferencesCenter } from "@/components/consent/preferences-center";
 import { CookieBanner } from "@/components/consent/cookie-banner";
+import { PreferencesCenter } from "@/components/consent/preferences-center";
 
 export default function CookiePreferencesPage() {
   return (

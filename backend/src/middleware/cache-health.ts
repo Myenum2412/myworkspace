@@ -1,11 +1,11 @@
-import { Response, NextFunction } from "express";
-import { execSync, exec as execCallback } from "child_process";
-import { promisify } from "util";
+import { exec as execCallback, execSync } from "child_process";
+import type { NextFunction, Response } from "express";
+import { Cluster, Redis } from "ioredis";
 import NodeCache from "node-cache";
-import { Redis, Cluster } from "ioredis";
-import { getValkey, isValkeyConnected } from "../lib/valkey.js";
-import { logger } from "../lib/logger/index.js";
+import { promisify } from "util";
 import { cacheService } from "../lib/cache/cache-service.js";
+import { logger } from "../lib/logger/index.js";
+import { getValkey, isValkeyConnected } from "../lib/valkey.js";
 import type { AuthRequest } from "./auth.js";
 
 const exec = promisify(execCallback);
@@ -109,7 +109,8 @@ async function checkValkey(): Promise<LayerHealth> {
     const statsLines = (statsRaw as string).split("\r\n");
     for (const line of statsLines) {
       if (line.startsWith("keyspace_hits:")) details.totalHits = parseInt(line.split(":")[1], 10);
-      if (line.startsWith("keyspace_misses:")) details.totalMisses = parseInt(line.split(":")[1], 10);
+      if (line.startsWith("keyspace_misses:"))
+        details.totalMisses = parseInt(line.split(":")[1], 10);
     }
 
     const dbRaw = await client.info("keyspace");
@@ -149,7 +150,11 @@ async function checkValkeyCluster(): Promise<LayerHealth | null> {
     });
 
     const cluster = new Cluster(nodes, {
-      redisOptions: { password: process.env.VALKEY_PASSWORD || undefined, enableAutoPipelining: false, maxRetriesPerRequest: 1 },
+      redisOptions: {
+        password: process.env.VALKEY_PASSWORD || undefined,
+        enableAutoPipelining: false,
+        maxRetriesPerRequest: 1,
+      },
       enableOfflineQueue: false,
       lazyConnect: true,
       clusterRetryStrategy: () => null,
@@ -162,7 +167,9 @@ async function checkValkeyCluster(): Promise<LayerHealth | null> {
     const clusterNodesRaw = await cluster.cluster("NODES");
 
     const details: Record<string, unknown> = {};
-    const infoText = Array.isArray(clusterInfoRaw) ? clusterInfoRaw.join("\n") : String(clusterInfoRaw);
+    const infoText = Array.isArray(clusterInfoRaw)
+      ? clusterInfoRaw.join("\n")
+      : String(clusterInfoRaw);
     for (const line of infoText.split("\r\n")) {
       if (line.includes(":")) {
         const [key, value] = line.split(":");
@@ -170,7 +177,9 @@ async function checkValkeyCluster(): Promise<LayerHealth | null> {
       }
     }
 
-    const nodesText = Array.isArray(clusterNodesRaw) ? clusterNodesRaw.join("\n") : String(clusterNodesRaw);
+    const nodesText = Array.isArray(clusterNodesRaw)
+      ? clusterNodesRaw.join("\n")
+      : String(clusterNodesRaw);
     const nodeLines = nodesText.split("\n").filter((l) => l.trim());
     details.totalNodes = nodeLines.length;
     details.masters = nodeLines.filter((l) => l.includes("master")).length;
@@ -220,7 +229,7 @@ async function checkValkeySentinel(): Promise<LayerHealth | null> {
 
     const elapsed = performance.now() - start;
 
-    const masters = await sentinel.call("SENTINEL", "MASTERS") as string[][];
+    const masters = (await sentinel.call("SENTINEL", "MASTERS")) as string[][];
     const details: Record<string, unknown> = {};
 
     if (masters && masters.length > 0) {
@@ -230,10 +239,18 @@ async function checkValkeySentinel(): Promise<LayerHealth | null> {
       }
     }
 
-    const replicas = await sentinel.call("SENTINEL", "REPLICAS", process.env.VALKEY_SENTINEL_MASTER || "mymaster") as string[][];
+    const replicas = (await sentinel.call(
+      "SENTINEL",
+      "REPLICAS",
+      process.env.VALKEY_SENTINEL_MASTER || "mymaster",
+    )) as string[][];
     details.replicaCount = replicas ? replicas.length : 0;
 
-    const sentinelInfo = await sentinel.call("SENTINEL", "SENTINELS", process.env.VALKEY_SENTINEL_MASTER || "mymaster") as string[][];
+    const sentinelInfo = (await sentinel.call(
+      "SENTINEL",
+      "SENTINELS",
+      process.env.VALKEY_SENTINEL_MASTER || "mymaster",
+    )) as string[][];
     details.sentinelCount = sentinelInfo ? sentinelInfo.length : 0;
 
     await sentinel.quit().catch(() => {});
@@ -276,9 +293,12 @@ async function checkVarnish(): Promise<LayerHealth | null> {
       }).catch(() => ({ stdout: "" }));
       details.bans = banList.split("\n").filter((l) => l.trim()).length;
 
-      const { stdout: storage } = await exec(`${varnishadm} -T localhost:${varnishPort} storage.list`, {
-        timeout: 3000,
-      }).catch(() => ({ stdout: "" }));
+      const { stdout: storage } = await exec(
+        `${varnishadm} -T localhost:${varnishPort} storage.list`,
+        {
+          timeout: 3000,
+        },
+      ).catch(() => ({ stdout: "" }));
       details.storage = storage.trim();
     }
 
@@ -313,13 +333,14 @@ export function cacheHealth() {
 
     const overallStart = performance.now();
 
-    const [nodecacheResult, valkeyResult, clusterResult, sentinelResult, varnishResult] = await Promise.all([
-      checkNodeCache(),
-      checkValkey(),
-      checkValkeyCluster(),
-      checkValkeySentinel(),
-      checkVarnish(),
-    ]);
+    const [nodecacheResult, valkeyResult, clusterResult, sentinelResult, varnishResult] =
+      await Promise.all([
+        checkNodeCache(),
+        checkValkey(),
+        checkValkeyCluster(),
+        checkValkeySentinel(),
+        checkVarnish(),
+      ]);
 
     const overallDuration = performance.now() - overallStart;
 
@@ -341,8 +362,8 @@ export function cacheHealth() {
     if (layerStatuses.some((s) => s === "down")) overallStatus = "down";
     else if (layerStatuses.some((s) => s === "degraded")) overallStatus = "degraded";
 
-    const totalKeys = nodecacheResult.details?.keys as number || 0;
-    const hitRate = nodecacheResult.details?.hitRate as number || 0;
+    const totalKeys = (nodecacheResult.details?.keys as number) || 0;
+    const hitRate = (nodecacheResult.details?.hitRate as number) || 0;
 
     const response: CacheHealthResponse = {
       success: true,
@@ -353,7 +374,7 @@ export function cacheHealth() {
       summary: {
         totalKeys,
         hitRate: Math.round(hitRate * 10000) / 100,
-        memoryEstimate: valkeyResult.details?.usedMemory as string || "unknown",
+        memoryEstimate: (valkeyResult.details?.usedMemory as string) || "unknown",
       },
     };
 

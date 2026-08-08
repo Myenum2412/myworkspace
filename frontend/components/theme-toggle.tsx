@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { MoonIcon, SunIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +17,7 @@ export function ThemeToggle({ className }: { className?: string }) {
         aria-label="Toggle theme"
         className={cn(
           "flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-          className
+          className,
         )}
       >
         <SunIcon className="size-4 opacity-0" aria-hidden />
@@ -25,7 +25,9 @@ export function ThemeToggle({ className }: { className?: string }) {
     );
   }
 
-  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
   return (
     <button
@@ -34,7 +36,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       title={isDark ? "Switch to light theme" : "Switch to dark theme"}
       className={cn(
         "flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground active:scale-95",
-        className
+        className,
       )}
     >
       {isDark ? <MoonIcon className="size-4" /> : <SunIcon className="size-4" />}

@@ -1,12 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { isCurrentlySyncing, type SyncEvent, subscribeSync } from "@/lib/offline/sync-processor";
 import { useConnectivity } from "@/lib/offline/use-connectivity";
-import {
-  isCurrentlySyncing,
-  subscribeSync,
-  type SyncEvent,
-} from "@/lib/offline/sync-processor";
 
 type BannerState =
   | { kind: "online" }
@@ -14,11 +10,7 @@ type BannerState =
   | { kind: "syncing"; remaining: number }
   | { kind: "failed"; remaining: number };
 
-function deriveState(
-  isOnline: boolean,
-  sync: SyncEvent | null,
-  queued: number,
-): BannerState {
+function deriveState(isOnline: boolean, sync: SyncEvent | null, queued: number): BannerState {
   if (!isOnline) return { kind: "offline" };
   if (sync && sync.status === "syncing" && sync.remaining > 0) {
     return { kind: "syncing", remaining: sync.remaining };
@@ -107,10 +99,14 @@ export function OfflineBanner() {
 
   const indicatorColor = (() => {
     switch (state.kind) {
-      case "online": return "#22c55e";
-      case "offline": return "#eab308";
-      case "syncing": return "#3b82f6";
-      case "failed": return "#ef4444";
+      case "online":
+        return "#22c55e";
+      case "offline":
+        return "#eab308";
+      case "syncing":
+        return "#3b82f6";
+      case "failed":
+        return "#ef4444";
     }
   })();
 

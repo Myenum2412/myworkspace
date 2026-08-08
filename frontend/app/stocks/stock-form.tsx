@@ -1,14 +1,14 @@
-"use client"
-import { useState, useRef, useEffect } from "react";
+"use client";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
-  SelectValue,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Upload, X } from "@/lib/icons";
 
@@ -133,7 +133,10 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 [&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white"
+    >
       <fieldset className="border p-4 space-y-4">
         <legend className="text-sm font-semibold px-2">Product Details</legend>
         <div className="flex gap-6">
@@ -148,9 +151,21 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
                 <Upload className="size-6 text-muted-foreground" />
               )}
             </div>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
             {preview && (
-              <Button type="button" variant="ghost" size="sm" className="mt-1 text-xs" onClick={clearImage}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="mt-1 text-xs"
+                onClick={clearImage}
+              >
                 <X className="mr-1 size-3" /> Remove
               </Button>
             )}
@@ -158,7 +173,12 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Product Name *</Label>
-              <Input value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="Enter product name" required />
+              <Input
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                placeholder="Enter product name"
+                required
+              />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Category</Label>
@@ -168,7 +188,9 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -181,7 +203,9 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {BRANDS.map((b) => (
-                    <SelectItem key={b} value={b}>{b}</SelectItem>
+                    <SelectItem key={b} value={b}>
+                      {b}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -194,18 +218,28 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {UNITS.map((u) => (
-                    <SelectItem key={u} value={u}>{u}</SelectItem>
+                    <SelectItem key={u} value={u}>
+                      {u}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Supplier</Label>
-              <Input value={supplier} onChange={(e) => setSupplier(e.target.value)} placeholder="Supplier name" />
+              <Input
+                value={supplier}
+                onChange={(e) => setSupplier(e.target.value)}
+                placeholder="Supplier name"
+              />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Warehouse / Location</Label>
-              <Input value={warehouse} onChange={(e) => setWarehouse(e.target.value)} placeholder="Warehouse or location" />
+              <Input
+                value={warehouse}
+                onChange={(e) => setWarehouse(e.target.value)}
+                placeholder="Warehouse or location"
+              />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Project (Optional)</Label>
@@ -215,7 +249,9 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -229,25 +265,49 @@ export function StockForm({ stock, onSave, onCancel }: StockFormProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5">
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Opening Stock</Label>
-            <Input type="number" min="0" value={openingStock} onChange={(e) => setOpeningStock(e.target.value)} />
+            <Input
+              type="number"
+              min="0"
+              value={openingStock}
+              onChange={(e) => setOpeningStock(e.target.value)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Reorder Level</Label>
-            <Input type="number" min="0" value={reorderLevel} onChange={(e) => setReorderLevel(e.target.value)} />
+            <Input
+              type="number"
+              min="0"
+              value={reorderLevel}
+              onChange={(e) => setReorderLevel(e.target.value)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Purchase Price (₹)</Label>
-            <Input type="number" min="0" step="0.01" value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} />
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              value={purchasePrice}
+              onChange={(e) => setPurchasePrice(e.target.value)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Selling Price (₹)</Label>
-            <Input type="number" min="0" step="0.01" value={sellingPrice} onChange={(e) => setSellingPrice(e.target.value)} />
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              value={sellingPrice}
+              onChange={(e) => setSellingPrice(e.target.value)}
+            />
           </div>
         </div>
       </fieldset>
 
       <div className="flex justify-end gap-3 pt-2 border-t">
-        <Button type="button" variant="outline" onClick={onCancel} className="w-32 h-10">Cancel</Button>
+        <Button type="button" variant="outline" onClick={onCancel} className="w-32 h-10">
+          Cancel
+        </Button>
         <Button type="submit" disabled={saving || !productName.trim()} className="w-32 h-10">
           {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
           {stock ? "Update" : "Save"}

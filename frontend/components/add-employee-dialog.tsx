@@ -1,13 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { XIcon } from "@/lib/icons";
 import { addEmployeeAction } from "@/actions/employees";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { XIcon } from "@/lib/icons";
 
-export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function AddEmployeeDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -40,10 +46,15 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
             <h2 className="mb-6 text-lg font-semibold">Add Employee</h2>
 
             {error && (
-              <div className="mb-4 rounded-sm bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+              <div className="mb-4 rounded-sm bg-destructive/10 p-3 text-sm text-destructive">
+                {error}
+              </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4 [&_input]:border-border [&_input]:bg-card [&_select>button]:border-border [&_select>button]:bg-card [&_textarea]:border-border [&_textarea]:bg-card">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-4 [&_input]:border-border [&_input]:bg-card [&_select>button]:border-border [&_select>button]:bg-card [&_textarea]:border-border [&_textarea]:bg-card"
+            >
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Full Name</Label>
                 <Input name="name" required placeholder="" />
@@ -58,7 +69,11 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Department</Label>
-                <select name="department" required className="flex w-full rounded-sm border border-input bg-transparent px-2.5 py-1 text-base md:text-sm">
+                <select
+                  name="department"
+                  required
+                  className="flex w-full rounded-sm border border-input bg-transparent px-2.5 py-1 text-base md:text-sm"
+                >
                   <option value="">Select department</option>
                   <option value="Engineering">Engineering</option>
                   <option value="Creative">Creative</option>
@@ -69,7 +84,11 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Status</Label>
-                <select name="status" required className="flex w-full rounded-sm border border-input bg-transparent px-2.5 py-1 text-base md:text-sm">
+                <select
+                  name="status"
+                  required
+                  className="flex w-full rounded-sm border border-input bg-transparent px-2.5 py-1 text-base md:text-sm"
+                >
                   <option value="Active">Active</option>
                   <option value="On Leave">On Leave</option>
                   <option value="Terminated">Terminated</option>
@@ -77,7 +96,14 @@ export function AddEmployeeDialog({ open, onOpenChange }: { open: boolean; onOpe
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-32 h-10">Cancel</Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  className="w-32 h-10"
+                >
+                  Cancel
+                </Button>
                 <Button type="submit" disabled={pending} className="w-32 h-10">
                   {pending ? "Adding..." : "Add Employee"}
                 </Button>

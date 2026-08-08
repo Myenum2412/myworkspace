@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface ITeamMember extends Document {
   orgId: string;
@@ -18,7 +18,7 @@ const teamMemberSchema = new Schema<ITeamMember>(
     updatedBy: { type: String },
     role: { type: String, enum: ["team_lead", "team_staff"], default: "team_staff" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 teamMemberSchema.index({ orgId: 1, teamId: 1, userId: 1 }, { unique: true });

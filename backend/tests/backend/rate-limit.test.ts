@@ -1,5 +1,5 @@
-import request from "supertest";
 import type { Server } from "http";
+import request from "supertest";
 import app from "../../src/app.js";
 import { connectTestDb, resetDb } from "../__helpers__/db.js";
 
@@ -23,7 +23,9 @@ describe("rate limiting extended", () => {
   it("auth endpoint rate limited at 20/15min returns 429 on excess", async () => {
     let lastStatus = 200;
     for (let i = 0; i < 22; i++) {
-      const res = await agent().post("/api/auth/login").send({ email: `rl-${i}-${Date.now()}@ex.com`, password: "p" });
+      const res = await agent()
+        .post("/api/auth/login")
+        .send({ email: `rl-${i}-${Date.now()}@ex.com`, password: "p" });
       lastStatus = res.status;
       if (res.status === 429) break;
     }

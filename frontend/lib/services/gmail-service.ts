@@ -1,6 +1,6 @@
+import { v4 as uuid } from "uuid";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { v4 as uuid } from "uuid";
 
 export type EmailConnection = {
   id: string;
@@ -36,10 +36,7 @@ export async function refreshGmailToken(refreshToken: string): Promise<string | 
 }
 
 export async function getUserEmailConnections(userId: string): Promise<EmailConnection[]> {
-  const docs = await db
-    .collection(collections.emailConnections)
-    .find({ userId })
-    .toArray();
+  const docs = await db.collection(collections.emailConnections).find({ userId }).toArray();
 
   return docs.map((doc) => ({
     id: (doc.id || doc._id?.toString()) as string,
@@ -64,10 +61,12 @@ export async function getValidAccessToken(connection: EmailConnection): Promise<
       const newToken = await refreshGmailToken(connection.refreshToken);
       if (newToken) {
         accessToken = newToken;
-        await db.collection(collections.emailConnections).updateOne(
-          { id: connection.id },
-          { $set: { accessToken: newToken, updatedAt: new Date() } }
-        );
+        await db
+          .collection(collections.emailConnections)
+          .updateOne(
+            { id: connection.id },
+            { $set: { accessToken: newToken, updatedAt: new Date() } },
+          );
       } else {
         return null;
       }
@@ -83,7 +82,7 @@ export async function sendGmailEmail(
   connection: EmailConnection,
   to: string,
   subject: string,
-  body: string
+  body: string,
 ): Promise<boolean> {
   const accessToken = await getValidAccessToken(connection);
   if (!accessToken) return false;
@@ -104,17 +103,14 @@ export async function sendGmailEmail(
     .replace(/=+$/, "");
 
   try {
-    const res = await fetch(
-      "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ raw: encodedMessage }),
-      }
-    );
+    const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ raw: encodedMessage }),
+    });
     return res.ok;
   } catch {
     return false;
@@ -123,7 +119,7 @@ export async function sendGmailEmail(
 
 export async function listGmailMessages(
   connection: EmailConnection,
-  maxResults = 20
+  maxResults = 20,
 ): Promise<{ id: string; from: string; subject: string; snippet: string; date: string }[]> {
   const accessToken = await getValidAccessToken(connection);
   if (!accessToken) return [];
@@ -131,18 +127,19 @@ export async function listGmailMessages(
   try {
     const listRes = await fetch(
       `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${maxResults}&q=in:inbox`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
+      { headers: { Authorization: `Bearer ${accessToken}` } },
     );
     if (!listRes.ok) return [];
     const listData = await listRes.json();
     const messages = listData.messages || [];
 
-    const result: { id: string; from: string; subject: string; snippet: string; date: string }[] = [];
+    const result: { id: string; from: string; subject: string; snippet: string; date: string }[] =
+      [];
 
     for (const msg of messages.slice(0, maxResults)) {
       const detailRes = await fetch(
         `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       if (!detailRes.ok) continue;
       const detailData = await detailRes.json();

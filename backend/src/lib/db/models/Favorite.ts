@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { model, Schema } from "mongoose";
 
 const favoriteSchema = new Schema({
   id: { type: String, required: true, unique: true },

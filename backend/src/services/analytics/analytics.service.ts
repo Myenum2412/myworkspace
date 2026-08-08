@@ -194,7 +194,7 @@ export class AnalyticsService {
     this.processing = true;
 
     const batch = this.eventQueue.splice(0, this.BATCH_SIZE);
-    const documents = batch.map(item => ({
+    const documents = batch.map((item) => ({
       id: uuid(),
       eventName: item.input.eventName,
       eventCategory: item.input.eventCategory,
@@ -219,10 +219,13 @@ export class AnalyticsService {
       logger.debug({ count: documents.length }, "Analytics events batch saved");
     } catch (err: unknown) {
       const error = err as Error;
-      logger.error({ error: error.message, count: documents.length }, "Failed to save analytics batch");
+      logger.error(
+        { error: error.message, count: documents.length },
+        "Failed to save analytics batch",
+      );
 
-      const failed = batch.filter(item => item.retries < item.maxRetries);
-      failed.forEach(item => {
+      const failed = batch.filter((item) => item.retries < item.maxRetries);
+      failed.forEach((item) => {
         item.retries++;
         setTimeout(() => this.eventQueue.push(item), 1000 * item.retries);
       });
@@ -234,7 +237,7 @@ export class AnalyticsService {
   private startBatchProcessor(): void {
     this.intervalHandle = setInterval(() => {
       if (this.eventQueue.length > 0) {
-        this.processBatch().catch(err => logger.error({ err }, "Batch processor error"));
+        this.processBatch().catch((err) => logger.error({ err }, "Batch processor error"));
       }
     }, this.BATCH_INTERVAL_MS);
 
@@ -243,7 +246,10 @@ export class AnalyticsService {
     }
   }
 
-  async getEventCount(eventName: string, filters?: { from?: Date; to?: Date; orgId?: string }): Promise<number> {
+  async getEventCount(
+    eventName: string,
+    filters?: { from?: Date; to?: Date; orgId?: string },
+  ): Promise<number> {
     const query: Record<string, unknown> = { eventName };
     if (filters?.from || filters?.to) {
       query.timestamp = {};
@@ -255,7 +261,10 @@ export class AnalyticsService {
     return AnalyticsEvent.countDocuments(query);
   }
 
-  async getEventsByCategory(category: string, filters?: { from?: Date; to?: Date; orgId?: string; limit?: number; skip?: number }) {
+  async getEventsByCategory(
+    category: string,
+    filters?: { from?: Date; to?: Date; orgId?: string; limit?: number; skip?: number },
+  ) {
     const query: Record<string, unknown> = { eventCategory: category };
     if (filters?.from || filters?.to) {
       query.timestamp = {};
@@ -312,7 +321,14 @@ export class AnalyticsService {
     ]);
 
     const funnelData = await AnalyticsEvent.aggregate([
-      { $match: { ...match, eventName: { $in: ["sign_up", "workspace_created", "onboarding_complete", "subscription_upgraded"] } } },
+      {
+        $match: {
+          ...match,
+          eventName: {
+            $in: ["sign_up", "workspace_created", "onboarding_complete", "subscription_upgraded"],
+          },
+        },
+      },
       {
         $group: {
           _id: "$eventName",
@@ -324,10 +340,10 @@ export class AnalyticsService {
 
     return {
       totalEvents,
-      categoryBreakdown: categoryBreakdown.map(c => ({ category: c._id, count: c.count })),
-      topEvents: topEvents.map(e => ({ event: e._id, count: e.count })),
-      dailyEventCounts: dailyCounts.map(d => ({ date: d._id, count: d.count })),
-      conversionFunnel: funnelData.map(f => ({
+      categoryBreakdown: categoryBreakdown.map((c) => ({ category: c._id, count: c.count })),
+      topEvents: topEvents.map((e) => ({ event: e._id, count: e.count })),
+      dailyEventCounts: dailyCounts.map((d) => ({ date: d._id, count: d.count })),
+      conversionFunnel: funnelData.map((f) => ({
         event: f._id,
         count: f.count,
         uniqueUsers: f.uniqueUsers.length,
@@ -335,7 +351,10 @@ export class AnalyticsService {
     };
   }
 
-  async getFeatureAdoption(featureName: string, filters?: { from?: Date; to?: Date; orgId?: string }) {
+  async getFeatureAdoption(
+    featureName: string,
+    filters?: { from?: Date; to?: Date; orgId?: string },
+  ) {
     const match: Record<string, unknown> = {
       eventName: { $in: [`feature_${featureName}_used`, `feature_${featureName}_enabled`] },
     };
@@ -371,7 +390,7 @@ export class AnalyticsService {
       { $limit: 12 },
     ]);
 
-    return cohorts.map(c => ({
+    return cohorts.map((c) => ({
       cohort: c._id,
       signups: c.count,
       userIds: c.users,
@@ -387,7 +406,10 @@ export class AnalyticsService {
     }
 
     const errorCount = await AnalyticsEvent.countDocuments(match);
-    const totalCount = await AnalyticsEvent.countDocuments({ ...match, eventCategory: { $ne: "error" } });
+    const totalCount = await AnalyticsEvent.countDocuments({
+      ...match,
+      eventCategory: { $ne: "error" },
+    });
 
     return totalCount > 0 ? Math.round((errorCount / totalCount) * 10000) / 100 : 0;
   }

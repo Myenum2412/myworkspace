@@ -1,10 +1,10 @@
-import { Response, NextFunction } from "express";
-import { Model } from "mongoose";
-import { AuthRequest } from "./auth.js";
-import { AppError } from "./error.js";
-import { recordAuditLog } from "../services/audit.service.js";
+import type { NextFunction, Response } from "express";
+import type { Model } from "mongoose";
 import { logger } from "../lib/logger/index.js";
-import { isAdminRole, hasAnyRole, ROLES } from "../lib/rbac/index.js";
+import { hasAnyRole, isAdminRole, ROLES } from "../lib/rbac/index.js";
+import { recordAuditLog } from "../services/audit.service.js";
+import type { AuthRequest } from "./auth.js";
+import { AppError } from "./error.js";
 
 export type OwnershipMode = "user" | "org" | "team" | "hierarchical";
 
@@ -29,9 +29,10 @@ export function verifyOwnership(
   idSource?: (req: AuthRequest) => string,
 ) {
   // Support legacy signature: verifyOwnership(model, ownerField, idSource)
-  const options: OwnershipOptions = typeof modelOrOptions === "object" && "model" in modelOrOptions
-    ? modelOrOptions
-    : { model: modelOrOptions as Model<any>, ownerField: ownerField!, idSource };
+  const options: OwnershipOptions =
+    typeof modelOrOptions === "object" && "model" in modelOrOptions
+      ? modelOrOptions
+      : { model: modelOrOptions as Model<any>, ownerField: ownerField!, idSource };
 
   const {
     model,
@@ -74,30 +75,36 @@ export function verifyOwnership(
 
       if (!isAuthorized) {
         switch (mode) {
-          case "user":
+          case "user": {
             // Direct user ownership
             const ownerValue = (resource[ownerFld] ?? "").toString();
             isAuthorized = ownerValue === req.user.userId;
-            if (!isAuthorized) denialReason = `owner mismatch: expected ${req.user.userId}, got ${ownerValue}`;
+            if (!isAuthorized)
+              denialReason = `owner mismatch: expected ${req.user.userId}, got ${ownerValue}`;
             break;
+          }
 
-          case "org":
+          case "org": {
             // Org-level ownership: resource belongs to user's org
             const resourceOrgId = (resource[orgField] ?? "").toString();
             isAuthorized = resourceOrgId === req.user.orgId;
-            if (!isAuthorized) denialReason = `org mismatch: expected ${req.user.orgId}, got ${resourceOrgId}`;
+            if (!isAuthorized)
+              denialReason = `org mismatch: expected ${req.user.orgId}, got ${resourceOrgId}`;
             break;
+          }
 
-          case "team":
+          case "team": {
             // Team-level ownership: resource belongs to user's team
             const resourceTeamId = (resource[teamField] ?? "").toString();
             // User must be a member of the team (simplified: check if user is in team members array)
             const teamMembers = (resource.teamMembers ?? resource.members ?? []) as string[];
-            isAuthorized = teamMembers.includes(req.user.userId) || resourceTeamId === (resource as any).teamId;
+            isAuthorized =
+              teamMembers.includes(req.user.userId) || resourceTeamId === (resource as any).teamId;
             if (!isAuthorized) denialReason = `not a team member`;
             break;
+          }
 
-          case "hierarchical":
+          case "hierarchical": {
             // Hierarchical ownership: user owns resource OR is manager of owner
             const directOwner = (resource[ownerFld] ?? "").toString();
             if (directOwner === req.user.userId) {
@@ -110,27 +117,39 @@ export function verifyOwnership(
               } else {
                 // Check if user has manager/HR role and same org
                 const resourceOrgId = (resource[orgField] ?? "").toString();
-                if (resourceOrgId === req.user.orgId && hasAnyRole(req.user.role, [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR])) {
+                if (
+                  resourceOrgId === req.user.orgId &&
+                  hasAnyRole(req.user.role, [
+                    ROLES.ORG_ADMIN,
+                    ROLES.MEMBERS,
+                    ROLES.MANAGER,
+                    ROLES.HR,
+                  ])
+                ) {
                   isAuthorized = true;
                 }
               }
             }
             if (!isAuthorized) denialReason = `not owner, manager, or admin`;
             break;
+          }
         }
       }
 
       if (!isAuthorized) {
-        logger.warn({
-          userId: req.user.userId,
-          role: req.user.role,
-          resourceId,
-          resourceType: model.modelName,
-          mode,
-          denialReason,
-          ip: req.ip,
-          path: req.originalUrl,
-        }, "Unauthorized data access attempt");
+        logger.warn(
+          {
+            userId: req.user.userId,
+            role: req.user.role,
+            resourceId,
+            resourceType: model.modelName,
+            mode,
+            denialReason,
+            ip: req.ip,
+            path: req.originalUrl,
+          },
+          "Unauthorized data access attempt",
+        );
 
         await recordAuditLog({
           orgId: req.user.orgId || "system",

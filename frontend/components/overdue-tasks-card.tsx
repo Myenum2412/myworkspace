@@ -22,7 +22,10 @@ export function OverdueTasksCard({ tasks }: { tasks: OverdueTask[] }) {
       <CardContent>
         <ul className="space-y-1">
           {tasks.slice(0, 5).map((t) => (
-            <li key={t._id || t.id || t.title} className="text-sm text-red-600 flex items-center gap-2">
+            <li
+              key={t._id || t.id || t.title}
+              className="text-sm text-red-600 flex items-center gap-2"
+            >
               <span className="truncate flex-1">{t.title}</span>
               {t.dueDate && (
                 <span className="text-xs text-red-400 shrink-0">
@@ -31,9 +34,7 @@ export function OverdueTasksCard({ tasks }: { tasks: OverdueTask[] }) {
               )}
             </li>
           ))}
-          {tasks.length > 5 && (
-            <li className="text-xs text-red-400">+{tasks.length - 5} more</li>
-          )}
+          {tasks.length > 5 && <li className="text-xs text-red-400">+{tasks.length - 5} more</li>}
         </ul>
       </CardContent>
     </Card>

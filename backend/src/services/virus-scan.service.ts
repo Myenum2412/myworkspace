@@ -1,7 +1,7 @@
 import { execFile } from "child_process";
-import { promisify } from "util";
 import fs from "fs";
 import path from "path";
+import { promisify } from "util";
 import { logger } from "../lib/logger/index.js";
 
 const execFileAsync = promisify(execFile);
@@ -30,11 +30,17 @@ export interface ScanResult {
 export async function scanFile(filePath: string): Promise<ScanResult> {
   const available = await checkClamAvAvailability();
   if (!available) {
-    return { status: "clean", details: "Virus scanning not available - file passed through unchecked", scannedAt: new Date() };
+    return {
+      status: "clean",
+      details: "Virus scanning not available - file passed through unchecked",
+      scannedAt: new Date(),
+    };
   }
 
   try {
-    const { stdout, stderr } = await execFileAsync("clamdscan", ["--no-summary", filePath], { timeout: 30000 });
+    const { stdout, stderr } = await execFileAsync("clamdscan", ["--no-summary", filePath], {
+      timeout: 30000,
+    });
     if (stderr && !stdout) {
       return { status: "error", details: stderr.trim(), scannedAt: new Date() };
     }
@@ -42,8 +48,12 @@ export async function scanFile(filePath: string): Promise<ScanResult> {
       return { status: "clean", details: "File passed virus scan", scannedAt: new Date() };
     }
     if (stdout.includes("FOUND")) {
-      const virusName = stdout.replace(filePath, "").replace(":","").trim();
-      return { status: "infected", details: virusName || "Unknown malware detected", scannedAt: new Date() };
+      const virusName = stdout.replace(filePath, "").replace(":", "").trim();
+      return {
+        status: "infected",
+        details: virusName || "Unknown malware detected",
+        scannedAt: new Date(),
+      };
     }
     return { status: "clean", details: "No threats detected", scannedAt: new Date() };
   } catch (err: any) {
@@ -53,7 +63,10 @@ export async function scanFile(filePath: string): Promise<ScanResult> {
 }
 
 export async function scanBuffer(buffer: Buffer): Promise<ScanResult> {
-  const tmpPath = path.join("/tmp", `virus-scan-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const tmpPath = path.join(
+    "/tmp",
+    `virus-scan-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  );
   try {
     await fs.promises.writeFile(tmpPath, buffer);
     return await scanFile(tmpPath);

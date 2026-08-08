@@ -1,27 +1,24 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import Stats07 from "@/components/stats-07";
+import { TaskDetailedView } from "@/components/task-detailed-view";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
+  AlertCircleIcon,
   CalendarIcon,
-  PlusIcon,
+  CheckCircle2Icon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ClockIcon,
-  CheckCircle2Icon,
-  AlertCircleIcon,
-  XCircleIcon,
   ListTodoIcon,
+  PlusIcon,
+  XCircleIcon,
 } from "@/lib/icons";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TaskDetailedView } from "@/components/task-detailed-view";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
-import Stats07 from "@/components/stats-07";
 
 export type CalendarTask = {
   _id: string;
@@ -70,8 +67,18 @@ const PROVIDER_COLORS: Record<string, string> = {
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 function getDaysInMonth(year: number, month: number) {
@@ -195,7 +202,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
             </Badge>
           )}
         </div>
-        <Button onClick={() => router.push('/createtask')}>
+        <Button onClick={() => router.push("/createtask")}>
           <PlusIcon className="mr-2" />
           Allocate Task
         </Button>
@@ -204,10 +211,10 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
       {/* Stats Overview */}
       <Stats07
         items={[
-          { name: 'Total Tasks', value: totalTasks, subtitle: 'All tasks' },
-          { name: 'Completed', value: completedTasks, subtitle: 'Done tasks' },
-          { name: 'Pending', value: pendingTasks, subtitle: 'In progress' },
-          { name: 'Overdue', value: overdueTasks, subtitle: 'Past due date' },
+          { name: "Total Tasks", value: totalTasks, subtitle: "All tasks" },
+          { name: "Completed", value: completedTasks, subtitle: "Done tasks" },
+          { name: "Pending", value: pendingTasks, subtitle: "In progress" },
+          { name: "Overdue", value: overdueTasks, subtitle: "Past due date" },
         ]}
       />
 
@@ -277,7 +284,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                 <button
                   key={day}
                   onClick={() => setSelectedDate(date)}
-                  className={`rounded-sm border p-1.5 text-left transition-all hover:border-primary/50 ${ isSelected ? "border-primary bg-primary/5 ring-1 ring-primary/30" : today ? "border-primary/30 bg-primary/5" : "border-border hover:bg-accent/50" }`}
+                  className={`rounded-sm border p-1.5 text-left transition-all hover:border-primary/50 ${isSelected ? "border-primary bg-primary/5 ring-1 ring-primary/30" : today ? "border-primary/30 bg-primary/5" : "border-border hover:bg-accent/50"}`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span
@@ -290,9 +297,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                       {day}
                     </span>
                     {totalItems > 0 && (
-                      <span className="text-[10px] text-muted-foreground">
-                        {totalItems}
-                      </span>
+                      <span className="text-[10px] text-muted-foreground">{totalItems}</span>
                     )}
                   </div>
                   <div className="space-y-0.5">
@@ -360,7 +365,8 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {selectedDateTasks.length} task{selectedDateTasks.length !== 1 ? "s" : ""}
-                {selectedDateEvents.length > 0 && `, ${selectedDateEvents.length} event${selectedDateEvents.length !== 1 ? "s" : ""}`}
+                {selectedDateEvents.length > 0 &&
+                  `, ${selectedDateEvents.length} event${selectedDateEvents.length !== 1 ? "s" : ""}`}
               </p>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -376,19 +382,21 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h4 className="text-sm font-medium line-clamp-1">{task.title}</h4>
-                    <div className={`rounded-full shrink-0 mt-1.5 ${PRIORITY_COLORS[task.priority] || "bg-gray-400"}`} />
+                    <div
+                      className={`rounded-full shrink-0 mt-1.5 ${PRIORITY_COLORS[task.priority] || "bg-gray-400"}`}
+                    />
                   </div>
                   <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
                     {task.description || "No description"}
                   </p>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${STATUS_COLORS[task.status] || ""}`}>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${STATUS_COLORS[task.status] || ""}`}
+                    >
                       {task.status.replace(/_/g, " ")}
                     </span>
                     {task.assigneeName && (
-                      <span className="text-[10px] text-muted-foreground">
-                        {task.assigneeName}
-                      </span>
+                      <span className="text-[10px] text-muted-foreground">{task.assigneeName}</span>
                     )}
                   </div>
                 </div>
@@ -396,23 +404,29 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
 
               {/* External Events */}
               {selectedDateEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="rounded-sm border p-3 transition-colors"
-                >
+                <div key={event.id} className="rounded-sm border p-3 transition-colors">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h4 className="text-sm font-medium line-clamp-1">{event.title}</h4>
-                    <div className={`size-2 rounded-full shrink-0 mt-1.5 ${PROVIDER_COLORS[event.provider] || "bg-gray-400"}`} />
+                    <div
+                      className={`size-2 rounded-full shrink-0 mt-1.5 ${PROVIDER_COLORS[event.provider] || "bg-gray-400"}`}
+                    />
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-sm font-medium ${
-                      event.provider === "google" ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700"
-                    }`}>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-sm font-medium ${
+                        event.provider === "google"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-violet-100 text-violet-700"
+                      }`}
+                    >
                       {event.provider === "google" ? "Google" : "Outlook"}
                     </span>
                     {event.start && (
                       <span className="text-[10px] text-muted-foreground">
-                        {new Date(event.start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {new Date(event.start).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                     )}
                   </div>
@@ -428,7 +442,7 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
                     variant="outline"
                     size="sm"
                     className="mt-3"
-                    onClick={() => router.push('/createtask')}
+                    onClick={() => router.push("/createtask")}
                   >
                     <PlusIcon className="mr-1 size-3" />
                     Allocate Task
@@ -441,14 +455,28 @@ export default function UpcomingTasksClient({ initialTasks }: { initialTasks: Ca
       </div>
 
       {/* Task Detail Dialog */}
-      <Dialog open={taskDetailOpen} onOpenChange={(open) => { if (!open) { setTaskDetailOpen(false); setSelectedTask(null); } }}>
-        <DialogContent className="p-0 gap-0 flex flex-col w-screen max-w-none h-screen max-h-none sm:w-[95vw] sm:h-[95vh] sm:rounded-sm sm:m-4" showCloseButton={false}>
+      <Dialog
+        open={taskDetailOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setTaskDetailOpen(false);
+            setSelectedTask(null);
+          }
+        }}
+      >
+        <DialogContent
+          className="p-0 gap-0 flex flex-col w-screen max-w-none h-screen max-h-none sm:w-[95vw] sm:h-[95vh] sm:rounded-sm sm:m-4"
+          showCloseButton={false}
+        >
           {selectedTask && (
             <TaskDetailedView
               task={selectedTask}
               editable
               onTaskUpdate={() => {}}
-              onClose={() => { setTaskDetailOpen(false); setSelectedTask(null); }}
+              onClose={() => {
+                setTaskDetailOpen(false);
+                setSelectedTask(null);
+              }}
             />
           )}
         </DialogContent>

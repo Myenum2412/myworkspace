@@ -1,34 +1,26 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import { toast } from "sonner"
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useIndustry } from "@/components/industry-provider";
+import IntegrationsBlock from "@/components/integrations-block";
+import { PageHeader } from "@/components/page-header";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  RiMailLine,
-  RiUserLine,
-  RiSettings2Line,
-  RiTeamLine,
-  RiNotification3Line,
-  RiLayout2Line,
-  RiLink,
-  RiShieldCheckLine,
-  Settings2Icon,
-} from "@/lib/icons"
-
-import { PageHeader } from "@/components/page-header"
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -36,28 +28,31 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Select,
-  SelectValue,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select"
-import { getDropdownOptions, saveDropdownOptions, DEFAULT_DROPDOWN_OPTIONS } from "@/lib/dropdown-options"
-import IntegrationsBlock from "@/components/integrations-block"
-import { INDUSTRIES, type Industry } from "@/lib/industry-terms"
-import { useIndustry } from "@/components/industry-provider"
+  DEFAULT_DROPDOWN_OPTIONS,
+  getDropdownOptions,
+  saveDropdownOptions,
+} from "@/lib/dropdown-options";
 import {
   Loader2Icon,
-  PlusIcon,
-  Trash2Icon,
   MinusIcon,
-} from "@/lib/icons"
+  PlusIcon,
+  RiLayout2Line,
+  RiLink,
+  RiMailLine,
+  RiNotification3Line,
+  RiSettings2Line,
+  RiShieldCheckLine,
+  RiTeamLine,
+  RiUserLine,
+  Settings2Icon,
+  Trash2Icon,
+} from "@/lib/icons";
+import { INDUSTRIES, type Industry } from "@/lib/industry-terms";
 
-const SECTION_LIMITS_KEY = "myworkspace_section_limits"
+const SECTION_LIMITS_KEY = "myworkspace_section_limits";
 
 const DEFAULT_SECTION_LIMITS: Record<string, number> = {
   projects: 20,
@@ -70,60 +65,72 @@ const DEFAULT_SECTION_LIMITS: Record<string, number> = {
   shifts: 10,
   sourceOfHires: 15,
   countries: 20,
-}
+};
 
 function getSectionLimits(): Record<string, number> {
-  if (typeof window === "undefined") return DEFAULT_SECTION_LIMITS
+  if (typeof window === "undefined") return DEFAULT_SECTION_LIMITS;
   try {
-    const stored = localStorage.getItem(SECTION_LIMITS_KEY)
-    if (stored) return { ...DEFAULT_SECTION_LIMITS, ...JSON.parse(stored) }
+    const stored = localStorage.getItem(SECTION_LIMITS_KEY);
+    if (stored) return { ...DEFAULT_SECTION_LIMITS, ...JSON.parse(stored) };
   } catch {}
-  return DEFAULT_SECTION_LIMITS
+  return DEFAULT_SECTION_LIMITS;
 }
 
 function saveSectionLimits(limits: Record<string, number>) {
-  if (typeof window === "undefined") return
-  localStorage.setItem(SECTION_LIMITS_KEY, JSON.stringify(limits))
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SECTION_LIMITS_KEY, JSON.stringify(limits));
 }
 
 export type SettingsPageClientProps = {
-  orgId: string
-  user: { name: string; email: string; avatar: string; role: string }
+  orgId: string;
+  user: { name: string; email: string; avatar: string; role: string };
   initialSettings: {
-    general?: { orgName?: string; orgSlug?: string; timezone?: string; language?: string; monthlyProjectLimit?: number }
-    team?: { defaultTeamRole?: string; allowSelfAssign?: boolean; maxTeamSize?: number; autoAssignLead?: boolean; showTeamAsAssignee?: boolean }
+    general?: {
+      orgName?: string;
+      orgSlug?: string;
+      timezone?: string;
+      language?: string;
+      monthlyProjectLimit?: number;
+    };
+    team?: {
+      defaultTeamRole?: string;
+      allowSelfAssign?: boolean;
+      maxTeamSize?: number;
+      autoAssignLead?: boolean;
+      showTeamAsAssignee?: boolean;
+    };
     notifications?: {
-      taskAssigned?: boolean
-      taskStatusChange?: boolean
-      taskComments?: boolean
-      taskMentions?: boolean
-      dueDateReminders?: boolean
-      taskDeadlines?: boolean
-      taskCompleted?: boolean
-      projectUpdates?: boolean
-      projectMentions?: boolean
-      projectMilestones?: boolean
-      projectDeadlines?: boolean
-      memberJoinLeave?: boolean
-      teamMentions?: boolean
-      teamUpdates?: boolean
-      calendarReminders?: boolean
-      meetingReminders?: boolean
-      meetingInvitations?: boolean
-      securityAlerts?: boolean
-      billingUpdates?: boolean
-      systemUpdates?: boolean
-      featureAnnouncements?: boolean
-      emailDigest?: boolean
-      weeklyReport?: boolean
-      dailySummary?: boolean
-      pushEnabled?: boolean
-      pushTaskUpdates?: boolean
-      pushCalendarEvents?: boolean
-      pushTeamMessages?: boolean
-    }
-  } | null
-}
+      taskAssigned?: boolean;
+      taskStatusChange?: boolean;
+      taskComments?: boolean;
+      taskMentions?: boolean;
+      dueDateReminders?: boolean;
+      taskDeadlines?: boolean;
+      taskCompleted?: boolean;
+      projectUpdates?: boolean;
+      projectMentions?: boolean;
+      projectMilestones?: boolean;
+      projectDeadlines?: boolean;
+      memberJoinLeave?: boolean;
+      teamMentions?: boolean;
+      teamUpdates?: boolean;
+      calendarReminders?: boolean;
+      meetingReminders?: boolean;
+      meetingInvitations?: boolean;
+      securityAlerts?: boolean;
+      billingUpdates?: boolean;
+      systemUpdates?: boolean;
+      featureAnnouncements?: boolean;
+      emailDigest?: boolean;
+      weeklyReport?: boolean;
+      dailySummary?: boolean;
+      pushEnabled?: boolean;
+      pushTaskUpdates?: boolean;
+      pushCalendarEvents?: boolean;
+      pushTeamMessages?: boolean;
+    };
+  } | null;
+};
 
 const defaultNotifSettings = {
   // Task Notifications
@@ -167,17 +174,17 @@ const defaultNotifSettings = {
   pushTaskUpdates: true,
   pushCalendarEvents: true,
   pushTeamMessages: true,
-}
+};
 
 function WorkspaceIndustrySelect() {
-  const { industry, setIndustry } = useIndustry()
-  const [saving, setSaving] = useState(false)
+  const { industry, setIndustry } = useIndustry();
+  const [saving, setSaving] = useState(false);
 
   const handleChange = async (value: string) => {
-    setSaving(true)
-    await setIndustry(value as Industry)
-    setSaving(false)
-  }
+    setSaving(true);
+    await setIndustry(value as Industry);
+    setSaving(false);
+  };
 
   return (
     <Select value={industry} onValueChange={handleChange} disabled={saving}>
@@ -186,33 +193,51 @@ function WorkspaceIndustrySelect() {
       </SelectTrigger>
       <SelectContent>
         {INDUSTRIES.map((ind) => (
-          <SelectItem key={ind.value} value={ind.value}>{ind.label}</SelectItem>
+          <SelectItem key={ind.value} value={ind.value}>
+            {ind.label}
+          </SelectItem>
         ))}
       </SelectContent>
     </Select>
-  )
+  );
 }
 
-export function SettingsPageClient({ orgId, user: initialUser, initialSettings }: SettingsPageClientProps) {
-  const [fullName, setFullName] = useState(initialUser.name)
-  const [email, setEmail] = useState(initialUser.email)
-  const [marketingEmails, setMarketingEmails] = useState(true)
+export function SettingsPageClient({
+  orgId,
+  user: initialUser,
+  initialSettings,
+}: SettingsPageClientProps) {
+  const [fullName, setFullName] = useState(initialUser.name);
+  const [email, setEmail] = useState(initialUser.email);
+  const [marketingEmails, setMarketingEmails] = useState(true);
 
   const [formData, setFormData] = useState({
-    general: initialSettings?.general || { orgName: "", orgSlug: "", timezone: "UTC", language: "en", monthlyProjectLimit: 10 },
-    team: initialSettings?.team || { defaultTeamRole: "team_staff", allowSelfAssign: true, maxTeamSize: 50, autoAssignLead: false, showTeamAsAssignee: false },
+    general: initialSettings?.general || {
+      orgName: "",
+      orgSlug: "",
+      timezone: "UTC",
+      language: "en",
+      monthlyProjectLimit: 10,
+    },
+    team: initialSettings?.team || {
+      defaultTeamRole: "team_staff",
+      allowSelfAssign: true,
+      maxTeamSize: 50,
+      autoAssignLead: false,
+      showTeamAsAssignee: false,
+    },
     notifications: { ...defaultNotifSettings, ...initialSettings?.notifications },
-  })
+  });
 
-  const [dropdownOptions, setDropdownOptions] = useState<Record<string, string[]>>({})
-  const [newItems, setNewItems] = useState<Record<string, string>>({})
-  const [sectionLimits, setSectionLimits] = useState<Record<string, number>>({})
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [dropdownOptions, setDropdownOptions] = useState<Record<string, string[]>>({});
+  const [newItems, setNewItems] = useState<Record<string, string>>({});
+  const [sectionLimits, setSectionLimits] = useState<Record<string, number>>({});
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    setDropdownOptions(getDropdownOptions())
-    setSectionLimits(getSectionLimits())
-  }, [])
+    setDropdownOptions(getDropdownOptions());
+    setSectionLimits(getSectionLimits());
+  }, []);
 
   const autoSave = useCallback(async (data: typeof formData) => {
     try {
@@ -220,49 +245,49 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-      })
+      });
     } catch {
       // silent auto-save
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      autoSave(formData)
-    }, 800)
+      autoSave(formData);
+    }, 800);
     return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-    }
-  }, [formData, autoSave])
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [formData, autoSave]);
 
   const addDropdownItem = (section: string) => {
-    const val = newItems[section]?.trim()
-    if (!val) return
+    const val = newItems[section]?.trim();
+    if (!val) return;
     const updated = {
       ...dropdownOptions,
       [section]: [...(dropdownOptions[section] || []), val],
-    }
-    setDropdownOptions(updated)
-    saveDropdownOptions(updated)
-    setNewItems({ ...newItems, [section]: "" })
-  }
+    };
+    setDropdownOptions(updated);
+    saveDropdownOptions(updated);
+    setNewItems({ ...newItems, [section]: "" });
+  };
 
   const removeDropdownItem = (section: string, index: number) => {
     const updated = {
       ...dropdownOptions,
       [section]: dropdownOptions[section].filter((_: string, i: number) => i !== index),
-    }
-    setDropdownOptions(updated)
-    saveDropdownOptions(updated)
-  }
+    };
+    setDropdownOptions(updated);
+    saveDropdownOptions(updated);
+  };
 
   const updateSectionLimit = (section: string, value: number) => {
-    const clamped = Math.max(1, Math.min(100, value))
-    const updated = { ...sectionLimits, [section]: clamped }
-    setSectionLimits(updated)
-    saveSectionLimits(updated)
-  }
+    const clamped = Math.max(1, Math.min(100, value));
+    const updated = { ...sectionLimits, [section]: clamped };
+    setSectionLimits(updated);
+    saveSectionLimits(updated);
+  };
 
   const sectionLabels: Record<string, string> = {
     projects: "Projects",
@@ -275,7 +300,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
     shifts: "Shifts",
     sourceOfHires: "Source of Hires",
     countries: "Countries",
-  }
+  };
 
   return (
     <div className="min-h-svh w-full bg-white text-foreground p-6">
@@ -300,14 +325,25 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             <div className="flex flex-col gap-6">
               <div>
                 <h2 className="text-lg font-semibold">Profile</h2>
-                <p className="text-sm text-muted-foreground">Update your personal details and preferences.</p>
+                <p className="text-sm text-muted-foreground">
+                  Update your personal details and preferences.
+                </p>
               </div>
               <div className="flex items-center gap-4">
                 <Avatar className="size-16">
                   <AvatarImage src={initialUser.avatar} alt={fullName} className="grayscale" />
-                  <AvatarFallback>{fullName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)}</AvatarFallback>
+                  <AvatarFallback>
+                    {fullName
+                      .split(" ")
+                      .map((n: string) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </AvatarFallback>
                 </Avatar>
-                <Button variant="outline" size="sm">Change Avatar</Button>
+                <Button variant="outline" size="sm">
+                  Change Avatar
+                </Button>
               </div>
 
               <Field>
@@ -329,21 +365,15 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                 />
-                <FieldDescription>
-                  Used for sign-in and account notices.
-                </FieldDescription>
+                <FieldDescription>Used for sign-in and account notices.</FieldDescription>
               </Field>
 
               <Separator />
 
               <Field orientation="horizontal">
                 <FieldContent>
-                  <FieldLabel htmlFor="marketing-emails">
-                    Marketing emails
-                  </FieldLabel>
-                  <FieldDescription>
-                    Receive product news and occasional offers.
-                  </FieldDescription>
+                  <FieldLabel htmlFor="marketing-emails">Marketing emails</FieldLabel>
+                  <FieldDescription>Receive product news and occasional offers.</FieldDescription>
                 </FieldContent>
                 <Switch
                   id="marketing-emails"
@@ -358,22 +388,30 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-semibold">General Settings</h2>
-                <p className="text-sm text-muted-foreground">Manage workspace-wide configurations and dropdown options.</p>
+                <p className="text-sm text-muted-foreground">
+                  Manage workspace-wide configurations and dropdown options.
+                </p>
               </div>
 
               <div className="border rounded-sm p-4 space-y-3">
                 <div>
                   <h3 className="text-sm font-medium">Workspace Industry</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Select the industry for your workspace. This customizes the terminology used across the application.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Select the industry for your workspace. This customizes the terminology used
+                    across the application.
+                  </p>
                 </div>
                 <WorkspaceIndustrySelect />
               </div>
               <Separator />
-               <div className="grid gap-4 grid-cols-2">
+              <div className="grid gap-4 grid-cols-2">
                 {Object.entries(sectionLabels).map(([key, label]) => {
-                  const items = dropdownOptions[key] || DEFAULT_DROPDOWN_OPTIONS[key as keyof typeof DEFAULT_DROPDOWN_OPTIONS] || []
-                  const limit = sectionLimits[key] ?? DEFAULT_SECTION_LIMITS[key] ?? 20
-                  const atLimit = items.length >= limit
+                  const items =
+                    dropdownOptions[key] ||
+                    DEFAULT_DROPDOWN_OPTIONS[key as keyof typeof DEFAULT_DROPDOWN_OPTIONS] ||
+                    [];
+                  const limit = sectionLimits[key] ?? DEFAULT_SECTION_LIMITS[key] ?? 20;
+                  const atLimit = items.length >= limit;
                   return (
                     <div key={key} className="border rounded-sm p-4 space-y-3">
                       <div className="flex items-center justify-between">
@@ -394,7 +432,9 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                           >
                             <MinusIcon className="size-3" />
                           </Button>
-                          <span className="w-8 text-center text-sm font-medium tabular-nums">{limit}</span>
+                          <span className="w-8 text-center text-sm font-medium tabular-nums">
+                            {limit}
+                          </span>
                           <Button
                             variant="outline"
                             size="icon"
@@ -411,7 +451,10 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                         {items.map((item: string, i: number) => (
                           <Badge key={i} variant="outline" className="pr-1 gap-1">
                             {item}
-                            <button onClick={() => removeDropdownItem(key, i)} className="hover:text-destructive transition-colors">
+                            <button
+                              onClick={() => removeDropdownItem(key, i)}
+                              className="hover:text-destructive transition-colors"
+                            >
                               <Trash2Icon className="size-3" />
                             </button>
                           </Badge>
@@ -422,7 +465,12 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                           placeholder=""
                           value={newItems[key] || ""}
                           onChange={(e) => setNewItems({ ...newItems, [key]: e.target.value })}
-                          onKeyDown={(e) => { if (e.key === "Enter" && !atLimit) { e.preventDefault(); addDropdownItem(key) } }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !atLimit) {
+                              e.preventDefault();
+                              addDropdownItem(key);
+                            }
+                          }}
                           disabled={atLimit}
                           className="h-8 text-xs"
                         />
@@ -440,7 +488,7 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                         <p className="text-xs text-destructive">Maximum limit reached.</p>
                       )}
                     </div>
-                  )
+                  );
                 })}
               </div>
             </div>
@@ -450,22 +498,38 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             <div className="flex flex-col gap-6">
               <div>
                 <h2 className="text-lg font-semibold">Team Settings</h2>
-                <p className="text-sm text-muted-foreground">Configure team defaults and permissions.</p>
+                <p className="text-sm text-muted-foreground">
+                  Configure team defaults and permissions.
+                </p>
               </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Allow Self Assignment</Label>
-                  <p className="text-xs text-muted-foreground">Members can assign tasks to themselves</p>
+                  <p className="text-xs text-muted-foreground">
+                    Members can assign tasks to themselves
+                  </p>
                 </div>
-                <Switch checked={formData.team.allowSelfAssign ?? true} onCheckedChange={(v) => setFormData({ ...formData, team: { ...formData.team, allowSelfAssign: v } })} />
+                <Switch
+                  checked={formData.team.allowSelfAssign ?? true}
+                  onCheckedChange={(v) =>
+                    setFormData({ ...formData, team: { ...formData.team, allowSelfAssign: v } })
+                  }
+                />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Show Teams as Assignees</Label>
-                  <p className="text-xs text-muted-foreground">When ON, show Teams in New Task form; when OFF, show Staffs</p>
+                  <p className="text-xs text-muted-foreground">
+                    When ON, show Teams in New Task form; when OFF, show Staffs
+                  </p>
                 </div>
-                <Switch checked={formData.team.showTeamAsAssignee ?? false} onCheckedChange={(v) => setFormData({ ...formData, team: { ...formData.team, showTeamAsAssignee: v } })} />
+                <Switch
+                  checked={formData.team.showTeamAsAssignee ?? false}
+                  onCheckedChange={(v) =>
+                    setFormData({ ...formData, team: { ...formData.team, showTeamAsAssignee: v } })
+                  }
+                />
               </div>
             </div>
           </TabsContent>
@@ -474,7 +538,9 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             <div className="flex flex-col gap-6">
               <div>
                 <h2 className="text-lg font-semibold">Notification Preferences</h2>
-                <p className="text-sm text-muted-foreground">Choose which notifications you want to receive across different channels.</p>
+                <p className="text-sm text-muted-foreground">
+                  Choose which notifications you want to receive across different channels.
+                </p>
               </div>
 
               {/* Task Notifications */}
@@ -485,13 +551,41 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 </div>
                 <div className="grid gap-3">
                   {[
-                    { key: "taskAssigned", label: "Task Assigned", desc: "When a task is assigned to you" },
-                    { key: "taskStatusChange", label: "Task Status Changes", desc: "When task status is updated" },
-                    { key: "taskComments", label: "Task Comments", desc: "When someone comments on your task" },
-                    { key: "taskMentions", label: "Task Mentions", desc: "When you're mentioned in a task" },
-                    { key: "dueDateReminders", label: "Due Date Reminders", desc: "Reminders before task due dates" },
-                    { key: "taskDeadlines", label: "Task Deadlines", desc: "When a task deadline is approaching" },
-                    { key: "taskCompleted", label: "Task Completed", desc: "When a task you're involved in is completed" },
+                    {
+                      key: "taskAssigned",
+                      label: "Task Assigned",
+                      desc: "When a task is assigned to you",
+                    },
+                    {
+                      key: "taskStatusChange",
+                      label: "Task Status Changes",
+                      desc: "When task status is updated",
+                    },
+                    {
+                      key: "taskComments",
+                      label: "Task Comments",
+                      desc: "When someone comments on your task",
+                    },
+                    {
+                      key: "taskMentions",
+                      label: "Task Mentions",
+                      desc: "When you're mentioned in a task",
+                    },
+                    {
+                      key: "dueDateReminders",
+                      label: "Due Date Reminders",
+                      desc: "Reminders before task due dates",
+                    },
+                    {
+                      key: "taskDeadlines",
+                      label: "Task Deadlines",
+                      desc: "When a task deadline is approaching",
+                    },
+                    {
+                      key: "taskCompleted",
+                      label: "Task Completed",
+                      desc: "When a task you're involved in is completed",
+                    },
                   ].map(({ key, label, desc }) => (
                     <div key={key} className="flex items-center justify-between py-2">
                       <div>
@@ -499,8 +593,15 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                         <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
-                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
-                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                        checked={
+                          !!formData.notifications[key as keyof typeof formData.notifications]
+                        }
+                        onCheckedChange={(v) =>
+                          setFormData({
+                            ...formData,
+                            notifications: { ...formData.notifications, [key]: v },
+                          })
+                        }
                       />
                     </div>
                   ))}
@@ -515,10 +616,26 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 </div>
                 <div className="grid gap-3">
                   {[
-                    { key: "projectUpdates", label: "Project Updates", desc: "When project details are updated" },
-                    { key: "projectMentions", label: "Project Mentions", desc: "When you're mentioned in a project" },
-                    { key: "projectMilestones", label: "Project Milestones", desc: "When a milestone is reached" },
-                    { key: "projectDeadlines", label: "Project Deadlines", desc: "When project deadlines approach" },
+                    {
+                      key: "projectUpdates",
+                      label: "Project Updates",
+                      desc: "When project details are updated",
+                    },
+                    {
+                      key: "projectMentions",
+                      label: "Project Mentions",
+                      desc: "When you're mentioned in a project",
+                    },
+                    {
+                      key: "projectMilestones",
+                      label: "Project Milestones",
+                      desc: "When a milestone is reached",
+                    },
+                    {
+                      key: "projectDeadlines",
+                      label: "Project Deadlines",
+                      desc: "When project deadlines approach",
+                    },
                   ].map(({ key, label, desc }) => (
                     <div key={key} className="flex items-center justify-between py-2">
                       <div>
@@ -526,8 +643,15 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                         <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
-                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
-                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                        checked={
+                          !!formData.notifications[key as keyof typeof formData.notifications]
+                        }
+                        onCheckedChange={(v) =>
+                          setFormData({
+                            ...formData,
+                            notifications: { ...formData.notifications, [key]: v },
+                          })
+                        }
                       />
                     </div>
                   ))}
@@ -542,9 +666,21 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 </div>
                 <div className="grid gap-3">
                   {[
-                    { key: "memberJoinLeave", label: "Member Join/Leave", desc: "When team members join or leave" },
-                    { key: "teamMentions", label: "Team Mentions", desc: "When you're mentioned in team chat" },
-                    { key: "teamUpdates", label: "Team Updates", desc: "When team settings or details change" },
+                    {
+                      key: "memberJoinLeave",
+                      label: "Member Join/Leave",
+                      desc: "When team members join or leave",
+                    },
+                    {
+                      key: "teamMentions",
+                      label: "Team Mentions",
+                      desc: "When you're mentioned in team chat",
+                    },
+                    {
+                      key: "teamUpdates",
+                      label: "Team Updates",
+                      desc: "When team settings or details change",
+                    },
                   ].map(({ key, label, desc }) => (
                     <div key={key} className="flex items-center justify-between py-2">
                       <div>
@@ -552,8 +688,15 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                         <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
-                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
-                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                        checked={
+                          !!formData.notifications[key as keyof typeof formData.notifications]
+                        }
+                        onCheckedChange={(v) =>
+                          setFormData({
+                            ...formData,
+                            notifications: { ...formData.notifications, [key]: v },
+                          })
+                        }
                       />
                     </div>
                   ))}
@@ -568,9 +711,21 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 </div>
                 <div className="grid gap-3">
                   {[
-                    { key: "calendarReminders", label: "Calendar Reminders", desc: "Reminders for upcoming events" },
-                    { key: "meetingReminders", label: "Meeting Reminders", desc: "Reminders before meetings start" },
-                    { key: "meetingInvitations", label: "Meeting Invitations", desc: "When you're invited to a meeting" },
+                    {
+                      key: "calendarReminders",
+                      label: "Calendar Reminders",
+                      desc: "Reminders for upcoming events",
+                    },
+                    {
+                      key: "meetingReminders",
+                      label: "Meeting Reminders",
+                      desc: "Reminders before meetings start",
+                    },
+                    {
+                      key: "meetingInvitations",
+                      label: "Meeting Invitations",
+                      desc: "When you're invited to a meeting",
+                    },
                   ].map(({ key, label, desc }) => (
                     <div key={key} className="flex items-center justify-between py-2">
                       <div>
@@ -578,8 +733,15 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                         <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
-                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
-                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                        checked={
+                          !!formData.notifications[key as keyof typeof formData.notifications]
+                        }
+                        onCheckedChange={(v) =>
+                          setFormData({
+                            ...formData,
+                            notifications: { ...formData.notifications, [key]: v },
+                          })
+                        }
                       />
                     </div>
                   ))}
@@ -594,10 +756,26 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 </div>
                 <div className="grid gap-3">
                   {[
-                    { key: "securityAlerts", label: "Security Alerts", desc: "Important security notifications" },
-                    { key: "billingUpdates", label: "Billing Updates", desc: "Payment and subscription updates" },
-                    { key: "systemUpdates", label: "System Updates", desc: "Platform updates and maintenance" },
-                    { key: "featureAnnouncements", label: "Feature Announcements", desc: "New features and improvements" },
+                    {
+                      key: "securityAlerts",
+                      label: "Security Alerts",
+                      desc: "Important security notifications",
+                    },
+                    {
+                      key: "billingUpdates",
+                      label: "Billing Updates",
+                      desc: "Payment and subscription updates",
+                    },
+                    {
+                      key: "systemUpdates",
+                      label: "System Updates",
+                      desc: "Platform updates and maintenance",
+                    },
+                    {
+                      key: "featureAnnouncements",
+                      label: "Feature Announcements",
+                      desc: "New features and improvements",
+                    },
                   ].map(({ key, label, desc }) => (
                     <div key={key} className="flex items-center justify-between py-2">
                       <div>
@@ -605,8 +783,15 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                         <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
-                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
-                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                        checked={
+                          !!formData.notifications[key as keyof typeof formData.notifications]
+                        }
+                        onCheckedChange={(v) =>
+                          setFormData({
+                            ...formData,
+                            notifications: { ...formData.notifications, [key]: v },
+                          })
+                        }
                       />
                     </div>
                   ))}
@@ -621,8 +806,16 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 </div>
                 <div className="grid gap-3">
                   {[
-                    { key: "emailDigest", label: "Email Digest", desc: "Receive periodic email summaries" },
-                    { key: "weeklyReport", label: "Weekly Report", desc: "Weekly activity summary" },
+                    {
+                      key: "emailDigest",
+                      label: "Email Digest",
+                      desc: "Receive periodic email summaries",
+                    },
+                    {
+                      key: "weeklyReport",
+                      label: "Weekly Report",
+                      desc: "Weekly activity summary",
+                    },
                     { key: "dailySummary", label: "Daily Summary", desc: "Daily activity summary" },
                   ].map(({ key, label, desc }) => (
                     <div key={key} className="flex items-center justify-between py-2">
@@ -631,8 +824,15 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                         <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
-                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
-                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                        checked={
+                          !!formData.notifications[key as keyof typeof formData.notifications]
+                        }
+                        onCheckedChange={(v) =>
+                          setFormData({
+                            ...formData,
+                            notifications: { ...formData.notifications, [key]: v },
+                          })
+                        }
                       />
                     </div>
                   ))}
@@ -647,10 +847,26 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                 </div>
                 <div className="grid gap-3">
                   {[
-                    { key: "pushEnabled", label: "Enable Push Notifications", desc: "Receive push notifications on your devices" },
-                    { key: "pushTaskUpdates", label: "Task Updates", desc: "Push notifications for task changes" },
-                    { key: "pushCalendarEvents", label: "Calendar Events", desc: "Push notifications for calendar events" },
-                    { key: "pushTeamMessages", label: "Team Messages", desc: "Push notifications for team messages" },
+                    {
+                      key: "pushEnabled",
+                      label: "Enable Push Notifications",
+                      desc: "Receive push notifications on your devices",
+                    },
+                    {
+                      key: "pushTaskUpdates",
+                      label: "Task Updates",
+                      desc: "Push notifications for task changes",
+                    },
+                    {
+                      key: "pushCalendarEvents",
+                      label: "Calendar Events",
+                      desc: "Push notifications for calendar events",
+                    },
+                    {
+                      key: "pushTeamMessages",
+                      label: "Team Messages",
+                      desc: "Push notifications for team messages",
+                    },
                   ].map(({ key, label, desc }) => (
                     <div key={key} className="flex items-center justify-between py-2">
                       <div>
@@ -658,8 +874,15 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
                         <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch
-                        checked={!!formData.notifications[key as keyof typeof formData.notifications]}
-                        onCheckedChange={(v) => setFormData({ ...formData, notifications: { ...formData.notifications, [key]: v } })}
+                        checked={
+                          !!formData.notifications[key as keyof typeof formData.notifications]
+                        }
+                        onCheckedChange={(v) =>
+                          setFormData({
+                            ...formData,
+                            notifications: { ...formData.notifications, [key]: v },
+                          })
+                        }
                       />
                     </div>
                   ))}
@@ -682,7 +905,9 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             <div className="flex flex-col gap-4">
               <div>
                 <h2 className="text-lg font-semibold">Integrations</h2>
-                <p className="text-sm text-muted-foreground">Connect external services and manage integrations.</p>
+                <p className="text-sm text-muted-foreground">
+                  Connect external services and manage integrations.
+                </p>
               </div>
               <IntegrationsBlock />
             </div>
@@ -692,15 +917,14 @@ export function SettingsPageClient({ orgId, user: initialUser, initialSettings }
             <div className="flex flex-col gap-4">
               <div>
                 <h2 className="text-lg font-semibold">Security</h2>
-                <p className="text-sm text-muted-foreground">Manage your account security and authentication methods.</p>
+                <p className="text-sm text-muted-foreground">
+                  Manage your account security and authentication methods.
+                </p>
               </div>
             </div>
           </TabsContent>
         </Tabs>
-
       </div>
     </div>
-  )
+  );
 }
-
-

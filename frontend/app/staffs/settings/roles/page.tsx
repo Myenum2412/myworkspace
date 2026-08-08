@@ -1,6 +1,5 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const roles = [
   { name: "Admin", members: 3, permissions: "Full access to all features" },
@@ -29,21 +28,24 @@ export default function StaffRolesPage() {
                     <th className="px-4 py-3.5 font-semibold">Role</th>
                     <th className="px-4 py-3.5 font-semibold">Members</th>
                     <th className="px-4 py-3.5 font-semibold">Permissions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {roles.map((r, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white">
-                    <td className="px-4 py-3">
-                      <span className="text-sm font-medium">{r.name}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant="secondary">{r.members}</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{r.permissions}</td>
                   </tr>
-                ))}
-              </tbody>
+                </thead>
+                <tbody>
+                  {roles.map((r, i) => (
+                    <tr
+                      key={i}
+                      className="border-b last:border-0 hover:bg-slate-50 transition-colors bg-white"
+                    >
+                      <td className="px-4 py-3">
+                        <span className="text-sm font-medium">{r.name}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant="secondary">{r.members}</Badge>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{r.permissions}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           </div>

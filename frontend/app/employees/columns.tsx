@@ -1,7 +1,9 @@
-export { getColumns } from "./columns.client"
-export type { ExperienceRow } from "./columns.client"
-export type { EducationRow } from "./columns.client"
-export type { FileAttachment } from "./columns.client"
-export type { DependentRow } from "./columns.client"
-export type { Employee } from "./columns.client"
-export type { TerminatedEmployee } from "./columns.client"
+export type {
+  DependentRow,
+  EducationRow,
+  Employee,
+  ExperienceRow,
+  FileAttachment,
+  TerminatedEmployee,
+} from "./columns.client";
+export { getColumns } from "./columns.client";

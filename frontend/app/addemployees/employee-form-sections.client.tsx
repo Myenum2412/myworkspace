@@ -1,8 +1,10 @@
-"use client"
-import React, { useState, useRef, useCallback } from "react";
+"use client";
+import type React from "react";
+import { useCallback, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { Field, FieldLabel } from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -10,8 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CameraIcon, XIcon, Loader2Icon } from "@/lib/icons";
-import { Button } from "@/components/ui/button";
+import { CameraIcon, Loader2Icon, XIcon } from "@/lib/icons";
 
 export interface Row {
   id: string;
@@ -48,7 +49,13 @@ export interface FirstSlideEmployeeForm {
   zipCode: string;
 }
 
-export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string; onAvatarChange: (url: string) => void }) {
+export function ProfileImageUpload({
+  avatar,
+  onAvatarChange,
+}: {
+  avatar?: string;
+  onAvatarChange: (url: string) => void;
+}) {
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -56,34 +63,37 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string
 
   const currentImage = preview || avatar;
 
-  const uploadFile = useCallback(async (file: File) => {
-    if (!file.type.startsWith("image/")) return;
+  const uploadFile = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith("image/")) return;
 
-    // Local preview
-    const reader = new FileReader();
-    reader.onload = (e) => setPreview(e.target?.result as string);
-    reader.readAsDataURL(file);
+      // Local preview
+      const reader = new FileReader();
+      reader.onload = (e) => setPreview(e.target?.result as string);
+      reader.readAsDataURL(file);
 
-    // Upload to server
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("banner", file);
-      const res = await fetch("/api/user/banner", {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.bannerUrl) {
-        onAvatarChange(data.bannerUrl);
+      // Upload to server
+      setUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("banner", file);
+        const res = await fetch("/api/user/banner", {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.bannerUrl) {
+          onAvatarChange(data.bannerUrl);
+        }
+      } catch {
+        // keep preview on failure
+      } finally {
+        setUploading(false);
       }
-    } catch {
-      // keep preview on failure
-    } finally {
-      setUploading(false);
-    }
-  }, [onAvatarChange]);
+    },
+    [onAvatarChange],
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -137,7 +147,10 @@ export function ProfileImageUpload({ avatar, onAvatarChange }: { avatar?: string
         {currentImage && !uploading && (
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); removeImage(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              removeImage();
+            }}
             className="absolute top-0 right-0 size-6 rounded-sm bg-destructive text-destructive-foreground flex items-center justify-center shadow hover:bg-destructive/80 transition-colors"
           >
             <XIcon className="size-3" />
@@ -240,7 +253,9 @@ export function BasicInfoSection({ formData, onChange, options }: SectionProps) 
           </SelectTrigger>
           <SelectContent>
             {(options?.departments || []).map((opt: string) => (
-              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              <SelectItem key={opt} value={opt}>
+                {opt}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -253,7 +268,9 @@ export function BasicInfoSection({ formData, onChange, options }: SectionProps) 
           </SelectTrigger>
           <SelectContent>
             {(options?.locations || []).map((opt: string) => (
-              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              <SelectItem key={opt} value={opt}>
+                {opt}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -273,20 +290,27 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
           </SelectTrigger>
           <SelectContent>
             {(options?.designations || []).map((opt: string) => (
-              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              <SelectItem key={opt} value={opt}>
+                {opt}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </Field>
       <Field>
         <FieldLabel>Employment Type</FieldLabel>
-        <Select value={formData.employmentType} onValueChange={(v) => onChange("employmentType", v)}>
+        <Select
+          value={formData.employmentType}
+          onValueChange={(v) => onChange("employmentType", v)}
+        >
           <SelectTrigger>
             <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
             {(options?.employmentTypes || []).map((opt: string) => (
-              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              <SelectItem key={opt} value={opt}>
+                {opt}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -299,7 +323,9 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
           </SelectTrigger>
           <SelectContent>
             {(options?.statuses || []).map((opt: string) => (
-              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              <SelectItem key={opt} value={opt}>
+                {opt}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -312,7 +338,9 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
           </SelectTrigger>
           <SelectContent>
             {(options?.branches || []).map((opt: string) => (
-              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              <SelectItem key={opt} value={opt}>
+                {opt}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -325,7 +353,9 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
           </SelectTrigger>
           <SelectContent>
             {(options?.shifts || []).map((opt: string) => (
-              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              <SelectItem key={opt} value={opt}>
+                {opt}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -338,7 +368,9 @@ export function WorkInfoSection({ formData, onChange, options }: SectionProps) {
           </SelectTrigger>
           <SelectContent>
             {(options?.sourceOfHires || []).map((opt: string) => (
-              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              <SelectItem key={opt} value={opt}>
+                {opt}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -376,7 +408,11 @@ export function ContactDetailsSection({ formData, onChange, options }: SectionPr
     <div className="grid grid-cols-2 gap-4">
       <Field>
         <FieldLabel>Phone</FieldLabel>
-        <PhoneInput value={formData.phone} onChange={(value) => onChange("phone", value)} placeholder="" />
+        <PhoneInput
+          value={formData.phone}
+          onChange={(value) => onChange("phone", value)}
+          placeholder=""
+        />
       </Field>
       <Field>
         <FieldLabel>Alternate Email</FieldLabel>
@@ -419,7 +455,9 @@ export function ContactDetailsSection({ formData, onChange, options }: SectionPr
           </SelectTrigger>
           <SelectContent>
             {(options?.countries || []).map((opt: string) => (
-              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+              <SelectItem key={opt} value={opt}>
+                {opt}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -444,7 +482,13 @@ interface DynamicRowSectionProps {
   renderRow: (row: Row, index: number) => React.ReactNode;
 }
 
-export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: DynamicRowSectionProps) {
+export function DynamicRowSection({
+  title,
+  rows,
+  onAdd,
+  onRemove,
+  renderRow,
+}: DynamicRowSectionProps) {
   return (
     <fieldset className="border p-4 space-y-4">
       <legend className="text-sm font-semibold px-2">{title}</legend>
@@ -460,11 +504,7 @@ export function DynamicRowSection({ title, rows, onAdd, onRemove, renderRow }: D
           {renderRow(row, index)}
         </div>
       ))}
-      <button
-        type="button"
-        onClick={onAdd}
-        className="text-sm text-primary font-medium"
-      >
+      <button type="button" onClick={onAdd} className="text-sm text-primary font-medium">
         + Add Another
       </button>
     </fieldset>
@@ -489,7 +529,9 @@ export function SelectWithAdd({ label, options, value, onChange }: SelectWithAdd
       >
         <option value="">Select...</option>
         {options?.map((opt: string) => (
-          <option key={opt} value={opt}>{opt}</option>
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
         ))}
       </select>
     </Field>

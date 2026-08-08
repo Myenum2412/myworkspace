@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { openDB } from "idb";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { Card } from "@/components/ui/card";
-import { openDB } from "idb";
 
 interface SetupState {
   storagePath: string;
@@ -89,7 +89,7 @@ function formatSize(bytes: number): string {
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+  return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }
 
 export function SetupWizard() {
@@ -112,7 +112,9 @@ export function SetupWizard() {
         setWizardCompleted(true);
         return;
       }
-      const isInstalled = window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone;
+      const isInstalled =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        (window.navigator as any).standalone;
       if (isInstalled) {
         setWizardCompleted(false);
       } else {
@@ -143,7 +145,10 @@ export function SetupWizard() {
           availableSpace: available,
           totalSpace: total,
           error: null,
-          warning: available < 1 * 1024 ** 3 ? "Available space is less than 1GB. Some features may be limited." : null,
+          warning:
+            available < 1 * 1024 ** 3
+              ? "Available space is less than 1GB. Some features may be limited."
+              : null,
         }));
       }
     } catch {
@@ -154,13 +159,10 @@ export function SetupWizard() {
     }
   }, []);
 
-  const handlePathChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const path = e.target.value;
-      setState((s) => ({ ...s, storagePath: path, error: null }));
-    },
-    [],
-  );
+  const handlePathChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const path = e.target.value;
+    setState((s) => ({ ...s, storagePath: path, error: null }));
+  }, []);
 
   const handleStartSetup = useCallback(async () => {
     setState((s) => ({ ...s, step: "storage" }));
@@ -207,8 +209,10 @@ export function SetupWizard() {
   if (wizardCompleted === null) return null;
   if (wizardCompleted) return null;
 
-  const isStandalone = typeof window !== "undefined" &&
-    (window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone);
+  const isStandalone =
+    typeof window !== "undefined" &&
+    (window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone);
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-md">
@@ -226,8 +230,8 @@ export function SetupWizard() {
 
             <div className="space-y-4 text-sm text-muted-foreground">
               <p>
-                Welcome to MyWorkSpace! Let&apos;s get your workspace ready.
-                This wizard will help you configure where your data is stored.
+                Welcome to MyWorkSpace! Let&apos;s get your workspace ready. This wizard will help
+                you configure where your data is stored.
               </p>
               <ul className="space-y-2 list-disc list-inside">
                 <li>Choose a storage location for your files and data</li>
@@ -328,7 +332,9 @@ export function SetupWizard() {
           <div className="space-y-6 text-center py-8">
             <div className="text-xl font-semibold">Validating Storage...</div>
             <Progress value={progress} className="h-2" />
-            <p className="text-sm text-muted-foreground">Checking permissions and available space</p>
+            <p className="text-sm text-muted-foreground">
+              Checking permissions and available space
+            </p>
           </div>
         )}
 
@@ -336,7 +342,9 @@ export function SetupWizard() {
           <div className="space-y-6 text-center py-8">
             <div className="text-xl font-semibold">Configuring Workspace...</div>
             <Progress value={progress} className="h-2" />
-            <p className="text-sm text-muted-foreground">Creating directory structure and initializing storage</p>
+            <p className="text-sm text-muted-foreground">
+              Creating directory structure and initializing storage
+            </p>
           </div>
         )}
 

@@ -1,31 +1,27 @@
 "use client";
 
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { formatSize } from "@/lib/file-system/types";
+import { useEffect, useState } from "react";
 import { getFileIcon } from "@/components/files/utils";
+import { FileInfoPanel } from "@/components/files/viewers/file-info-panel";
 import { FileViewer, getFileTypeCategory } from "@/components/files/viewers/file-viewer";
 import { Button } from "@/components/ui/button";
+import { useFileSystemStore } from "@/lib/file-system/store";
+import { formatSize } from "@/lib/file-system/types";
 import {
-  DownloadIcon,
-  XIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  DownloadIcon,
   InfoIcon,
   PanelLeftIcon,
+  XIcon,
 } from "@/lib/icons";
-import { useState, useEffect } from "react";
-import { FileInfoPanel } from "@/components/files/viewers/file-info-panel";
 
 interface PreviewPaneProps {
   onClose: () => void;
 }
 
 export function PreviewPane({ onClose }: PreviewPaneProps) {
-  const {
-    previewPaneFile,
-    setPreviewPaneFile,
-    files,
-  } = useFileSystemStore();
+  const { previewPaneFile, setPreviewPaneFile, files } = useFileSystemStore();
   const [showInfo, setShowInfo] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
 
@@ -33,11 +29,16 @@ export function PreviewPane({ onClose }: PreviewPaneProps) {
   const src = file ? `/api/files/${file.id}/download?preview=true` : "";
 
   useEffect(() => {
-    if (!file) { setPreviewUrl(""); return; }
+    if (!file) {
+      setPreviewUrl("");
+      return;
+    }
     setPreviewUrl("");
     fetch(`/api/files/preview-url/${file.id}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.success && d.data?.url) setPreviewUrl(d.data.url); })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.success && d.data?.url) setPreviewUrl(d.data.url);
+      })
       .catch(() => {});
   }, [file?.id]);
 
@@ -87,12 +88,7 @@ export function PreviewPane({ onClose }: PreviewPaneProps) {
         </div>
 
         <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-0"
-            onClick={() => setShowInfo(!showInfo)}
-          >
+          <Button variant="ghost" size="sm" className="p-0" onClick={() => setShowInfo(!showInfo)}>
             <InfoIcon className="size-4" />
           </Button>
           <Button

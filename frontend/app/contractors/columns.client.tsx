@@ -1,6 +1,6 @@
-"use client"
-import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2, Eye } from "@/lib/icons";
+"use client";
+import type { ColumnDef } from "@tanstack/react-table";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+import { Eye, MoreHorizontal, Pencil, Trash2 } from "@/lib/icons";
 
 export type Contractor = {
   id: string;
@@ -63,7 +63,9 @@ export const columns: ColumnDef<Contractor>[] = [
   {
     accessorKey: "emailAddress",
     header: "Email",
-    cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("emailAddress")}</span>,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.getValue("emailAddress")}</span>
+    ),
   },
   {
     accessorKey: "mobileNumber",
@@ -96,9 +98,11 @@ export const columns: ColumnDef<Contractor>[] = [
     cell: ({ row }) => {
       const val = row.getValue<string>("insuranceAvailable");
       return (
-        <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
-          val === "Yes" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"
-        }`}>
+        <span
+          className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
+            val === "Yes" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"
+          }`}
+        >
           {val}
         </span>
       );
@@ -115,9 +119,11 @@ export const columns: ColumnDef<Contractor>[] = [
     cell: ({ row }) => {
       const status = row.getValue<string>("status");
       return (
-        <span className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
-          status === "Active" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"
-        }`}>
+        <span
+          className={`inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium ${
+            status === "Active" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"
+          }`}
+        >
           {status}
         </span>
       );

@@ -1,17 +1,21 @@
 "use client";
 
+import { getFileIcon } from "@/components/files/utils";
 import { useFavorites } from "@/hooks/file-system/use-favorites";
 import { useFileSystemStore } from "@/lib/file-system/store";
-import { getFileIcon } from "@/components/files/utils";
 import { formatSize } from "@/lib/file-system/types";
-import { StarIcon, FolderIcon } from "@/lib/icons";
+import { FolderIcon, StarIcon } from "@/lib/icons";
 
 export function FavoritesView() {
   const { favorites, toggleFavorite, isLoading } = useFavorites();
   const { setPreviewFile, setCurrentFolder } = useFileSystemStore();
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-12"><div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   if (!favorites || favorites.length === 0) {
@@ -30,7 +34,9 @@ export function FavoritesView() {
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <StarIcon className="size-4" /> Favorites
         </h2>
-        <p className="text-sm text-muted-foreground">{favorites.length} starred item{favorites.length !== 1 ? "s" : ""}</p>
+        <p className="text-sm text-muted-foreground">
+          {favorites.length} starred item{favorites.length !== 1 ? "s" : ""}
+        </p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -44,7 +50,11 @@ export function FavoritesView() {
             }}
           >
             <div className="size-16 rounded-sm bg-muted flex items-center justify-center">
-              {item.type === "folder" ? <FolderIcon className="size-8 text-primary/60" /> : getFileIcon((item as any).mimeType || "")}
+              {item.type === "folder" ? (
+                <FolderIcon className="size-8 text-primary/60" />
+              ) : (
+                getFileIcon((item as any).mimeType || "")
+              )}
             </div>
             <div className="text-center min-w-0 w-full">
               <p className="text-xs font-medium truncate">{item.name}</p>
@@ -53,7 +63,10 @@ export function FavoritesView() {
               </p>
             </div>
             <button
-              onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id, item.type); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(item.id, item.type);
+              }}
               className="absolute top-2 right-2 p-0.5"
             >
               <StarIcon className="size-3 fill-amber-400 text-amber-400" />

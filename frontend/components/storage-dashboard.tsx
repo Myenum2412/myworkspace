@@ -1,12 +1,18 @@
 "use client";
 
-import { useStorageStats, type StorageStats } from "@/hooks/use-storage-stats";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Badge } from "@/components/ui/badge";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { type StorageStats, useStorageStats } from "@/hooks/use-storage-stats";
 import {
-  HardDrive, FileText, Image, Video, Music, Archive, Files,
   AlertTriangle,
+  Archive,
+  Files,
+  FileText,
+  HardDrive,
+  Image,
+  Music,
+  Video,
 } from "@/lib/icons";
 
 const USER_STORAGE_LIMIT = 1024 * 1024 * 1024;
@@ -16,7 +22,7 @@ function formatBytes(bytes: number): string {
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+  return parseFloat((bytes / k ** i).toFixed(1)) + " " + sizes[i];
 }
 
 function timeAgo(dateStr: string | null): string {
@@ -96,7 +102,14 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
     { name: "Used", value: stats.usedStorage },
     { name: "Available", value: stats.availableStorage },
   ];
-  const pieColors = [getStorageBarColor(stats.usagePercent).replace("bg-", "#") === "#22c55e" ? "#22c55e" : getStorageBarColor(stats.usagePercent).replace("bg-", "#") === "#f59e0b" ? "#f59e0b" : "#ef4444", "#e5e7eb"];
+  const pieColors = [
+    getStorageBarColor(stats.usagePercent).replace("bg-", "#") === "#22c55e"
+      ? "#22c55e"
+      : getStorageBarColor(stats.usagePercent).replace("bg-", "#") === "#f59e0b"
+        ? "#f59e0b"
+        : "#ef4444",
+    "#e5e7eb",
+  ];
 
   // Fix pie colors based on usage
   if (stats.usagePercent >= 90) pieColors[0] = "#ef4444";
@@ -111,7 +124,9 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
           <AlertTriangle className="size-5 shrink-0" />
           <div>
             <p className="text-sm font-semibold">Storage Full</p>
-            <p className="text-xs">You have reached your 1 GB storage limit. Please delete files to free up space.</p>
+            <p className="text-xs">
+              You have reached your 1 GB storage limit. Please delete files to free up space.
+            </p>
           </div>
         </div>
       )}
@@ -120,7 +135,10 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
           <AlertTriangle className="size-5 shrink-0" />
           <div>
             <p className="text-sm font-semibold">Storage Running Low</p>
-            <p className="text-xs">You have used {stats.usagePercent.toFixed(1)}% of your 1 GB storage. Consider deleting unused files.</p>
+            <p className="text-xs">
+              You have used {stats.usagePercent.toFixed(1)}% of your 1 GB storage. Consider deleting
+              unused files.
+            </p>
           </div>
         </div>
       )}
@@ -152,9 +170,7 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
                       <Cell key={`cell-${index}`} fill={pieColors[index]} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    formatter={(value: any) => formatBytes(value)}
-                  />
+                  <Tooltip formatter={(value: any) => formatBytes(value)} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex items-center justify-center">
@@ -195,7 +211,10 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
               {stats.extensionStats.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {stats.extensionStats.map((e) => (
-                    <div key={e.ext} className="flex items-center justify-between px-3 py-2 rounded-sm bg-muted/50">
+                    <div
+                      key={e.ext}
+                      className="flex items-center justify-between px-3 py-2 rounded-sm bg-muted/50"
+                    >
                       <span className="text-sm font-medium">.{e.ext}</span>
                       <span className="text-sm text-muted-foreground">{e.count}</span>
                     </div>
@@ -259,7 +278,10 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
                   <div className="h-2 bg-muted rounded-sm overflow-hidden">
                     <div
                       className="h-full rounded-sm transition-all duration-300"
-                      style={{ width: `${ft.percent}%`, backgroundColor: categoryColors[ft.category] || "#6b7280" }}
+                      style={{
+                        width: `${ft.percent}%`,
+                        backgroundColor: categoryColors[ft.category] || "#6b7280",
+                      }}
                     />
                   </div>
                 </div>
@@ -300,12 +322,17 @@ export function StorageDashboard({ orgId }: { orgId: string }) {
           <CardContent>
             <div className="space-y-2">
               {stats.recentUploads.map((f) => (
-                <div key={f.id} className="flex items-center justify-between py-1.5 border-b last:border-0">
+                <div
+                  key={f.id}
+                  className="flex items-center justify-between py-1.5 border-b last:border-0"
+                >
                   <div className="min-w-0 flex-1">
                     <p className="text-sm truncate">{f.name}</p>
                     <p className="text-xs text-muted-foreground">{timeAgo(f.uploadedAt)}</p>
                   </div>
-                  <span className="text-xs text-muted-foreground shrink-0 ml-2">{formatBytes(f.size)}</span>
+                  <span className="text-xs text-muted-foreground shrink-0 ml-2">
+                    {formatBytes(f.size)}
+                  </span>
                 </div>
               ))}
             </div>

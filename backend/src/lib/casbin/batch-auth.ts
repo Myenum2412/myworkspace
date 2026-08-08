@@ -1,6 +1,6 @@
 import { getEnforcer } from "../../config/casbin.js";
-import { permissionCache } from "../permission-cache.js";
 import { logger } from "../logger/index.js";
+import { permissionCache } from "../permission-cache.js";
 
 /**
  * Batch Authorization Service
@@ -67,10 +67,12 @@ export async function batchCheckPermissions(
 
       if (cachedPerms) {
         // Check if permission is in cached list
-        const hasPermission = cachedPerms.some(perm => {
+        const hasPermission = cachedPerms.some((perm) => {
           const [permAction, permResource] = perm.split(":");
-          return permAction === "manage" && permResource === req.object.replace(":", "") ||
-                 perm === `${req.action}:${req.object.replace(":", "")}`;
+          return (
+            (permAction === "manage" && permResource === req.object.replace(":", "")) ||
+            perm === `${req.action}:${req.object.replace(":", "")}`
+          );
         });
 
         results.push({
@@ -113,12 +115,15 @@ export async function batchCheckPermissions(
 
   const totalDurationMs = Date.now() - startTime;
 
-  logger.debug({
-    requestCount: requests.length,
-    cacheHits,
-    cacheMisses,
-    totalDurationMs,
-  }, "Batch authorization check completed");
+  logger.debug(
+    {
+      requestCount: requests.length,
+      cacheHits,
+      cacheMisses,
+      totalDurationMs,
+    },
+    "Batch authorization check completed",
+  );
 
   return {
     results,
@@ -135,7 +140,7 @@ export async function checkAllPermissions(
   subject: string,
   permissions: Array<{ object: string; action: string }>,
 ): Promise<{ allowed: boolean; missing: string[] }> {
-  const requests: AuthCheckRequest[] = permissions.map(p => ({
+  const requests: AuthCheckRequest[] = permissions.map((p) => ({
     subject,
     object: p.object,
     action: p.action,
@@ -163,7 +168,7 @@ export async function checkAnyPermission(
   subject: string,
   permissions: Array<{ object: string; action: string }>,
 ): Promise<{ allowed: boolean; matched: string[] }> {
-  const requests: AuthCheckRequest[] = permissions.map(p => ({
+  const requests: AuthCheckRequest[] = permissions.map((p) => ({
     subject,
     object: p.object,
     action: p.action,
@@ -197,7 +202,7 @@ export async function getAllPermissions(subject: string): Promise<string[]> {
   const enforcer = await getEnforcer();
   const permissions = await enforcer.getPermissionsForUser(subject);
 
-  const result = permissions.map(p => `${p[2]}:${p[1]}`);
+  const result = permissions.map((p) => `${p[2]}:${p[1]}`);
 
   // Cache the result
   permissionCache.setRolePermissions(subject, result);
@@ -216,15 +221,18 @@ export async function precomputeAllPermissions(): Promise<Map<string, string[]>>
 
   for (const role of roles) {
     const permissions = await enforcer.getPermissionsForUser(role);
-    const permStrings = permissions.map(p => `${p[2]}:${p[1]}`);
+    const permStrings = permissions.map((p) => `${p[2]}:${p[1]}`);
     result.set(role, permStrings);
     permissionCache.setRolePermissions(role, permStrings);
   }
 
-  logger.info({
-    roleCount: result.size,
-    totalPermissions: Array.from(result.values()).reduce((sum, perms) => sum + perms.length, 0),
-  }, "Pre-computed permissions for all roles");
+  logger.info(
+    {
+      roleCount: result.size,
+      totalPermissions: Array.from(result.values()).reduce((sum, perms) => sum + perms.length, 0),
+    },
+    "Pre-computed permissions for all roles",
+  );
 
   return result;
 }

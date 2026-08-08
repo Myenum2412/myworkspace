@@ -1,1 +1,1 @@
-export { StaffRecentTasks } from "./staff-recent-tasks.client"
+export { StaffRecentTasks } from "./staff-recent-tasks.client";

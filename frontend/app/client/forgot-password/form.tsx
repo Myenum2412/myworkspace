@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeftIcon } from "@/lib/icons";
-import Link from "next/link";
 
 export function ClientForgotPasswordForm() {
   const router = useRouter();
@@ -25,7 +25,9 @@ export function ClientForgotPasswordForm() {
         body: JSON.stringify({ email }),
       });
     } catch {}
-    router.push("/client/forgot-password?success=If an account exists with that email, a reset link has been sent.");
+    router.push(
+      "/client/forgot-password?success=If an account exists with that email, a reset link has been sent.",
+    );
   }
 
   return (
@@ -46,7 +48,10 @@ export function ClientForgotPasswordForm() {
             Send reset link
           </Button>
         </form>
-        <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6">
+        <Link
+          href="/login"
+          className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6"
+        >
           <ArrowLeftIcon className="size-3.5" />
           Back to sign in
         </Link>

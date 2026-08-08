@@ -1,14 +1,25 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
-import { 
-  SendIcon, MessageSquareIcon, PaperclipIcon,
-  FileIcon, FileTextIcon, ImageIcon, FileArchiveIcon, XIcon, 
-  DownloadIcon, Loader2Icon, CheckCheckIcon,
-  MoreHorizontalIcon, ReplyIcon, PencilIcon, Trash2Icon
+import {
+  CheckCheckIcon,
+  DownloadIcon,
+  FileArchiveIcon,
+  FileIcon,
+  FileTextIcon,
+  ImageIcon,
+  Loader2Icon,
+  MessageSquareIcon,
+  MoreHorizontalIcon,
+  PaperclipIcon,
+  PencilIcon,
+  ReplyIcon,
+  SendIcon,
+  Trash2Icon,
+  XIcon,
 } from "@/lib/icons";
 
 type Attachment = {
@@ -32,24 +43,25 @@ type Comment = {
 };
 
 function formatBytes(bytes: number, decimals = 2) {
-  if (!+bytes) return '0 Bytes';
+  if (!+bytes) return "0 Bytes";
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  return `${parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`;
 }
 
 function getFileIcon(type: string) {
   if (type.startsWith("image/")) return <ImageIcon className="size-8 text-blue-500" />;
   if (type === "application/pdf") return <FileTextIcon className="size-8 text-red-500" />;
-  if (type.includes("zip") || type.includes("compressed")) return <FileArchiveIcon className="size-8 text-orange-500" />;
+  if (type.includes("zip") || type.includes("compressed"))
+    return <FileArchiveIcon className="size-8 text-orange-500" />;
   return <FileIcon className="size-8 text-gray-500" />;
 }
 
-export function TaskChat({ 
-  taskId, 
-  sessionUserId, 
+export function TaskChat({
+  taskId,
+  sessionUserId,
   orgId,
   onClose,
   taskTitle = "Task Discussion",
@@ -59,10 +71,10 @@ export function TaskChat({
   assigneeName = "Unassigned",
   assigneeAvatar = "",
   creatorName = "",
-  creatorAvatar = ""
-}: { 
-  taskId: string; 
-  sessionUserId: string; 
+  creatorAvatar = "",
+}: {
+  taskId: string;
+  sessionUserId: string;
   orgId?: string;
   onClose?: () => void;
   taskTitle?: string;
@@ -77,12 +89,12 @@ export function TaskChat({
   const [comments, setComments] = useState<Comment[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
-  
+
   // Attachments state
   const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  
+
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -93,7 +105,10 @@ export function TaskChat({
         setComments(d.data || []);
         setLoading(false);
         // Mark as read in the background
-        fetch(`/api/tasks/${taskId}/comments/read`, { method: "POST", credentials: "include" }).catch(() => {});
+        fetch(`/api/tasks/${taskId}/comments/read`, {
+          method: "POST",
+          credentials: "include",
+        }).catch(() => {});
       })
       .catch(() => setLoading(false));
   }, [taskId]);
@@ -132,10 +147,10 @@ export function TaskChat({
 
   async function send() {
     if (!input.trim() && pendingAttachments.length === 0) return;
-    
+
     setIsUploading(true);
     const text = input.trim();
-    
+
     if (editingId) {
       try {
         const res = await fetch(`/api/tasks/${taskId}/comments/${editingId}`, {
@@ -146,7 +161,9 @@ export function TaskChat({
         });
         if (res.ok) {
           const data = await res.json();
-          setComments((prev) => prev.map(c => c.id === editingId ? { ...c, content: data.content } : c));
+          setComments((prev) =>
+            prev.map((c) => (c.id === editingId ? { ...c, content: data.content } : c)),
+          );
           setEditingId(null);
           setInput("");
         }
@@ -159,7 +176,7 @@ export function TaskChat({
     }
 
     setInput("");
-    
+
     // Upload attachments to the file service and link them to the task
     let uploadedFiles: Attachment[] = [];
     if (pendingAttachments.length > 0) {
@@ -199,7 +216,7 @@ export function TaskChat({
       }
       setPendingAttachments([]);
     }
-    
+
     setIsUploading(false);
 
     try {
@@ -211,9 +228,14 @@ export function TaskChat({
       });
       if (!res.ok) throw new Error();
       const d = await res.json();
-      
+
       // Inject the newly uploaded attachments into the created comment
-      const newComment = { ...d.data, senderName: "You", senderAvatar: "", attachments: d.data?.attachments?.length ? d.data.attachments : uploadedFiles };
+      const newComment = {
+        ...d.data,
+        senderName: "You",
+        senderAvatar: "",
+        attachments: d.data?.attachments?.length ? d.data.attachments : uploadedFiles,
+      };
       setComments((prev) => [...prev, newComment]);
     } catch {
       // If API fails, just append it locally for demonstration
@@ -240,17 +262,15 @@ export function TaskChat({
         credentials: "include",
       });
       if (res.ok) {
-        setComments((prev) => prev.filter(c => c.id !== id));
+        setComments((prev) => prev.filter((c) => c.id !== id));
       }
     } catch (e) {
       console.error(e);
     }
   }
 
-
-
   return (
-    <div 
+    <div
       className={`flex flex-col h-full bg-[#F9FAFB] relative transition-all ${isDragging ? "ring-2 ring-blue-500 bg-blue-50/50" : ""}`}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
@@ -275,14 +295,21 @@ export function TaskChat({
             <Avatar className="size-10 border border-gray-200">
               {assigneeAvatar ? <AvatarImage src={assigneeAvatar} /> : null}
               <AvatarFallback className="bg-gray-100 text-gray-600 text-xs font-bold">
-                {(assigneeName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                {(assigneeName || "U")
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()}
               </AvatarFallback>
             </Avatar>
             {/* Online indicator mock */}
             <span className="absolute bottom-0 right-0 size-2.5 bg-green-500 border-2 border-white rounded-2xl"></span>
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[15px] font-semibold text-gray-900 truncate leading-tight">{taskTitle}</span>
+            <span className="text-[15px] font-semibold text-gray-900 truncate leading-tight">
+              {taskTitle}
+            </span>
             <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5 truncate">
               <span className="capitalize">{taskStatus.replace(/_/g, " ")}</span>
               <span className="size-1 bg-gray-300 rounded-2xl shrink-0"></span>
@@ -290,7 +317,13 @@ export function TaskChat({
               {taskDueDate && (
                 <>
                   <span className="size-1 bg-gray-300 rounded-2xl shrink-0"></span>
-                  <span>Due {new Date(taskDueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                  <span>
+                    Due{" "}
+                    {new Date(taskDueDate).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
                 </>
               )}
             </div>
@@ -307,7 +340,12 @@ export function TaskChat({
         </div>
         <div className="flex items-center gap-1 shrink-0 ml-2">
           {onClose && (
-            <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+            >
               <XIcon className="size-5" />
             </Button>
           )}
@@ -324,7 +362,9 @@ export function TaskChat({
         ) : comments.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-3 opacity-60">
             <MessageSquareIcon className="size-12 text-gray-300" />
-            <span className="text-sm font-medium text-muted-foreground">Start the conversation</span>
+            <span className="text-sm font-medium text-muted-foreground">
+              Start the conversation
+            </span>
           </div>
         ) : (
           comments.map((c, i) => {
@@ -332,7 +372,7 @@ export function TaskChat({
             // Determine if the previous message was from the same user to group them
             const prevMessage = comments[i - 1];
             const isConsecutive = prevMessage && prevMessage.senderId === c.senderId;
-            
+
             return (
               <div key={c.id} className={`flex gap-3 group ${isMe ? "flex-row-reverse" : ""}`}>
                 {/* Avatar */}
@@ -340,47 +380,73 @@ export function TaskChat({
                   <Avatar className="size-9 border border-gray-200">
                     {c.senderAvatar ? <AvatarImage src={c.senderAvatar} /> : null}
                     <AvatarFallback className="bg-gray-100 text-gray-600 text-xs font-bold">
-                      {(c.senderName || "U").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                      {(c.senderName || "U")
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </div>
-                
+
                 {/* Message Content */}
                 <div className={`flex flex-col max-w-[85%] ${isMe ? "items-end" : "items-start"}`}>
                   {!isConsecutive && (
                     <div className="flex items-baseline gap-2 mb-1.5 px-1">
-                      <span className="text-xs font-semibold text-gray-900">{isMe ? "You" : c.senderName}</span>
+                      <span className="text-xs font-semibold text-gray-900">
+                        {isMe ? "You" : c.senderName}
+                      </span>
                     </div>
                   )}
-                  
+
                   <div className={`flex items-center gap-2 ${isMe ? "flex-row-reverse" : ""}`}>
                     {/* Text Bubble */}
                     {c.content && (
-                      <div className={`relative rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed ${
-                         isMe 
-                           ? "bg-[#F4F4F5] text-gray-900 border border-gray-200 rounded-tr-sm" 
-                           : "bg-white text-gray-900 rounded-tl-sm border border-gray-200"
-                       }`}>
-                            <div className="pb-3 pr-4">
-                              {c.content}
-                            </div>
-                            <div className="absolute bottom-1.5 right-2 flex items-center gap-1">
-                              <span className="text-[10px] text-gray-500 font-medium whitespace-nowrap">
-                                {new Date(c.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                              </span>
-                              {isMe && <CheckCheckIcon className={`size-3 ${c.seenBy?.some(id => id !== sessionUserId) ? "text-blue-500" : "text-gray-400"}`} />}
-                            </div>
+                      <div
+                        className={`relative rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed ${
+                          isMe
+                            ? "bg-[#F4F4F5] text-gray-900 border border-gray-200 rounded-tr-sm"
+                            : "bg-white text-gray-900 rounded-tl-sm border border-gray-200"
+                        }`}
+                      >
+                        <div className="pb-3 pr-4">{c.content}</div>
+                        <div className="absolute bottom-1.5 right-2 flex items-center gap-1">
+                          <span className="text-[10px] text-gray-500 font-medium whitespace-nowrap">
+                            {new Date(c.createdAt).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                          {isMe && (
+                            <CheckCheckIcon
+                              className={`size-3 ${c.seenBy?.some((id) => id !== sessionUserId) ? "text-blue-500" : "text-gray-400"}`}
+                            />
+                          )}
+                        </div>
                       </div>
                     )}
 
                     {/* Hover Actions */}
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white border border-gray-200 rounded-sm p-0.5">
-                      <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-900">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-gray-500 hover:text-gray-900"
+                      >
                         <ReplyIcon className="size-3.5" />
                       </Button>
                       {isMe && (
                         <>
-                          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-900" onClick={() => { setEditingId(c.id); setInput(c.content); }}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-gray-500 hover:text-gray-900"
+                            onClick={() => {
+                              setEditingId(c.id);
+                              setInput(c.content);
+                            }}
+                          >
                             <PencilIcon className="size-3.5" />
                           </Button>
                           <DeleteConfirmDialog
@@ -389,7 +455,11 @@ export function TaskChat({
                             confirmLabel="Delete"
                             onConfirm={() => deleteComment(c.id)}
                           >
-                            <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            >
                               <Trash2Icon className="size-3.5" />
                             </Button>
                           </DeleteConfirmDialog>
@@ -401,18 +471,36 @@ export function TaskChat({
                   {/* Attachments */}
                   {c.attachments && c.attachments.length > 0 && (
                     <div className={`flex flex-col gap-2 mt-2`}>
-                      {c.attachments.map(att => (
-                         <div key={att.id} className="flex items-center gap-3 p-3 rounded-sm border border-gray-200 bg-white hover:border-gray-300 transition-colors group/att">
-                          <a href={att.url || `/api/files/${att.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 flex-1 min-w-0" title="Open online">
-                          <div className="shrink-0 bg-gray-50 p-2 rounded-sm">
-                            {getFileIcon(att.type)}
-                          </div>
-                          <div className="flex flex-col min-w-0 flex-1">
-                            <span className="text-sm font-medium text-gray-900 truncate">{att.name}</span>
-                            <span className="text-[11px] text-gray-500 font-medium">{formatBytes(att.size)}</span>
-                          </div>
+                      {c.attachments.map((att) => (
+                        <div
+                          key={att.id}
+                          className="flex items-center gap-3 p-3 rounded-sm border border-gray-200 bg-white hover:border-gray-300 transition-colors group/att"
+                        >
+                          <a
+                            href={att.url || `/api/files/${att.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 flex-1 min-w-0"
+                            title="Open online"
+                          >
+                            <div className="shrink-0 bg-gray-50 p-2 rounded-sm">
+                              {getFileIcon(att.type)}
+                            </div>
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <span className="text-sm font-medium text-gray-900 truncate">
+                                {att.name}
+                              </span>
+                              <span className="text-[11px] text-gray-500 font-medium">
+                                {formatBytes(att.size)}
+                              </span>
+                            </div>
                           </a>
-                          <a href={att.url || `/api/files/${att.id}`} download={att.name} className="shrink-0 text-gray-400 hover:text-blue-600 p-1.5 opacity-0 group-hover/att:opacity-100 transition-opacity" title="Download">
+                          <a
+                            href={att.url || `/api/files/${att.id}`}
+                            download={att.name}
+                            className="shrink-0 text-gray-400 hover:text-blue-600 p-1.5 opacity-0 group-hover/att:opacity-100 transition-opacity"
+                            title="Download"
+                          >
                             <DownloadIcon className="size-4" />
                           </a>
                         </div>
@@ -429,14 +517,16 @@ export function TaskChat({
 
       {/* Input Area */}
       <div className="shrink-0 bg-gray-50 border-t p-4 z-10">
-        
         {/* Pending Attachments */}
         {pendingAttachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
             {pendingAttachments.map((file, idx) => (
-               <div key={idx} className="flex items-center gap-2 bg-white border border-gray-200 rounded-sm pl-2 pr-1 py-1 text-xs font-medium text-gray-700">
+              <div
+                key={idx}
+                className="flex items-center gap-2 bg-white border border-gray-200 rounded-sm pl-2 pr-1 py-1 text-xs font-medium text-gray-700"
+              >
                 <span className="truncate max-w-[120px]">{file.name}</span>
-                <button 
+                <button
                   onClick={() => removePendingAttachment(idx)}
                   className="p-1 hover:bg-gray-100 rounded-sm text-gray-500 hover:text-red-500 transition-colors"
                 >
@@ -453,8 +543,11 @@ export function TaskChat({
               <PencilIcon className="size-3.5" />
               Editing message
             </span>
-            <button 
-              onClick={() => { setEditingId(null); setInput(""); }} 
+            <button
+              onClick={() => {
+                setEditingId(null);
+                setInput("");
+              }}
               className="text-blue-600 hover:text-blue-800"
             >
               <XIcon className="size-4" />
@@ -462,8 +555,11 @@ export function TaskChat({
           </div>
         )}
         <form
-          onSubmit={(e) => { e.preventDefault(); send(); }}
-          className={`flex flex-col gap-2 bg-white border border-gray-200 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all p-1 ${editingId ? 'rounded-b-sm rounded-t-none' : 'rounded-sm'}`}
+          onSubmit={(e) => {
+            e.preventDefault();
+            send();
+          }}
+          className={`flex flex-col gap-2 bg-white border border-gray-200 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all p-1 ${editingId ? "rounded-b-sm rounded-t-none" : "rounded-sm"}`}
         >
           <textarea
             value={input}
@@ -479,27 +575,27 @@ export function TaskChat({
           />
           <div className="flex items-center justify-between px-2 pb-1">
             <div className="flex items-center gap-1">
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                multiple 
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                multiple
                 onChange={handleFileSelect}
               />
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-2xl"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <PaperclipIcon className="size-4" />
               </Button>
             </div>
-            <Button 
-              type="submit" 
-              size="sm" 
-              className={`rounded-2xl px-4 font-semibold transition-all ${ (!input.trim() && pendingAttachments.length === 0) ? "bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100" : "bg-gray-900 text-white hover:bg-gray-800" }`}
+            <Button
+              type="submit"
+              size="sm"
+              className={`rounded-2xl px-4 font-semibold transition-all ${!input.trim() && pendingAttachments.length === 0 ? "bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100" : "bg-gray-900 text-white hover:bg-gray-800"}`}
               disabled={(!input.trim() && pendingAttachments.length === 0) || isUploading}
             >
               {isUploading ? (

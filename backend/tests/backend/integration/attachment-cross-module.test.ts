@@ -1,13 +1,29 @@
 import mongoose from "mongoose";
+import { FileAttachment } from "../../../src/lib/db/models/FileAttachment.js";
+import { FileShare } from "../../../src/lib/db/models/FileShare.js";
+import { FileVersion } from "../../../src/lib/db/models/FileVersion.js";
+import { Folder } from "../../../src/lib/db/models/Folder.js";
+import {
+  CLIENT_SUBFOLDERS,
+  getSubfolderForModule,
+  MODULE_FOLDER_MAP,
+} from "../../../src/lib/uploads/folder-mapper.js";
+import {
+  autoRouteFileInClientFolder,
+  ensureClientFolders,
+  resolveClientFolder,
+} from "../../../src/services/client-folder.service.js";
+import {
+  createFileVersion,
+  duplicateFile,
+  getFileStream,
+  restoreFile,
+  softDeleteFile,
+  toggleFileLock,
+  uploadFile,
+} from "../../../src/services/file.service.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin } from "../../__helpers__/users.js";
-import { FileAttachment } from "../../../src/lib/db/models/FileAttachment.js";
-import { FileVersion } from "../../../src/lib/db/models/FileVersion.js";
-import { FileShare } from "../../../src/lib/db/models/FileShare.js";
-import { Folder } from "../../../src/lib/db/models/Folder.js";
-import { uploadFile, softDeleteFile, restoreFile, getFileStream, toggleFileLock, createFileVersion, duplicateFile } from "../../../src/services/file.service.js";
-import { ensureClientFolders, resolveClientFolder, autoRouteFileInClientFolder } from "../../../src/services/client-folder.service.js";
-import { CLIENT_SUBFOLDERS, MODULE_FOLDER_MAP, getSubfolderForModule } from "../../../src/lib/uploads/folder-mapper.js";
 
 beforeAll(async () => {
   await connectTestDb();
@@ -21,7 +37,15 @@ beforeEach(async () => {
 async function uploadWithModule(
   admin: { orgId: string; userId: string },
   moduleName: string,
-  opts: Partial<{ clientId: string; projectId: string; folderId: string; name: string; mimeType: string; size: number; category: string }> = {}
+  opts: Partial<{
+    clientId: string;
+    projectId: string;
+    folderId: string;
+    name: string;
+    mimeType: string;
+    size: number;
+    category: string;
+  }> = {},
 ) {
   const name = opts.name || `${moduleName}-file.pdf`;
   const buffer = Buffer.from(`Test content for ${moduleName} module`);
@@ -166,7 +190,12 @@ describe("Cross-Module Attachment E2E", () => {
         const file = await FileAttachment.findOne({ id: result.fileId }).lean();
         expect(file).not.toBeNull();
 
-        const targetFolderId = await resolveClientFolder(admin.orgId, clientId, mod.name, admin.userId);
+        const targetFolderId = await resolveClientFolder(
+          admin.orgId,
+          clientId,
+          mod.name,
+          admin.userId,
+        );
         expect(file!.folderId).toBe(targetFolderId);
 
         const folder = await Folder.findOne({ id: targetFolderId }).lean();
@@ -326,7 +355,9 @@ describe("Cross-Module Attachment E2E", () => {
       const file = await FileAttachment.findOne({ id: uploadResult.fileId }).lean();
       expect(file).not.toBeNull();
       expect(file!.name).toBe("visibility-test.docx");
-      expect(file!.mimeType).toBe("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+      expect(file!.mimeType).toBe(
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      );
       expect(file!.size).toBe(buffer.length);
       expect(file!.uploaderId).toBe(admin.userId);
       expect(file!.createdAt).toBeDefined();
@@ -344,25 +375,60 @@ describe("Cross-Module Attachment E2E", () => {
       const folderB = new mongoose.Types.ObjectId().toString();
 
       await uploadFile({
-        orgId: admin.orgId, folderId: folderA, uploaderId: admin.userId,
-        name: "inA.txt", originalName: "inA.txt", mimeType: "text/plain", size: 4, buffer: Buffer.from("inA1"),
+        orgId: admin.orgId,
+        folderId: folderA,
+        uploaderId: admin.userId,
+        name: "inA.txt",
+        originalName: "inA.txt",
+        mimeType: "text/plain",
+        size: 4,
+        buffer: Buffer.from("inA1"),
       });
       await uploadFile({
-        orgId: admin.orgId, folderId: folderA, uploaderId: admin.userId,
-        name: "inA2.txt", originalName: "inA2.txt", mimeType: "text/plain", size: 4, buffer: Buffer.from("inA2"),
+        orgId: admin.orgId,
+        folderId: folderA,
+        uploaderId: admin.userId,
+        name: "inA2.txt",
+        originalName: "inA2.txt",
+        mimeType: "text/plain",
+        size: 4,
+        buffer: Buffer.from("inA2"),
       });
       await uploadFile({
-        orgId: admin.orgId, folderId: folderB, uploaderId: admin.userId,
-        name: "inB.txt", originalName: "inB.txt", mimeType: "text/plain", size: 3, buffer: Buffer.from("inB"),
+        orgId: admin.orgId,
+        folderId: folderB,
+        uploaderId: admin.userId,
+        name: "inB.txt",
+        originalName: "inB.txt",
+        mimeType: "text/plain",
+        size: 3,
+        buffer: Buffer.from("inB"),
       });
       await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "noFolder.txt", originalName: "noFolder.txt", mimeType: "text/plain", size: 5, buffer: Buffer.from("noFld"),
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "noFolder.txt",
+        originalName: "noFolder.txt",
+        mimeType: "text/plain",
+        size: 5,
+        buffer: Buffer.from("noFld"),
       });
 
-      const inA = await FileAttachment.countDocuments({ orgId: admin.orgId, folderId: folderA, deletedAt: null });
-      const inB = await FileAttachment.countDocuments({ orgId: admin.orgId, folderId: folderB, deletedAt: null });
-      const noFolder = await FileAttachment.countDocuments({ orgId: admin.orgId, folderId: null, deletedAt: null });
+      const inA = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        folderId: folderA,
+        deletedAt: null,
+      });
+      const inB = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        folderId: folderB,
+        deletedAt: null,
+      });
+      const noFolder = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        folderId: null,
+        deletedAt: null,
+      });
 
       expect(inA).toBe(2);
       expect(inB).toBe(1);
@@ -374,9 +440,13 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Access tracking test");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "access.txt", originalName: "access.txt", mimeType: "text/plain",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "access.txt",
+        originalName: "access.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
       });
 
       const before = await FileAttachment.findOne({ id: result.fileId }).lean();
@@ -393,9 +463,13 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Rejected file");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "rejected.txt", originalName: "rejected.txt", mimeType: "text/plain",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "rejected.txt",
+        originalName: "rejected.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
       });
 
       await FileAttachment.updateOne({ id: result.fileId }, { approvalStatus: "rejected" });
@@ -409,15 +483,19 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Old pending file");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "old-pending.txt", originalName: "old-pending.txt", mimeType: "text/plain",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "old-pending.txt",
+        originalName: "old-pending.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
       });
 
       const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
       await FileAttachment.updateOne(
         { id: result.fileId },
-        { approvalStatus: "pending", virusScanStatus: "pending", createdAt: twoHoursAgo }
+        { approvalStatus: "pending", virusScanStatus: "pending", createdAt: twoHoursAgo },
       );
 
       const stream = await getFileStream(result.fileId);
@@ -429,9 +507,13 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Infected file");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "virus.txt", originalName: "virus.txt", mimeType: "text/plain",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "virus.txt",
+        originalName: "virus.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
       });
 
       await FileAttachment.updateOne({ id: result.fileId }, { virusScanStatus: "infected" });
@@ -448,15 +530,23 @@ describe("Cross-Module Attachment E2E", () => {
 
       const buffer = Buffer.from("Staff A file");
       await uploadFile({
-        orgId: admin.orgId, uploaderId: staffA.userId,
-        name: "staffA-doc.pdf", originalName: "staffA-doc.pdf", mimeType: "application/pdf",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: staffA.userId,
+        name: "staffA-doc.pdf",
+        originalName: "staffA-doc.pdf",
+        mimeType: "application/pdf",
+        size: buffer.length,
+        buffer,
       });
 
       await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "admin-doc.pdf", originalName: "admin-doc.pdf", mimeType: "application/pdf",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "admin-doc.pdf",
+        originalName: "admin-doc.pdf",
+        mimeType: "application/pdf",
+        size: buffer.length,
+        buffer,
       });
 
       const staffAFiles = await FileAttachment.find({
@@ -474,9 +564,13 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Lockable file");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "lockable.txt", originalName: "lockable.txt", mimeType: "text/plain",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "lockable.txt",
+        originalName: "lockable.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
       });
 
       const locked = await toggleFileLock(result.fileId, admin.userId, true);
@@ -498,16 +592,18 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Locked file");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "locked.txt", originalName: "locked.txt", mimeType: "text/plain",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "locked.txt",
+        originalName: "locked.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
       });
 
       await toggleFileLock(result.fileId, admin.userId, true);
 
-      await expect(
-        softDeleteFile(result.fileId, other.userId)
-      ).rejects.toThrow(/locked/i);
+      await expect(softDeleteFile(result.fileId, other.userId)).rejects.toThrow(/locked/i);
     });
 
     it("should support file sharing between staff", async () => {
@@ -516,9 +612,13 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Shareable file");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "shared-doc.pdf", originalName: "shared-doc.pdf", mimeType: "application/pdf",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "shared-doc.pdf",
+        originalName: "shared-doc.pdf",
+        mimeType: "application/pdf",
+        size: buffer.length,
+        buffer,
       });
 
       await FileShare.create({
@@ -540,21 +640,22 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Approval workflow file");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "for-approval.pdf", originalName: "for-approval.pdf", mimeType: "application/pdf",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "for-approval.pdf",
+        originalName: "for-approval.pdf",
+        mimeType: "application/pdf",
+        size: buffer.length,
+        buffer,
       });
 
-      await FileAttachment.updateOne(
-        { id: result.fileId },
-        { approvalStatus: "pending" }
-      );
+      await FileAttachment.updateOne({ id: result.fileId }, { approvalStatus: "pending" });
       let file = await FileAttachment.findOne({ id: result.fileId }).lean();
       expect(file!.approvalStatus).toBe("pending");
 
       await FileAttachment.updateOne(
         { id: result.fileId },
-        { approvalStatus: "approved", approvedBy: admin.userId, approvalNote: "Looks good" }
+        { approvalStatus: "approved", approvedBy: admin.userId, approvalNote: "Looks good" },
       );
       file = await FileAttachment.findOne({ id: result.fileId }).lean();
       expect(file!.approvalStatus).toBe("approved");
@@ -571,15 +672,23 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Duplicate detection test content");
 
       const first = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "original.pdf", originalName: "original.pdf", mimeType: "application/pdf",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "original.pdf",
+        originalName: "original.pdf",
+        mimeType: "application/pdf",
+        size: buffer.length,
+        buffer,
       });
 
       const second = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "copy.pdf", originalName: "copy.pdf", mimeType: "application/pdf",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "copy.pdf",
+        originalName: "copy.pdf",
+        mimeType: "application/pdf",
+        size: buffer.length,
+        buffer,
       });
 
       expect(second.kind).toBe("duplicate");
@@ -590,15 +699,23 @@ describe("Cross-Module Attachment E2E", () => {
       const admin = await seedOrgWithAdmin({ email: `nodup-${Date.now()}@test.com` });
 
       const first = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "a.txt", originalName: "a.txt", mimeType: "text/plain",
-        size: 5, buffer: Buffer.from("aaaaa"),
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "a.txt",
+        originalName: "a.txt",
+        mimeType: "text/plain",
+        size: 5,
+        buffer: Buffer.from("aaaaa"),
       });
 
       const second = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "b.txt", originalName: "b.txt", mimeType: "text/plain",
-        size: 5, buffer: Buffer.from("bbbbb"),
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "b.txt",
+        originalName: "b.txt",
+        mimeType: "text/plain",
+        size: 5,
+        buffer: Buffer.from("bbbbb"),
       });
 
       expect(second.kind).toBe("created");
@@ -610,15 +727,25 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("No skip duplicate");
 
       const first = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "a.txt", originalName: "a.txt", mimeType: "text/plain",
-        size: buffer.length, buffer, skipDuplicates: false,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "a.txt",
+        originalName: "a.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
+        skipDuplicates: false,
       });
 
       const second = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "b.txt", originalName: "b.txt", mimeType: "text/plain",
-        size: buffer.length, buffer, skipDuplicates: false,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "b.txt",
+        originalName: "b.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
+        skipDuplicates: false,
       });
 
       expect(second.kind).toBe("created");
@@ -632,20 +759,30 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Original content");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "versioned.txt", originalName: "versioned.txt", mimeType: "text/plain",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "versioned.txt",
+        originalName: "versioned.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
       });
 
       const v2Result = await createFileVersion(
-        result.fileId, admin.userId,
-        Buffer.from("Updated content v2"), "versioned-v2.txt", "Updated version"
+        result.fileId,
+        admin.userId,
+        Buffer.from("Updated content v2"),
+        "versioned-v2.txt",
+        "Updated version",
       );
       expect(v2Result.versionNumber).toBe(2);
 
       const v3Result = await createFileVersion(
-        result.fileId, admin.userId,
-        Buffer.from("Final content v3"), "versioned-v3.txt", "Final version"
+        result.fileId,
+        admin.userId,
+        Buffer.from("Final content v3"),
+        "versioned-v3.txt",
+        "Final version",
       );
       expect(v3Result.versionNumber).toBe(3);
 
@@ -653,7 +790,8 @@ describe("Cross-Module Attachment E2E", () => {
       expect(file!.currentVersion).toBe(3);
 
       const versions = await FileVersion.find({ fileId: result.fileId })
-        .sort({ versionNumber: -1 }).lean();
+        .sort({ versionNumber: -1 })
+        .lean();
       expect(versions.length).toBe(2);
       expect(versions[0].versionNumber).toBe(3);
       expect(versions[0].comment).toBe("Final version");
@@ -667,15 +805,19 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Locked for versioning");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "locked-ver.txt", originalName: "locked-ver.txt", mimeType: "text/plain",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "locked-ver.txt",
+        originalName: "locked-ver.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
       });
 
       await toggleFileLock(result.fileId, admin.userId, true);
 
       await expect(
-        createFileVersion(result.fileId, other.userId, Buffer.from("attempt"), "fail.txt")
+        createFileVersion(result.fileId, other.userId, Buffer.from("attempt"), "fail.txt"),
       ).rejects.toThrow(/locked/i);
     });
   });
@@ -694,8 +836,8 @@ describe("Cross-Module Attachment E2E", () => {
 
       expect(filesA.length).toBe(2);
       expect(filesB.length).toBe(1);
-      expect(filesA.every(f => f.orgId === orgA.orgId)).toBe(true);
-      expect(filesB.every(f => f.orgId === orgB.orgId)).toBe(true);
+      expect(filesA.every((f) => f.orgId === orgA.orgId)).toBe(true);
+      expect(filesB.every((f) => f.orgId === orgB.orgId)).toBe(true);
     });
 
     it("should isolate folders between organizations", async () => {
@@ -703,16 +845,26 @@ describe("Cross-Module Attachment E2E", () => {
       const orgB = await seedOrgWithAdmin({ email: `foldB-${Date.now()}@test.com` });
       const clientId = new mongoose.Types.ObjectId().toString();
 
-      await ensureClientFolders({ orgId: orgA.orgId, clientId, clientName: "Client A", createdBy: orgA.userId });
-      await ensureClientFolders({ orgId: orgB.orgId, clientId, clientName: "Client B", createdBy: orgB.userId });
+      await ensureClientFolders({
+        orgId: orgA.orgId,
+        clientId,
+        clientName: "Client A",
+        createdBy: orgA.userId,
+      });
+      await ensureClientFolders({
+        orgId: orgB.orgId,
+        clientId,
+        clientName: "Client B",
+        createdBy: orgB.userId,
+      });
 
       const foldersA = await Folder.find({ orgId: orgA.orgId, clientId }).lean();
       const foldersB = await Folder.find({ orgId: orgB.orgId, clientId }).lean();
 
       expect(foldersA.length).toBeGreaterThanOrEqual(10);
       expect(foldersB.length).toBeGreaterThanOrEqual(10);
-      expect(foldersA.every(f => f.orgId === orgA.orgId)).toBe(true);
-      expect(foldersB.every(f => f.orgId === orgB.orgId)).toBe(true);
+      expect(foldersA.every((f) => f.orgId === orgA.orgId)).toBe(true);
+      expect(foldersB.every((f) => f.orgId === orgB.orgId)).toBe(true);
     });
   });
 
@@ -722,9 +874,13 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Delete and restore test");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "lifecycle.txt", originalName: "lifecycle.txt", mimeType: "text/plain",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "lifecycle.txt",
+        originalName: "lifecycle.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
         description: "Will be deleted and restored",
         tags: ["lifecycle"],
       });
@@ -735,7 +891,10 @@ describe("Cross-Module Attachment E2E", () => {
       expect(deleted!.deletedBy).toBe(admin.userId);
       expect(deleted!.description).toBe("Will be deleted and restored");
 
-      const activeCount = await FileAttachment.countDocuments({ orgId: admin.orgId, deletedAt: null });
+      const activeCount = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        deletedAt: null,
+      });
       expect(activeCount).toBe(0);
 
       await restoreFile(result.fileId, admin.userId);
@@ -745,7 +904,10 @@ describe("Cross-Module Attachment E2E", () => {
       expect(restored!.description).toBe("Will be deleted and restored");
       expect(restored!.tags).toEqual(["lifecycle"]);
 
-      const restoredCount = await FileAttachment.countDocuments({ orgId: admin.orgId, deletedAt: null });
+      const restoredCount = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        deletedAt: null,
+      });
       expect(restoredCount).toBe(1);
     });
 
@@ -754,9 +916,13 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Not deleted");
 
       const result = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "not-deleted.txt", originalName: "not-deleted.txt", mimeType: "text/plain",
-        size: buffer.length, buffer,
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "not-deleted.txt",
+        originalName: "not-deleted.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
       });
 
       await expect(restoreFile(result.fileId, admin.userId)).rejects.toThrow(/not in trash/i);
@@ -771,20 +937,33 @@ describe("Cross-Module Attachment E2E", () => {
 
       for (let i = 0; i < 5; i++) {
         const result = await uploadFile({
-          orgId: admin.orgId, folderId, uploaderId: admin.userId,
-          name: `bulk-${i}.txt`, originalName: `bulk-${i}.txt`, mimeType: "text/plain",
-          size: 10, buffer: Buffer.from(`bulk ${i}`),
+          orgId: admin.orgId,
+          folderId,
+          uploaderId: admin.userId,
+          name: `bulk-${i}.txt`,
+          originalName: `bulk-${i}.txt`,
+          mimeType: "text/plain",
+          size: 10,
+          buffer: Buffer.from(`bulk ${i}`),
         });
         fileIds.push(result.fileId);
       }
 
       await FileAttachment.updateMany(
         { id: { $in: fileIds.slice(0, 3) } },
-        { deletedAt: new Date(), deletedBy: admin.userId }
+        { deletedAt: new Date(), deletedBy: admin.userId },
       );
 
-      const active = await FileAttachment.countDocuments({ orgId: admin.orgId, folderId, deletedAt: null });
-      const deleted = await FileAttachment.countDocuments({ orgId: admin.orgId, folderId, deletedAt: { $ne: null } });
+      const active = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        folderId,
+        deletedAt: null,
+      });
+      const deleted = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        folderId,
+        deletedAt: { $ne: null },
+      });
 
       expect(active).toBe(2);
       expect(deleted).toBe(3);
@@ -796,16 +975,20 @@ describe("Cross-Module Attachment E2E", () => {
 
       for (let i = 0; i < 4; i++) {
         const result = await uploadFile({
-          orgId: admin.orgId, uploaderId: admin.userId,
-          name: `tag-${i}.txt`, originalName: `tag-${i}.txt`, mimeType: "text/plain",
-          size: 10, buffer: Buffer.from(`tag ${i}`),
+          orgId: admin.orgId,
+          uploaderId: admin.userId,
+          name: `tag-${i}.txt`,
+          originalName: `tag-${i}.txt`,
+          mimeType: "text/plain",
+          size: 10,
+          buffer: Buffer.from(`tag ${i}`),
         });
         fileIds.push(result.fileId);
       }
 
       await FileAttachment.updateMany(
         { id: { $in: fileIds } },
-        { $addToSet: { tags: { $each: ["approved", "reviewed"] } } }
+        { $addToSet: { tags: { $each: ["approved", "reviewed"] } } },
       );
 
       const files = await FileAttachment.find({ id: { $in: fileIds } }).lean();
@@ -823,22 +1006,32 @@ describe("Cross-Module Attachment E2E", () => {
 
       for (let i = 0; i < 3; i++) {
         const result = await uploadFile({
-          orgId: admin.orgId, folderId: fromFolder, uploaderId: admin.userId,
-          name: `move-${i}.txt`, originalName: `move-${i}.txt`, mimeType: "text/plain",
-          size: 10, buffer: Buffer.from(`move ${i}`),
+          orgId: admin.orgId,
+          folderId: fromFolder,
+          uploaderId: admin.userId,
+          name: `move-${i}.txt`,
+          originalName: `move-${i}.txt`,
+          mimeType: "text/plain",
+          size: 10,
+          buffer: Buffer.from(`move ${i}`),
         });
         fileIds.push(result.fileId);
       }
 
-      await FileAttachment.updateMany(
-        { id: { $in: fileIds } },
-        { folderId: toFolder }
-      );
+      await FileAttachment.updateMany({ id: { $in: fileIds } }, { folderId: toFolder });
 
-      const moved = await FileAttachment.countDocuments({ orgId: admin.orgId, folderId: toFolder, deletedAt: null });
+      const moved = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        folderId: toFolder,
+        deletedAt: null,
+      });
       expect(moved).toBe(3);
 
-      const remaining = await FileAttachment.countDocuments({ orgId: admin.orgId, folderId: fromFolder, deletedAt: null });
+      const remaining = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        folderId: fromFolder,
+        deletedAt: null,
+      });
       expect(remaining).toBe(0);
     });
   });
@@ -850,9 +1043,15 @@ describe("Cross-Module Attachment E2E", () => {
       for (let i = 0; i < 3; i++) {
         await FileAttachment.create({
           id: new mongoose.Types.ObjectId().toString(),
-          orgId: admin.orgId, uploaderId: admin.userId, createdBy: admin.userId,
-          name: `q${i}.txt`, originalName: `q${i}.txt`, mimeType: "text/plain",
-          size: 100 * (i + 1), storagePath: `/q${i}.txt`, storageProvider: "local",
+          orgId: admin.orgId,
+          uploaderId: admin.userId,
+          createdBy: admin.userId,
+          name: `q${i}.txt`,
+          originalName: `q${i}.txt`,
+          mimeType: "text/plain",
+          size: 100 * (i + 1),
+          storagePath: `/q${i}.txt`,
+          storageProvider: "local",
         });
       }
 
@@ -872,9 +1071,15 @@ describe("Cross-Module Attachment E2E", () => {
       for (const cat of categories) {
         await FileAttachment.create({
           id: new mongoose.Types.ObjectId().toString(),
-          orgId: admin.orgId, uploaderId: admin.userId, createdBy: admin.userId,
-          name: `${cat}-file.txt`, originalName: `${cat}-file.txt`, mimeType: "text/plain",
-          size: 500, storagePath: `/${cat}.txt`, storageProvider: "local",
+          orgId: admin.orgId,
+          uploaderId: admin.userId,
+          createdBy: admin.userId,
+          name: `${cat}-file.txt`,
+          originalName: `${cat}-file.txt`,
+          mimeType: "text/plain",
+          size: 500,
+          storagePath: `/${cat}.txt`,
+          storageProvider: "local",
           category: cat as any,
         });
       }
@@ -898,23 +1103,46 @@ describe("Cross-Module Attachment E2E", () => {
       const projB = new mongoose.Types.ObjectId().toString();
 
       await uploadFile({
-        orgId: admin.orgId, projectId: projA, uploaderId: admin.userId,
-        name: "projA.txt", originalName: "projA.txt", mimeType: "text/plain",
-        size: 10, buffer: Buffer.from("A"),
+        orgId: admin.orgId,
+        projectId: projA,
+        uploaderId: admin.userId,
+        name: "projA.txt",
+        originalName: "projA.txt",
+        mimeType: "text/plain",
+        size: 10,
+        buffer: Buffer.from("A"),
       });
       await uploadFile({
-        orgId: admin.orgId, projectId: projA, uploaderId: admin.userId,
-        name: "projA2.txt", originalName: "projA2.txt", mimeType: "text/plain",
-        size: 10, buffer: Buffer.from("A2"),
+        orgId: admin.orgId,
+        projectId: projA,
+        uploaderId: admin.userId,
+        name: "projA2.txt",
+        originalName: "projA2.txt",
+        mimeType: "text/plain",
+        size: 10,
+        buffer: Buffer.from("A2"),
       });
       await uploadFile({
-        orgId: admin.orgId, projectId: projB, uploaderId: admin.userId,
-        name: "projB.txt", originalName: "projB.txt", mimeType: "text/plain",
-        size: 10, buffer: Buffer.from("B"),
+        orgId: admin.orgId,
+        projectId: projB,
+        uploaderId: admin.userId,
+        name: "projB.txt",
+        originalName: "projB.txt",
+        mimeType: "text/plain",
+        size: 10,
+        buffer: Buffer.from("B"),
       });
 
-      const filesA = await FileAttachment.countDocuments({ orgId: admin.orgId, projectId: projA, deletedAt: null });
-      const filesB = await FileAttachment.countDocuments({ orgId: admin.orgId, projectId: projB, deletedAt: null });
+      const filesA = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        projectId: projA,
+        deletedAt: null,
+      });
+      const filesB = await FileAttachment.countDocuments({
+        orgId: admin.orgId,
+        projectId: projB,
+        deletedAt: null,
+      });
 
       expect(filesA).toBe(2);
       expect(filesB).toBe(1);
@@ -932,7 +1160,12 @@ describe("Cross-Module Attachment E2E", () => {
       const file = await FileAttachment.findOne({ id: result.fileId }).lean();
       expect(file).not.toBeNull();
 
-      const targetFolderId = await resolveClientFolder(admin.orgId, clientId, "project", admin.userId);
+      const targetFolderId = await resolveClientFolder(
+        admin.orgId,
+        clientId,
+        "project",
+        admin.userId,
+      );
       expect(file!.folderId).toBe(targetFolderId);
 
       const folder = await Folder.findOne({ id: targetFolderId }).lean();
@@ -946,10 +1179,15 @@ describe("Cross-Module Attachment E2E", () => {
       const buffer = Buffer.from("Original for duplication");
 
       const original = await uploadFile({
-        orgId: admin.orgId, uploaderId: admin.userId,
-        name: "original.txt", originalName: "original.txt", mimeType: "text/plain",
-        size: buffer.length, buffer,
-        description: "Original file", tags: ["original"],
+        orgId: admin.orgId,
+        uploaderId: admin.userId,
+        name: "original.txt",
+        originalName: "original.txt",
+        mimeType: "text/plain",
+        size: buffer.length,
+        buffer,
+        description: "Original file",
+        tags: ["original"],
       });
 
       const copyId = await duplicateFile(original.fileId, admin.userId);
@@ -993,7 +1231,9 @@ describe("Cross-Module Attachment E2E", () => {
 
       // Step 4: Verify file is visible in listing
       const allFiles = await FileAttachment.find({
-        orgId: admin.orgId, clientId, deletedAt: null,
+        orgId: admin.orgId,
+        clientId,
+        deletedAt: null,
       }).lean();
       expect(allFiles.length).toBe(1);
 
@@ -1018,7 +1258,9 @@ describe("Cross-Module Attachment E2E", () => {
 
       // Step 8: Final listing check
       const finalFiles = await FileAttachment.find({
-        orgId: admin.orgId, clientId, deletedAt: null,
+        orgId: admin.orgId,
+        clientId,
+        deletedAt: null,
       }).lean();
       expect(finalFiles.length).toBe(1);
       expect(finalFiles[0].id).toBe(uploadResult.fileId);
@@ -1037,7 +1279,9 @@ describe("Cross-Module Attachment E2E", () => {
       }
 
       const allFiles = await FileAttachment.find({
-        orgId: admin.orgId, clientId, deletedAt: null,
+        orgId: admin.orgId,
+        clientId,
+        deletedAt: null,
       }).lean();
       expect(allFiles.length).toBe(modules.length);
 

@@ -1,7 +1,7 @@
-import request from "supertest";
-import type { Server } from "http";
 import fs from "fs";
+import type { Server } from "http";
 import path from "path";
+import request from "supertest";
 import app from "../../../src/app.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin } from "../../__helpers__/fixtures.js";
@@ -29,16 +29,13 @@ describe("File streaming and download", () => {
   });
 
   it("returns correct Content-Type for API responses", async () => {
-    const res = await request(server)
-      .get("/api/tasks")
-      .set(ctx.headers);
+    const res = await request(server).get("/api/tasks").set(ctx.headers);
     expect(res.status).toBe(200);
     expect(res.headers["content-type"]).toContain("application/json");
   });
 
   it("compression headers present", async () => {
-    const res = await request(server)
-      .get("/api/health");
+    const res = await request(server).get("/api/health");
     // Express compression may or may not apply to small payloads
     expect(res.status).toBe(200);
   });

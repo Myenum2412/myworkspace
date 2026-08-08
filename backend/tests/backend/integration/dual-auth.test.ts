@@ -1,11 +1,11 @@
-import request from "supertest";
 import type { Server } from "http";
 import jwt from "jsonwebtoken";
+import request from "supertest";
 import { v4 as uuid } from "uuid";
 import app from "../../../src/app.js";
-import { connectTestDb, resetDb } from "../../__helpers__/db.js";
-import { seedOrgWithAdmin, expiredJWT, tamperedJWT } from "../../__helpers__/fixtures.js";
 import { signToken } from "../../../src/config/auth.js";
+import { connectTestDb, resetDb } from "../../__helpers__/db.js";
+import { expiredJWT, seedOrgWithAdmin, tamperedJWT } from "../../__helpers__/fixtures.js";
 
 let server: Server;
 
@@ -29,32 +29,36 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
 
   describe("JWT Bearer", () => {
     it("authenticates with valid Bearer token", async () => {
-      const res = await request(server)
-        .get("/api/tasks")
-        .set(ctx.headers);
+      const res = await request(server).get("/api/tasks").set(ctx.headers);
       expect(res.status).toBe(200);
     });
 
     it("rejects expired Bearer token", async () => {
-      const expired = expiredJWT({ userId: ctx.userId, email: ctx.email, role: "members", orgId: ctx.orgId });
-      const res = await request(server)
-        .get("/api/tasks")
-        .set("Authorization", `Bearer ${expired}`);
+      const expired = expiredJWT({
+        userId: ctx.userId,
+        email: ctx.email,
+        role: "members",
+        orgId: ctx.orgId,
+      });
+      const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${expired}`);
       expect(res.status).toBe(401);
     });
 
     it("rejects tampered Bearer token", async () => {
       const bad = tamperedJWT(ctx.token);
-      const res = await request(server)
-        .get("/api/tasks")
-        .set("Authorization", `Bearer ${bad}`);
+      const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${bad}`);
       expect(res.status).toBe(401);
     });
   });
 
   describe("Simultaneous invalid tokens", () => {
     it("rejects request with both tokens invalid", async () => {
-      const badBearer = expiredJWT({ userId: "u1", email: "t@t.com", role: "members", orgId: "o1" });
+      const badBearer = expiredJWT({
+        userId: "u1",
+        email: "t@t.com",
+        role: "members",
+        orgId: "o1",
+      });
       const res = await request(server)
         .get("/api/tasks")
         .set("Authorization", `Bearer ${badBearer}`)
@@ -98,8 +102,20 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
 
   describe("Simultaneous valid tokens", () => {
     it("two valid tokens for same user both work", async () => {
-      const token1 = signToken({ userId: ctx.userId, email: ctx.email, role: "members", permissions: [], orgId: ctx.orgId });
-      const token2 = signToken({ userId: ctx.userId, email: ctx.email, role: "members", permissions: [], orgId: ctx.orgId });
+      const token1 = signToken({
+        userId: ctx.userId,
+        email: ctx.email,
+        role: "members",
+        permissions: [],
+        orgId: ctx.orgId,
+      });
+      const token2 = signToken({
+        userId: ctx.userId,
+        email: ctx.email,
+        role: "members",
+        permissions: [],
+        orgId: ctx.orgId,
+      });
 
       const [r1, r2] = await Promise.all([
         request(server).get("/api/tasks").set("Authorization", `Bearer ${token1}`),

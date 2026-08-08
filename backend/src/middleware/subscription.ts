@@ -1,4 +1,4 @@
-import { Response, NextFunction } from "express";
+import type { NextFunction, Response } from "express";
 import { Organization } from "../lib/db/models/Organization.js";
 import type { AuthRequest } from "../types/index.js";
 
@@ -23,7 +23,11 @@ export function getSubscriptionStatus(org: any): SubscriptionStatus {
   };
 }
 
-export async function requireSubscription(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+export async function requireSubscription(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   if (!req.user) {
     res.status(401).json({ success: false, error: "Authentication required" });
     return;

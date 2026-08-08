@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
-import { getCalendarEvents, createCalendarEvent } from "@/lib/services/calendar-service";
+import { createCalendarEvent, getCalendarEvents } from "@/lib/services/calendar-service";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -34,7 +34,19 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { connectionId, title, description, location, start, end, allDay, calendarId, attendees, reminders, status } = body;
+    const {
+      connectionId,
+      title,
+      description,
+      location,
+      start,
+      end,
+      allDay,
+      calendarId,
+      attendees,
+      reminders,
+      status,
+    } = body;
 
     if (!connectionId || !title || !start || !end) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });

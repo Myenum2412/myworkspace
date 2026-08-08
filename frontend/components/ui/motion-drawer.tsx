@@ -1,12 +1,12 @@
-'use client';
-import { cn } from '@/lib/utils';
-import { Menu, X } from '@/lib/icons';
-import { AnimatePresence, motion } from 'motion/react';
-import type React from 'react';
-import { useState } from 'react';
+"use client";
+import { AnimatePresence, motion } from "motion/react";
+import type React from "react";
+import { useState } from "react";
+import { Menu, X } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
-export type SideMenuDirection = 'left' | 'right';
-export type ButtonOpeningVariants = 'push' | 'merge' | 'stay';
+export type SideMenuDirection = "left" | "right";
+export type ButtonOpeningVariants = "push" | "merge" | "stay";
 
 interface SideMenuProps {
   // Appearance
@@ -36,7 +36,7 @@ interface SideMenuProps {
 
   // Animation
   animationConfig?: {
-    type?: 'spring' | 'tween';
+    type?: "spring" | "tween";
     damping?: number;
     stiffness?: number;
     duration?: number;
@@ -53,39 +53,39 @@ interface SideMenuProps {
 const getOpenButtonVariants = (
   direction: SideMenuDirection,
   width: number,
-  type: ButtonOpeningVariants
+  type: ButtonOpeningVariants,
 ) => {
   switch (type) {
-    case 'merge':
-      return direction === 'left'
+    case "merge":
+      return direction === "left"
         ? {
-            closed: { x: 0, opacity: 1, scale: 1, borderRadius: '0.5rem' },
+            closed: { x: 0, opacity: 1, scale: 1, borderRadius: "0.5rem" },
             open: {
               x: width - 68,
               opacity: 0,
               scale: 1,
-              borderRadius: '0rem',
+              borderRadius: "0rem",
             },
           }
         : {
-            closed: { x: 0, opacity: 1, scale: 1, borderRadius: '0.5rem' },
+            closed: { x: 0, opacity: 1, scale: 1, borderRadius: "0.5rem" },
             open: {
               x: 68 - width,
               opacity: 0,
               scale: 1,
-              borderRadius: '0rem',
+              borderRadius: "0rem",
             },
           };
 
-    case 'push':
-      return direction === 'left'
+    case "push":
+      return direction === "left"
         ? { closed: { x: 0, opacity: 1 }, open: { x: width + 20, opacity: 0 } }
         : {
             closed: { x: 0, opacity: 1 },
             open: { x: -(width + 20), opacity: 0 },
           };
 
-    case 'stay':
+    case "stay":
     default:
       return {
         closed: { x: 0, opacity: 1 },
@@ -96,10 +96,10 @@ const getOpenButtonVariants = (
 
 const MotionDrawer: React.FC<SideMenuProps> = ({
   // Appearance
-  overlayColor = 'rgba(0, 0, 0, 0.3)',
+  overlayColor = "rgba(0, 0, 0, 0.3)",
   width = 250,
-  direction = 'left',
-  backgroundColor = '#ffffff',
+  direction = "left",
+  backgroundColor = "#ffffff",
 
   // Content
   children,
@@ -110,15 +110,15 @@ const MotionDrawer: React.FC<SideMenuProps> = ({
   showToggleButton = true,
 
   // Styling
-  btnClassName = '',
-  clsBtnClassName = '',
-  className = '',
-  contentClassName = '',
-  overlayClassName = '',
+  btnClassName = "",
+  clsBtnClassName = "",
+  className = "",
+  contentClassName = "",
+  overlayClassName = "",
 
   // Animation
   animationConfig = {
-    type: 'spring',
+    type: "spring",
     damping: 25,
     stiffness: 120,
   },
@@ -127,7 +127,7 @@ const MotionDrawer: React.FC<SideMenuProps> = ({
   enableDrag = true,
   dragThreshold = 0.3,
 
-  buttonOpeningVariants = 'merge',
+  buttonOpeningVariants = "merge",
 }) => {
   const [internalIsOpen, setInternalIsOpen] = useState<boolean>(false);
 
@@ -140,7 +140,7 @@ const MotionDrawer: React.FC<SideMenuProps> = ({
   };
 
   const getDrawerVariants = () => {
-    if (direction === 'left') {
+    if (direction === "left") {
       return {
         closed: { x: -width },
         open: { x: 0 },
@@ -156,7 +156,7 @@ const MotionDrawer: React.FC<SideMenuProps> = ({
   const buttonVariants = getOpenButtonVariants(direction, width, buttonOpeningVariants);
 
   const getDragConstraints = () => {
-    if (direction === 'left') {
+    if (direction === "left") {
       return { left: -width, right: 0 };
     } else {
       return { left: 0, right: width };
@@ -169,7 +169,7 @@ const MotionDrawer: React.FC<SideMenuProps> = ({
     const threshold = width * dragThreshold;
     const dragDistance = Math.abs(info.offset.x);
 
-    if (direction === 'left') {
+    if (direction === "left") {
       const isDraggingLeft = info.offset.x < 0;
       if (isDraggingLeft && dragDistance > threshold && isOpen) {
         setIsOpen(false);
@@ -186,8 +186,8 @@ const MotionDrawer: React.FC<SideMenuProps> = ({
     }
   };
 
-  const drawerPositionClasses = direction === 'left' ? 'left-0' : 'right-0';
-  const openButtonPositionClasses = direction === 'left' ? 'top-4 left-4' : 'top-4 right-4';
+  const drawerPositionClasses = direction === "left" ? "left-0" : "right-0";
+  const openButtonPositionClasses = direction === "left" ? "top-4 left-4" : "top-4 right-4";
 
   return (
     <>
@@ -195,11 +195,11 @@ const MotionDrawer: React.FC<SideMenuProps> = ({
         <motion.button
           className={cn(
             `fixed z-[99] text-primary cursor-pointer ${openButtonPositionClasses}`,
-            btnClassName
+            btnClassName,
           )}
           onClick={() => setIsOpen(true)}
           variants={buttonVariants}
-          animate={isOpen ? 'open' : 'closed'}
+          animate={isOpen ? "open" : "closed"}
           transition={animationConfig}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -229,26 +229,26 @@ const MotionDrawer: React.FC<SideMenuProps> = ({
               style={{
                 backgroundColor,
                 width: `${width}px`,
-                padding: '60px 30px 30px 30px',
-                boxSizing: 'border-box',
+                padding: "60px 30px 30px 30px",
+                boxSizing: "border-box",
               }}
-              drag={enableDrag ? 'x' : false}
+              drag={enableDrag ? "x" : false}
               dragElastic={0.1}
               dragConstraints={getDragConstraints()}
               dragMomentum={false}
               onDragEnd={handleDragEnd}
               variants={getDrawerVariants()}
-              initial='closed'
-              animate='open'
-              exit='closed'
+              initial="closed"
+              animate="open"
+              exit="closed"
               transition={animationConfig}
             >
               {/* Close Button */}
               {showToggleButton && (
                 <motion.button
                   className={cn(
-                    'absolute top-2 right-8 p-2 text-black cursor-pointer',
-                    clsBtnClassName
+                    "absolute top-2 right-8 p-2 text-black cursor-pointer",
+                    clsBtnClassName,
                   )}
                   onClick={() => setIsOpen(false)}
                   whileHover={{ scale: 1.1 }}
@@ -260,7 +260,7 @@ const MotionDrawer: React.FC<SideMenuProps> = ({
               )}
 
               {/* Content */}
-              <div className='h-full overflow-y-auto'>{children}</div>
+              <div className="h-full overflow-y-auto">{children}</div>
             </motion.div>
           </div>
         )}

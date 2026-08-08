@@ -1,12 +1,12 @@
-import { connectDb, mongoose } from "./index.js";
+import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
-import { User } from "./models/User.js";
-import { Organization } from "./models/Organization.js";
-import { OrgMember } from "./models/OrgMember.js";
+import { env } from "../../config/env.js";
+import { connectDb, mongoose } from "./index.js";
 import { ActivityLog } from "./models/ActivityLog.js";
 import { getNextSequence } from "./models/Counter.js";
-import { env } from "../../config/env.js";
-import bcrypt from "bcryptjs";
+import { Organization } from "./models/Organization.js";
+import { OrgMember } from "./models/OrgMember.js";
+import { User } from "./models/User.js";
 
 async function seedAdmin() {
   await connectDb();

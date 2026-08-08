@@ -1,8 +1,8 @@
-import { Server as HttpServer } from "http";
-import { Server, Socket } from "socket.io";
+import type { Server as HttpServer } from "http";
 import jwt from "jsonwebtoken";
+import { Server, type Socket } from "socket.io";
 import { env } from "../../config/env.js";
-import { JwtPayload } from "../../types/index.js";
+import type { JwtPayload } from "../../types/index.js";
 import { logger } from "../logger/index.js";
 
 interface AuthenticatedSocket extends Socket {

@@ -1,11 +1,11 @@
-import { logger } from "./logger/index.js";
 import { env } from "../config/env.js";
-import { initializeFeatures, getAllFeatures } from "./features.js";
-import { operationalAnalytics } from "./operations/analytics.js";
-import { initializeTelemetry } from "./tracing.js";
-import { keyRotation } from "./security/key-rotation.js";
 import { configureReplicaSets } from "./db/replicas.js";
+import { getAllFeatures, initializeFeatures } from "./features.js";
+import { logger } from "./logger/index.js";
+import { operationalAnalytics } from "./operations/analytics.js";
 import { outbox } from "./outbox.js";
+import { keyRotation } from "./security/key-rotation.js";
+import { initializeTelemetry } from "./tracing.js";
 
 let bootstrapped = false;
 
@@ -36,10 +36,13 @@ export async function bootstrapPlatform(): Promise<void> {
     "bootstrap",
   );
 
-  logger.info({
-    features: getAllFeatureKeys(),
-    nodeEnv: env.NODE_ENV,
-  }, "Enterprise platform bootstrapped successfully");
+  logger.info(
+    {
+      features: getAllFeatureKeys(),
+      nodeEnv: env.NODE_ENV,
+    },
+    "Enterprise platform bootstrapped successfully",
+  );
 }
 
 function getAllFeatureKeys(): string[] {
@@ -53,10 +56,17 @@ async function startOutboxRelay(): Promise<void> {
       for (const msg of messages) {
         try {
           const { eventProducer } = await import("../lib/queue/producer.js");
-          const exchange = msg.aggregateType === "file" ? "file.events"
-            : msg.aggregateType === "notification" ? "notification.events"
-            : "upload.events";
-          const published = await eventProducer.publishEvent(exchange, msg.eventType as any, msg as any);
+          const exchange =
+            msg.aggregateType === "file"
+              ? "file.events"
+              : msg.aggregateType === "notification"
+                ? "notification.events"
+                : "upload.events";
+          const published = await eventProducer.publishEvent(
+            exchange,
+            msg.eventType as any,
+            msg as any,
+          );
           if (published) {
             await outbox.markPublished(msg.messageId);
           }
@@ -98,7 +108,7 @@ export async function healthCheck(): Promise<{
   };
 
   return {
-    status: Object.values(components).every(s => s === "healthy") ? "healthy" : "degraded",
+    status: Object.values(components).every((s) => s === "healthy") ? "healthy" : "degraded",
     components,
   };
 }

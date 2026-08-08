@@ -1,1 +1,1 @@
-export { default } from "./profile-leaf-interactive.client"
+export { default } from "./profile-leaf-interactive.client";

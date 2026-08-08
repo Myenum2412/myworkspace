@@ -11,7 +11,7 @@
     "declaration": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "paths": {}  // Using relative imports; tsx doesn't support tsconfig paths natively
+    "paths": {} // Using relative imports; tsx doesn't support tsconfig paths natively
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

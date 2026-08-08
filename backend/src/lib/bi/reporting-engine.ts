@@ -1,11 +1,11 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
-import { Task } from "../db/models/Task.js";
-import { Project } from "../db/models/Project.js";
-import { User } from "../db/models/User.js";
-import { FileAttachment } from "../db/models/FileAttachment.js";
 import { ActivityLog } from "../db/models/ActivityLog.js";
+import { FileAttachment } from "../db/models/FileAttachment.js";
 import { Organization } from "../db/models/Organization.js";
+import { Project } from "../db/models/Project.js";
+import { Task } from "../db/models/Task.js";
+import { User } from "../db/models/User.js";
 import { biEngine } from "./analytics-engine.js";
 
 export interface IReportSchedule extends Document {
@@ -41,19 +41,26 @@ export interface IDrillDownReport {
   pageSize: number;
 }
 
-const reportScheduleSchema = new Schema<IReportSchedule>({
-  id: { type: String, required: true, unique: true },
-  orgId: { type: String, required: true, index: true },
-  name: { type: String, required: true },
-  type: { type: String, enum: ["executive", "productivity", "storage", "compliance", "custom"], required: true },
-  format: { type: String, enum: ["pdf", "csv", "json"], default: "json" },
-  cron: { type: String, required: true },
-  recipients: [{ type: String }],
-  filters: { type: Schema.Types.Mixed, default: {} },
-  isActive: { type: Boolean, default: true },
-  lastGeneratedAt: Date,
-  createdBy: String,
-}, { timestamps: true });
+const reportScheduleSchema = new Schema<IReportSchedule>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    name: { type: String, required: true },
+    type: {
+      type: String,
+      enum: ["executive", "productivity", "storage", "compliance", "custom"],
+      required: true,
+    },
+    format: { type: String, enum: ["pdf", "csv", "json"], default: "json" },
+    cron: { type: String, required: true },
+    recipients: [{ type: String }],
+    filters: { type: Schema.Types.Mixed, default: {} },
+    isActive: { type: Boolean, default: true },
+    lastGeneratedAt: Date,
+    createdBy: String,
+  },
+  { timestamps: true },
+);
 
 const kpiTrendSchema = new Schema<IKPITrend>({
   id: { type: String, required: true, unique: true },
@@ -71,12 +78,17 @@ export const KPITrend = model<IKPITrend>("KPITrend", kpiTrendSchema);
 
 export class ReportingEngine {
   async scheduleReport(params: {
-    orgId: string; name: string; type: IReportSchedule["type"];
-    format?: IReportSchedule["format"]; cron: string;
-    recipients?: string[]; createdBy: string;
+    orgId: string;
+    name: string;
+    type: IReportSchedule["type"];
+    format?: IReportSchedule["format"];
+    cron: string;
+    recipients?: string[];
+    createdBy: string;
   }): Promise<IReportSchedule> {
     return ReportSchedule.create({
-      id: uuid(), ...params,
+      id: uuid(),
+      ...params,
       format: params.format || "json",
       recipients: params.recipients || [],
       filters: {},
@@ -94,9 +106,11 @@ export class ReportingEngine {
       biEngine.getOrgHealthScore(orgId),
     ]);
 
-    const completed = tasks.filter(t => t.status === "completed").length;
-    const overdue = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "completed");
-    const activeUsers = users.filter(u => u.status === "online").length;
+    const completed = tasks.filter((t) => t.status === "completed").length;
+    const overdue = tasks.filter(
+      (t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "completed",
+    );
+    const activeUsers = users.filter((u) => u.status === "online").length;
     const storageBytes = files.reduce((s, f) => s + (f.size || 0), 0);
 
     const tasksByStatus: Record<string, number> = {};
@@ -109,7 +123,11 @@ export class ReportingEngine {
     for (let i = 6; i >= 0; i--) {
       const start = new Date(now - (i + 1) * 86400000);
       const end = new Date(now - i * 86400000);
-      taskTrend.push(tasks.filter(t => t.createdAt && new Date(t.createdAt) >= start && new Date(t.createdAt) < end).length);
+      taskTrend.push(
+        tasks.filter(
+          (t) => t.createdAt && new Date(t.createdAt) >= start && new Date(t.createdAt) < end,
+        ).length,
+      );
     }
 
     return {
@@ -132,8 +150,10 @@ export class ReportingEngine {
       trends: {
         tasksByStatus,
         dailyTaskCreation: taskTrend,
-        projectsPerUser: users.length > 0 ? Math.round((projects.length / users.length) * 10) / 10 : 0,
-        tasksPerProject: projects.length > 0 ? Math.round((tasks.length / projects.length) * 10) / 10 : 0,
+        projectsPerUser:
+          users.length > 0 ? Math.round((projects.length / users.length) * 10) / 10 : 0,
+        tasksPerProject:
+          projects.length > 0 ? Math.round((tasks.length / projects.length) * 10) / 10 : 0,
       },
     };
   }
@@ -200,7 +220,10 @@ export class ReportingEngine {
           { $sort: { totalBytes: -1 } },
         ]);
         return {
-          summary: { dimension: "storage_by_type", totalBytes: results.reduce((s, f) => s + (f.size || 0), 0) },
+          summary: {
+            dimension: "storage_by_type",
+            totalBytes: results.reduce((s, f) => s + (f.size || 0), 0),
+          },
           dimensions: { typeBreakdown },
           detail: results,
           total,
@@ -233,10 +256,18 @@ export class ReportingEngine {
     let since: Date;
 
     switch (period) {
-      case "day": since = new Date(now.setHours(0, 0, 0, 0)); break;
-      case "week": since = new Date(now.setDate(now.getDate() - 7)); break;
-      case "month": since = new Date(now.setMonth(now.getMonth() - 1)); break;
-      case "quarter": since = new Date(now.setMonth(now.getMonth() - 3)); break;
+      case "day":
+        since = new Date(now.setHours(0, 0, 0, 0));
+        break;
+      case "week":
+        since = new Date(now.setDate(now.getDate() - 7));
+        break;
+      case "month":
+        since = new Date(now.setMonth(now.getMonth() - 1));
+        break;
+      case "quarter":
+        since = new Date(now.setMonth(now.getMonth() - 3));
+        break;
     }
 
     switch (metric) {
@@ -244,15 +275,20 @@ export class ReportingEngine {
         value = await Task.countDocuments({ orgId, createdAt: { $gte: since } });
         break;
       case "tasks.completed":
-        value = await Task.countDocuments({ orgId, status: "completed", updatedAt: { $gte: since } });
+        value = await Task.countDocuments({
+          orgId,
+          status: "completed",
+          updatedAt: { $gte: since },
+        });
         break;
       case "users.active":
         value = await User.countDocuments({ orgId, status: "online" });
         break;
-      case "storage.added_mb":
+      case "storage.added_mb": {
         const files = await FileAttachment.find({ orgId, createdAt: { $gte: since } }).lean();
         value = Math.round(files.reduce((s, f) => s + (f.size || 0), 0) / (1024 * 1024));
         break;
+      }
       case "projects.created":
         value = await Project.countDocuments({ orgId, createdAt: { $gte: since } });
         break;
@@ -268,17 +304,26 @@ export class ReportingEngine {
     metric: string,
     period: IKPITrend["period"],
     limit = 30,
-  ): Promise<{ values: { date: Date; value: number }[]; trend: "up" | "down" | "stable"; changePercent: number }> {
+  ): Promise<{
+    values: { date: Date; value: number }[];
+    trend: "up" | "down" | "stable";
+    changePercent: number;
+  }> {
     const records = await KPITrend.find({ orgId, metric, period })
       .sort({ recordedAt: -1 })
       .limit(limit)
       .lean();
 
-    const values = records.map(r => ({ date: r.recordedAt, value: r.value })).reverse();
-    const changePercent = values.length >= 2
-      ? Math.round(((values[values.length - 1].value - values[0].value) / Math.max(1, values[0].value)) * 100)
-      : 0;
-    const trend: "up" | "down" | "stable" = changePercent > 5 ? "up" : changePercent < -5 ? "down" : "stable";
+    const values = records.map((r) => ({ date: r.recordedAt, value: r.value })).reverse();
+    const changePercent =
+      values.length >= 2
+        ? Math.round(
+            ((values[values.length - 1].value - values[0].value) / Math.max(1, values[0].value)) *
+              100,
+          )
+        : 0;
+    const trend: "up" | "down" | "stable" =
+      changePercent > 5 ? "up" : changePercent < -5 ? "down" : "stable";
 
     return { values, trend, changePercent };
   }

@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { model, Schema } from "mongoose";
 
 export interface IConsentRecord {
   id: string;
@@ -62,7 +62,7 @@ const consentRecordSchema = new Schema<IConsentRecord>(
     previousConsentId: String,
     policyVersion: { type: Number, required: true, default: 1 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 consentRecordSchema.index({ userId: 1, consentVersion: -1 });

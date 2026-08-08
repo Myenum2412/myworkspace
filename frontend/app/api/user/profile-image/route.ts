@@ -1,7 +1,7 @@
+import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { ObjectId } from "mongodb";
 
 export async function POST(request: Request) {
   let session;
@@ -54,7 +54,9 @@ export async function POST(request: Request) {
     } else {
       userQuery.$or!.push({ _id: userId });
     }
-    const result = await db.collection("users").updateOne(userQuery as never, { $set: { image: imageUrl, updatedAt: new Date() } });
+    const result = await db
+      .collection("users")
+      .updateOne(userQuery as never, { $set: { image: imageUrl, updatedAt: new Date() } });
     if (result.matchedCount === 0) {
       console.warn(`[profile-image] user not found for userId=${userId}`);
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -65,10 +67,12 @@ export async function POST(request: Request) {
     try {
       const member = await db.collection("org_members").findOne({ userId });
       if (member?.orgId) {
-        await db.collection("organizations").updateOne(
-          { $or: [{ id: member.orgId }, { _id: new ObjectId(member.orgId) }] },
-          { $set: { logo: imageUrl, updatedAt: new Date() } }
-        );
+        await db
+          .collection("organizations")
+          .updateOne(
+            { $or: [{ id: member.orgId }, { _id: new ObjectId(member.orgId) }] },
+            { $set: { logo: imageUrl, updatedAt: new Date() } },
+          );
         console.log(`[profile-image] organization logo updated for orgId=${member.orgId}`);
       }
     } catch (orgErr) {

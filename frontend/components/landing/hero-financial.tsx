@@ -1,22 +1,22 @@
-'use client'
-import React from 'react'
-import Link from 'next/link'
-import { ChevronRight } from '@/lib/icons'
-import { TimelineAnimation } from '@/components/ui/timeline-animation'
-import { useMediaQuery } from '@/hooks/use-media-query'
-import MotionDrawer from '@/components/ui/motion-drawer'
-import { Button } from '@/components/ui/button'
-import { Logo } from '@/components/logo'
+"use client";
+import Link from "next/link";
+import React from "react";
+import { Logo } from "@/components/logo";
+import { Button } from "@/components/ui/button";
+import MotionDrawer from "@/components/ui/motion-drawer";
+import { TimelineAnimation } from "@/components/ui/timeline-animation";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { ChevronRight } from "@/lib/icons";
 
 const menuItems = [
-  { name: 'Features', href: '/features' },
-  { name: 'Solution', href: '/solutions' },
-  { name: 'About', href: '/about' },
-]
+  { name: "Features", href: "/features" },
+  { name: "Solution", href: "/solutions" },
+  { name: "About", href: "/about" },
+];
 
 export const HeroFinancial = () => {
-  const timelineRef = React.useRef<HTMLDivElement>(null)
-  const isMobile = useMediaQuery('(max-width: 768px)')
+  const timelineRef = React.useRef<HTMLDivElement>(null);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
     <section
@@ -66,16 +66,8 @@ export const HeroFinancial = () => {
             colorInterpolationFilters="sRGB"
           >
             <feFlood floodOpacity="0" result="BackgroundImageFix" />
-            <feBlend
-              mode="normal"
-              in="SourceGraphic"
-              in2="BackgroundImageFix"
-              result="shape"
-            />
-            <feGaussianBlur
-              stdDeviation="32"
-              result="effect1_foregroundBlur_0_1"
-            />
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+            <feGaussianBlur stdDeviation="32" result="effect1_foregroundBlur_0_1" />
           </filter>
           <filter
             id="filter1_f_0_1"
@@ -87,16 +79,8 @@ export const HeroFinancial = () => {
             colorInterpolationFilters="sRGB"
           >
             <feFlood floodOpacity="0" result="BackgroundImageFix" />
-            <feBlend
-              mode="normal"
-              in="SourceGraphic"
-              in2="BackgroundImageFix"
-              result="shape"
-            />
-            <feGaussianBlur
-              stdDeviation="32"
-              result="effect1_foregroundBlur_0_1"
-            />
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+            <feGaussianBlur stdDeviation="32" result="effect1_foregroundBlur_0_1" />
           </filter>
           <linearGradient
             id="paint0_linear_0_1"
@@ -134,7 +118,7 @@ export const HeroFinancial = () => {
           <MotionDrawer
             direction="left"
             width={300}
-            backgroundColor={'#ffffff'}
+            backgroundColor={"#ffffff"}
             clsBtnClassName="bg-neutral-800 border-r border-neutral-900 text-white"
             contentClassName="bg-white border-r border-neutral-200 text-black"
             btnClassName="bg-white text-black relative w-fit p-2 left-0 top-0 rounded-full shadow-xs border border-neutral-200"
@@ -143,7 +127,9 @@ export const HeroFinancial = () => {
               <div className="flex items-center gap-2 mb-6">
                 <Link href="/" className="flex items-center space-x-2.5">
                   <Logo className="h-6 w-auto text-black" />
-                  <span className="text-base font-bold tracking-tight text-neutral-900">MyWorkSpace</span>
+                  <span className="text-base font-bold tracking-tight text-neutral-900">
+                    MyWorkSpace
+                  </span>
                 </Link>
               </div>
               {menuItems.map((item, index) => (
@@ -159,7 +145,10 @@ export const HeroFinancial = () => {
                 <Button asChild variant="outline" className="w-full">
                   <Link href="/login">Login</Link>
                 </Button>
-                <Button asChild className="w-full bg-[#2596be] hover:bg-[#1e7ea3] text-white border-0">
+                <Button
+                  asChild
+                  className="w-full bg-[#2596be] hover:bg-[#1e7ea3] text-white border-0"
+                >
                   <Link href="/signup">Sign Up</Link>
                 </Button>
               </div>
@@ -169,7 +158,11 @@ export const HeroFinancial = () => {
             <Button asChild variant="outline" size="sm">
               <Link href="/login">Login</Link>
             </Button>
-            <Button asChild size="sm" className="bg-[#2596be] hover:bg-[#1e7ea3] text-white border-0">
+            <Button
+              asChild
+              size="sm"
+              className="bg-[#2596be] hover:bg-[#1e7ea3] text-white border-0"
+            >
               <Link href="/signup">Sign Up</Link>
             </Button>
           </div>
@@ -186,7 +179,9 @@ export const HeroFinancial = () => {
             <div className="flex items-center gap-2">
               <Link href="/" className="flex items-center space-x-2.5">
                 <Logo className="h-6 w-auto text-black" />
-                <span className="text-base font-bold tracking-tight text-neutral-900">MyWorkSpace</span>
+                <span className="text-base font-bold tracking-tight text-neutral-900">
+                  MyWorkSpace
+                </span>
               </Link>
             </div>
             <nav className="hidden md:flex items-center gap-10 text-sm font-semibold text-neutral-500">
@@ -200,7 +195,11 @@ export const HeroFinancial = () => {
               <Button asChild variant="outline" size="sm">
                 <Link href="/login">Login</Link>
               </Button>
-              <Button asChild size="sm" className="bg-[#2596be] hover:bg-[#1e7ea3] text-white border-0">
+              <Button
+                asChild
+                size="sm"
+                className="bg-[#2596be] hover:bg-[#1e7ea3] text-white border-0"
+              >
                 <Link href="/signup">Sign Up</Link>
               </Button>
             </div>
@@ -238,9 +237,8 @@ export const HeroFinancial = () => {
           timelineRef={timelineRef}
           className="text-lg md:text-xl text-neutral-500 font-medium max-w-3xl mx-auto leading-relaxed px-4"
         >
-          MyWorkspace brings together task management, team collaboration, file
-          storage, client portal, and billing into one seamless platform built
-          for growing businesses.
+          MyWorkspace brings together task management, team collaboration, file storage, client
+          portal, and billing into one seamless platform built for growing businesses.
         </TimelineAnimation>
 
         <div className="flex gap-4 justify-center mt-4">
@@ -283,5 +281,5 @@ export const HeroFinancial = () => {
         </TimelineAnimation>
       </div>
     </section>
-  )
-}
+  );
+};

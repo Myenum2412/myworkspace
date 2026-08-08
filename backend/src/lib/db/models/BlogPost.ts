@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 
 export interface IBlogVersion {
   content: string;
@@ -39,12 +39,15 @@ export interface IBlogPost extends Document {
   updatedAt: Date;
 }
 
-const blogVersionSchema = new Schema<IBlogVersion>({
-  content: { type: String, required: true },
-  title: { type: String, required: true },
-  savedAt: { type: Date, required: true },
-  savedBy: { type: String, required: true },
-}, { _id: false });
+const blogVersionSchema = new Schema<IBlogVersion>(
+  {
+    content: { type: String, required: true },
+    title: { type: String, required: true },
+    savedAt: { type: Date, required: true },
+    savedBy: { type: String, required: true },
+  },
+  { _id: false },
+);
 
 const blogPostSchema = new Schema<IBlogPost>(
   {
@@ -81,7 +84,7 @@ const blogPostSchema = new Schema<IBlogPost>(
     createdBy: { type: String, required: true },
     updatedBy: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 blogPostSchema.index({ orgId: 1, slug: 1 }, { unique: true });

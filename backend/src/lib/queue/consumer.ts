@@ -1,7 +1,7 @@
-import { Channel, ConsumeMessage } from "amqplib";
-import { getChannel, isRabbitMQConfigured, QUEUES, isDuplicateMessage } from "./connection.js";
+import type { Channel, ConsumeMessage } from "amqplib";
 import { logger, queueLogger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
+import { getChannel, isDuplicateMessage, isRabbitMQConfigured, QUEUES } from "./connection.js";
 
 export const MAX_RETRIES = 5;
 export const RETRY_DELAY_MS = [1000, 5000, 15000, 30000, 60000];
@@ -16,7 +16,10 @@ interface HandlerResult {
   skipRetry?: boolean;
 }
 
-type MessageHandler = (msg: ConsumeMessage, data: Record<string, unknown>) => Promise<HandlerResult>;
+type MessageHandler = (
+  msg: ConsumeMessage,
+  data: Record<string, unknown>,
+) => Promise<HandlerResult>;
 
 const handlers = new Map<string, MessageHandler>();
 const poisonMessageTracker = new Map<string, number>();
@@ -77,7 +80,10 @@ async function handleMessage(ch: Channel, msg: ConsumeMessage) {
   }
 
   if (activeHandlers.size >= MAX_CONCURRENT_HANDLERS) {
-    queueLogger.warn({ queue, activeHandlers: activeHandlers.size }, "Backpressure: too many active handlers, requeuing");
+    queueLogger.warn(
+      { queue, activeHandlers: activeHandlers.size },
+      "Backpressure: too many active handlers, requeuing",
+    );
     ch.nack(msg, false, true);
     return;
   }
@@ -105,17 +111,18 @@ async function handleMessage(ch: Channel, msg: ConsumeMessage) {
   });
 
   try {
-    const result = await Promise.race([
-      handler(msg, data),
-      timeoutPromise,
-    ]);
+    const result = await Promise.race([handler(msg, data), timeoutPromise]);
 
     if (timeoutHandle) clearTimeout(timeoutHandle);
 
     if (result.success) {
       ch.ack(msg);
       metricsRegistry.incrementCounter("messages_processed", { queue, status: "success" });
-      metricsRegistry.observeHistogram("message_processing_duration_ms", { queue }, Date.now() - startTime);
+      metricsRegistry.observeHistogram(
+        "message_processing_duration_ms",
+        { queue },
+        Date.now() - startTime,
+      );
     } else if (result.requeue) {
       ch.nack(msg, false, true);
       metricsRegistry.incrementCounter("messages_requeued", { queue });
@@ -126,11 +133,17 @@ async function handleMessage(ch: Channel, msg: ConsumeMessage) {
     } else {
       const retryCount = getRetryCount(msg);
       if (retryCount < MAX_RETRIES) {
-        queueLogger.warn({ queue, msgId, retryCount, delayMs: getRetryDelay(retryCount), error: result.error }, "Scheduling retry with backoff");
+        queueLogger.warn(
+          { queue, msgId, retryCount, delayMs: getRetryDelay(retryCount), error: result.error },
+          "Scheduling retry with backoff",
+        );
         ch.nack(msg, false, true);
         metricsRegistry.incrementCounter("messages_retried", { queue, retry: String(retryCount) });
       } else {
-        queueLogger.error({ queue, msgId, retryCount, error: result.error }, "Max retries exceeded, sending to DLQ");
+        queueLogger.error(
+          { queue, msgId, retryCount, error: result.error },
+          "Max retries exceeded, sending to DLQ",
+        );
         ch.nack(msg, false, false);
         metricsRegistry.incrementCounter("messages_dead_lettered", { queue });
         trackPoisonMessage(queue, msgId);
@@ -170,15 +183,25 @@ export async function startConsumers() {
 
   for (const queue of queuesToConsume) {
     if (handlers.has(queue) || handlers.has("*")) {
-      await ch.consume(queue, (msg) => {
-        if (msg) handleMessage(ch, msg);
-      }, { noAck: false });
+      await ch.consume(
+        queue,
+        (msg) => {
+          if (msg) handleMessage(ch, msg);
+        },
+        { noAck: false },
+      );
       queueLogger.info(`Consumer started for queue: ${queue}`);
     }
   }
 
-  const consumerCount = await ch.checkQueue(queuesToConsume[0]).then(r => r.consumerCount).catch(() => 0);
-  queueLogger.info({ consumerCount, monitoredQueues: queuesToConsume.length }, "All queue consumers started");
+  const consumerCount = await ch
+    .checkQueue(queuesToConsume[0])
+    .then((r) => r.consumerCount)
+    .catch(() => 0);
+  queueLogger.info(
+    { consumerCount, monitoredQueues: queuesToConsume.length },
+    "All queue consumers started",
+  );
 }
 
 export async function stopConsumers() {

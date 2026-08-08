@@ -1,33 +1,19 @@
 "use client";
 
+import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import type { ColumnDef } from "@tanstack/react-table";
-import {
-  Loader2Icon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ListTodoIcon,
-  AlertCircleIcon,
-  FileIcon,
-  CheckIcon,
-  SearchIcon,
-} from "@/lib/icons";
-import { DataTable } from "./data-table";
-import type { ApprovalItem } from "./columns";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -35,6 +21,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertCircleIcon,
+  CheckCircleIcon,
+  CheckIcon,
+  FileIcon,
+  ListTodoIcon,
+  Loader2Icon,
+  SearchIcon,
+  XCircleIcon,
+} from "@/lib/icons";
+import type { ApprovalItem } from "./columns";
+import { DataTable } from "./data-table";
 
 type Props = {
   items: ApprovalItem[];
@@ -54,11 +54,58 @@ function getFileExtension(name?: string): string {
 }
 
 const CODE_EXTENSIONS = [
-  "txt", "md", "markdown", "rst", "log", "json", "jsonl", "jsonc", "csv", "tsv",
-  "xml", "yaml", "yml", "toml", "ini", "cfg", "env", "sql", "graphql", "gql",
-  "js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx", "html", "htm", "css",
-  "scss", "sass", "less", "py", "go", "rs", "c", "h", "cpp", "cs", "java", "kt",
-  "swift", "rb", "php", "sh", "bash", "bat", "ps1", "diff", "patch",
+  "txt",
+  "md",
+  "markdown",
+  "rst",
+  "log",
+  "json",
+  "jsonl",
+  "jsonc",
+  "csv",
+  "tsv",
+  "xml",
+  "yaml",
+  "yml",
+  "toml",
+  "ini",
+  "cfg",
+  "env",
+  "sql",
+  "graphql",
+  "gql",
+  "js",
+  "mjs",
+  "cjs",
+  "ts",
+  "mts",
+  "cts",
+  "jsx",
+  "tsx",
+  "html",
+  "htm",
+  "css",
+  "scss",
+  "sass",
+  "less",
+  "py",
+  "go",
+  "rs",
+  "c",
+  "h",
+  "cpp",
+  "cs",
+  "java",
+  "kt",
+  "swift",
+  "rb",
+  "php",
+  "sh",
+  "bash",
+  "bat",
+  "ps1",
+  "diff",
+  "patch",
 ];
 
 function typeForItem(item: ApprovalItem): string {
@@ -66,22 +113,49 @@ function typeForItem(item: ApprovalItem): string {
   // Files are typically detected by a filename with a non-code extension.
   if (item.fileName) {
     const ext = getFileExtension(item.fileName);
-    if (ext && ext !== "task" && !TYPE_EXTENSIONS.has(ext) && !CODE_EXTENSIONS.includes(ext)) return "file";
+    if (ext && ext !== "task" && !TYPE_EXTENSIONS.has(ext) && !CODE_EXTENSIONS.includes(ext))
+      return "file";
   }
   return item.itemType || "task";
 }
 
 // Extensions strongly associated with binary files.
 const TYPE_EXTENSIONS = new Set([
-  "pdf", "png", "jpg", "jpeg", "gif", "webp", "doc", "docx", "xls", "xlsx",
-  "ppt", "pptx", "zip", "rar", "7z", "tar", "gz", "mp3", "mp4", "mov", "pdf",
+  "pdf",
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+  "doc",
+  "docx",
+  "xls",
+  "xlsx",
+  "ppt",
+  "pptx",
+  "zip",
+  "rar",
+  "7z",
+  "tar",
+  "gz",
+  "mp3",
+  "mp4",
+  "mov",
+  "pdf",
 ]);
 
 function TypeBadge({ item }: { item: ApprovalItem }) {
   if (typeOfItem(item) === "file") {
-    return <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs font-medium"><FileIcon className="size-3 mr-1" />File</Badge>;
+    return (
+      <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs font-medium">
+        <FileIcon className="size-3 mr-1" />
+        File
+      </Badge>
+    );
   }
-  return <Badge className="bg-gray-100 text-gray-700 border-gray-300 text-xs font-medium">Task</Badge>;
+  return (
+    <Badge className="bg-gray-100 text-gray-700 border-gray-300 text-xs font-medium">Task</Badge>
+  );
 }
 
 function typeOfItem(item: ApprovalItem): string {
@@ -102,10 +176,20 @@ function normalizeStatus(status: string): "pending" | "approved" | "rejected" {
 function StatusBadge({ status }: { status: string }) {
   const norm = normalizeStatus(status);
   if (norm === "approved") {
-    return <Badge className="bg-green-100 text-green-700 text-xs font-medium"><CheckCircleIcon className="size-3 mr-1" />Approved</Badge>;
+    return (
+      <Badge className="bg-green-100 text-green-700 text-xs font-medium">
+        <CheckCircleIcon className="size-3 mr-1" />
+        Approved
+      </Badge>
+    );
   }
   if (norm === "rejected") {
-    return <Badge className="bg-red-100 text-red-700 text-xs font-medium"><XCircleIcon className="size-3 mr-1" />Rejected</Badge>;
+    return (
+      <Badge className="bg-red-100 text-red-700 text-xs font-medium">
+        <XCircleIcon className="size-3 mr-1" />
+        Rejected
+      </Badge>
+    );
   }
   return <Badge className="bg-yellow-100 text-yellow-700 text-xs font-medium">Pending</Badge>;
 }
@@ -187,9 +271,10 @@ export default function ApprovalsClient({ items }: Props) {
       const isFile = typeOfItem(actionItem) === "file";
 
       if (isFile && actionItem._id) {
-        const endpoint = actionType === "approve"
-          ? `/api/file-approval/${actionItem._id}/approve`
-          : `/api/file-approval/${actionItem._id}/reject`;
+        const endpoint =
+          actionType === "approve"
+            ? `/api/file-approval/${actionItem._id}/approve`
+            : `/api/file-approval/${actionItem._id}/reject`;
         res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -247,9 +332,19 @@ export default function ApprovalsClient({ items }: Props) {
         <div className="flex items-center gap-2">
           <TypeBadge item={row.original} />
           <div>
-            <span className="font-medium text-sm">{row.getValue("title") || row.original.fileName || "—"}</span>
-            {row.original.description && <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">{row.original.description}</p>}
-            {row.original.fileName && <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">{row.original.fileName}</p>}
+            <span className="font-medium text-sm">
+              {row.getValue("title") || row.original.fileName || "—"}
+            </span>
+            {row.original.description && (
+              <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">
+                {row.original.description}
+              </p>
+            )}
+            {row.original.fileName && (
+              <p className="text-xs text-muted-foreground truncate max-w-xs mt-0.5">
+                {row.original.fileName}
+              </p>
+            )}
           </div>
         </div>
       ),
@@ -258,19 +353,32 @@ export default function ApprovalsClient({ items }: Props) {
       accessorKey: "priority",
       header: "Priority",
       cell: ({ row }) => {
-        if (typeOfItem(row.original) === "file") return <span className="text-xs text-muted-foreground">—</span>;
+        if (typeOfItem(row.original) === "file")
+          return <span className="text-xs text-muted-foreground">—</span>;
         const p = row.original.priority;
-        return <Badge variant="outline" className={`text-xs font-medium capitalize ${priorityColors[p] || ""}`}>{p || "—"}</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className={`text-xs font-medium capitalize ${priorityColors[p] || ""}`}
+          >
+            {p || "—"}
+          </Badge>
+        );
       },
     },
     {
       id: "submittedBy",
       header: "Submitted By",
       cell: ({ row }) => {
-        const name = typeOfItem(row.original) === "file"
-          ? row.original.uploaderName || row.original.assigneeName
-          : row.original.assigneeName || row.original.assigneeId;
-        return name ? <span className="text-sm">{name}</span> : <span className="text-sm text-muted-foreground">—</span>;
+        const name =
+          typeOfItem(row.original) === "file"
+            ? row.original.uploaderName || row.original.assigneeName
+            : row.original.assigneeName || row.original.assigneeId;
+        return name ? (
+          <span className="text-sm">{name}</span>
+        ) : (
+          <span className="text-sm text-muted-foreground">—</span>
+        );
       },
     },
     {
@@ -285,7 +393,9 @@ export default function ApprovalsClient({ items }: Props) {
         return (
           <div>
             <span className="text-xs text-muted-foreground block">{label}</span>
-            <span className="text-sm">{isNaN(date.getTime()) ? "—" : date.toLocaleDateString()}</span>
+            <span className="text-sm">
+              {isNaN(date.getTime()) ? "—" : date.toLocaleDateString()}
+            </span>
           </div>
         );
       },
@@ -304,11 +414,22 @@ export default function ApprovalsClient({ items }: Props) {
         if (norm === "pending") {
           return (
             <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-              <Button size="sm" className="text-xs bg-green-500 hover:bg-green-700 touch-target" onClick={() => openAction(item, "approve")}>
-                <CheckCircleIcon className="size-3 mr-1" />Approve
+              <Button
+                size="sm"
+                className="text-xs bg-green-500 hover:bg-green-700 touch-target"
+                onClick={() => openAction(item, "approve")}
+              >
+                <CheckCircleIcon className="size-3 mr-1" />
+                Approve
               </Button>
-              <Button size="sm" variant="outline" className="text-xs text-black border-blue-200 hover:bg-blue-100 touch-target" onClick={() => openAction(item, "reject")}>
-                <XCircleIcon className="size-3 mr-1" />Reject
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs text-black border-blue-200 hover:bg-blue-100 touch-target"
+                onClick={() => openAction(item, "reject")}
+              >
+                <XCircleIcon className="size-3 mr-1" />
+                Reject
               </Button>
             </div>
           );
@@ -316,9 +437,15 @@ export default function ApprovalsClient({ items }: Props) {
         return (
           <div className="flex items-center justify-end pr-1" onClick={(e) => e.stopPropagation()}>
             {norm === "approved" ? (
-              <span className="inline-flex items-center text-xs text-green-600"><CheckIcon className="size-3.5 mr-1" />{item.approvedBy || "Approved"}</span>
+              <span className="inline-flex items-center text-xs text-green-600">
+                <CheckIcon className="size-3.5 mr-1" />
+                {item.approvedBy || "Approved"}
+              </span>
             ) : (
-              <span className="inline-flex items-center text-xs text-red-600"><XCircleIcon className="size-3.5 mr-1" />{item.rejectedBy || "Rejected"}</span>
+              <span className="inline-flex items-center text-xs text-red-600">
+                <XCircleIcon className="size-3.5 mr-1" />
+                {item.rejectedBy || "Rejected"}
+              </span>
             )}
           </div>
         );
@@ -334,11 +461,17 @@ export default function ApprovalsClient({ items }: Props) {
         key={value}
         onClick={() => setStatusFilter(value)}
         className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors touch-target ${
-          active ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:bg-muted"
+          active
+            ? "bg-primary text-primary-foreground border-primary"
+            : "bg-card text-muted-foreground border-border hover:bg-muted"
         }`}
       >
         {label}
-        <span className={`ml-1.5 ${active ? "text-primary-foreground/80" : "text-muted-foreground/70"}`}>{count}</span>
+        <span
+          className={`ml-1.5 ${active ? "text-primary-foreground/80" : "text-muted-foreground/70"}`}
+        >
+          {count}
+        </span>
       </button>
     );
   };
@@ -349,9 +482,13 @@ export default function ApprovalsClient({ items }: Props) {
         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold">Approvals</h1>
-            <p className="text-xs text-muted-foreground">Approve, review and filter pending, approved and rejected items.</p>
+            <p className="text-xs text-muted-foreground">
+              Approve, review and filter pending, approved and rejected items.
+            </p>
           </div>
-          <Badge variant="secondary" className="sm:ml-auto shrink-0 self-start sm:self-center">{items.length} total</Badge>
+          <Badge variant="secondary" className="sm:ml-auto shrink-0 self-start sm:self-center">
+            {items.length} total
+          </Badge>
         </div>
 
         {/* Filters */}
@@ -387,7 +524,11 @@ export default function ApprovalsClient({ items }: Props) {
             </Select>
             {(search || statusFilter !== "all" || typeFilter !== "all") && (
               <button
-                onClick={() => { setSearch(""); setStatusFilter("all"); setTypeFilter("all"); }}
+                onClick={() => {
+                  setSearch("");
+                  setStatusFilter("all");
+                  setTypeFilter("all");
+                }}
                 className="text-xs text-muted-foreground hover:text-foreground shrink-0 underline-offset-2 hover:underline"
               >
                 Clear filters
@@ -399,73 +540,140 @@ export default function ApprovalsClient({ items }: Props) {
         {/* Results summary */}
         {(search || statusFilter !== "all" || typeFilter !== "all") && (
           <p className="text-xs text-muted-foreground">
-            Showing <span className="font-medium text-foreground">{filtered.length}</span> of {items.length} items
+            Showing <span className="font-medium text-foreground">{filtered.length}</span> of{" "}
+            {items.length} items
           </p>
         )}
 
         {error ? (
           <div className="flex items-center justify-center py-12 text-destructive">{error}</div>
         ) : (
-          <DataTable columns={unifiedColumns} data={filtered} onRowClick={openView} emptyMessage="No approvals match the current filters." />
+          <DataTable
+            columns={unifiedColumns}
+            data={filtered}
+            onRowClick={openView}
+            emptyMessage="No approvals match the current filters."
+          />
         )}
       </main>
 
       {/* View Detail Dialog */}
-      <Dialog open={viewOpen} onOpenChange={(o) => { if (!o) { setViewOpen(false); setSelectedItem(null); } }}>
+      <Dialog
+        open={viewOpen}
+        onOpenChange={(o) => {
+          if (!o) {
+            setViewOpen(false);
+            setSelectedItem(null);
+          }
+        }}
+      >
         <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           {selectedItem && (
             <>
               <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 shrink-0">
                 <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  {isFileSelected ? <FileIcon className="size-4 sm:size-5" /> : <ListTodoIcon className="size-4 sm:size-5" />}
+                  {isFileSelected ? (
+                    <FileIcon className="size-4 sm:size-5" />
+                  ) : (
+                    <ListTodoIcon className="size-4 sm:size-5" />
+                  )}
                   {selectedItem.title || selectedItem.fileName}
                 </DialogTitle>
                 <DialogDescription>
-                  {isFileSelected ? "File upload details for approval review." : "Task details for approval review."}
+                  {isFileSelected
+                    ? "File upload details for approval review."
+                    : "Task details for approval review."}
                 </DialogDescription>
               </DialogHeader>
 
               <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 space-y-4">
-                <div className="flex items-center gap-2"><StatusBadge status={selectedItem.status} /></div>
+                <div className="flex items-center gap-2">
+                  <StatusBadge status={selectedItem.status} />
+                </div>
                 {(selectedItem.description || selectedItem.fileName) && (
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">{isFileSelected ? "File Name" : "Description"}</p>
-                    <p className="text-sm">{isFileSelected ? selectedItem.fileName : selectedItem.description}</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                      {isFileSelected ? "File Name" : "Description"}
+                    </p>
+                    <p className="text-sm">
+                      {isFileSelected ? selectedItem.fileName : selectedItem.description}
+                    </p>
                   </div>
                 )}
                 <Separator />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Type</p><p className="font-medium capitalize mt-0.5">{isFileSelected ? "file" : "task"}</p></div>
-                  {!isFileSelected && (
-                    <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Priority</p><p className="font-medium capitalize mt-0.5">{selectedItem.priority || "—"}</p></div>
-                  )}
-                  <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">{isFileSelected ? "Uploaded By" : "Assignee"}</p><p className="font-medium mt-0.5">{(isFileSelected ? selectedItem.uploaderName : selectedItem.assigneeName || selectedItem.assigneeId) || "—"}</p></div>
                   <div className="rounded-sm border bg-card px-3 py-2">
-                    <p className="text-[11px] text-muted-foreground">{isFileSelected ? "Uploaded At" : "Due Date"}</p>
+                    <p className="text-[11px] text-muted-foreground">Type</p>
+                    <p className="font-medium capitalize mt-0.5">
+                      {isFileSelected ? "file" : "task"}
+                    </p>
+                  </div>
+                  {!isFileSelected && (
+                    <div className="rounded-sm border bg-card px-3 py-2">
+                      <p className="text-[11px] text-muted-foreground">Priority</p>
+                      <p className="font-medium capitalize mt-0.5">
+                        {selectedItem.priority || "—"}
+                      </p>
+                    </div>
+                  )}
+                  <div className="rounded-sm border bg-card px-3 py-2">
+                    <p className="text-[11px] text-muted-foreground">
+                      {isFileSelected ? "Uploaded By" : "Assignee"}
+                    </p>
+                    <p className="font-medium mt-0.5">
+                      {(isFileSelected
+                        ? selectedItem.uploaderName
+                        : selectedItem.assigneeName || selectedItem.assigneeId) || "—"}
+                    </p>
+                  </div>
+                  <div className="rounded-sm border bg-card px-3 py-2">
+                    <p className="text-[11px] text-muted-foreground">
+                      {isFileSelected ? "Uploaded At" : "Due Date"}
+                    </p>
                     <p className="font-medium mt-0.5">
                       {(isFileSelected ? selectedItem.createdAt : selectedItem.dueDate)
-                        ? new Date((isFileSelected ? selectedItem.createdAt : selectedItem.dueDate)!).toLocaleDateString()
+                        ? new Date(
+                            (isFileSelected ? selectedItem.createdAt : selectedItem.dueDate)!,
+                          ).toLocaleDateString()
                         : "—"}
                     </p>
                   </div>
                   {!isFileSelected && selectedItem.creatorName && (
-                    <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Creator</p><p className="font-medium mt-0.5">{selectedItem.creatorName}</p></div>
+                    <div className="rounded-sm border bg-card px-3 py-2">
+                      <p className="text-[11px] text-muted-foreground">Creator</p>
+                      <p className="font-medium mt-0.5">{selectedItem.creatorName}</p>
+                    </div>
                   )}
                   {isFileSelected && selectedItem.mimeType && (
-                    <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">File Type</p><p className="font-medium mt-0.5">{selectedItem.mimeType}</p></div>
+                    <div className="rounded-sm border bg-card px-3 py-2">
+                      <p className="text-[11px] text-muted-foreground">File Type</p>
+                      <p className="font-medium mt-0.5">{selectedItem.mimeType}</p>
+                    </div>
                   )}
                   {selectedNorm !== "pending" && selectedItem.approvedBy && (
-                    <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Approved By</p><p className="font-medium mt-0.5">{selectedItem.approvedBy}</p></div>
+                    <div className="rounded-sm border bg-card px-3 py-2">
+                      <p className="text-[11px] text-muted-foreground">Approved By</p>
+                      <p className="font-medium mt-0.5">{selectedItem.approvedBy}</p>
+                    </div>
                   )}
                   {selectedNorm === "rejected" && (
-                    <div className="rounded-sm border bg-card px-3 py-2"><p className="text-[11px] text-muted-foreground">Rejected At</p><p className="font-medium mt-0.5">{selectedItem.rejectedAt ? new Date(selectedItem.rejectedAt).toLocaleDateString() : "—"}</p></div>
+                    <div className="rounded-sm border bg-card px-3 py-2">
+                      <p className="text-[11px] text-muted-foreground">Rejected At</p>
+                      <p className="font-medium mt-0.5">
+                        {selectedItem.rejectedAt
+                          ? new Date(selectedItem.rejectedAt).toLocaleDateString()
+                          : "—"}
+                      </p>
+                    </div>
                   )}
                 </div>
                 {selectedNorm === "rejected" && selectedItem.rejectionReason && (
                   <>
                     <Separator />
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Rejection Reason</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                        Rejection Reason
+                      </p>
                       <p className="text-sm">{selectedItem.rejectionReason}</p>
                     </div>
                   </>
@@ -474,7 +682,9 @@ export default function ApprovalsClient({ items }: Props) {
                   <>
                     <Separator />
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Approval Note</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                        Approval Note
+                      </p>
                       <p className="text-sm">{selectedItem.approvalNote}</p>
                     </div>
                   </>
@@ -482,11 +692,39 @@ export default function ApprovalsClient({ items }: Props) {
               </div>
 
               <DialogFooter className="shrink-0 border-t px-4 sm:px-6 py-4 gap-2 flex-col sm:flex-row">
-                <Button variant="outline" onClick={() => { setViewOpen(false); setSelectedItem(null); }} className="touch-target">Close</Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setViewOpen(false);
+                    setSelectedItem(null);
+                  }}
+                  className="touch-target"
+                >
+                  Close
+                </Button>
                 {selectedNorm === "pending" && (
                   <>
-                    <Button className="bg-green-500 hover:bg-green-700 touch-target" onClick={() => { setViewOpen(false); openAction(selectedItem, "approve"); }}><CheckCircleIcon className="size-3.5 mr-1.5" />Approve</Button>
-                    <Button variant="outline" className="text-black border-blue-200 hover:bg-blue-100 touch-target" onClick={() => { setViewOpen(false); openAction(selectedItem, "reject"); }}><XCircleIcon className="size-3.5 mr-1.5" />Reject</Button>
+                    <Button
+                      className="bg-green-500 hover:bg-green-700 touch-target"
+                      onClick={() => {
+                        setViewOpen(false);
+                        openAction(selectedItem, "approve");
+                      }}
+                    >
+                      <CheckCircleIcon className="size-3.5 mr-1.5" />
+                      Approve
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="text-black border-blue-200 hover:bg-blue-100 touch-target"
+                      onClick={() => {
+                        setViewOpen(false);
+                        openAction(selectedItem, "reject");
+                      }}
+                    >
+                      <XCircleIcon className="size-3.5 mr-1.5" />
+                      Reject
+                    </Button>
                   </>
                 )}
               </DialogFooter>
@@ -496,12 +734,27 @@ export default function ApprovalsClient({ items }: Props) {
       </Dialog>
 
       {/* Action Dialog */}
-      <Dialog open={!!actionItem} onOpenChange={(o) => { if (!o) { setActionItem(null); setActionType(null); setActionNote(""); setActionError(""); } }}>
+      <Dialog
+        open={!!actionItem}
+        onOpenChange={(o) => {
+          if (!o) {
+            setActionItem(null);
+            setActionType(null);
+            setActionNote("");
+            setActionError("");
+          }
+        }}
+      >
         <DialogContent className="p-0 flex flex-col" showCloseButton={false}>
           <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-              {actionType === "approve" ? <CheckCircleIcon className="size-4 sm:size-5 text-success" /> : <XCircleIcon className="size-4 sm:size-5 text-destructive" />}
-              {actionType === "approve" ? "Approve" : "Reject"} {actionItem && typeOfItem(actionItem) === "file" ? "File Upload" : "Task"}
+              {actionType === "approve" ? (
+                <CheckCircleIcon className="size-4 sm:size-5 text-success" />
+              ) : (
+                <XCircleIcon className="size-4 sm:size-5 text-destructive" />
+              )}
+              {actionType === "approve" ? "Approve" : "Reject"}{" "}
+              {actionItem && typeOfItem(actionItem) === "file" ? "File Upload" : "Task"}
             </DialogTitle>
             <DialogDescription>
               {actionType === "approve"
@@ -512,7 +765,8 @@ export default function ApprovalsClient({ items }: Props) {
 
           {actionError && (
             <div className="mx-4 sm:mx-6 flex items-center gap-2 rounded-sm bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              <AlertCircleIcon className="size-4 shrink-0" />{actionError}
+              <AlertCircleIcon className="size-4 shrink-0" />
+              {actionError}
             </div>
           )}
 
@@ -520,21 +774,59 @@ export default function ApprovalsClient({ items }: Props) {
             {actionType === "reject" && (
               <div>
                 <Label className="text-xs text-muted-foreground">Rejection Reason *</Label>
-                <Textarea id="reason" value={actionNote} onChange={(e) => setActionNote(e.target.value)} rows={3} className="mt-1 flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                <Textarea
+                  id="reason"
+                  value={actionNote}
+                  onChange={(e) => setActionNote(e.target.value)}
+                  rows={3}
+                  className="mt-1 flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                />
               </div>
             )}
             {actionType === "approve" && (
               <div>
                 <Label className="text-xs text-muted-foreground">Approval Note (optional)</Label>
-                <Textarea id="note" value={actionNote} onChange={(e) => setActionNote(e.target.value)} rows={2} className="mt-1 flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                <Textarea
+                  id="note"
+                  value={actionNote}
+                  onChange={(e) => setActionNote(e.target.value)}
+                  rows={2}
+                  className="mt-1 flex w-full rounded-sm border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                />
               </div>
             )}
           </div>
 
           <DialogFooter className="shrink-0 border-t px-4 sm:px-6 py-4 gap-2 flex-col sm:flex-row">
-            <Button variant="outline" onClick={() => { setActionItem(null); setActionType(null); setActionNote(""); setActionError(""); }} disabled={actionSubmitting} className="touch-target">Cancel</Button>
-            <Button onClick={handleAction} disabled={actionSubmitting} className={`touch-target ${actionType === "approve" ? "bg-green-500 hover:bg-green-700" : "bg-blue-300 hover:bg-blue-400"}`}>
-              {actionSubmitting ? <Loader2Icon className="animate-spin" /> : actionType === "approve" ? <><CheckCircleIcon className="size-3.5 mr-1.5" /> Confirm Approve</> : <><XCircleIcon className="size-3.5 mr-1.5" /> Confirm Reject</>}
+            <Button
+              variant="outline"
+              onClick={() => {
+                setActionItem(null);
+                setActionType(null);
+                setActionNote("");
+                setActionError("");
+              }}
+              disabled={actionSubmitting}
+              className="touch-target"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAction}
+              disabled={actionSubmitting}
+              className={`touch-target ${actionType === "approve" ? "bg-green-500 hover:bg-green-700" : "bg-blue-300 hover:bg-blue-400"}`}
+            >
+              {actionSubmitting ? (
+                <Loader2Icon className="animate-spin" />
+              ) : actionType === "approve" ? (
+                <>
+                  <CheckCircleIcon className="size-3.5 mr-1.5" /> Confirm Approve
+                </>
+              ) : (
+                <>
+                  <XCircleIcon className="size-3.5 mr-1.5" /> Confirm Reject
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

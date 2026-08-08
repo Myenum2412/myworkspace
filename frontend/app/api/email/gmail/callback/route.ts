@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { v4 as uuid } from "uuid";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
-import { v4 as uuid } from "uuid";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -10,19 +10,17 @@ export async function GET(req: NextRequest) {
   const error = searchParams.get("error");
 
   if (error) {
-    return NextResponse.redirect(
-      new URL(`/?error=${error}`, req.url)
-    );
+    return NextResponse.redirect(new URL(`/?error=${error}`, req.url));
   }
 
   if (!code || !state) {
-    return NextResponse.redirect(
-      new URL("/?error=missing_params", req.url)
-    );
+    return NextResponse.redirect(new URL("/?error=missing_params", req.url));
   }
 
   try {
-    const redirectUri = process.env.GMAIL_REDIRECT_URI || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/email/gmail/callback`;
+    const redirectUri =
+      process.env.GMAIL_REDIRECT_URI ||
+      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/email/gmail/callback`;
 
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
@@ -39,9 +37,7 @@ export async function GET(req: NextRequest) {
     const tokenData = await tokenRes.json();
 
     if (!tokenData.access_token) {
-      return NextResponse.redirect(
-        new URL("/?error=token_exchange_failed", req.url)
-      );
+      return NextResponse.redirect(new URL("/?error=token_exchange_failed", req.url));
     }
 
     const userRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
@@ -65,9 +61,7 @@ export async function GET(req: NextRequest) {
       provider: "gmail",
       accessToken: tokenData.access_token,
       refreshToken: tokenData.refresh_token || null,
-      tokenExpiry: tokenData.expires_in
-        ? new Date(Date.now() + tokenData.expires_in * 1000)
-        : null,
+      tokenExpiry: tokenData.expires_in ? new Date(Date.now() + tokenData.expires_in * 1000) : null,
       email: userData.email || "",
       name: "Gmail",
       syncEnabled: true,
@@ -76,13 +70,9 @@ export async function GET(req: NextRequest) {
       updatedAt: new Date(),
     });
 
-    return NextResponse.redirect(
-      new URL("/?success=gmail_connected", req.url)
-    );
+    return NextResponse.redirect(new URL("/?success=gmail_connected", req.url));
   } catch (err) {
     console.error("[Gmail Callback]", err);
-    return NextResponse.redirect(
-      new URL("/?error=callback_failed", req.url)
-    );
+    return NextResponse.redirect(new URL("/?error=callback_failed", req.url));
   }
 }

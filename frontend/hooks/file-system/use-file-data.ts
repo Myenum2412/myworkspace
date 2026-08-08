@@ -1,12 +1,13 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useFileSystemStore } from "@/lib/file-system/store";
-import * as api from "@/lib/file-system/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect } from "react";
+import * as api from "@/lib/file-system/api";
+import { useFileSystemStore } from "@/lib/file-system/store";
 
 export function useFileData() {
-  const { orgId, currentFolderId, search, filters, sortField, sortDir, currentNav } = useFileSystemStore();
+  const { orgId, currentFolderId, search, filters, sortField, sortDir, currentNav } =
+    useFileSystemStore();
   const queryClient = useQueryClient();
 
   const sort = `${sortDir === "desc" ? "-" : ""}${sortField}`;
@@ -54,7 +55,10 @@ export function useFileData() {
     folders: foldersQuery.data ?? [],
     loading: filesQuery.isLoading || foldersQuery.isLoading,
     error: filesQuery.error || foldersQuery.error,
-    refetch: () => { filesQuery.refetch(); foldersQuery.refetch(); },
+    refetch: () => {
+      filesQuery.refetch();
+      foldersQuery.refetch();
+    },
     invalidate,
   };
 }
@@ -87,8 +91,7 @@ export function useFileMutations() {
   });
 
   const renameFolderMutation = useMutation({
-    mutationFn: ({ id, name }: { id: string; name: string }) =>
-      api.renameFolder(id, name),
+    mutationFn: ({ id, name }: { id: string; name: string }) => api.renameFolder(id, name),
     onSuccess: invalidate,
   });
 

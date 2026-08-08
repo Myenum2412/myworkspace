@@ -1,14 +1,23 @@
 "use client";
 
-import { useActionState, useState, useMemo, useCallback } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useActionState, useCallback, useMemo, useState } from "react";
+import { deleteMember, updateMember } from "@/actions/admin";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
   Select,
   SelectContent,
@@ -16,19 +25,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight } from "@/lib/icons";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { ROLES, isAdminRole } from "@/lib/rbac";
-import { SearchIcon, CheckCircle2Icon, XCircleIcon, PencilIcon, Trash2Icon, AlertCircleIcon, EyeIcon, Building2, Briefcase, Phone, MapPin, CalendarDays, ShieldCheck, LogIn, Globe, BadgeCheck } from "@/lib/icons";
-import { updateMember, deleteMember } from "@/actions/admin";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
+  AlertCircleIcon,
+  BadgeCheck,
+  Briefcase,
+  Building2,
+  CalendarDays,
+  CheckCircle2Icon,
+  ChevronLeft,
+  ChevronRight,
+  EyeIcon,
+  Globe,
+  LogIn,
+  MapPin,
+  PencilIcon,
+  Phone,
+  SearchIcon,
+  ShieldCheck,
+  Trash2Icon,
+  XCircleIcon,
+} from "@/lib/icons";
+import { isAdminRole, ROLES } from "@/lib/rbac";
 
 interface MemberData {
   id: string;
@@ -66,7 +83,11 @@ const statusVariant: Record<string, "default" | "secondary" | "outline" | "destr
 
 function fmt(d?: Date): string {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 interface EditMemberDialogProps {
@@ -84,15 +105,12 @@ function fmtDate(d?: Date): string {
 }
 
 function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
-  const [state, formAction, pending] = useActionState(
-    async (_prev: unknown, fd: FormData) => {
-      fd.set("userId", member.userId);
-      const result = await updateMember(null, fd);
-      if (result?.success) onClose();
-      return result;
-    },
-    null,
-  );
+  const [state, formAction, pending] = useActionState(async (_prev: unknown, fd: FormData) => {
+    fd.set("userId", member.userId);
+    const result = await updateMember(null, fd);
+    if (result?.success) onClose();
+    return result;
+  }, null);
 
   const initials = member.name
     .split(" ")
@@ -103,141 +121,157 @@ function EditMemberDialog({ member, onClose }: EditMemberDialogProps) {
     .toUpperCase();
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="fixed inset-0 top-0 left-0 translate-none w-full h-full max-w-full max-h-full rounded-none p-0 overflow-y-auto">
         <div className="mx-auto w-full p-6 space-y-5">
-        <DialogHeader>
-          <DialogTitle>Edit Member</DialogTitle>
-        </DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Edit Member</DialogTitle>
+          </DialogHeader>
 
-        {/* Profile summary strip */}
-        <div className="flex items-center gap-4 rounded-sm border bg-muted/30 px-4 py-3">
-          <Avatar className="size-14">
-            <AvatarImage src={member.avatar} alt={member.name} />
-            <AvatarFallback className="text-sm font-semibold">{initials}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="font-semibold truncate">{member.name}</div>
-            <div className="text-sm text-muted-foreground truncate">{member.email}</div>
-          </div>
-          <Badge variant={member.role === ROLES.MEMBERS ? "default" : "outline"} className="capitalize">
-            {member.role}
-          </Badge>
-        </div>
-
-        <form action={formAction} className="space-y-5">
-          {state?.error && (
-            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-sm px-3 py-2">
-              <AlertCircleIcon className="size-4 shrink-0" />
-              {state.error}
+          {/* Profile summary strip */}
+          <div className="flex items-center gap-4 rounded-sm border bg-muted/30 px-4 py-3">
+            <Avatar className="size-14">
+              <AvatarImage src={member.avatar} alt={member.name} />
+              <AvatarFallback className="text-sm font-semibold">{initials}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold truncate">{member.name}</div>
+              <div className="text-sm text-muted-foreground truncate">{member.email}</div>
             </div>
-          )}
-
-          {/* Personal info */}
-          <fieldset className="border p-4 space-y-4">
-            <legend className="text-sm font-semibold px-2">Personal</legend>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Full Name</Label>
-                <Input name="name" defaultValue={member.name} required />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Email</Label>
-                <Input name="email" defaultValue={member.email} type="email" required />
-              </div>
-            </div>
-          </fieldset>
-
-          {/* Work info */}
-          <fieldset className="border p-4 space-y-4">
-            <legend className="text-sm font-semibold px-2">Work</legend>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Role</Label>
-                <Select name="role" defaultValue={member.role}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={ROLES.MEMBERS}>Members</SelectItem>
-                    <SelectItem value={ROLES.STAFFS}>Staffs</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Status</Label>
-                <Select name="status" defaultValue={member.status}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="online">Online</SelectItem>
-                    <SelectItem value="offline">Offline</SelectItem>
-                    <SelectItem value="break">Break</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Department</Label>
-                <Input name="department" defaultValue={member.department || ""} placeholder="" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Designation</Label>
-                <Input name="designation" defaultValue={member.designation || ""} placeholder="" />
-              </div>
-            </div>
-          </fieldset>
-
-          {/* Contact info */}
-          <fieldset className="border p-4 space-y-4">
-            <legend className="text-sm font-semibold px-2">Contact</legend>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Phone</Label>
-                <PhoneInput name="phone" value={member.phone || ""} placeholder="" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Location</Label>
-                <Input name="location" defaultValue={member.location || ""} placeholder="" />
-              </div>
-            </div>
-          </fieldset>
-
-          {/* Meta info (read-only) */}
-          <div className="rounded-sm border bg-muted/20 px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-            <div>
-              <div className="text-muted-foreground text-xs">Joined</div>
-              <div className="font-medium">{fmtDate(member.joinedAt || member.createdAt)}</div>
-            </div>
-            <div>
-              <div className="text-muted-foreground text-xs">Last Login</div>
-              <div className="font-medium">{fmtDate(member.lastLogin)}</div>
-            </div>
-            <div>
-              <div className="text-muted-foreground text-xs">Provider</div>
-              <div className="font-medium capitalize">{member.provider}</div>
-            </div>
-            <div>
-              <div className="text-muted-foreground text-xs">Verified</div>
-              <div className="font-medium">
-                {member.emailVerified ? (
-                  <span className="inline-flex items-center gap-1 text-green-600">
-                    <CheckCircle2Icon className="size-3.5" /> Yes
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-muted-foreground">
-                    <XCircleIcon className="size-3.5" /> No
-                  </span>
-                )}
-              </div>
-            </div>
+            <Badge
+              variant={member.role === ROLES.MEMBERS ? "default" : "outline"}
+              className="capitalize"
+            >
+              {member.role}
+            </Badge>
           </div>
 
-          <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="outline" onClick={onClose} className="w-32 h-10">Cancel</Button>
-            <Button type="submit" disabled={pending} className="w-32 h-10">{pending ? "Saving..." : "Save Changes"}</Button>
-          </div>
-        </form>
+          <form action={formAction} className="space-y-5">
+            {state?.error && (
+              <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-sm px-3 py-2">
+                <AlertCircleIcon className="size-4 shrink-0" />
+                {state.error}
+              </div>
+            )}
+
+            {/* Personal info */}
+            <fieldset className="border p-4 space-y-4">
+              <legend className="text-sm font-semibold px-2">Personal</legend>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Full Name</Label>
+                  <Input name="name" defaultValue={member.name} required />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Email</Label>
+                  <Input name="email" defaultValue={member.email} type="email" required />
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Work info */}
+            <fieldset className="border p-4 space-y-4">
+              <legend className="text-sm font-semibold px-2">Work</legend>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Role</Label>
+                  <Select name="role" defaultValue={member.role}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={ROLES.MEMBERS}>Members</SelectItem>
+                      <SelectItem value={ROLES.STAFFS}>Staffs</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Status</Label>
+                  <Select name="status" defaultValue={member.status}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="online">Online</SelectItem>
+                      <SelectItem value="offline">Offline</SelectItem>
+                      <SelectItem value="break">Break</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Department</Label>
+                  <Input name="department" defaultValue={member.department || ""} placeholder="" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Designation</Label>
+                  <Input
+                    name="designation"
+                    defaultValue={member.designation || ""}
+                    placeholder=""
+                  />
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Contact info */}
+            <fieldset className="border p-4 space-y-4">
+              <legend className="text-sm font-semibold px-2">Contact</legend>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Phone</Label>
+                  <PhoneInput name="phone" value={member.phone || ""} placeholder="" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Location</Label>
+                  <Input name="location" defaultValue={member.location || ""} placeholder="" />
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Meta info (read-only) */}
+            <div className="rounded-sm border bg-muted/20 px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+              <div>
+                <div className="text-muted-foreground text-xs">Joined</div>
+                <div className="font-medium">{fmtDate(member.joinedAt || member.createdAt)}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-xs">Last Login</div>
+                <div className="font-medium">{fmtDate(member.lastLogin)}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-xs">Provider</div>
+                <div className="font-medium capitalize">{member.provider}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-xs">Verified</div>
+                <div className="font-medium">
+                  {member.emailVerified ? (
+                    <span className="inline-flex items-center gap-1 text-green-600">
+                      <CheckCircle2Icon className="size-3.5" /> Yes
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-muted-foreground">
+                      <XCircleIcon className="size-3.5" /> No
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <Button type="button" variant="outline" onClick={onClose} className="w-32 h-10">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={pending} className="w-32 h-10">
+                {pending ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </form>
         </div>
       </DialogContent>
     </Dialog>
@@ -249,24 +283,46 @@ interface MembersTableProps {
   isSuperAdmin: boolean;
 }
 
-function Field({ icon: Icon, label, value }: { icon?: React.FC<{ className?: string }>; label: string; value?: string | number | null | boolean }) {
-  const display = typeof value === "boolean"
-    ? value ? "Yes" : "No"
-    : (value ?? "\u2014");
+function Field({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon?: React.FC<{ className?: string }>;
+  label: string;
+  value?: string | number | null | boolean;
+}) {
+  const display = typeof value === "boolean" ? (value ? "Yes" : "No") : (value ?? "\u2014");
   return (
     <div className="flex items-start gap-3 rounded-sm border bg-card px-4 py-3">
       {Icon && <Icon className="size-4 text-muted-foreground shrink-0 mt-0.5" />}
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          {label}
+        </p>
         <p className="text-sm font-medium mt-0.5">{display}</p>
       </div>
     </div>
   );
 }
 
-function MemberViewDialog({ member, open, onOpenChange }: { member: MemberData | null; open: boolean; onOpenChange: (open: boolean) => void }) {
+function MemberViewDialog({
+  member,
+  open,
+  onOpenChange,
+}: {
+  member: MemberData | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   if (!member) return null;
-  const initials = member.name.split(" ").map((p) => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+  const initials = member.name
+    .split(" ")
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0">
@@ -290,14 +346,20 @@ function MemberViewDialog({ member, open, onOpenChange }: { member: MemberData |
             <Field icon={BadgeCheck} label="Status" value={member.status} />
             <Field icon={Globe} label="Provider" value={member.provider} />
             <Field icon={CheckCircle2Icon} label="Email Verified" value={member.emailVerified} />
-            <Field icon={CalendarDays} label="Joined" value={fmt(member.createdAt || member.joinedAt)} />
+            <Field
+              icon={CalendarDays}
+              label="Joined"
+              value={fmt(member.createdAt || member.joinedAt)}
+            />
             <Field icon={LogIn} label="Last Login" value={fmt(member.lastLogin)} />
             <Field icon={Phone} label="Phone" value={member.phone} />
             <Field icon={MapPin} label="Location" value={member.location} />
           </div>
         </div>
         <DialogFooter className="border-t px-6 py-4 shrink-0">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -358,7 +420,9 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
       <MemberViewDialog
         member={viewMember}
         open={!!viewMember}
-        onOpenChange={(open) => { if (!open) setViewMember(null); }}
+        onOpenChange={(open) => {
+          if (!open) setViewMember(null);
+        }}
       />
       {editingMember && (
         <EditMemberDialog member={editingMember} onClose={() => setEditingMember(null)} />
@@ -381,9 +445,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
       <div className="border border-border bg-card shadow-xs overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/40">
           {selected.size > 0 && (
-            <span className="text-sm text-muted-foreground">
-              {selected.size} selected
-            </span>
+            <span className="text-sm text-muted-foreground">{selected.size} selected</span>
           )}
         </div>
         <table className="table-premium w-full text-sm text-left">
@@ -391,7 +453,7 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
             <tr>
               <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-10">
                 <Checkbox
-                    checked={selected.size === paginated.length && paginated.length > 0}
+                  checked={selected.size === paginated.length && paginated.length > 0}
                   onCheckedChange={toggleAll}
                 />
               </th>
@@ -403,7 +465,9 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
               <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Verified</th>
               <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Joined</th>
               <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Last Login</th>
-              {isSuperAdmin && <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Organization</th>}
+              {isSuperAdmin && (
+                <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Organization</th>
+              )}
               <th className="px-4 py-3.5 font-semibold whitespace-nowrap w-24">Actions</th>
             </tr>
           </thead>
@@ -417,129 +481,154 @@ export function MembersTable({ members, isSuperAdmin }: MembersTableProps) {
                   </div>
                 </td>
               </tr>
-              ) : (
-                paginated.map((member) => (
-                  <tr key={member.id} className={`bg-card group hover:bg-muted/40 transition-colors cursor-pointer ${selected.has(member.id) ? "bg-muted/30" : ""}`} onClick={() => setViewMember(member)}>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={selected.has(member.id)}
-                        onCheckedChange={() => toggle(member.id)}
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="size-7">
-                          <AvatarImage src={member.avatar} alt={member.name} />
-                          <AvatarFallback className="text-[10px]">{member.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium text-sm">{member.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">{member.email}</td>
-                    <td className="px-4 py-3">
-                      <Badge variant={member.role === ROLES.MEMBERS ? "default" : "outline"} className="text-xs">
-                        {member.role}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={statusVariant[member.status] || "outline"} className="text-xs capitalize">
-                        {member.status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs font-medium capitalize ${providerColors[member.provider] || "text-muted-foreground"}`}>
-                        {member.provider}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {member.emailVerified ? (
-                        <CheckCircle2Icon className="size-4 text-success" />
-                      ) : (
-                        <XCircleIcon className="size-4 text-muted-foreground" />
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(member.createdAt || member.joinedAt)}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{fmt(member.lastLogin)}</td>
-                    {isSuperAdmin && (
-                      <td className="px-4 py-3">
-                        <Badge variant="outline" className="text-xs">{member.orgName}</Badge>
-                      </td>
+            ) : (
+              paginated.map((member) => (
+                <tr
+                  key={member.id}
+                  className={`bg-card group hover:bg-muted/40 transition-colors cursor-pointer ${selected.has(member.id) ? "bg-muted/30" : ""}`}
+                  onClick={() => setViewMember(member)}
+                >
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selected.has(member.id)}
+                      onCheckedChange={() => toggle(member.id)}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="size-7">
+                        <AvatarImage src={member.avatar} alt={member.name} />
+                        <AvatarFallback className="text-[10px]">
+                          {member.name.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium text-sm">{member.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm">{member.email}</td>
+                  <td className="px-4 py-3">
+                    <Badge
+                      variant={member.role === ROLES.MEMBERS ? "default" : "outline"}
+                      className="text-xs"
+                    >
+                      {member.role}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge
+                      variant={statusVariant[member.status] || "outline"}
+                      className="text-xs capitalize"
+                    >
+                      {member.status}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`text-xs font-medium capitalize ${providerColors[member.provider] || "text-muted-foreground"}`}
+                    >
+                      {member.provider}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {member.emailVerified ? (
+                      <CheckCircle2Icon className="size-4 text-success" />
+                    ) : (
+                      <XCircleIcon className="size-4 text-muted-foreground" />
                     )}
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="" onClick={() => setEditingMember(member)}>
-                          <PencilIcon className="size-4" />
-                        </Button>
-                        <DeleteConfirmDialog
-                          title="Delete member"
-                          description={`Are you sure you want to delete member "${member.name}"? This action cannot be undone.`}
-                          confirmLabel="Delete"
-                          onConfirm={async () => {
-                            const fd = new FormData();
-                            fd.set("userId", member.userId);
-                            fd.set("orgId", member.orgId);
-                            await deleteMember(fd);
-                          }}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-black hover:text-gray-600 hover:bg-blue-50"
-                          >
-                            <Trash2Icon className="size-4" />
-                          </Button>
-                        </DeleteConfirmDialog>
-                      </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
+                    {fmt(member.createdAt || member.joinedAt)}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
+                    {fmt(member.lastLogin)}
+                  </td>
+                  {isSuperAdmin && (
+                    <td className="px-4 py-3">
+                      <Badge variant="outline" className="text-xs">
+                        {member.orgName}
+                      </Badge>
                     </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border border-gray-200 rounded-lg mt-2">
-          <span className="text-sm text-muted-foreground">
-            {filtered.length === 0
-              ? "0 items"
-              : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)} of ${filtered.length}`}
-          </span>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
-              <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
-                <SelectTrigger className="h-8 w-[70px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="30">30</SelectItem>
-                  <SelectItem value="60">60</SelectItem>
-                  <SelectItem value="90">90</SelectItem>
-                  <SelectItem value="120">120</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                disabled={page === 0}
-              >
-                <ChevronLeft className="size-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={(page + 1) * pageSize >= filtered.length}
-              >
-                <ChevronRight className="size-4" />
-              </Button>
-            </div>
+                  )}
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className=""
+                        onClick={() => setEditingMember(member)}
+                      >
+                        <PencilIcon className="size-4" />
+                      </Button>
+                      <DeleteConfirmDialog
+                        title="Delete member"
+                        description={`Are you sure you want to delete member "${member.name}"? This action cannot be undone.`}
+                        confirmLabel="Delete"
+                        onConfirm={async () => {
+                          const fd = new FormData();
+                          fd.set("userId", member.userId);
+                          fd.set("orgId", member.orgId);
+                          await deleteMember(fd);
+                        }}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-black hover:text-gray-600 hover:bg-blue-50"
+                        >
+                          <Trash2Icon className="size-4" />
+                        </Button>
+                      </DeleteConfirmDialog>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border border-gray-200 rounded-lg mt-2">
+        <span className="text-sm text-muted-foreground">
+          {filtered.length === 0
+            ? "0 items"
+            : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)} of ${filtered.length}`}
+        </span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+            <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="30">30</SelectItem>
+                <SelectItem value="60">60</SelectItem>
+                <SelectItem value="90">90</SelectItem>
+                <SelectItem value="120">120</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setPage((p) => p + 1)}
+              disabled={(page + 1) * pageSize >= filtered.length}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
           </div>
         </div>
+      </div>
     </>
   );
 }

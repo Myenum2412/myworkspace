@@ -1,9 +1,9 @@
 import { AppError } from "../../../src/middleware/error.js";
 import {
-  validatePasswordStrength,
-  validateEmail,
-  isAllowedMimeType,
   detectMimeTypeFromBuffer,
+  isAllowedMimeType,
+  validateEmail,
+  validatePasswordStrength,
 } from "../../../src/services/validation.service.js";
 
 function expectAppError(fn: () => unknown, statusCode: number, messagePattern?: RegExp): void {
@@ -150,12 +150,12 @@ describe("isAllowedMimeType", () => {
 
 describe("detectMimeTypeFromBuffer", () => {
   it("detects JPEG", () => {
-    const buf = Buffer.from([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10]);
+    const buf = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
     expect(detectMimeTypeFromBuffer(buf)).toBe("image/jpeg");
   });
 
   it("detects PNG", () => {
-    const buf = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A]);
+    const buf = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a]);
     expect(detectMimeTypeFromBuffer(buf)).toBe("image/png");
   });
 
@@ -165,7 +165,7 @@ describe("detectMimeTypeFromBuffer", () => {
   });
 
   it("detects ZIP", () => {
-    const buf = Buffer.from([0x50, 0x4B, 0x03, 0x04]);
+    const buf = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
     expect(detectMimeTypeFromBuffer(buf)).toBe("application/zip");
   });
 
@@ -175,7 +175,7 @@ describe("detectMimeTypeFromBuffer", () => {
   });
 
   it("detects GZIP", () => {
-    const buf = Buffer.from([0x1F, 0x8B]);
+    const buf = Buffer.from([0x1f, 0x8b]);
     expect(detectMimeTypeFromBuffer(buf)).toBe("application/gzip");
   });
 
@@ -185,7 +185,9 @@ describe("detectMimeTypeFromBuffer", () => {
   });
 
   it("detects WebP", () => {
-    const buf = Buffer.from([0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50]);
+    const buf = Buffer.from([
+      0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
+    ]);
     expect(detectMimeTypeFromBuffer(buf)).toBe("image/webp");
   });
 
@@ -199,6 +201,6 @@ describe("detectMimeTypeFromBuffer", () => {
   });
 
   it("returns null for buffer smaller than magic bytes", () => {
-    expect(detectMimeTypeFromBuffer(Buffer.from([0xFF]))).toBeNull();
+    expect(detectMimeTypeFromBuffer(Buffer.from([0xff]))).toBeNull();
   });
 });

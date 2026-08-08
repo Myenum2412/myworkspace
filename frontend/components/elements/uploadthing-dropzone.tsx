@@ -1,10 +1,19 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { Upload, FileText, Copy, ExternalLink, X, Loader2, CheckCircle, AlertCircle } from "@/lib/icons";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import {
+  AlertCircle,
+  CheckCircle,
+  Copy,
+  ExternalLink,
+  FileText,
+  Loader2,
+  Upload,
+  X,
+} from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 interface UploadedFile {
   name: string;
@@ -29,7 +38,7 @@ function formatFileSize(bytes: number): string {
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+  return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
 }
 
 export function UploadThingDropzone({
@@ -94,13 +103,16 @@ export function UploadThingDropzone({
         }
       }
     },
-    [maxFiles, maxSize, onSelect, onUpload, onProgress]
+    [maxFiles, maxSize, onSelect, onUpload, onProgress],
   );
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    if (!disabled) setIsDragOver(true);
-  }, [disabled]);
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      if (!disabled) setIsDragOver(true);
+    },
+    [disabled],
+  );
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -116,7 +128,7 @@ export function UploadThingDropzone({
       const files = Array.from(e.dataTransfer.files);
       handleFiles(files);
     },
-    [disabled, isUploading, handleFiles]
+    [disabled, isUploading, handleFiles],
   );
 
   const handleFileChange = useCallback(
@@ -125,7 +137,7 @@ export function UploadThingDropzone({
       handleFiles(files);
       e.target.value = "";
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   const handleClick = () => {
@@ -156,15 +168,17 @@ export function UploadThingDropzone({
             ? "border-primary bg-primary/5"
             : "border-border bg-muted/40 hover:bg-muted/60",
           disabled && "opacity-50 cursor-not-allowed",
-          isUploading && "pointer-events-none"
+          isUploading && "pointer-events-none",
         )}
       >
-        <div className={cn(
-          "flex size-12 items-center justify-center border transition-colors rounded-sm",
-          isDragOver
-            ? "border-primary bg-background text-primary"
-            : "border-border bg-background text-muted-foreground"
-        )}>
+        <div
+          className={cn(
+            "flex size-12 items-center justify-center border transition-colors rounded-sm",
+            isDragOver
+              ? "border-primary bg-background text-primary"
+              : "border-border bg-background text-muted-foreground",
+          )}
+        >
           {isUploading ? (
             <Loader2 className="size-6 animate-spin" />
           ) : (
@@ -245,7 +259,8 @@ export function UploadThingDropzone({
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{file.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {formatFileSize(file.size)}{file.type ? ` • ${file.type}` : ""}
+                    {formatFileSize(file.size)}
+                    {file.type ? ` • ${file.type}` : ""}
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">

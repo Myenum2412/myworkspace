@@ -1,4 +1,4 @@
-import { MongoClient, Db, Collection } from "mongodb";
+import { type Collection, type Db, MongoClient } from "mongodb";
 
 const dbName = process.env.MONGODB_DB || "myworkspace";
 
@@ -46,9 +46,11 @@ export async function connectToMongo() {
     } catch (err: unknown) {
       if (connectionAttempts >= MAX_ATTEMPTS) {
         const msg = err instanceof Error ? err.message : String(err);
-        throw new Error(`MongoDB connection failed after ${MAX_ATTEMPTS} attempts: ${msg.split(":")[0]}`);
+        throw new Error(
+          `MongoDB connection failed after ${MAX_ATTEMPTS} attempts: ${msg.split(":")[0]}`,
+        );
       }
-      await new Promise(r => setTimeout(r, 1000 * connectionAttempts));
+      await new Promise((r) => setTimeout(r, 1000 * connectionAttempts));
     }
   }
 }
@@ -62,7 +64,14 @@ async function ensureDb(): Promise<Db> {
 }
 
 const TERMINAL_METHODS = new Set([
-  "toArray", "forEach", "map", "reduce", "next", "hasNext", "explain", "stream",
+  "toArray",
+  "forEach",
+  "map",
+  "reduce",
+  "next",
+  "hasNext",
+  "explain",
+  "stream",
 ]);
 
 function createCursorPromise(promise: Promise<any>) {
@@ -83,9 +92,8 @@ function createCursorPromise(promise: Promise<any>) {
       if (typeof prop === "symbol") {
         return undefined;
       }
-      return (...args: any[]) => createCursorPromise(
-        promise.then((c: any) => (c as any)[prop](...args))
-      );
+      return (...args: any[]) =>
+        createCursorPromise(promise.then((c: any) => (c as any)[prop](...args)));
     },
   };
   return new Proxy({}, handler);

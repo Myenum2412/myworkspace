@@ -1,17 +1,30 @@
-import { Schema, model, Document } from "mongoose";
+import { type Document, model, Schema } from "mongoose";
 import { v4 as uuid } from "uuid";
-import { logger } from "../logger/index.js";
+import { FileAttachment } from "../db/models/FileAttachment.js";
 import { Organization } from "../db/models/Organization.js";
-import { User } from "../db/models/User.js";
 import { OrgMember } from "../db/models/OrgMember.js";
 import { Project } from "../db/models/Project.js";
 import { Task } from "../db/models/Task.js";
-import { FileAttachment } from "../db/models/FileAttachment.js";
+import { User } from "../db/models/User.js";
+import { logger } from "../logger/index.js";
 import { metricsRegistry } from "../monitoring/index.js";
 import { TenantConfig } from "./tenant-admin.js";
 
-export type TenantLifecycleStage = "provisioning" | "trial" | "active" | "suspended" | "cancelled" | "archived";
-export type UsageEventType = "login" | "task_created" | "task_completed" | "file_uploaded" | "member_added" | "project_created" | "api_call";
+export type TenantLifecycleStage =
+  | "provisioning"
+  | "trial"
+  | "active"
+  | "suspended"
+  | "cancelled"
+  | "archived";
+export type UsageEventType =
+  | "login"
+  | "task_created"
+  | "task_completed"
+  | "file_uploaded"
+  | "member_added"
+  | "project_created"
+  | "api_call";
 
 export interface ITenantLifecycle extends Document {
   id: string;
@@ -49,7 +62,11 @@ export interface IUsageSnapshot extends Document {
 const tenantLifecycleSchema = new Schema<ITenantLifecycle>({
   id: { type: String, required: true, unique: true },
   orgId: { type: String, required: true, unique: true },
-  stage: { type: String, enum: ["provisioning", "trial", "active", "suspended", "cancelled", "archived"], default: "provisioning" },
+  stage: {
+    type: String,
+    enum: ["provisioning", "trial", "active", "suspended", "cancelled", "archived"],
+    default: "provisioning",
+  },
   trialEndsAt: Date,
   plan: { type: String, default: "free" },
   suspendedAt: Date,
@@ -89,12 +106,17 @@ export const UsageRecord = model<IUsageRecord>("UsageRecord", usageRecordSchema)
 export const UsageSnapshot = model<IUsageSnapshot>("UsageSnapshot", usageSnapshotSchema);
 
 export class LifecycleManager {
-  async provisionTenant(orgId: string, plan: string, trialDays?: number): Promise<ITenantLifecycle> {
+  async provisionTenant(
+    orgId: string,
+    plan: string,
+    trialDays?: number,
+  ): Promise<ITenantLifecycle> {
     const existing = await TenantLifecycle.findOne({ orgId }).lean();
     if (existing) return existing as any;
 
     const lifecycle = await TenantLifecycle.create({
-      id: uuid(), orgId,
+      id: uuid(),
+      orgId,
       stage: trialDays ? "trial" : "active",
       plan,
       trialEndsAt: trialDays ? new Date(Date.now() + trialDays * 86400000) : undefined,
@@ -103,20 +125,38 @@ export class LifecycleManager {
     });
 
     await TenantConfig.create({
-      id: uuid(), orgId,
-      branding: {}, features: {}, quotas: {}, policies: {}, localization: {}, retention: {},
+      id: uuid(),
+      orgId,
+      branding: {},
+      features: {},
+      quotas: {},
+      policies: {},
+      localization: {},
+      retention: {},
     });
 
     logger.info({ orgId, plan, trialDays }, "Tenant provisioned");
     return lifecycle;
   }
 
-  async transitionStage(orgId: string, newStage: TenantLifecycleStage, reason?: string): Promise<ITenantLifecycle> {
+  async transitionStage(
+    orgId: string,
+    newStage: TenantLifecycleStage,
+    reason?: string,
+  ): Promise<ITenantLifecycle> {
     const update: Record<string, unknown> = { stage: newStage };
     switch (newStage) {
-      case "suspended": update.suspendedAt = new Date(); update.suspensionReason = reason; break;
-      case "cancelled": update.cancelledAt = new Date(); update.cancellationReason = reason; break;
-      case "archived": update.archivedAt = new Date(); break;
+      case "suspended":
+        update.suspendedAt = new Date();
+        update.suspensionReason = reason;
+        break;
+      case "cancelled":
+        update.cancelledAt = new Date();
+        update.cancellationReason = reason;
+        break;
+      case "archived":
+        update.archivedAt = new Date();
+        break;
     }
 
     const lifecycle = await TenantLifecycle.findOneAndUpdate(
@@ -134,10 +174,14 @@ export class LifecycleManager {
   }
 
   async recordUsage(event: {
-    orgId: string; event: UsageEventType; userId: string; metadata?: Record<string, unknown>;
+    orgId: string;
+    event: UsageEventType;
+    userId: string;
+    metadata?: Record<string, unknown>;
   }): Promise<void> {
     await UsageRecord.create({
-      id: uuid(), ...event,
+      id: uuid(),
+      ...event,
       metadata: event.metadata || {},
       timestamp: new Date(),
     });
@@ -151,35 +195,55 @@ export class LifecycleManager {
   async snapshotUsage(orgId: string, period: IUsageSnapshot["period"]): Promise<IUsageSnapshot> {
     const since = new Date();
     switch (period) {
-      case "hour": since.setHours(since.getHours() - 1); break;
-      case "day": since.setDate(since.getDate() - 1); break;
-      case "week": since.setDate(since.getDate() - 7); break;
-      case "month": since.setMonth(since.getMonth() - 1); break;
+      case "hour":
+        since.setHours(since.getHours() - 1);
+        break;
+      case "day":
+        since.setDate(since.getDate() - 1);
+        break;
+      case "week":
+        since.setDate(since.getDate() - 7);
+        break;
+      case "month":
+        since.setMonth(since.getMonth() - 1);
+        break;
     }
 
-    const [tasksCreated, tasksCompleted, filesUploaded, projectsCreated, logins] = await Promise.all([
-      Task.countDocuments({ orgId, createdAt: { $gte: since } }),
-      Task.countDocuments({ orgId, status: "completed", updatedAt: { $gte: since } }),
-      FileAttachment.countDocuments({ orgId, createdAt: { $gte: since } }),
-      Project.countDocuments({ orgId, createdAt: { $gte: since } }),
-      UsageRecord.countDocuments({ orgId, event: "login", timestamp: { $gte: since } }),
-    ]);
+    const [tasksCreated, tasksCompleted, filesUploaded, projectsCreated, logins] =
+      await Promise.all([
+        Task.countDocuments({ orgId, createdAt: { $gte: since } }),
+        Task.countDocuments({ orgId, status: "completed", updatedAt: { $gte: since } }),
+        FileAttachment.countDocuments({ orgId, createdAt: { $gte: since } }),
+        Project.countDocuments({ orgId, createdAt: { $gte: since } }),
+        UsageRecord.countDocuments({ orgId, event: "login", timestamp: { $gte: since } }),
+      ]);
 
     const totalUsers = await User.countDocuments({ orgId });
     const totalTasks = await Task.countDocuments({ orgId });
 
     return UsageSnapshot.create({
-      id: uuid(), orgId, period,
+      id: uuid(),
+      orgId,
+      period,
       metrics: {
-        tasksCreated, tasksCompleted, filesUploaded, projectsCreated,
-        logins, totalUsers, totalTasks,
+        tasksCreated,
+        tasksCompleted,
+        filesUploaded,
+        projectsCreated,
+        logins,
+        totalUsers,
+        totalTasks,
         completionRate: totalTasks > 0 ? Math.round((tasksCompleted / totalTasks) * 100) : 0,
       },
       recordedAt: new Date(),
     });
   }
 
-  async getUsageAnalytics(orgId: string, period: IUsageSnapshot["period"], limit = 30): Promise<{
+  async getUsageAnalytics(
+    orgId: string,
+    period: IUsageSnapshot["period"],
+    limit = 30,
+  ): Promise<{
     snapshots: IUsageSnapshot[];
     trends: Record<string, { current: number; previous: number; change: number }>;
     forecast: Record<string, number>;
@@ -213,7 +277,13 @@ export class LifecycleManager {
   }
 
   async detectAnomalies(orgId: string): Promise<{
-    anomalies: { metric: string; currentValue: number; expectedValue: number; deviation: number; severity: "low" | "medium" | "high" }[];
+    anomalies: {
+      metric: string;
+      currentValue: number;
+      expectedValue: number;
+      deviation: number;
+      severity: "low" | "medium" | "high";
+    }[];
   }> {
     const dailySnaps = (await UsageSnapshot.find({ orgId, period: "day" })
       .sort({ recordedAt: -1 })
@@ -227,7 +297,7 @@ export class LifecycleManager {
 
     for (const [metric, currentValue] of Object.entries(latest)) {
       if (metric === "completionRate") continue;
-      const values = dailySnaps.slice(1).map(s => s.metrics[metric] || 0);
+      const values = dailySnaps.slice(1).map((s) => s.metrics[metric] || 0);
       const mean = values.reduce((a, b) => a + b, 0) / values.length;
       const stdDev = Math.sqrt(values.reduce((sq, v) => sq + (v - mean) ** 2, 0) / values.length);
       const deviation = stdDev > 0 ? (currentValue - mean) / stdDev : 0;
@@ -247,26 +317,37 @@ export class LifecycleManager {
   }
 
   async getLifecycleOverview(): Promise<{
-    total: number; trial: number; active: number; suspended: number; cancelled: number;
-    expiringTrials: number; atRisk: number;
+    total: number;
+    trial: number;
+    active: number;
+    suspended: number;
+    cancelled: number;
+    expiringTrials: number;
+    atRisk: number;
   }> {
     const now = new Date();
-    const [total, trial, active, suspended, cancelled, expiringTrials, archived] = await Promise.all([
-      TenantLifecycle.countDocuments({}),
-      TenantLifecycle.countDocuments({ stage: "trial" }),
-      TenantLifecycle.countDocuments({ stage: "active" }),
-      TenantLifecycle.countDocuments({ stage: "suspended" }),
-      TenantLifecycle.countDocuments({ stage: "cancelled" }),
-      TenantLifecycle.countDocuments({
-        stage: "trial",
-        trialEndsAt: { $lte: new Date(now.getTime() + 7 * 86400000), $gte: now },
-      }),
-      TenantLifecycle.countDocuments({ stage: "archived" }),
-    ]);
+    const [total, trial, active, suspended, cancelled, expiringTrials, archived] =
+      await Promise.all([
+        TenantLifecycle.countDocuments({}),
+        TenantLifecycle.countDocuments({ stage: "trial" }),
+        TenantLifecycle.countDocuments({ stage: "active" }),
+        TenantLifecycle.countDocuments({ stage: "suspended" }),
+        TenantLifecycle.countDocuments({ stage: "cancelled" }),
+        TenantLifecycle.countDocuments({
+          stage: "trial",
+          trialEndsAt: { $lte: new Date(now.getTime() + 7 * 86400000), $gte: now },
+        }),
+        TenantLifecycle.countDocuments({ stage: "archived" }),
+      ]);
 
     return {
-      total, trial, active, suspended, cancelled,
-      expiringTrials, atRisk: suspended + expiringTrials,
+      total,
+      trial,
+      active,
+      suspended,
+      cancelled,
+      expiringTrials,
+      atRisk: suspended + expiringTrials,
     };
   }
 }

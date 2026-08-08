@@ -1,10 +1,18 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useSession } from "next-auth/react";
+import { useEffect, useMemo, useState } from "react";
+import { DeleteConfirmDialog } from "@/components/dialog-03";
+import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -14,23 +22,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  ClipboardListIcon,
-  SearchIcon,
-  XIcon,
   ChevronLeft,
   ChevronRight,
-  Trash2Icon,
+  ClipboardListIcon,
   Loader2Icon,
   MoreHorizontalIcon,
+  SearchIcon,
+  Trash2Icon,
+  XIcon,
 } from "@/lib/icons";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { PageHeader } from "@/components/page-header";
-import { DeleteConfirmDialog } from "@/components/dialog-03";
 
 interface AuditLog {
   id: string;
@@ -53,28 +53,34 @@ export default function AuditPage() {
   const [rowsPerPage, setRowsPerPage] = useState(30);
 
   useEffect(() => {
-    if (status === "unauthenticated") { router.push("/login"); }
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
   }, [status, router]);
 
   const fetchLogs = () => {
     setLoading(true);
     fetch("/api/orgmenu/audit")
-      .then(r => r.json())
-      .then(d => { setLogs(d.logs || []); })
+      .then((r) => r.json())
+      .then((d) => {
+        setLogs(d.logs || []);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchLogs(); }, []);
+  useEffect(() => {
+    fetchLogs();
+  }, []);
 
   const filteredLogs = useMemo(() => {
     if (!searchQuery) return logs;
     const q = searchQuery.toLowerCase();
     return logs.filter(
-      l =>
+      (l) =>
         l.user.toLowerCase().includes(q) ||
         l.action.toLowerCase().includes(q) ||
-        (l.details && l.details.toLowerCase().includes(q))
+        (l.details && l.details.toLowerCase().includes(q)),
     );
   }, [logs, searchQuery]);
 
@@ -82,7 +88,7 @@ export default function AuditPage() {
   const paginatedLogs = filteredLogs.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
   const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -94,7 +100,7 @@ export default function AuditPage() {
     if (selectedIds.size === paginatedLogs.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(paginatedLogs.map(l => l.id)));
+      setSelectedIds(new Set(paginatedLogs.map((l) => l.id)));
     }
   };
 
@@ -135,22 +141,30 @@ export default function AuditPage() {
         className="mb-4 sm:mb-6"
         icon={<ClipboardListIcon className="size-6" />}
         title={<h1>Audit Logs</h1>}
-        subtitle={<p>
-          {filteredLogs.length} {filteredLogs.length === 1 ? "log" : "logs"}
-          {hasActiveFilters ? " found" : " total"}
-        </p>}
+        subtitle={
+          <p>
+            {filteredLogs.length} {filteredLogs.length === 1 ? "log" : "logs"}
+            {hasActiveFilters ? " found" : " total"}
+          </p>
+        }
         search={
           <div className="relative bg-white border border-gray-200 rounded-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search by user, action..."
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(0);
+              }}
               className="pl-9 h-9 border-0 shadow-none focus-visible:ring-0 w-full"
             />
             {searchQuery && (
               <button
-                onClick={() => { setSearchQuery(""); setPage(0); }}
+                onClick={() => {
+                  setSearchQuery("");
+                  setPage(0);
+                }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
               >
                 <XIcon className="size-4" />
@@ -168,7 +182,11 @@ export default function AuditPage() {
               onConfirm={() => handleDelete()}
             >
               <Button variant="destructive" size="sm" disabled={deleting}>
-                {deleting ? <Loader2Icon className="size-4 animate-spin" /> : <Trash2Icon className="size-4" />}
+                {deleting ? (
+                  <Loader2Icon className="size-4 animate-spin" />
+                ) : (
+                  <Trash2Icon className="size-4" />
+                )}
                 <span className="ml-1.5">Delete ({selectedIds.size})</span>
               </Button>
             </DeleteConfirmDialog>
@@ -183,12 +201,18 @@ export default function AuditPage() {
           <Input
             placeholder="Search by user, action..."
             value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(0);
+            }}
             className="pl-9 h-10 border-0 shadow-none focus-visible:ring-0 w-full"
           />
           {searchQuery && (
             <button
-              onClick={() => { setSearchQuery(""); setPage(0); }}
+              onClick={() => {
+                setSearchQuery("");
+                setPage(0);
+              }}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
             >
               <XIcon className="size-4" />
@@ -204,7 +228,12 @@ export default function AuditPage() {
             <thead className="sticky top-0 z-10">
               <tr>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-10">
-                  <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} aria-label="Select all" className="border-white" />
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Select all"
+                    className="border-white"
+                  />
                 </th>
                 <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
                   <span className="text-white">User</span>
@@ -233,7 +262,9 @@ export default function AuditPage() {
                           {hasActiveFilters ? "No logs match your search" : "No audit logs yet"}
                         </p>
                         <p className="text-xs text-muted-foreground/60 mt-1">
-                          {hasActiveFilters ? "Try adjusting your search" : "Activity will appear here as users perform actions"}
+                          {hasActiveFilters
+                            ? "Try adjusting your search"
+                            : "Activity will appear here as users perform actions"}
                         </p>
                       </div>
                     </div>
@@ -256,11 +287,20 @@ export default function AuditPage() {
                         />
                       </td>
                       <td className="px-4 py-3">
-                        <span className="font-medium text-gray-900 whitespace-nowrap">{log.user}</span>
+                        <span className="font-medium text-gray-900 whitespace-nowrap">
+                          {log.user}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-gray-800">{log.action.split(".").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}</span>
-                        {log.details && <p className="text-xs text-gray-500 mt-0.5">{log.details}</p>}
+                        <span className="text-gray-800">
+                          {log.action
+                            .split(".")
+                            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                            .join(" ")}
+                        </span>
+                        {log.details && (
+                          <p className="text-xs text-gray-500 mt-0.5">{log.details}</p>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-gray-500 text-xs whitespace-nowrap">
@@ -300,10 +340,15 @@ export default function AuditPage() {
           </span>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page:</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Rows per page:
+              </span>
               <Select
                 value={String(rowsPerPage)}
-                onValueChange={(value) => { setRowsPerPage(Number(value)); setPage(0); }}
+                onValueChange={(value) => {
+                  setRowsPerPage(Number(value));
+                  setPage(0);
+                }}
               >
                 <SelectTrigger className="h-8 w-[70px]">
                   <SelectValue />
@@ -321,7 +366,7 @@ export default function AuditPage() {
                 variant="outline"
                 size="icon"
                 className="h-8 w-8"
-                onClick={() => setPage(p => Math.max(0, p - 1))}
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
               >
                 <ChevronLeft className="size-4" />
@@ -330,7 +375,7 @@ export default function AuditPage() {
                 variant="outline"
                 size="icon"
                 className="h-8 w-8"
-                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={(page + 1) * rowsPerPage >= filteredLogs.length}
               >
                 <ChevronRight className="size-4" />

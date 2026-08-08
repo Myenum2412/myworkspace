@@ -1,20 +1,9 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { NotificationsActiveIcon } from "@/lib/icons";
-import {
-  RiCheckLine,
-  RiErrorWarningLine,
-  RiFileTextLine,
-  RiGitMergeLine,
-  RiMegaphoneLine,
-  RiShieldCheckLine,
-  RiUserAddLine,
-} from "@/lib/icons"
-
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetClose,
@@ -22,8 +11,18 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/sheet";
+import {
+  NotificationsActiveIcon,
+  RiCheckLine,
+  RiErrorWarningLine,
+  RiFileTextLine,
+  RiGitMergeLine,
+  RiMegaphoneLine,
+  RiShieldCheckLine,
+  RiUserAddLine,
+} from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 const initialNotifications = [
   {
@@ -82,14 +81,13 @@ const initialNotifications = [
     timestamp: "3 Days Ago",
     unread: false,
   },
-]
+];
 
 export default function NotificationsBlock() {
-  const [notifications, setNotifications] = React.useState(initialNotifications)
-  const unreadCount = notifications.filter((n) => n.unread).length
+  const [notifications, setNotifications] = React.useState(initialNotifications);
+  const unreadCount = notifications.filter((n) => n.unread).length;
 
-  const markAllRead = () =>
-    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })))
+  const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
 
   return (
     <section className="flex w-full items-center justify-center bg-background px-6 py-12 text-foreground">
@@ -117,19 +115,19 @@ export default function NotificationsBlock() {
           <ScrollArea className="flex-1 [&_[data-slot=scroll-area-viewport]]:scroll-fade-y">
             <ul className="flex flex-col">
               {notifications.map((item, index) => {
-                const Icon = item.icon
+                const Icon = item.icon;
                 return (
                   <li key={item.id}>
                     <div
                       className={cn(
                         "flex items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/50",
-                        item.unread && "bg-muted/30"
+                        item.unread && "bg-muted/30",
                       )}
                     >
                       <span
                         className={cn(
                           "mt-0.5 flex size-8 shrink-0 items-center justify-center bg-muted text-muted-foreground",
-                          item.unread && "bg-primary/10 text-primary"
+                          item.unread && "bg-primary/10 text-primary",
                         )}
                       >
                         <Icon className="size-4" aria-hidden="true" />
@@ -140,9 +138,7 @@ export default function NotificationsBlock() {
                           <span
                             className={cn(
                               "truncate text-xs font-medium",
-                              item.unread
-                                ? "text-foreground"
-                                : "text-muted-foreground"
+                              item.unread ? "text-foreground" : "text-muted-foreground",
                             )}
                           >
                             {item.title}
@@ -151,21 +147,16 @@ export default function NotificationsBlock() {
                             {item.timestamp}
                           </span>
                         </div>
-                        <p className="text-xs/relaxed text-muted-foreground">
-                          {item.body}
-                        </p>
+                        <p className="text-xs/relaxed text-muted-foreground">{item.body}</p>
                       </div>
 
                       {item.unread && (
-                        <span
-                          className="mt-1.5 size-1.5 shrink-0 bg-primary"
-                          aria-label="Unread"
-                        />
+                        <span className="mt-1.5 size-1.5 shrink-0 bg-primary" aria-label="Unread" />
                       )}
                     </div>
                     {index < notifications.length - 1 && <Separator />}
                   </li>
-                )
+                );
               })}
             </ul>
           </ScrollArea>
@@ -178,12 +169,7 @@ export default function NotificationsBlock() {
                 Close
               </Button>
             </SheetClose>
-            <Button
-              size="sm"
-              className="flex-1"
-              onClick={markAllRead}
-              disabled={unreadCount === 0}
-            >
+            <Button size="sm" className="flex-1" onClick={markAllRead} disabled={unreadCount === 0}>
               <RiCheckLine data-icon="inline-start" />
               Mark All Read
             </Button>
@@ -191,5 +177,5 @@ export default function NotificationsBlock() {
         </SheetContent>
       </Sheet>
     </section>
-  )
+  );
 }

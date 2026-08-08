@@ -1,30 +1,38 @@
 "use client";
 
-import { useFileSystemStore } from "@/lib/file-system/store";
-import { FileViewer, getFileTypeCategory } from "@/components/files/viewers/file-viewer";
-import { formatSize } from "@/lib/file-system/types";
+import { useEffect, useState } from "react";
 import { getFileIcon } from "@/components/files/utils";
+import { FileViewer, getFileTypeCategory } from "@/components/files/viewers/file-viewer";
 import { Button } from "@/components/ui/button";
+import { useFileSystemStore } from "@/lib/file-system/store";
+import { formatSize } from "@/lib/file-system/types";
 import {
-  DownloadIcon,
+  CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  XIcon,
-  InfoIcon,
-  UserIcon,
-  CalendarIcon,
   ClockIcon,
+  DatabaseIcon,
+  DownloadIcon,
+  FolderIcon,
   HardDriveIcon,
   HashIcon,
-  FolderIcon,
-  TagIcon,
-  ShieldCheckIcon,
-  DatabaseIcon,
+  InfoIcon,
   RulerIcon,
+  ShieldCheckIcon,
+  TagIcon,
+  UserIcon,
+  XIcon,
 } from "@/lib/icons";
-import { useState, useEffect } from "react";
 
-function DetailRow({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string }) {
+function DetailRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="flex items-start gap-3 py-2">
       <Icon className="size-4 text-muted-foreground/60 mt-0.5 shrink-0" />
@@ -39,7 +47,9 @@ function DetailRow({ icon: Icon, label, value }: { icon: React.ComponentType<{ c
 function InfoSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="border-b border-border/60 px-5 py-4">
-      <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+      <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {title}
+      </h3>
       {children}
     </div>
   );
@@ -52,11 +62,16 @@ export function PreviewDialog() {
   const file = previewFile;
 
   useEffect(() => {
-    if (!file) { setPreviewUrl(""); return; }
+    if (!file) {
+      setPreviewUrl("");
+      return;
+    }
     setPreviewUrl("");
     fetch(`/api/files/preview-url/${file.id}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.success && d.data?.url) setPreviewUrl(d.data.url); })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.success && d.data?.url) setPreviewUrl(d.data.url);
+      })
       .catch(() => {});
   }, [file?.id]);
 
@@ -119,7 +134,11 @@ export function PreviewDialog() {
           >
             <InfoIcon className="size-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(`/api/files/${file.id}/download`, "_blank")}
+          >
             <DownloadIcon className="mr-1.5" /> Download
           </Button>
           <Button variant="ghost" size="sm" className="p-0" onClick={() => setPreviewFile(null)}>
@@ -141,18 +160,44 @@ export function PreviewDialog() {
               <DetailRow icon={HashIcon} label="Name" value={file.originalName || "—"} />
               <DetailRow icon={HashIcon} label="Extension" value={extension} />
               <DetailRow icon={DatabaseIcon} label="Type" value={file.mimeType || "Unknown"} />
-              <DetailRow icon={FolderIcon} label="Category" value={file.category || category || "General"} />
+              <DetailRow
+                icon={FolderIcon}
+                label="Category"
+                value={file.category || category || "General"}
+              />
               <DetailRow icon={HardDriveIcon} label="Size" value={formatSize(file.size || 0)} />
               {isImage && (
-                <DetailRow icon={RulerIcon} label="Dimensions" value={`${(file as any).width || "?"} × ${(file as any).height || "?"} px`} />
+                <DetailRow
+                  icon={RulerIcon}
+                  label="Dimensions"
+                  value={`${(file as any).width || "?"} × ${(file as any).height || "?"} px`}
+                />
               )}
               <DetailRow icon={HashIcon} label="Version" value={String(file.currentVersion || 1)} />
             </InfoSection>
 
             <InfoSection title="Ownership">
-              <DetailRow icon={UserIcon} label="Uploaded by" value={file.uploaderName || file.uploaderEmail || "Unknown"} />
-              <DetailRow icon={CalendarIcon} label="Uploaded" value={file.createdAt ? new Date(file.createdAt).toLocaleString() : "—"} />
-              <DetailRow icon={ClockIcon} label="Modified" value={file.updatedAt ? new Date(file.updatedAt).toLocaleString() : file.createdAt ? new Date(file.createdAt).toLocaleString() : "—"} />
+              <DetailRow
+                icon={UserIcon}
+                label="Uploaded by"
+                value={file.uploaderName || file.uploaderEmail || "Unknown"}
+              />
+              <DetailRow
+                icon={CalendarIcon}
+                label="Uploaded"
+                value={file.createdAt ? new Date(file.createdAt).toLocaleString() : "—"}
+              />
+              <DetailRow
+                icon={ClockIcon}
+                label="Modified"
+                value={
+                  file.updatedAt
+                    ? new Date(file.updatedAt).toLocaleString()
+                    : file.createdAt
+                      ? new Date(file.createdAt).toLocaleString()
+                      : "—"
+                }
+              />
               <DetailRow icon={FolderIcon} label="Location" value={file.folderId || "My Files"} />
             </InfoSection>
 
@@ -166,7 +211,10 @@ export function PreviewDialog() {
               <InfoSection title="Tags">
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {file.tags.map((tag) => (
-                    <span key={tag} className="rounded-full border border-border/70 bg-background px-2.5 py-0.5 text-[11px] font-medium text-foreground">
+                    <span
+                      key={tag}
+                      className="rounded-full border border-border/70 bg-background px-2.5 py-0.5 text-[11px] font-medium text-foreground"
+                    >
                       <TagIcon className="mr-1 inline size-3 text-muted-foreground" />
                       {tag}
                     </span>
@@ -179,12 +227,20 @@ export function PreviewDialog() {
               <DetailRow
                 icon={ShieldCheckIcon}
                 label="Virus scan"
-                value={file.virusScanStatus ? file.virusScanStatus[0].toUpperCase() + file.virusScanStatus.slice(1) : "Not scanned"}
+                value={
+                  file.virusScanStatus
+                    ? file.virusScanStatus[0].toUpperCase() + file.virusScanStatus.slice(1)
+                    : "Not scanned"
+                }
               />
               <DetailRow
                 icon={file.isLocked ? HashIcon : ShieldCheckIcon}
                 label="Status"
-                value={file.isLocked ? `Locked${file.lockedBy ? ` by ${file.lockedBy}` : ""}` : "Available"}
+                value={
+                  file.isLocked
+                    ? `Locked${file.lockedBy ? ` by ${file.lockedBy}` : ""}`
+                    : "Available"
+                }
               />
               <DetailRow icon={HashIcon} label="Approval" value={file.approvalStatus || "None"} />
             </InfoSection>
@@ -193,7 +249,11 @@ export function PreviewDialog() {
               <DetailRow icon={DatabaseIcon} label="File ID" value={file.id} />
               <DetailRow icon={FolderIcon} label="Folder ID" value={file.folderId || "Root"} />
               {file.checksum && (
-                <DetailRow icon={ShieldCheckIcon} label="Checksum" value={file.checksum.slice(0, 24) + "..."} />
+                <DetailRow
+                  icon={ShieldCheckIcon}
+                  label="Checksum"
+                  value={file.checksum.slice(0, 24) + "..."}
+                />
               )}
             </InfoSection>
           </aside>

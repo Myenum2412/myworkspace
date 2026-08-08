@@ -1,13 +1,13 @@
-import { Router, Response } from "express";
-import { Folder } from "../lib/db/models/Folder.js";
+import { type Response, Router } from "express";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
-import { AuthRequest, authenticate } from "../middleware/auth.js";
-import { AppError } from "../middleware/error.js";
-import { isAdminRole } from "../lib/rbac/index.js";
+import { Folder } from "../lib/db/models/Folder.js";
 import { verifyOrgAccess } from "../lib/org-utils.js";
-import { ensureClientFolders } from "../services/client-folder.service.js";
-import { recordAuditLog } from "../services/audit.service.js";
+import { isAdminRole } from "../lib/rbac/index.js";
 import { CLIENT_SUBFOLDERS } from "../lib/uploads/folder-mapper.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
+import { recordAuditLog } from "../services/audit.service.js";
+import { ensureClientFolders } from "../services/client-folder.service.js";
 
 const router = Router();
 router.use(authenticate);
@@ -19,7 +19,10 @@ router.get("/:clientId/tree", async (req: AuthRequest, res: Response) => {
 
   await verifyOrgAccess(req.user!.userId, orgId);
 
-  const folders = await Folder.find({ orgId, clientId, deletedAt: null }).sort({ path: 1 }).select("id name path parentId clientId orgId deletedAt createdAt").lean();
+  const folders = await Folder.find({ orgId, clientId, deletedAt: null })
+    .sort({ path: 1 })
+    .select("id name path parentId clientId orgId deletedAt createdAt")
+    .lean();
   res.json({ success: true, data: folders });
 });
 
@@ -76,12 +79,19 @@ router.post("/:clientId/sync", async (req: AuthRequest, res: Response) => {
   });
 
   await recordAuditLog({
-    orgId, userId: req.user!.userId, createdBy: req.user!.userId,
-    action: "folder.synced", entityType: "client", entityId: clientId,
+    orgId,
+    userId: req.user!.userId,
+    createdBy: req.user!.userId,
+    action: "folder.synced",
+    entityType: "client",
+    entityId: clientId,
     description: `Client folders synced for ${clientId}`,
   });
 
-  const folders = await Folder.find({ orgId, clientId, deletedAt: null }).sort({ path: 1 }).select("id name path parentId clientId orgId deletedAt createdAt").lean();
+  const folders = await Folder.find({ orgId, clientId, deletedAt: null })
+    .sort({ path: 1 })
+    .select("id name path parentId clientId orgId deletedAt createdAt")
+    .lean();
 
   res.json({
     success: true,
