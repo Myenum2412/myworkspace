@@ -24,8 +24,21 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
       - run: npm ci --include=dev
+      - name: Determine baseline for changed files
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
+            base="$(git rev-parse HEAD~1 2>/dev/null || echo '')"
+          fi
+          echo "base=$base" >> "$GITHUB_OUTPUT"
       - name: Check formatting, linting and import order only for changed files
-        run: npx biome check --since=main .
+        if: steps.base.outputs.base != ''
+        run: npx biome check --changed --since=${{ steps.base.outputs.base }} .
 
   lint-full:
     name: Biome — full codebase (debt trend)
