@@ -8,6 +8,7 @@ import { SidebarBrand } from "@/components/sidebar-brand";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarRail } from "@/components/ui/sidebar";
 import {
   ActivityIcon,
+  BriefcaseIcon,
   CalendarClockIcon,
   ClockIcon,
   FolderIcon,
@@ -32,7 +33,7 @@ function buildStaffNavData(t: (key: TermKey) => string) {
     {
       title: t("nav.projects"),
       url: "/staffs/projects",
-      icon: <FolderKanbanIcon className="size-6" />,
+      icon: <BriefcaseIcon className="size-6" />,
     },
     {
       title: t("nav.staffTimesheet"),

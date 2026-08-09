@@ -79,7 +79,7 @@ const tours: Tour[] = [
         side: "bottom",
         sideOffset: 8,
         align: "center",
-        nextRoute: "/time-tracker",
+        nextRoute: "/staffs/time-tracker",
       },
       {
         id: "step-time-tracker",

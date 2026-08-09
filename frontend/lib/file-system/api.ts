@@ -137,20 +137,44 @@ export function downloadFile(id: string) {
   window.open(`${API.files}/${id}/download`, "_blank");
 }
 
-export function bulkDownload(ids: string[]) {
+export async function bulkDownload(ids: string[]) {
   if (!ids.length) return;
-  const popup = window.open(`${API.files}/${ids[0]}/download`, "_blank");
-  if (popup) {
-    ids.slice(1).forEach((id, i) => {
-      setTimeout(
-        () => {
-          popup.location.href = `${API.files}/${id}/download`;
-        },
-        (i + 1) * 2000,
-      );
+  if (ids.length === 1) {
+    downloadFile(ids[0]);
+    return;
+  }
+
+  const headers = new Headers();
+  headers.set("Content-Type", "application/json");
+  const token = getCookie(CSRF_COOKIE);
+  if (token) headers.set(CSRF_HEADER, token);
+
+  try {
+    const res = await fetch(`${API.files}/bulk/download`, {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: JSON.stringify({ fileIds: ids }),
     });
-  } else {
-    ids.forEach((id) => window.open(`${API.files}/${id}/download`, "_blank"));
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`API error ${res.status}: ${body}`);
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `files-${new Date().toISOString().slice(0, 10)}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  } catch (err) {
+    console.error("Bulk download failed", err);
+    ids.forEach((id) => {
+      downloadFile(id);
+    });
   }
 }
 

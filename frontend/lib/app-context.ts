@@ -58,6 +58,9 @@ export const WORKSPACE_ROUTES = [
 
 export function getAppContext(pathname: string): AppContextType {
   if (pathname.startsWith("/orgmenu")) return "origin";
+  if (pathname === "/staffs/time-tracker" || pathname.startsWith("/staffs/time-tracker/")) {
+    return "workspace";
+  }
   if (pathname.startsWith("/staffs")) return "staff";
   if (pathname === "/client" || pathname.startsWith("/client/")) return "client";
   if (PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return "public";

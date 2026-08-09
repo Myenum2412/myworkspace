@@ -1,5 +1,6 @@
 import { type Response, Router } from "express";
 import fs from "fs/promises";
+import { ZipArchive } from "archiver";
 import multer from "multer";
 import { v4 as uuid } from "uuid";
 import { env } from "../config/env.js";
@@ -11,7 +12,7 @@ import { logger } from "../lib/logger/index.js";
 import { notifyFile } from "../lib/notifications/notification-wiring.js";
 import { requireOrgMembership, verifyOrgAccess } from "../lib/org-utils.js";
 import { isAdminRole } from "../lib/rbac/index.js";
-import { getStorageProvider } from "../lib/storage/providers.js";
+import { getStorageProvider, readFromStorage } from "../lib/storage/providers.js";
 import { SignedUrlService } from "../lib/storage/signed-urls.js";
 import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
@@ -1730,6 +1731,59 @@ router.post("/presigned-download", async (req: AuthRequest, res: Response) => {
     if (err instanceof AppError) throw err;
     throw new AppError(500, err.message || "Failed to generate presigned download URL");
   }
+});
+
+// ─── Bulk Zip Download ─────────────────────────────────────────────────────────
+
+router.post("/bulk/download", async (req: AuthRequest, res: Response) => {
+  const { fileIds } = req.body;
+  if (!fileIds?.length) throw new AppError(400, "fileIds is required");
+  if (fileIds.length > 500) throw new AppError(400, "Too many files to download at once");
+
+  const files = await FileAttachment.find({ id: { $in: fileIds }, deletedAt: null })
+    .select("orgId originalName storagePath storageProvider mimeType size")
+    .lean();
+  if (!files.length) throw new AppError(404, "No files found");
+
+  await verifyAccess(req.user!.userId, files[0].orgId);
+  const uniqueOrgIds = new Set(files.map((f) => f.orgId));
+  if (uniqueOrgIds.size > 1) throw new AppError(403, "Files from multiple organizations");
+
+  const archive = new ZipArchive({ zlib: { level: 9 } });
+  archive.on("error", (err) => {
+    logger.warn({ err }, "Bulk zip download failed");
+    if (!res.headersSent) res.status(500).json({ error: "Failed to build zip archive" });
+    else res.end();
+  });
+
+  res.setHeader("Content-Type", "application/zip");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="files-${new Date().toISOString().slice(0, 10)}.zip"`,
+  );
+
+  archive.pipe(res);
+
+  const usedNames = new Map<string, number>();
+  const sanitizeName = (raw: string) =>
+    raw.replace(/[\/\\:*?"<>|]/g, "_").trim().slice(0, 200) || "file";
+
+  for (const file of files) {
+    if (res.destroyed) break;
+    try {
+      const buffer = await readFromStorage(file.storagePath, file.storageProvider);
+      if (!buffer) continue;
+      const baseName = sanitizeName(file.originalName);
+      const count = usedNames.get(baseName) || 0;
+      usedNames.set(baseName, count + 1);
+      const name = count === 0 ? baseName : `${baseName.replace(/\.[^.]*$/, "")}-${count + 1}${baseName.match(/\.[^.]*$/)?.[0] || ""}`;
+      archive.append(buffer, { name });
+    } catch (err) {
+      logger.warn({ err, fileId: file.id }, "Skipping file in bulk zip download");
+    }
+  }
+
+  void archive.finalize();
 });
 
 // ─── R2 Multipart Upload ──────────────────────────────────────────────────────

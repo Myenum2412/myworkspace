@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import EmployeesTimeTracker from "@/app/staffs/time-tracker/time-tracker-interactive.client";
 import type { Team } from "@/app/teams/columns";
 import TeamsClient from "@/app/teams/teams-client.client";
 import type { OrgMember } from "@/components/teams/team-types";
@@ -76,12 +77,21 @@ export default function EmployeesClient({
           >
             Teams
           </TabsTrigger>
+          <TabsTrigger
+            value="time"
+            className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
+          >
+            Time Tracker
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="employees" className="mt-4">
           <EmployeesInteractive employees={employees} user={user} />
         </TabsContent>
         <TabsContent value="teams" className="mt-0">
           <TeamsClient teams={teams} members={teamMembers} orgId={orgId} />
+        </TabsContent>
+        <TabsContent value="time" className="mt-0">
+          <EmployeesTimeTracker />
         </TabsContent>
       </Tabs>
     </div>

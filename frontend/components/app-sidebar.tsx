@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import { useEffect, useState } from "react";
 import { useIndustry } from "@/components/industry-provider";
 import { NavMain } from "@/components/nav-main";
@@ -11,10 +9,10 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarRail } from "@/component
 import {
   AttachMoneyIcon,
   BarChart3Icon,
+  BriefcaseIcon,
   CameraAltIcon,
   ChatIcon,
   CheckCheckIcon,
-  ClockIcon,
   LayoutDashboardIcon,
   ListChecksIcon,
   MuiFolderIcon,
@@ -22,7 +20,6 @@ import {
   SendIcon,
   Settings2Icon,
   UsersIcon,
-  WorkflowIcon,
 } from "@/lib/icons";
 import { filterNavByRole } from "@/lib/rbac/navigation";
 
@@ -73,9 +70,8 @@ export function AppSidebar({
     },
     { title: t("nav.overview"), url: "/overview", icon: <ListChecksIcon className="size-6" /> },
     { title: t("nav.employees"), url: "/employees", icon: <UsersIcon className="size-6" /> },
-    { title: t("nav.projects"), url: "/projects", icon: <WorkflowIcon className="size-6" /> },
+    { title: t("nav.projects"), url: "/projects", icon: <BriefcaseIcon className="size-6" /> },
     { title: t("nav.approvals"), url: "/approvals", icon: <CheckCheckIcon className="size-6" /> },
-    { title: t("nav.timeTracker"), url: "/time-tracker", icon: <ClockIcon className="size-6" /> },
     { title: t("nav.fileManager"), url: "/files", icon: <MuiFolderIcon className="size-6" /> },
     { title: t("nav.reworks"), url: "/reworks", icon: <RotateCcwIcon className="size-6" /> },
     { title: t("nav.submissions"), url: "/submissions", icon: <SendIcon className="size-6" /> },

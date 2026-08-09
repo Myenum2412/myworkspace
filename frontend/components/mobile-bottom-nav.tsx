@@ -29,7 +29,6 @@ interface NavItem {
 const workspaceNav: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
   { href: "/mytasks", label: "Tasks", icon: ListChecksIcon },
-  { href: "/time-tracker", label: "Time", icon: ClockIcon },
   { href: "/employees", label: "Team", icon: UsersIcon },
   { href: "/billing/invoices", label: "Invoices", icon: ReceiptIcon },
 ];
