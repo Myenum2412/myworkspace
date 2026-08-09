@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useRef } from "react";
+import { MyWorkspaceLoading } from "@/components/myworkspace-loading";
 import { fetchBootstrapData } from "@/lib/api/bootstrap";
 import { setDataCache } from "@/lib/api/schemas";
 import { useBootstrapStore } from "@/stores/bootstrap-store";
@@ -59,12 +60,7 @@ export function GlobalLoader({ children }: { children: React.ReactNode }) {
   }, [status, setBootstrapData, setBootstrapLoading, setHydrated]);
 
   if (status === "loading") {
-    return (
-      <div className="flex h-screen w-full flex-col items-center justify-center bg-background gap-4">
-        <div className="size-10 animate-spin rounded-full border-[3px] border-current border-t-transparent text-primary" />
-        <p className="text-sm text-muted-foreground animate-pulse">Loading workspace...</p>
-      </div>
-    );
+    return <MyWorkspaceLoading message="Loading workspace..." />;
   }
 
   return <>{children}</>;

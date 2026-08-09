@@ -5,10 +5,8 @@ import { toast } from "sonner";
 import { useIndustry } from "@/components/industry-provider";
 import IntegrationsBlock from "@/components/integrations-block";
 import { PageHeader } from "@/components/page-header";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -207,10 +205,6 @@ export function SettingsPageClient({
   user: initialUser,
   initialSettings,
 }: SettingsPageClientProps) {
-  const [fullName, setFullName] = useState(initialUser.name);
-  const [email, setEmail] = useState(initialUser.email);
-  const [marketingEmails, setMarketingEmails] = useState(true);
-
   const [formData, setFormData] = useState({
     general: initialSettings?.general || {
       orgName: "",
@@ -313,76 +307,12 @@ export function SettingsPageClient({
 
         <Tabs defaultValue="account" className="gap-6">
           <TabsList className="w-full sm:w-auto">
-            <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="team">Team</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="integrations">Integrations</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="account">
-            <div className="flex flex-col gap-6">
-              <div>
-                <h2 className="text-lg font-semibold">Profile</h2>
-                <p className="text-sm text-muted-foreground">
-                  Update your personal details and preferences.
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
-                <Avatar className="size-16">
-                  <AvatarImage src={initialUser.avatar} alt={fullName} className="grayscale" />
-                  <AvatarFallback>
-                    {fullName
-                      .split(" ")
-                      .map((n: string) => n[0])
-                      .join("")
-                      .toUpperCase()
-                      .slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
-                <Button variant="outline" size="sm">
-                  Change Avatar
-                </Button>
-              </div>
-
-              <Field>
-                <FieldLabel htmlFor="full-name">Full name</FieldLabel>
-                <Input
-                  id="full-name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Your name"
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="email">Email address</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                />
-                <FieldDescription>Used for sign-in and account notices.</FieldDescription>
-              </Field>
-
-              <Separator />
-
-              <Field orientation="horizontal">
-                <FieldContent>
-                  <FieldLabel htmlFor="marketing-emails">Marketing emails</FieldLabel>
-                  <FieldDescription>Receive product news and occasional offers.</FieldDescription>
-                </FieldContent>
-                <Switch
-                  id="marketing-emails"
-                  checked={marketingEmails}
-                  onCheckedChange={setMarketingEmails}
-                />
-              </Field>
-            </div>
-          </TabsContent>
 
           <TabsContent value="general">
             <div className="space-y-6">
@@ -448,11 +378,12 @@ export function SettingsPageClient({
                       </div>
                       <Separator />
                       <div className="flex flex-wrap gap-1.5">
-                        {items.map((item: string, i: number) => (
-                          <Badge key={i} variant="outline" className="pr-1 gap-1">
+                        {items.map((item: string) => (
+                          <Badge key={item} variant="outline" className="pr-1 gap-1">
                             {item}
                             <button
-                              onClick={() => removeDropdownItem(key, i)}
+                              type="button"
+                              onClick={() => removeDropdownItem(key, items.indexOf(item))}
                               className="hover:text-destructive transition-colors"
                             >
                               <Trash2Icon className="size-3" />

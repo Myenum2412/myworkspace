@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { Dashboard } from "@/components/dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function OrgMenuPage() {
@@ -72,6 +73,7 @@ export default function OrgMenuPage() {
           </CardContent>
         </Card>
       </div>
+      <Dashboard />
     </main>
   );
 }

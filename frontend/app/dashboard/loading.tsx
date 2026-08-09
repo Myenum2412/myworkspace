@@ -1,3 +1,5 @@
+import { MyWorkspaceLoading } from "@/components/myworkspace-loading";
+
 export default function DashboardLoading() {
-  return null;
+  return <MyWorkspaceLoading />;
 }

@@ -40,6 +40,9 @@
     "@soundcn": "https://soundcn.xyz/r/{name}.json",
     "@shadcnstore": "https://shadcnstore.com/r/{name}.json",
     "@nexus-labs": "https://nexus-ui.com/r/{name}.json",
-    "@svgl": "https://svgl.app/r/{name}.json"
+    "@svgl": "https://svgl.app/r/{name}.json",
+    "@beui": "https://beui.dev/r/{name}.json",
+    "@blockus": "https://blockus.lndevui.com/r/{name}.json",
+    "@efferd": "https://efferd.com/r/{name}.json"
   }
 }

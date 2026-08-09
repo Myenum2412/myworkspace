@@ -64,6 +64,12 @@ const nextConfig = {
   },
   async rewrites() {
     return {
+      beforeFiles: [
+        {
+          source: "/api/auth/socket-token",
+          destination: `${API_URL}/api/auth/socket-token`,
+        },
+      ],
       fallback: [
         {
           source: "/api/:path*",
