@@ -391,7 +391,6 @@ const terms: Record<Industry, Record<TermKey, string>> = {
 
 export const INDUSTRIES: { value: Industry; label: string }[] = [
   { value: "construction", label: "Construction" },
-  { value: "healthcare", label: "Doctor/Healthcare" },
 ];
 
 export const DEFAULT_INDUSTRY: Industry = "construction";

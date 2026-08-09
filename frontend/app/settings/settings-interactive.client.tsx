@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useIndustry } from "@/components/industry-provider";
 import IntegrationsBlock from "@/components/integrations-block";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -10,13 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -48,7 +40,6 @@ import {
   Settings2Icon,
   Trash2Icon,
 } from "@/lib/icons";
-import { INDUSTRIES, type Industry } from "@/lib/industry-terms";
 
 const SECTION_LIMITS_KEY = "myworkspace_section_limits";
 
@@ -174,32 +165,6 @@ const defaultNotifSettings = {
   pushTeamMessages: true,
 };
 
-function WorkspaceIndustrySelect() {
-  const { industry, setIndustry } = useIndustry();
-  const [saving, setSaving] = useState(false);
-
-  const handleChange = async (value: string) => {
-    setSaving(true);
-    await setIndustry(value as Industry);
-    setSaving(false);
-  };
-
-  return (
-    <Select value={industry} onValueChange={handleChange} disabled={saving}>
-      <SelectTrigger className="w-full sm:w-[300px]">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {INDUSTRIES.map((ind) => (
-          <SelectItem key={ind.value} value={ind.value}>
-            {ind.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
-
 export function SettingsPageClient({
   orgId,
   user: initialUser,
@@ -315,26 +280,15 @@ export function SettingsPageClient({
           </TabsList>
 
           <TabsContent value="general">
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div>
-                <h2 className="text-lg font-semibold">General Settings</h2>
+                <h2 className="text-lg font-semibold tracking-tight">General Settings</h2>
                 <p className="text-sm text-muted-foreground">
                   Manage workspace-wide configurations and dropdown options.
                 </p>
               </div>
 
-              <div className="border rounded-sm p-4 space-y-3">
-                <div>
-                  <h3 className="text-sm font-medium">Workspace Industry</h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Select the industry for your workspace. This customizes the terminology used
-                    across the application.
-                  </p>
-                </div>
-                <WorkspaceIndustrySelect />
-              </div>
-              <Separator />
-              <div className="grid gap-4 grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2">
                 {Object.entries(sectionLabels).map(([key, label]) => {
                   const items =
                     dropdownOptions[key] ||
@@ -343,57 +297,72 @@ export function SettingsPageClient({
                   const limit = sectionLimits[key] ?? DEFAULT_SECTION_LIMITS[key] ?? 20;
                   const atLimit = items.length >= limit;
                   return (
-                    <div key={key} className="border rounded-sm p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium">{label}</h3>
-                        <Badge variant={atLimit ? "destructive" : "secondary"}>
-                          {items.length}/{limit}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Label className="text-xs text-muted-foreground shrink-0">Max limit:</Label>
-                        <div className="flex items-center gap-1">
+                    <div
+                      key={key}
+                      className="rounded-lg border border-border/70 bg-card p-5 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-semibold">{label}</h3>
+                          <Badge
+                            variant={atLimit ? "destructive" : "secondary"}
+                            className="rounded-md px-2 py-0.5 text-xs"
+                          >
+                            {items.length}/{limit}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-1.5">
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
-                            className=""
+                            className="size-7 text-muted-foreground hover:text-foreground"
                             onClick={() => updateSectionLimit(key, limit - 1)}
                             disabled={limit <= 1}
+                            aria-label={`Decrease ${label} limit`}
                           >
-                            <MinusIcon className="size-3" />
+                            <MinusIcon className="size-3.5" />
                           </Button>
-                          <span className="w-8 text-center text-sm font-medium tabular-nums">
+                          <span className="w-8 text-center text-sm font-medium tabular-nums text-muted-foreground">
                             {limit}
                           </span>
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
-                            className=""
+                            className="size-7 text-muted-foreground hover:text-foreground"
                             onClick={() => updateSectionLimit(key, limit + 1)}
                             disabled={limit >= 100}
+                            aria-label={`Increase ${label} limit`}
                           >
-                            <PlusIcon className="size-3" />
+                            <PlusIcon className="size-3.5" />
                           </Button>
                         </div>
                       </div>
-                      <Separator />
-                      <div className="flex flex-wrap gap-1.5">
+
+                      <div className="mt-4 flex flex-wrap gap-2">
                         {items.map((item: string) => (
-                          <Badge key={item} variant="outline" className="pr-1 gap-1">
+                          <span
+                            key={item}
+                            className="group inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs font-medium text-foreground"
+                          >
                             {item}
                             <button
                               type="button"
                               onClick={() => removeDropdownItem(key, items.indexOf(item))}
-                              className="hover:text-destructive transition-colors"
+                              className="-mr-0.5 text-muted-foreground transition-colors hover:text-destructive"
+                              aria-label={`Remove ${item}`}
                             >
                               <Trash2Icon className="size-3" />
                             </button>
-                          </Badge>
+                          </span>
                         ))}
                       </div>
-                      <div className="flex gap-2">
+                      {!items.length && (
+                        <p className="mt-4 text-sm text-muted-foreground">No options yet.</p>
+                      )}
+
+                      <div className="mt-4 flex gap-2">
                         <Input
-                          placeholder=""
+                          placeholder={`Add ${label.toLowerCase()}...`}
                           value={newItems[key] || ""}
                           onChange={(e) => setNewItems({ ...newItems, [key]: e.target.value })}
                           onKeyDown={(e) => {
@@ -403,20 +372,19 @@ export function SettingsPageClient({
                             }
                           }}
                           disabled={atLimit}
-                          className="h-8 text-xs"
+                          className="h-9 text-sm"
                         />
                         <Button
                           size="sm"
-                          variant="outline"
                           onClick={() => addDropdownItem(key)}
                           disabled={atLimit || !newItems[key]?.trim()}
                           className="shrink-0"
                         >
-                          <PlusIcon className="size-3" />
+                          <PlusIcon className="size-3.5" />
                         </Button>
                       </div>
                       {atLimit && (
-                        <p className="text-xs text-destructive">Maximum limit reached.</p>
+                        <p className="mt-2 text-xs text-destructive">Maximum limit reached.</p>
                       )}
                     </div>
                   );
