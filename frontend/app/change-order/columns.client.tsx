@@ -24,6 +24,35 @@ export type ChangeOrder = {
   reason?: string;
   createdAt: string;
   updatedAt?: string;
+  coNumber?: string;
+  jobNumber?: string;
+  client?: string;
+  substructureRevised?: string;
+  contractDrawingReference?: string;
+  placingDrawingReference?: string;
+  responsibleForRevision?: string;
+  revisedFor?: string;
+  receivedDate?: string;
+  drawingChanges?: DrawingChangeRow[];
+  weightDifferences?: WeightDifferenceRow[];
+};
+
+export type DrawingChangeRow = {
+  id: string;
+  dwgNo: string;
+  barNo: string;
+  description: string;
+  revHours: string;
+};
+
+export type WeightDifferenceRow = {
+  id: string;
+  dwgNo: string;
+  barNo: string;
+  weightNew: string;
+  weightOld: string;
+  barGrade: "Black" | "Epoxy" | "";
+  totalCount: string;
 };
 
 const statusColorMap: Record<string, string> = {
@@ -36,54 +65,48 @@ const statusColorMap: Record<string, string> = {
 export const columns: ColumnDef<ChangeOrder>[] = [
   {
     id: "sno",
-    header: "S.No",
+    header: "#",
     cell: ({ row }) => <span className="text-muted-foreground">{row.index + 1}</span>,
     enableSorting: false,
     size: 50,
   },
   {
-    accessorKey: "orderNo",
-    header: "Order No",
-    cell: ({ row }) => <span className="font-mono text-xs">{row.getValue("orderNo") || "—"}</span>,
+    accessorKey: "jobNumber",
+    header: "Job #",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs">{row.getValue("jobNumber") || "—"}</span>
+    ),
     size: 120,
-  },
-  {
-    accessorKey: "title",
-    header: "Title",
-    cell: ({ row }) => <span className="font-medium text-xs">{row.getValue("title")}</span>,
-    size: 180,
   },
   {
     accessorKey: "projectName",
-    header: "Project",
-    cell: ({ row }) => <span className="text-xs">{row.getValue("projectName") || "—"}</span>,
+    header: "Project Name",
+    cell: ({ row }) => (
+      <span className="text-xs font-medium">{row.getValue("projectName") || "—"}</span>
+    ),
+    size: 180,
+  },
+  {
+    accessorKey: "orderNo",
+    header: "Change Order No",
+    cell: ({ row }) => <span className="font-mono text-xs">{row.getValue("orderNo") || "—"}</span>,
+    size: 150,
+  },
+  {
+    accessorKey: "revisedFor",
+    header: "Revised For",
+    cell: ({ row }) => <span className="text-xs">{row.getValue("revisedFor") || "—"}</span>,
     size: 140,
   },
   {
-    accessorKey: "amount",
-    header: "Amount",
-    cell: ({ row }) => (
-      <span className="text-xs font-semibold">
-        ₹{Number(row.getValue<number>("amount")).toFixed(2)}
-      </span>
-    ),
-    size: 110,
-  },
-  {
-    accessorKey: "requestedByName",
-    header: "Requested By",
-    cell: ({ row }) => <span className="text-xs">{row.getValue("requestedByName") || "—"}</span>,
-    size: 120,
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Created",
+    accessorKey: "receivedDate",
+    header: "Received Date",
     cell: ({ row }) => {
-      const value = row.getValue<string>("createdAt");
+      const value = row.getValue<string>("receivedDate") || row.getValue<string>("createdAt");
       if (!value) return <span className="text-xs">—</span>;
       return <span className="text-xs">{new Date(value).toLocaleDateString()}</span>;
     },
-    size: 100,
+    size: 110,
   },
   {
     accessorKey: "status",

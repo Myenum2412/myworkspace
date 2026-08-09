@@ -41,7 +41,7 @@ export default function ChangeOrderPage() {
         Array.isArray(list)
           ? list.map((co) => ({
               id: String(co.id || co._id || ""),
-              orderNo: String(co.orderNo || ""),
+              orderNo: String(co.orderNo || co.coNumber || ""),
               title: String(co.title || ""),
               description: String(co.description || ""),
               projectId: co.projectId ? String(co.projectId) : undefined,
@@ -53,6 +53,31 @@ export default function ChangeOrderPage() {
               reason: co.reason ? String(co.reason) : undefined,
               createdAt: String(co.createdAt || ""),
               updatedAt: co.updatedAt ? String(co.updatedAt) : undefined,
+              coNumber: co.coNumber ? String(co.coNumber) : undefined,
+              jobNumber: co.jobNumber ? String(co.jobNumber) : undefined,
+              client: co.client ? String(co.client) : undefined,
+              substructureRevised: co.substructureRevised
+                ? String(co.substructureRevised)
+                : undefined,
+              contractDrawingReference: co.contractDrawingReference
+                ? String(co.contractDrawingReference)
+                : undefined,
+              placingDrawingReference: co.placingDrawingReference
+                ? String(co.placingDrawingReference)
+                : undefined,
+              responsibleForRevision: co.responsibleForRevision
+                ? String(co.responsibleForRevision)
+                : undefined,
+              revisedFor: co.revisedFor ? String(co.revisedFor) : undefined,
+              receivedDate: co.receivedDate
+                ? String(co.receivedDate)
+                : co.createdAt
+                  ? String(co.createdAt)
+                  : undefined,
+              drawingChanges: Array.isArray(co.drawingChanges) ? co.drawingChanges : undefined,
+              weightDifferences: Array.isArray(co.weightDifferences)
+                ? co.weightDifferences
+                : undefined,
             }))
           : [],
       );
@@ -249,36 +274,119 @@ export default function ChangeOrderPage() {
             <div className="p-6 space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="font-medium text-muted-foreground">Order No:</span>{" "}
-                  {viewingOrder.orderNo || "—"}
+                  <span className="font-medium text-muted-foreground">Co #:</span>{" "}
+                  {viewingOrder.orderNo || viewingOrder.coNumber || "—"}
                 </div>
                 <div>
-                  <span className="font-medium text-muted-foreground">Status:</span>{" "}
-                  {viewingOrder.status || "—"}
+                  <span className="font-medium text-muted-foreground">Job #:</span>{" "}
+                  {viewingOrder.jobNumber || "—"}
                 </div>
                 <div>
-                  <span className="font-medium text-muted-foreground">Title:</span>{" "}
-                  {viewingOrder.title}
+                  <span className="font-medium text-muted-foreground">Client:</span>{" "}
+                  {viewingOrder.client || "—"}
                 </div>
                 <div>
                   <span className="font-medium text-muted-foreground">Project:</span>{" "}
                   {viewingOrder.projectName || "—"}
                 </div>
                 <div>
-                  <span className="font-medium text-muted-foreground">Amount:</span> ₹
-                  {viewingOrder.amount.toFixed(2)}
+                  <span className="font-medium text-muted-foreground">Status:</span>{" "}
+                  {viewingOrder.status || "—"}
                 </div>
                 <div>
-                  <span className="font-medium text-muted-foreground">Requested By:</span>{" "}
-                  {viewingOrder.requestedByName || "—"}
+                  <span className="font-medium text-muted-foreground">Revised For:</span>{" "}
+                  {viewingOrder.revisedFor || "—"}
                 </div>
                 <div>
-                  <span className="font-medium text-muted-foreground">Created:</span>{" "}
-                  {viewingOrder.createdAt
-                    ? new Date(viewingOrder.createdAt).toLocaleDateString()
+                  <span className="font-medium text-muted-foreground">Substructure Revised:</span>{" "}
+                  {viewingOrder.substructureRevised || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Received Date:</span>{" "}
+                  {viewingOrder.receivedDate || viewingOrder.createdAt
+                    ? new Date(
+                        viewingOrder.receivedDate || viewingOrder.createdAt,
+                      ).toLocaleDateString()
                     : "—"}
                 </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">
+                    Contract Drawing Reference:
+                  </span>{" "}
+                  {viewingOrder.contractDrawingReference || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">
+                    Placing Drawing Reference:
+                  </span>{" "}
+                  {viewingOrder.placingDrawingReference || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">
+                    Responsible for Revision:
+                  </span>{" "}
+                  {viewingOrder.responsibleForRevision || "—"}
+                </div>
               </div>
+
+              {Array.isArray(viewingOrder.drawingChanges) &&
+                viewingOrder.drawingChanges.length > 0 && (
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-semibold mb-2">Drawing Changes Details</h3>
+                    <table className="table-premium w-full text-xs text-left">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="py-1.5 pr-3 text-muted-foreground">Dwg No</th>
+                          <th className="py-1.5 pr-3 text-muted-foreground">Bar No</th>
+                          <th className="py-1.5 pr-3 text-muted-foreground">Description</th>
+                          <th className="py-1.5 text-muted-foreground">Rev Time (Hrs)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {viewingOrder.drawingChanges.map((d) => (
+                          <tr key={d.id || d.dwgNo} className="border-b">
+                            <td className="py-1.5 pr-3">{d.dwgNo || "—"}</td>
+                            <td className="py-1.5 pr-3">{d.barNo || "—"}</td>
+                            <td className="py-1.5 pr-3">{d.description || "—"}</td>
+                            <td className="py-1.5">{d.revHours || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+              {Array.isArray(viewingOrder.weightDifferences) &&
+                viewingOrder.weightDifferences.length > 0 && (
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-semibold mb-2">Weight Difference Summary</h3>
+                    <table className="table-premium w-full text-xs text-left">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="py-1.5 pr-3 text-muted-foreground">Dwg #</th>
+                          <th className="py-1.5 pr-3 text-muted-foreground">Bar #</th>
+                          <th className="py-1.5 pr-3 text-muted-foreground">Weight New</th>
+                          <th className="py-1.5 pr-3 text-muted-foreground">Weight Old</th>
+                          <th className="py-1.5 pr-3 text-muted-foreground">Bar Grade</th>
+                          <th className="py-1.5 text-muted-foreground">Total Count</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {viewingOrder.weightDifferences.map((w) => (
+                          <tr key={w.id || w.dwgNo} className="border-b">
+                            <td className="py-1.5 pr-3">{w.dwgNo || "—"}</td>
+                            <td className="py-1.5 pr-3">{w.barNo || "—"}</td>
+                            <td className="py-1.5 pr-3">{w.weightNew || "—"}</td>
+                            <td className="py-1.5 pr-3">{w.weightOld || "—"}</td>
+                            <td className="py-1.5 pr-3">{w.barGrade || "—"}</td>
+                            <td className="py-1.5">{w.totalCount || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
               {viewingOrder.description && (
                 <div className="border-t pt-4">
                   <span className="font-medium text-muted-foreground">Description:</span>{" "}
