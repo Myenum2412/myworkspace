@@ -55,6 +55,7 @@
     "ioredis": "^5.11.1",
     "jose": "^6.2.3",
     "jsonwebtoken": "^9.0.2",
+    "mediasoup": "^3.24.1",
     "mongoose": "^8.14.1",
     "multer": "^2.2.0",
     "node-cache": "^5.1.2",

@@ -1,9 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@plugin "@tailwindcss/typography";
 @import "highlight.js/styles/github.css" layer(base);
 @import "highlight.js/styles/github-dark.css" layer(base);
+@import "../components/ui/whatsapp/styles/whatsapp.css";
+@plugin "@tailwindcss/typography";
 
 .dark .hljs {
   background: transparent;
@@ -268,7 +269,6 @@
   --accent: oklch(0.24 0.02 285.823);
   --accent-foreground: oklch(0.9 0.008 285.823);
   --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.13 0.03 22.216);
   --border: oklch(0.282 0.008 285.823);
   --input: oklch(0.315 0.008 285.823);
   --ring: oklch(0.705 0.183 277.6);

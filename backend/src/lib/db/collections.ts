@@ -32,4 +32,9 @@ export const collections = {
   calendarConnections: "calendar_connections",
   calendarEvents: "calendar_events",
   syncTokens: "sync_tokens",
+
+  // Realtime collaboration
+  chatChannels: "chat_channels",
+  chatMessages: "chat_messages",
+  calls: "calls",
 } as const;

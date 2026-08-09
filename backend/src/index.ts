@@ -1,4 +1,4 @@
-import { createServer, type Server } from "http";
+import { createServer, type Server } from "node:http";
 import app from "./app.js";
 import { getEnforcer } from "./config/casbin.js";
 import { env } from "./config/env.js";
@@ -13,6 +13,7 @@ import { registerAllHandlers } from "./lib/scheduler/register-handlers.js";
 import { initSentry } from "./lib/sentry.js";
 import { socketIOManager } from "./lib/socketio/index.js";
 import { promoteRateLimitersToValkey } from "./middleware/rate-limit.js";
+import { markMissedCalls } from "./services/call.service.js";
 
 let server: Server;
 
@@ -61,8 +62,11 @@ async function start() {
             { matched: updateResult.matchedCount, modified: updateResult.modifiedCount },
             "Auto-cleaned old pending virus scan files",
           );
-        } catch (err: any) {
-          logger.error({ err: err.message }, "Failed to auto-clean pending virus scan files");
+        } catch (err: unknown) {
+          logger.error(
+            { err: err instanceof Error ? err.message : String(err) },
+            "Failed to auto-clean pending virus scan files",
+          );
         }
       })
       .catch((err) => {
@@ -90,6 +94,13 @@ async function start() {
 
   // Register all job type handlers
   registerAllHandlers();
+
+  // Start the mediasoup SFU worker (disabled via env.MEDIASOUP_ENABLED=false).
+  import("./lib/mediasoup/index.js").then(({ mediaServer }) =>
+    mediaServer.ensureWorker().catch((err: unknown) => {
+      logger.warn({ err }, "mediasoup SFU worker failed to start — calls will fall back");
+    }),
+  );
 
   // Initialize JobScheduler.NET (Bree) scheduler system
   initializeScheduler().catch((err) => {
@@ -124,6 +135,16 @@ async function start() {
     metricsRegistry.setGauge("process_memory_rss_bytes", {}, memUsage.rss);
     metricsRegistry.setGauge("process_cpu_usage_percent", {}, process.cpuUsage().user / 1000000);
   }, 15_000);
+
+  // Sweep scheduled calls: mark ones whose start time passed as "missed".
+  markMissedCalls()
+    .then((count) => {
+      if (count > 0) logger.info({ count }, "Marked overdue scheduled calls as missed");
+    })
+    .catch((err) => logger.warn({ err }, "Failed to sweep missed calls"));
+  setInterval(() => {
+    markMissedCalls().catch((err) => logger.warn({ err }, "Failed to sweep missed calls"));
+  }, 60_000);
 
   logger.info("MyWorkSpace startup complete");
 
@@ -178,6 +199,18 @@ async function start() {
           logger.info("RabbitMQ connection closed");
         } catch (err) {
           logger.warn({ err }, "RabbitMQ close error");
+        }
+      })(),
+    );
+
+    tasks.push(
+      (async () => {
+        try {
+          const { mediaServer } = await import("./lib/mediasoup/index.js");
+          await mediaServer.close();
+          logger.info("mediasoup SFU closed");
+        } catch (err) {
+          logger.warn({ err }, "mediasoup SFU close error");
         }
       })(),
     );

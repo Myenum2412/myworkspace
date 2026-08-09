@@ -1,11 +1,11 @@
+import crypto from "node:crypto";
+import path from "node:path";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import crypto from "crypto";
 import express, { type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
 import mongoose from "mongoose";
-import path from "path";
 import { env } from "./config/env.js";
 import { csrfProtection } from "./lib/csrf.js";
 import { logger } from "./lib/logger/index.js";
@@ -36,6 +36,7 @@ import authRoutes from "./routes/auth.js";
 import billingRoutes from "./routes/billing.js";
 import blogRoutes from "./routes/blog.js";
 import bootstrapRoutes from "./routes/bootstrap.js";
+import callsRoutes from "./routes/calls.js";
 import chatRoutes from "./routes/chat.js";
 import clientAuthRoutes from "./routes/client-auth.js";
 import clientFoldersRoutes from "./routes/client-folders.js";
@@ -53,6 +54,7 @@ import foldersRoutes from "./routes/folders.js";
 import installerRoutes from "./routes/installer.js";
 import notificationsRoutes from "./routes/notifications.js";
 import organizationsRoutes from "./routes/organizations.js";
+import presenceRoutes from "./routes/presence.js";
 import projectsRoutes from "./routes/projects.js";
 import receiptRoutes from "./routes/receipts.js";
 import schedulerRoutes from "./routes/scheduler.js";
@@ -171,11 +173,11 @@ app.use("/api", (req, res, next) => {
 });
 
 // ── Static files with caching headers and path traversal protection ──
-const oneYear = 365 * 24 * 60 * 60 * 1000;
+const _oneYear = 365 * 24 * 60 * 60 * 1000;
 const oneDay = 24 * 60 * 60 * 1000;
 
 // Path traversal protection middleware for static files
-function staticPathGuard(baseDir: string) {
+function staticPathGuard(_baseDir: string) {
   return (req: Request, res: Response, next: NextFunction) => {
     // Decode URL-encoded characters and normalize path
     const decodedPath = decodeURIComponent(req.path);
@@ -322,7 +324,7 @@ app.get("/metrics", async (_req, res) => {
         return out;
       };
 
-      const [server, stats, memInfo, clients, keyspace, replication] = await Promise.all([
+      const [_server, stats, memInfo, clients, keyspace, replication] = await Promise.all([
         parseInfo("server"),
         parseInfo("stats"),
         parseInfo("memory"),
@@ -532,6 +534,8 @@ app.use("/api/scheduler", schedulerRoutes);
 app.use("/api/timesheet", timesheetRoutes);
 app.use("/api/cron", cronRunnerRoutes);
 app.use("/api/accounts", accountsRoutes);
+app.use("/api/calls", callsRoutes);
+app.use("/api/presence", presenceRoutes);
 
 // ── Public config endpoint (unauthenticated, exposes safe values) ──
 app.get("/api/config/public", (_req, res) => {

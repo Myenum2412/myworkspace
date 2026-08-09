@@ -20,7 +20,7 @@ export async function GET() {
     const lastMessages = await db
       .collection(collections.chatMessages)
       .aggregate([
-        { $match: { orgId, channelId: { $in: (docs as any[]).map((d) => d.id) } } },
+        { $match: { orgId, channelId: { $in: docs.map((d) => d.id) } } },
         { $sort: { createdAt: -1 } },
         {
           $group: {
@@ -31,9 +31,30 @@ export async function GET() {
       ])
       .toArray();
 
-    const lastMsgMap = new Map((lastMessages as any[]).map((r) => [String(r._id), r.lastMessage]));
+    const lastMsgMap = new Map(lastMessages.map((r) => [String(r._id), r.lastMessage]));
 
-    const channels = (docs as any[]).map((d) => {
+    const unreadCounts = await db
+      .collection(collections.chatMessages)
+      .aggregate([
+        {
+          $match: {
+            orgId,
+            senderId: { $ne: session.user.id },
+            deleted: { $ne: true },
+            readBy: { $ne: session.user.id },
+          },
+        },
+        {
+          $group: {
+            _id: "$channelId",
+            count: { $sum: 1 },
+          },
+        },
+      ])
+      .toArray();
+    const unreadMap = new Map(unreadCounts.map((r) => [String(r._id), r.count]));
+
+    const channels = docs.map((d) => {
       const last = lastMsgMap.get(d.id);
       return {
         id: d.id,
@@ -56,6 +77,7 @@ export async function GET() {
             }
           : null,
         messageCount: last ? (last.messageCount as number) || 0 : 0,
+        unreadCount: unreadMap.get(d.id) || 0,
       };
     });
 
@@ -106,7 +128,7 @@ export async function POST(req: Request) {
       if (existing) {
         return NextResponse.json({
           success: true,
-          data: { channel: { id: (existing as any).id } },
+          data: { channel: { id: existing.id } },
         });
       }
     }

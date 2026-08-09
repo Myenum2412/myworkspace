@@ -103,8 +103,17 @@ export const env = {
   BUSINESS_TIMEZONE: process.env.BUSINESS_TIMEZONE || "Asia/Kolkata",
   BUSINESS_CURRENCY: process.env.BUSINESS_CURRENCY || "INR",
   BUSINESS_SUPPORT_EMAIL: process.env.BUSINESS_SUPPORT_EMAIL || "support@myworkspace.com",
-  BUSINESS_HOURS_START: parseInt(process.env.BUSINESS_HOURS_START || "9"),
-  BUSINESS_HOURS_END: parseInt(process.env.BUSINESS_HOURS_END || "18"),
+  BUSINESS_HOURS_START: parseInt(process.env.BUSINESS_HOURS_START || "9", 10),
+  BUSINESS_HOURS_END: parseInt(process.env.BUSINESS_HOURS_END || "18", 10),
+
+  // mediasoup SFU (WebRTC call server). The UDP/TCP RTC port range must be
+  // open on the server's firewall so browsers can reach the media worker.
+  MEDIASOUP_ENABLED: process.env.MEDIASOUP_ENABLED !== "false",
+  MEDIASOUP_LISTEN_IP: process.env.MEDIASOUP_LISTEN_IP || "0.0.0.0",
+  MEDIASOUP_ANNOUNCED_IP: process.env.MEDIASOUP_ANNOUNCED_IP || "127.0.0.1",
+  MEDIASOUP_RTC_MIN_PORT: parseInt(process.env.MEDIASOUP_RTC_MIN_PORT || "20000", 10),
+  MEDIASOUP_RTC_MAX_PORT: parseInt(process.env.MEDIASOUP_RTC_MAX_PORT || "20020", 10),
+  MEDIASOUP_WORKER_LOG_LEVEL: process.env.MEDIASOUP_WORKER_LOG_LEVEL || "warn",
 };
 
 function deriveNtfyBaseUrl(): string {

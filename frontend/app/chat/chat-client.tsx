@@ -3,25 +3,47 @@
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import CallRoom from "@/components/call/call-room";
+import CallScheduler from "@/components/call/call-scheduler";
+import IncomingCallCard from "@/components/call/incoming-call";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  ChatBubble,
+  type MessageStatus,
+  type Reaction,
+} from "@/components/ui/whatsapp/chat-bubble";
+import { apiCreateCall } from "@/lib/call-api";
+import {
+  CalendarIcon,
   CheckIcon,
   ChevronLeftIcon,
   HashIcon,
+  PencilIcon,
   PersonOffIcon,
+  PhoneIcon,
   PlusIcon,
+  ReplyIcon,
   SearchIcon,
   SendIcon,
   Settings2Icon,
   Trash2Icon,
   UserPlusIcon,
   UsersIcon,
+  VideoIcon,
 } from "@/lib/icons";
+import { useChatRealtime } from "@/lib/use-chat-realtime";
+import { useRealtime } from "@/lib/use-realtime";
 
 export interface ChatMember {
   id: string;
@@ -54,6 +76,7 @@ export interface ChatChannel {
     timestamp: string;
   } | null;
   messageCount: number;
+  unreadCount: number;
 }
 
 export interface ChatMessage {
@@ -97,7 +120,89 @@ function formatTime(dateStr: string) {
 }
 
 function isOnline(status: string) {
-  return status === "online" || status === "active";
+  return status === "online" || status === "active" || status === "in-call";
+}
+
+function presenceDotClass(status: string) {
+  switch (status) {
+    case "online":
+    case "active":
+      return "bg-green-500";
+    case "in-call":
+      return "bg-emerald-400";
+    case "idle":
+      return "bg-amber-400";
+    case "busy":
+      return "bg-red-400";
+    default:
+      return "bg-gray-400";
+  }
+}
+
+function isSameDay(a: string, b: string) {
+  const da = new Date(a);
+  const db = new Date(b);
+  return (
+    da.getFullYear() === db.getFullYear() &&
+    da.getMonth() === db.getMonth() &&
+    da.getDate() === db.getDate()
+  );
+}
+
+function dayLabel(dateStr: string) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  if (isSameDay(dateStr, now.toISOString())) return "Today";
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (isSameDay(dateStr, yesterday.toISOString())) return "Yesterday";
+  return d.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
+}
+
+const SENDER_COLORS = [
+  "var(--wa-emerald-500)",
+  "var(--wa-cobalt-400)",
+  "var(--wa-purple-400)",
+  "var(--wa-pink-300)",
+  "var(--wa-orange-300)",
+  "var(--wa-teal-400)",
+  "var(--wa-red-300)",
+  "var(--wa-yellow-300)",
+];
+
+function senderColor(name: string) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i += 1) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  return SENDER_COLORS[Math.abs(hash) % SENDER_COLORS.length];
+}
+
+function formatMessageTime(dateStr: string) {
+  return new Date(dateStr).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function deriveMessageStatus(
+  msg: ChatMessage,
+  userId: string,
+  isLast: boolean,
+): MessageStatus | undefined {
+  if (msg.senderId !== userId) return undefined;
+  if (msg.readBy.length > 0) return "read";
+  if (msg.deleted) return undefined;
+  if (isLast) return "sent";
+  return "delivered";
+}
+
+const QUICK_REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
+
+function typingLabel(users: { userId: string; name: string }[], _channelId: string | null) {
+  void _channelId;
+  const names = users.map((u) => u.name || "Someone");
+  if (names.length === 1) return `${names[0]} is typing…`;
+  if (names.length === 2) return `${names[0]} and ${names[1]} are typing…`;
+  return `${names[0]} and ${names.length - 1} others are typing…`;
 }
 
 export default function ChatClient() {
@@ -105,9 +210,55 @@ export default function ChatClient() {
   const router = useRouter();
   const userId = session?.user?.id || "";
 
+  const realtime = useRealtime({ session, enabled: status === "authenticated" });
+  const { presenceOf, incomingCall, activeCall, setActive, dismissIncoming } = realtime;
+
+  const chatRealtime = useChatRealtime({
+    enabled: status === "authenticated",
+    currentUserId: userId,
+    onMessage: (channelId, message) => {
+      setMessages((prev) =>
+        channelId === selectedId
+          ? prev.some((m) => m.id === message.id)
+            ? prev
+            : [...prev, message]
+          : prev,
+      );
+      if (channelId === selectedId && message.senderId !== userId) {
+        chatRealtimeRef.current?.emitDelivered?.(channelId, message.id);
+        markRead();
+        fetchChannels();
+      }
+    },
+    onMessageUpdated: (channelId, message) => {
+      if (channelId !== selectedId) return;
+      setMessages((prev) => prev.map((m) => (m.id === message.id ? message : m)));
+    },
+    onMessageDeleted: (channelId, messageId) => {
+      if (channelId !== selectedId) return;
+      setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, deleted: true } : m)));
+    },
+    onRead: (channelId, readerId) => {
+      if (channelId !== selectedId) return;
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.senderId === userId && !m.readBy.includes(readerId)
+            ? { ...m, readBy: [...m.readBy, readerId] }
+            : m,
+        ),
+      );
+    },
+  });
+  const { typingIn, emitTyping, emitRead, emitMessage, emitMessageUpdated, emitMessageDeleted } =
+    chatRealtime;
+  // ref so socket event handlers always call the latest closures
+  const chatRealtimeRef = useRef<ReturnType<typeof useChatRealtime> | null>(null);
+  chatRealtimeRef.current = chatRealtime;
+
+  const [schedulerOpen, setSchedulerOpen] = useState(false);
+  const [callMode, setCallMode] = useState<"video" | "audio">("video");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showMobileChat, setShowMobileChat] = useState(false);
-  const [view, setView] = useState<"channels" | "members">("channels");
 
   const [membersList, setMembersList] = useState<ChatMember[]>([]);
   const [channels, setChannels] = useState<ChatChannel[]>([]);
@@ -120,11 +271,13 @@ export default function ChatClient() {
   const [msgSearch, setMsgSearch] = useState("");
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [createMode, setCreateMode] = useState<"group" | "channel">("channel");
+  const [createMode, setCreateMode] = useState<"dm" | "group" | "channel">("channel");
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [manageId, setManageId] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -154,6 +307,17 @@ export default function ChatClient() {
     }
   }, []);
 
+  const markRead = useCallback(async () => {
+    if (!selectedId) return;
+    try {
+      await fetch(`/api/chat/channels/${encodeURIComponent(selectedId)}/read`, {
+        method: "POST",
+      });
+      setChannels((prev) => prev.map((c) => (c.id === selectedId ? { ...c, unreadCount: 0 } : c)));
+      emitRead(selectedId);
+    } catch {}
+  }, [selectedId, emitRead]);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -166,8 +330,11 @@ export default function ChatClient() {
   }, [status, fetchMembers, fetchChannels]);
 
   useEffect(() => {
-    if (selectedId) fetchMessages(selectedId);
-  }, [selectedId, fetchMessages]);
+    if (selectedId) {
+      fetchMessages(selectedId);
+      markRead();
+    }
+  }, [selectedId, fetchMessages, markRead]);
 
   useEffect(() => {
     if (messages.length === 0) return;
@@ -181,47 +348,95 @@ export default function ChatClient() {
   }, [selectedId, fetchMessages]);
 
   useEffect(() => {
+    if (!selectedId) return;
+    const interval = setInterval(markRead, 30_000);
+    return () => clearInterval(interval);
+  }, [selectedId, markRead]);
+
+  useEffect(() => {
     const interval = setInterval(fetchChannels, 15_000);
     return () => clearInterval(interval);
   }, [fetchChannels]);
 
   const sendMessage = useCallback(async () => {
     if (!chatInput.trim() || !selectedId) return;
+    if (editingId) {
+      try {
+        await fetch(
+          `/api/chat/channels/${encodeURIComponent(selectedId)}/messages/${encodeURIComponent(editingId)}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: chatInput.trim() }),
+          },
+        );
+        const updated = messages.find((m) => m.id === editingId);
+        if (updated) {
+          emitMessageUpdated(selectedId, { ...updated, text: chatInput.trim(), edited: true });
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === editingId ? { ...m, text: chatInput.trim(), edited: true } : m,
+            ),
+          );
+        }
+        fetchMessages(selectedId);
+        setEditingId(null);
+        setReplyingTo(null);
+      } catch {}
+      emitTyping(selectedId, false);
+      setChatInput("");
+      return;
+    }
     try {
-      await fetch(`/api/chat/channels/${encodeURIComponent(selectedId)}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: chatInput.trim() }),
-      });
-      fetchMessages(selectedId);
-    } catch {}
-    setChatInput("");
-  }, [chatInput, selectedId, fetchMessages]);
-
-  const createChannel = useCallback(async () => {
-    try {
-      const res = await fetch("/api/chat/channels", {
+      const res = await fetch(`/api/chat/channels/${encodeURIComponent(selectedId)}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: createMode,
-          name: newName.trim(),
-          description: newDescription.trim(),
-          members: selectedMemberIds,
+          content: chatInput.trim(),
+          ...(replyingTo ? { replyTo: replyingTo.id } : {}),
         }),
       });
       const json = await res.json();
-      if (json.data?.channel) {
-        setSelectedId(json.data.channel.id);
-        setShowMobileChat(true);
+      if (json.data?.message) {
+        const message: ChatMessage = {
+          id: json.data.message.id,
+          conversationId: selectedId,
+          senderId: userId,
+          senderName: session?.user?.name || "You",
+          senderAvatar: session?.user?.image || "",
+          text: json.data.message.content,
+          type: "text",
+          replyTo: replyingTo?.id ?? null,
+          reactions: [],
+          readBy: [],
+          edited: false,
+          deleted: false,
+          pinned: false,
+          attachments: [],
+          createdAt: json.data.message.createdAt,
+        };
+        setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]));
+        emitMessage(selectedId, message);
       }
-      setCreateOpen(false);
-      setNewName("");
-      setNewDescription("");
-      setSelectedMemberIds([]);
-      fetchChannels();
+      fetchMessages(selectedId);
+      setReplyingTo(null);
     } catch {}
-  }, [createMode, newName, newDescription, selectedMemberIds, fetchChannels]);
+    emitTyping(selectedId, false);
+    setChatInput("");
+  }, [
+    chatInput,
+    selectedId,
+    fetchMessages,
+    replyingTo,
+    editingId,
+    messages,
+    userId,
+    session?.user?.name,
+    session?.user?.image,
+    emitMessage,
+    emitMessageUpdated,
+    emitTyping,
+  ]);
 
   const openDirect = useCallback(
     async (member: ChatMember) => {
@@ -248,6 +463,87 @@ export default function ChatClient() {
       } catch {}
     },
     [channels, userId, fetchChannels],
+  );
+
+  const createChannel = useCallback(async () => {
+    try {
+      if (createMode === "dm") {
+        const member = membersList.find((m) => selectedMemberIds.includes(m.id));
+        if (member) {
+          await openDirect(member);
+          setCreateOpen(false);
+          setNewName("");
+          setNewDescription("");
+          setSelectedMemberIds([]);
+          return;
+        }
+        return;
+      }
+      const res = await fetch("/api/chat/channels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: createMode,
+          name: newName.trim(),
+          description: newDescription.trim(),
+          members: selectedMemberIds,
+        }),
+      });
+      const json = await res.json();
+      if (json.data?.channel) {
+        setSelectedId(json.data.channel.id);
+        setShowMobileChat(true);
+      }
+      setCreateOpen(false);
+      setNewName("");
+      setNewDescription("");
+      setSelectedMemberIds([]);
+      fetchChannels();
+    } catch {}
+  }, [
+    createMode,
+    newName,
+    newDescription,
+    selectedMemberIds,
+    fetchChannels,
+    membersList,
+    openDirect,
+  ]);
+
+  const startCall = useCallback(
+    async (media: "video" | "audio") => {
+      const channel = channels.find((c) => c.id === selectedId);
+      if (!selectedId || !channel) return;
+      setCallMode(media);
+      try {
+        const { data } = await apiCreateCall({
+          channelId: channel.id,
+          type: (channel.type === "dm" ? "dm" : channel.type) as "dm" | "group" | "channel",
+          name: channel.name,
+          media,
+          invitees:
+            channel.type === "dm" ? (channel.allMembers || []).filter((id) => id !== userId) : [],
+        });
+        setActive({
+          id: data.id,
+          orgId: session?.user?.orgId || "",
+          type: data.type,
+          media,
+          status: "active",
+          initiatorId: userId,
+          participants: [],
+          invitees: [],
+          maxParticipants: data.maxParticipants,
+          createdAt: new Date().toISOString(),
+          name: channel.name || "",
+          recording: false,
+          mutedAll: false,
+        });
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to start call");
+      }
+    },
+    [selectedId, channels, userId, session?.user?.orgId, setActive],
   );
 
   const removeMember = useCallback(
@@ -301,6 +597,58 @@ export default function ChatClient() {
     );
   }, []);
 
+  const toggleReaction = useCallback(
+    async (messageId: string, emoji: string) => {
+      if (!selectedId) return;
+      try {
+        const res = await fetch(
+          `/api/chat/channels/${encodeURIComponent(selectedId)}/messages/${encodeURIComponent(messageId)}/reactions`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ emoji }),
+          },
+        );
+        const json = await res.json();
+        if (json.data?.reactions) {
+          const next = json.data.reactions as { emoji: string; userId: string }[];
+          const target = messages.find((m) => m.id === messageId);
+          if (target) emitMessageUpdated(selectedId, { ...target, reactions: next });
+          setMessages((prev) =>
+            prev.map((m) => (m.id === messageId ? { ...m, reactions: next } : m)),
+          );
+        }
+      } catch {}
+    },
+    [selectedId, messages, emitMessageUpdated],
+  );
+
+  const startEdit = useCallback((message: ChatMessage) => {
+    setEditingId(message.id);
+    setChatInput(message.text);
+    setReplyingTo(null);
+  }, []);
+
+  const startReply = useCallback((message: ChatMessage) => {
+    setReplyingTo(message);
+    setEditingId(null);
+  }, []);
+
+  const deleteMessage = useCallback(
+    async (messageId: string) => {
+      if (!selectedId) return;
+      try {
+        await fetch(
+          `/api/chat/channels/${encodeURIComponent(selectedId)}/messages/${encodeURIComponent(messageId)}`,
+          { method: "DELETE" },
+        );
+        setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, deleted: true } : m)));
+        emitMessageDeleted(selectedId, messageId);
+      } catch {}
+    },
+    [selectedId, emitMessageDeleted],
+  );
+
   const filteredChannels = useMemo(() => {
     let list = channels;
     if (searchQuery) {
@@ -322,24 +670,24 @@ export default function ChatClient() {
     [filteredChannels],
   );
 
+  const memberPresenceStatus = useCallback(
+    (memberId: string, fallback: string) => {
+      const live = presenceOf(memberId)?.status;
+      if (live && live !== "offline") return live;
+      return fallback;
+    },
+    [presenceOf],
+  );
+
   const sortedMembers = useMemo(
     () =>
       [...membersList].sort((a, b) => {
-        const ao = isOnline(a.status) ? 1 : 0;
-        const bo = isOnline(b.status) ? 1 : 0;
+        const ao = isOnline(memberPresenceStatus(a.id, a.status)) ? 1 : 0;
+        const bo = isOnline(memberPresenceStatus(b.id, b.status)) ? 1 : 0;
         if (ao !== bo) return bo - ao;
         return a.name.localeCompare(b.name);
       }),
-    [membersList],
-  );
-
-  const onlineMembers = useMemo(
-    () => sortedMembers.filter((m) => isOnline(m.status)),
-    [sortedMembers],
-  );
-  const offlineMembers = useMemo(
-    () => sortedMembers.filter((m) => !isOnline(m.status)),
-    [sortedMembers],
+    [membersList, memberPresenceStatus],
   );
 
   const selectedChannel = channels.find((c) => c.id === selectedId);
@@ -353,7 +701,7 @@ export default function ChatClient() {
     : undefined;
 
   const filteredMessages = useMemo(() => {
-    let list = messages.filter((m) => !m.deleted);
+    let list = messages;
     if (msgSearch) {
       const q = msgSearch.toLowerCase();
       list = list.filter(
@@ -411,23 +759,9 @@ export default function ChatClient() {
           </div>
         </div>
 
-        <Tabs
-          value={view}
-          onValueChange={(v) => setView(v as "channels" | "members")}
-          className="flex-1 flex flex-col overflow-hidden"
-        >
-          <div className="border-b px-2 shrink-0">
-            <TabsList className="h-9 w-full">
-              <TabsTrigger value="channels" className="text-xs flex-1">
-                <HashIcon className="size-3.5 mr-1" /> Channels
-              </TabsTrigger>
-              <TabsTrigger value="members" className="text-xs flex-1">
-                <UsersIcon className="size-3.5 mr-1" /> Members
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="channels" className="flex-1 overflow-auto m-0 p-0">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
+            {/* Channels only (no separate Members tab) */}
             {groups.length === 0 && dms.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <HashIcon className="size-10 mb-3 opacity-30" />
@@ -478,10 +812,16 @@ export default function ChatClient() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium truncate">{conv.name}</span>
-                        {conv.lastMessage && (
-                          <span className="text-[10px] text-muted-foreground shrink-0">
-                            {formatTime(conv.lastMessage.timestamp)}
+                        {conv.unreadCount > 0 ? (
+                          <span className="ml-2 inline-flex size-5 items-center justify-center rounded-full bg-wa-primary text-[10px] font-semibold text-white">
+                            {conv.unreadCount}
                           </span>
+                        ) : (
+                          conv.lastMessage && (
+                            <span className="text-[10px] text-muted-foreground shrink-0">
+                              {formatTime(conv.lastMessage.timestamp)}
+                            </span>
+                          )
                         )}
                       </div>
                       <div className="flex items-center gap-1">
@@ -508,6 +848,10 @@ export default function ChatClient() {
                 {dms.map((c) => {
                   const otherId = c.allMembers.find((id) => id !== userId);
                   const other = membersList.find((m) => m.id === otherId);
+                  const otherStatus = memberPresenceStatus(
+                    otherId || other?.id || "",
+                    other?.status || "offline",
+                  );
                   return (
                     <button
                       type="button"
@@ -526,7 +870,7 @@ export default function ChatClient() {
                           </AvatarFallback>
                         </Avatar>
                         <div
-                          className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-background ${isOnline(other?.status || "offline") ? "bg-green-500" : "bg-gray-400"}`}
+                          className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-background ${presenceDotClass(otherStatus)}`}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -534,10 +878,16 @@ export default function ChatClient() {
                           <span className="text-sm font-medium truncate">
                             {other?.name || "Direct"}
                           </span>
-                          {c.lastMessage && (
-                            <span className="text-[10px] text-muted-foreground shrink-0">
-                              {formatTime(c.lastMessage.timestamp)}
+                          {c.unreadCount > 0 ? (
+                            <span className="ml-2 inline-flex size-5 items-center justify-center rounded-full bg-wa-primary text-[10px] font-semibold text-white">
+                              {c.unreadCount}
                             </span>
+                          ) : (
+                            c.lastMessage && (
+                              <span className="text-[10px] text-muted-foreground shrink-0">
+                                {formatTime(c.lastMessage.timestamp)}
+                              </span>
+                            )
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">
@@ -551,70 +901,8 @@ export default function ChatClient() {
                 })}
               </>
             )}
-          </TabsContent>
-
-          <TabsContent value="members" className="flex-1 overflow-auto m-0 p-0">
-            {membersList.length === 0 ? (
-              <div className="flex items-center justify-center py-12 text-muted-foreground">
-                <UsersIcon className="size-10 mb-3 opacity-30" />
-                <p className="text-sm">No members found</p>
-              </div>
-            ) : (
-              <>
-                <div className="px-4 py-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Online — {onlineMembers.length}
-                  </p>
-                </div>
-                {onlineMembers.map((m) => (
-                  <button
-                    type="button"
-                    key={m.id}
-                    onClick={() => openDirect(m)}
-                    className="flex w-full items-center gap-3 px-4 py-2 cursor-pointer hover:bg-muted/50 transition-colors border-b text-left"
-                  >
-                    <Avatar className="size-8">
-                      <AvatarImage src={m.avatar || undefined} />
-                      <AvatarFallback className="text-xs">{getInitials(m.name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{m.name}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">
-                        {m.role}
-                        {m.department ? ` · ${m.department}` : ""}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-                <div className="px-4 py-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Offline — {offlineMembers.length}
-                  </p>
-                </div>
-                {offlineMembers.map((m) => (
-                  <button
-                    type="button"
-                    key={m.id}
-                    onClick={() => openDirect(m)}
-                    className="flex w-full items-center gap-3 px-4 py-2 cursor-pointer hover:bg-muted/50 transition-colors border-b text-left"
-                  >
-                    <Avatar className="size-8">
-                      <AvatarImage src={m.avatar || undefined} />
-                      <AvatarFallback className="text-xs">{getInitials(m.name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{m.name}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">
-                        {m.role}
-                        {m.department ? ` · ${m.department}` : ""}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </>
-            )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </div>
 
       {/* ── RIGHT PANEL: Chat ───────────────────────────────── */}
@@ -653,8 +941,37 @@ export default function ChatClient() {
                     {memberCount} member{memberCount === 1 ? "" : "s"}
                   </p>
                 )}
+                {typingIn(selectedId).length > 0 && (
+                  <p className="text-xs text-emerald-600 font-medium">
+                    {typingLabel(typingIn(selectedId), selectedId)}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Start a call"
+                      title="Call"
+                      className="text-emerald-600"
+                    >
+                      <PhoneIcon className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => void startCall("video")}>
+                      <VideoIcon className="size-4 mr-2" /> Video call
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => void startCall("audio")}>
+                      <PhoneIcon className="size-4 mr-2" /> Audio call
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSchedulerOpen(true)}>
+                      <CalendarIcon className="size-4 mr-2" /> Schedule
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -687,75 +1004,235 @@ export default function ChatClient() {
               </div>
             )}
 
-            <ScrollArea className="flex-1 px-4 py-3">
-              <div className="space-y-3">
+            <ScrollArea className="flex-1 bg-[var(--wa-conversation-bg)]">
+              <div className="px-3 sm:px-4 py-3 min-h-full">
                 {filteredMessages.length === 0 ? (
-                  <p className="text-center text-sm text-muted-foreground pt-8">
-                    No messages yet. Say hi to{" "}
-                    {selectedChannel.type === "dm"
-                      ? selectedMember?.name || "them"
-                      : selectedChannel.name}
-                    !
-                  </p>
+                  <div className="flex flex-col items-center justify-center h-full text-center text-sm text-wa-text-secondary pt-16">
+                    <div className="text-5xl mb-3">
+                      {selectedChannel.type === "dm" ? "👋" : "💬"}
+                    </div>
+                    <p>
+                      No messages yet. Say hi to{" "}
+                      {selectedChannel.type === "dm"
+                        ? selectedMember?.name || "them"
+                        : selectedChannel.name}
+                      !
+                    </p>
+                  </div>
                 ) : (
-                  filteredMessages.map((msg) => {
-                    const isOwn = msg.senderId === userId;
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`flex gap-2 ${isOwn ? "justify-end" : "justify-start"}`}
-                      >
-                        {!isOwn && (
-                          <Avatar className="size-8 shrink-0">
-                            <AvatarImage src={msg.senderAvatar || undefined} />
-                            <AvatarFallback className="text-xs">
-                              {msg.senderName?.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                        )}
-                        <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"}`}>
-                          {!isOwn && (
-                            <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                              {msg.senderName}
-                            </p>
+                  <div className="flex flex-col">
+                    {filteredMessages.map((msg, idx) => {
+                      const isOwn = msg.senderId === userId;
+                      const prev = filteredMessages[idx - 1];
+                      const next = filteredMessages[idx + 1];
+                      const showDay = !prev || !isSameDay(prev.createdAt, msg.createdAt);
+                      const sameGroupNext =
+                        next &&
+                        next.senderId === msg.senderId &&
+                        isSameDay(next.createdAt, msg.createdAt);
+
+                      const reactions = msg.reactions.reduce<Reaction[]>((acc, r) => {
+                        const found = acc.find((a) => a.emoji === r.emoji);
+                        if (found) {
+                          found.count = (found.count || 0) + 1;
+                          if (r.userId === userId) found.reacted = true;
+                        } else {
+                          acc.push({
+                            emoji: r.emoji,
+                            count: 1,
+                            reacted: r.userId === userId,
+                          });
+                        }
+                        return acc;
+                      }, []);
+
+                      const status = deriveMessageStatus(
+                        msg,
+                        userId,
+                        filteredMessages.findLastIndex(
+                          (m) => m.senderId === userId && !m.deleted,
+                        ) === idx,
+                      );
+
+                      const replyMsg = msg.replyTo
+                        ? filteredMessages.find((m) => m.id === msg.replyTo)
+                        : undefined;
+
+                      return (
+                        <div key={msg.id} className="group relative">
+                          {showDay && (
+                            <div className="my-3 flex justify-center">
+                              <span className="rounded-full bg-[#ffffff]/90 px-3 py-1 text-[11px] font-medium text-[#575869] shadow-sm dark:bg-[#182229]/95 dark:text-[#e9edef]">
+                                {dayLabel(msg.createdAt)}
+                              </span>
+                            </div>
                           )}
-                          <div
-                            className={`rounded-sm px-3 py-2 text-sm ${isOwn ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+                          <ChatBubble
+                            variant={isOwn ? "outgoing" : "incoming"}
+                            timestamp={
+                              msg.deleted
+                                ? formatMessageTime(msg.createdAt)
+                                : `${formatMessageTime(msg.createdAt)}${msg.edited ? " (edited)" : ""}`
+                            }
+                            status={msg.deleted ? undefined : status}
+                            sender={isOwn ? undefined : msg.senderName}
+                            showTail={!sameGroupNext}
+                            isGroupChat={selectedChannel.type !== "dm"}
+                            senderColor={senderColor(msg.senderName || "")}
+                            reactions={reactions}
+                            className="relative z-0"
                           >
-                            {msg.type === "system" ? (
-                              <p className="text-xs text-muted-foreground italic text-center">
-                                {msg.text}
-                              </p>
+                            {msg.deleted ? (
+                              <em className="text-wa-text-secondary">This message was deleted</em>
                             ) : (
-                              <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                              <>
+                                {replyMsg && (
+                                  <div className="mb-1 overflow-hidden rounded-sm border-l-2 border-wa-emerald-500 bg-white/40 px-2 py-1 dark:bg-black/20">
+                                    <p className="truncate text-[11px] font-medium text-wa-text-secondary">
+                                      {replyMsg.senderId === userId ? "You" : replyMsg.senderName}
+                                    </p>
+                                    <p className="truncate text-[12px] text-wa-text-primary">
+                                      {replyMsg.deleted
+                                        ? "This message was deleted"
+                                        : replyMsg.text}
+                                    </p>
+                                  </div>
+                                )}
+                                {msg.type === "system" ? (
+                                  <span className="text-xs italic text-wa-text-secondary">
+                                    {msg.text}
+                                  </span>
+                                ) : (
+                                  <span className="whitespace-pre-wrap break-words">
+                                    {msg.text}
+                                  </span>
+                                )}
+                              </>
                             )}
-                          </div>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <span className="text-[10px] text-muted-foreground">
-                              {new Date(msg.createdAt).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </span>
-                            {msg.edited && (
-                              <span className="text-[10px] text-muted-foreground">(edited)</span>
-                            )}
-                          </div>
+                          </ChatBubble>
+
+                          {!msg.deleted && (
+                            <div
+                              className={`absolute -top-2 z-20 hidden items-center gap-0.5 rounded-full border border-wa-border bg-wa-bg px-1 py-0.5 shadow-md group-hover:flex ${
+                                isOwn ? "-left-1" : "-right-1"
+                              }`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => startReply(msg)}
+                                className="rounded-full p-1 text-wa-icon-default hover:bg-wa-hover"
+                                aria-label="Reply"
+                                title="Reply"
+                              >
+                                <ReplyIcon className="size-3.5" />
+                              </button>
+                              <div className="flex items-center gap-0.5 px-0.5">
+                                {QUICK_REACTIONS.map((e) => (
+                                  <button
+                                    type="button"
+                                    key={e}
+                                    onClick={() => toggleReaction(msg.id, e)}
+                                    className="rounded-full p-0.5 text-[13px] leading-none hover:bg-wa-hover"
+                                    aria-label={`React ${e}`}
+                                    title={`React ${e}`}
+                                  >
+                                    {e}
+                                  </button>
+                                ))}
+                              </div>
+                              {isOwn && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => startEdit(msg)}
+                                    className="rounded-full p-1.5 text-wa-icon-default hover:bg-wa-hover"
+                                    aria-label="Edit message"
+                                    title="Edit message"
+                                  >
+                                    <PencilIcon className="size-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteMessage(msg.id)}
+                                    className="rounded-full p-1.5 text-wa-icon-default hover:bg-wa-hover"
+                                    aria-label="Delete message"
+                                    title="Delete message"
+                                  >
+                                    <Trash2Icon className="size-3.5" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    );
-                  })
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </div>
                 )}
-                <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
 
-            <div className="px-4 py-3 border-t shrink-0">
-              <div className="flex items-center gap-2">
+            <div className="px-4 py-3 border-t shrink-0 bg-background">
+              {replyingTo && (
+                <div className="mb-2 flex items-center gap-2 rounded-sm border-l-2 border-wa-primary bg-muted px-3 py-1.5">
+                  <ReplyIcon className="size-3.5 shrink-0 text-wa-primary" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-medium text-wa-primary">
+                      Replying to{" "}
+                      {replyingTo.senderId === userId ? "yourself" : replyingTo.senderName}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {replyingTo.deleted ? "This message was deleted" : replyingTo.text}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setReplyingTo(null)}
+                    aria-label="Cancel reply"
+                    className="p-1 text-muted-foreground hover:text-foreground"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+              {editingId && (
+                <div className="mb-2 flex items-center gap-2 rounded-sm border-l-2 border-primary bg-muted px-3 py-1.5">
+                  <PencilIcon className="size-3.5 shrink-0 text-primary" />
+                  <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+                    Editing message
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingId(null);
+                      setChatInput("");
+                    }}
+                    aria-label="Cancel edit"
+                    className="p-1 text-muted-foreground hover:text-foreground"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+              <div className="flex items-end gap-2">
                 <Input
-                  placeholder={`Message ${selectedMember?.name || `#${selectedChannel.name || "channel"}`}`}
+                  placeholder={
+                    editingId
+                      ? "Editing message…"
+                      : `Message ${selectedMember?.name || `#${selectedChannel.name || "channel"}`}`
+                  }
                   value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
+                  onChange={(e) => {
+                    setChatInput(e.target.value);
+                    if (selectedId) {
+                      if (e.target.value.trim()) {
+                        emitTyping(selectedId, true, session?.user?.name || "Someone");
+                      } else {
+                        emitTyping(selectedId, false);
+                      }
+                    }
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -831,6 +1308,14 @@ export default function ChatClient() {
                 >
                   <UsersIcon className="size-3.5 mr-1" /> Group
                 </Button>
+                <Button
+                  variant={createMode === "dm" ? "default" : "outline"}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setCreateMode("dm")}
+                >
+                  <PersonOffIcon className="size-3.5 mr-1" /> Direct
+                </Button>
               </div>
               <div>
                 <label htmlFor="chat-new-name" className="text-sm font-medium">
@@ -889,8 +1374,8 @@ export default function ChatClient() {
                   })}
                 </ScrollArea>
               </div>
-              <Button onClick={createChannel} disabled={!newName.trim()}>
-                Create {createMode}
+              <Button onClick={createChannel} disabled={!newName.trim() && createMode !== "dm"}>
+                Create {createMode === "dm" ? "direct message" : createMode}
               </Button>
             </div>
           </div>
@@ -1008,6 +1493,63 @@ export default function ChatClient() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── Call orchestration ─────────────────────────────── */}
+      <CallScheduler
+        open={schedulerOpen}
+        onOpenChange={setSchedulerOpen}
+        channelId={selectedChannel?.id}
+        type={selectedChannel?.type === "dm" ? "dm" : "channel"}
+        channelName={selectedChannel?.name}
+        media={callMode === "audio" ? "audio" : "video"}
+        members={membersList.map((m) => ({
+          id: m.id,
+          name: m.name,
+          email: m.email,
+          avatar: m.avatar,
+        }))}
+        currentUserId={userId}
+        onJoined={(callId) => {
+          setActive({
+            id: callId,
+            orgId: session.user?.orgId || "",
+            type: (selectedChannel?.type === "dm" ? "dm" : "channel") as "dm" | "group" | "channel",
+            status: "active",
+            initiatorId: userId,
+            participants: [],
+            invitees: [],
+            maxParticipants: 10,
+            createdAt: new Date().toISOString(),
+            name: selectedChannel?.name || "",
+            recording: false,
+            mutedAll: false,
+          });
+        }}
+      />
+
+      {activeCall && activeCall.participants?.length >= 0 && (
+        <CallRoom
+          call={activeCall}
+          currentUserId={userId}
+          isModerator={
+            activeCall.initiatorId === userId ||
+            session.user?.role === "org_admin" ||
+            session.user?.role === "manager"
+          }
+          onLeave={() => setActive(null)}
+          onClosed={() => setActive(null)}
+        />
+      )}
+
+      {incomingCall && !activeCall && (
+        <IncomingCallCard
+          incoming={incomingCall}
+          onClose={dismissIncoming}
+          onJoin={() => {
+            setActive(incomingCall.call);
+          }}
+        />
       )}
     </div>
   );
