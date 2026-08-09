@@ -1,6 +1,7 @@
 import { type Response, Router } from "express";
 import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import {
+  type CallActor,
   cancelCall,
   createCall,
   endCall,
@@ -19,11 +20,18 @@ import {
 
 const router = Router();
 
-async function actorOf(req: AuthRequest) {
+async function actorOf(req: AuthRequest): Promise<CallActor> {
+  const userId = req.user?.userId;
+  const orgId = req.user?.orgId;
+  if (!userId || !orgId) {
+    const err = new Error("Unauthorized") as Error & { statusCode?: number };
+    err.statusCode = 401;
+    throw err;
+  }
   return {
-    userId: req.user?.userId,
-    orgId: req.user?.orgId ?? "",
-    name: await resolveUserName(req.user?.userId),
+    userId,
+    orgId,
+    name: await resolveUserName(userId),
     role: req.user?.role,
   };
 }
