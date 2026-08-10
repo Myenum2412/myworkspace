@@ -313,6 +313,9 @@ const ROLE_ROUTE_ACCESS: Record<string, string[]> = {
   ],
 };
 
+// Role-route paths sorted by length (longest first) for prefix matching
+const ROLE_ROUTE_PATHS = Object.keys(ROLE_ROUTE_ACCESS).sort((a, b) => b.length - a.length);
+
 // Build sets for quick lookup
 const WORKSPACE_SET = new Set(WORKSPACE_PREFIXES);
 const CLIENT_SET = new Set(CLIENT_PREFIXES);
@@ -450,6 +453,14 @@ export const proxy = auth((req) => {
     if (!isCompanyOwner) {
       if (roleLower === ROLES.CLIENTS) {
         return NextResponse.redirect(new URL("/client/dashboard", req.url));
+      }
+      // Shared workspace routes that are explicitly listed in ROLE_ROUTE_ACCESS
+      // (e.g. /change-order) are reachable by their allowed roles, not just owners.
+      const routePath = ROLE_ROUTE_PATHS.find(
+        (p) => pathname === p || pathname.startsWith(p + "/"),
+      );
+      if (routePath && ROLE_ROUTE_ACCESS[routePath].includes(roleLower)) {
+        return;
       }
       // staffs and hr are redirected to /staffs
       return NextResponse.redirect(new URL("/staffs", req.url));
