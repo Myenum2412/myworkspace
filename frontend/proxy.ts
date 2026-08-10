@@ -34,6 +34,7 @@ const PUBLIC_PATHS = new Set([
   "/changelog",
   "/docs",
   "/guides",
+  "/helpcenter",
   "/new-update",
 ]);
 

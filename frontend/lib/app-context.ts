@@ -19,6 +19,7 @@ export const PUBLIC_ROUTES = [
   "/changelog",
   "/docs",
   "/guides",
+  "/helpcenter",
   "/new-update",
 ];
 export const WORKSPACE_ROUTES = [
