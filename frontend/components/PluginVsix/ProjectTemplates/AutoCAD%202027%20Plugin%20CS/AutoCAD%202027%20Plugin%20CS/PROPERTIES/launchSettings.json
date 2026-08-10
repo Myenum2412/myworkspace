@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "$safeprojectname$": {
+      "commandName": "Project"
+    },
+    "Acad": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\AutoCAD 2027\\acad.exe"
+    }
+  }
+}

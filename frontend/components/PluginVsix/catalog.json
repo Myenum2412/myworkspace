@@ -1,0 +1,36 @@
+{
+  "manifestVersion": "1.1",
+  "info": {
+    "id": "AutoCAD2027NETWiz_bfb2bba3-407d-4438-8408-80da1b122d65,version=1.0",
+    "manifestType": "Extension"
+  },
+  "packages": [
+    {
+      "id": "Component.AutoCAD2027NETWiz_bfb2bba3-407d-4438-8408-80da1b122d65",
+      "version": "1.0",
+      "type": "Component",
+      "extension": true,
+      "automaticallyAddedByExtensionPack": false,
+      "dependencies": {
+        "AutoCAD2027NETWiz_bfb2bba3-407d-4438-8408-80da1b122d65": "1.0",
+        "Microsoft.VisualStudio.Component.CoreEditor": "[17.0,18.0)"
+      },
+      "localizedResources": [
+        {
+          "language": "en-US",
+          "title": "AutoCAD 2027 Template",
+          "description": "AutoCAD 2027 project template for .NET 10.0"
+        }
+      ]
+    },
+    {
+      "id": "AutoCAD2027NETWiz_bfb2bba3-407d-4438-8408-80da1b122d65",
+      "version": "1.0",
+      "type": "Vsix",
+      "payloads": [{ "fileName": "PluginVsix.vsix", "size": 101527 }],
+      "vsixId": "AutoCAD2027NETWiz_bfb2bba3-407d-4438-8408-80da1b122d65",
+      "extensionDir": "[installdir]\\Common7\\IDE\\Extensions\\zwnaj0uv.hul",
+      "installSizes": { "targetDrive": 586990 }
+    }
+  ]
+}

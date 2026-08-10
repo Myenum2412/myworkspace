@@ -1,0 +1,90 @@
+{
+  "id": "AutoCAD2027NETWiz_bfb2bba3-407d-4438-8408-80da1b122d65",
+  "version": "1.0",
+  "type": "Vsix",
+  "vsixId": "AutoCAD2027NETWiz_bfb2bba3-407d-4438-8408-80da1b122d65",
+  "extensionDir": "[installdir]\\Common7\\IDE\\Extensions\\zwnaj0uv.hul",
+  "files": [
+    { "fileName": "/extension.vsixmanifest", "sha256": null },
+    { "fileName": "/__TemplateIcon.ico", "sha256": null },
+    { "fileName": "/ProjectTemplates/templateManifest0.noloc.vstman", "sha256": null },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20VB/AutoCAD%202027%20Plugin%20VB/ExamplePluginVB.sln",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20VB/AutoCAD%202027%20Plugin%20VB/ExamplePluginVB.vbproj",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20VB/AutoCAD%202027%20Plugin%20VB/myCommands.Designer.vb",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20VB/AutoCAD%202027%20Plugin%20VB/myCommands.resx",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20VB/AutoCAD%202027%20Plugin%20VB/myCommands.vb",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20VB/AutoCAD%202027%20Plugin%20VB/MyTemplate.vstemplate",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20VB/AutoCAD%202027%20Plugin%20VB/PluginExtension.vb",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20VB/AutoCAD%202027%20Plugin%20VB/__TemplateIcon.ico",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20VB/AutoCAD%202027%20Plugin%20VB/MY%20PROJECT/Application.myapp",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20VB/AutoCAD%202027%20Plugin%20VB/MY%20PROJECT/launchSettings.json",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20CS/AutoCAD%202027%20Plugin%20CS/ExamplePlugin.csproj",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20CS/AutoCAD%202027%20Plugin%20CS/ExamplePlugin.sln",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20CS/AutoCAD%202027%20Plugin%20CS/myCommands.cs",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20CS/AutoCAD%202027%20Plugin%20CS/myCommands.Designer.cs",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20CS/AutoCAD%202027%20Plugin%20CS/myCommands.resx",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20CS/AutoCAD%202027%20Plugin%20CS/MyTemplate.vstemplate",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20CS/AutoCAD%202027%20Plugin%20CS/PluginExtension.cs",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20CS/AutoCAD%202027%20Plugin%20CS/__TemplateIcon.ico",
+      "sha256": null
+    },
+    {
+      "fileName": "/ProjectTemplates/AutoCAD%202027%20Plugin%20CS/AutoCAD%202027%20Plugin%20CS/PROPERTIES/launchSettings.json",
+      "sha256": null
+    }
+  ],
+  "installSizes": { "targetDrive": 586990 },
+  "dependencies": { "Microsoft.VisualStudio.Component.CoreEditor": "[17.0,18.0)" }
+}

@@ -102,6 +102,24 @@ export async function createIndexes(): Promise<void> {
     "users_email",
   );
 
+  // ── Drawings ──
+  await withRetry(
+    () =>
+      c("drawings").createIndex(
+        { orgId: 1, createdAt: -1 },
+        { name: idx("idx_drawings_org_created") },
+      ),
+    "drawings_org_created",
+  );
+  await withRetry(
+    () =>
+      c("drawings").createIndex(
+        { userId: 1, createdAt: -1 },
+        { name: idx("idx_drawings_user_created") },
+      ),
+    "drawings_user_created",
+  );
+
   // ── Time Entries ──
   await withRetry(
     () =>

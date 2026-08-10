@@ -1,0 +1,28 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Project">
+  <TemplateData>
+    <Name>AutoCAD 2027 Plugin CS</Name>
+    <Description>Basic plugin template for creating .NET projects in AutoCAD 2027</Description>
+    <ProjectType>CSharp</ProjectType>
+    <ProjectSubType>
+    </ProjectSubType>
+    <SortOrder>1000</SortOrder>
+    <CreateNewFolder>true</CreateNewFolder>
+    <DefaultName>AutoCAD 2027 Plugin CS</DefaultName>
+    <ProvideDefaultName>true</ProvideDefaultName>
+    <LocationField>Enabled</LocationField>
+    <EnableLocationBrowseButton>true</EnableLocationBrowseButton>
+    <CreateInPlace>true</CreateInPlace>
+    <Icon>__TemplateIcon.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <Project TargetFileName="ExamplePlugin.csproj" File="ExamplePlugin.csproj" ReplaceParameters="true">
+      <Folder Name="Properties" TargetFolderName="Properties">
+        <ProjectItem ReplaceParameters="true" TargetFileName="launchSettings.json">launchSettings.json</ProjectItem>
+      </Folder>
+      <ProjectItem ReplaceParameters="true" TargetFileName="myCommands.cs">myCommands.cs</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="myCommands.resx">myCommands.resx</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="myCommands.Designer.cs">myCommands.Designer.cs</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="PluginExtension.cs">PluginExtension.cs</ProjectItem>
+    </Project>
+  </TemplateContent>
+</VSTemplate>
