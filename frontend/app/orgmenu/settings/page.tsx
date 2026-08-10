@@ -41,5 +41,14 @@ export default function SettingsPage() {
     );
   if (!session?.user) return null;
 
-  return <SettingsFormInteractive {...(data || {})} />;
+  const settings = (data?.settings ?? {}) as Record<string, unknown>;
+  return (
+    <SettingsFormInteractive
+      initial={{
+        timezone: typeof settings.timezone === "string" ? settings.timezone : "UTC",
+        dateFormat: typeof settings.dateFormat === "string" ? settings.dateFormat : "DD/MM/YYYY",
+        brandName: typeof settings.brandName === "string" ? settings.brandName : "",
+      }}
+    />
+  );
 }

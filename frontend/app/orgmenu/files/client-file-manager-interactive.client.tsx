@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FileExplorer } from "@/components/file-explorer";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -23,17 +23,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
-  AlertCircleIcon,
   Building2Icon,
   ChevronRightIcon,
   FileIcon,
   FolderIcon,
-  Loader2Icon,
   PlusIcon,
   SearchIcon,
 } from "@/lib/icons";
 
-type ClientFolder = {
+export type ClientFolder = {
   id: string;
   name: string;
   path: string;
@@ -54,7 +52,7 @@ type ClientRecord = {
   status: string;
 };
 
-type ClientStats = { files: number; size: number };
+export type ClientStats = { files: number; size: number };
 
 interface ClientFileManagerProps {
   orgId: string;
@@ -82,10 +80,6 @@ export function ClientFileManager({
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
   const [activeClientName, setActiveClientName] = useState<string>("");
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
-
-  const refreshData = useCallback(() => {
-    router.refresh();
-  }, [router]);
 
   const openClient = (id: string, name: string) => {
     setActiveClientId(id);
@@ -275,11 +269,4 @@ export function ClientFileManager({
       </Dialog>
     </div>
   );
-}
-
-function formatBytes(bytes: number) {
-  if (!bytes) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-  return `${(bytes / 1024 ** i).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
 }
