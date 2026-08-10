@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { FileManagerClient } from "@/app/files/file-manager-client";
+import StaffFilesHeader from "./staffs-files-header.client";
 
 export default function StaffFilesPage() {
   const { data: session, status } = useSession();
@@ -34,7 +34,7 @@ export default function StaffFilesPage() {
   }
 
   return (
-    <FileManagerClient
+    <StaffFilesHeader
       orgId={orgId}
       userId={session.user.id}
       userRole={session.user.role || "staffs"}
