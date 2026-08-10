@@ -68,6 +68,78 @@ const FEATURE_CONTENT: Record<
       "Team folders with access control",
     ],
   },
+  attendance: {
+    eyebrow: "stay in sync",
+    title: "Attendance & Time-Off",
+    detail:
+      "Track today's attendance at a glance, log check-ins, and manage leave records so payroll and planning stay accurate.",
+    accent: "#8b5cf6",
+    bullets: [
+      "Real-time daily attendance overview",
+      "Leave and time-off tracking",
+      "Teacher-team roll-call reporting",
+    ],
+  },
+  approvals: {
+    eyebrow: "keep things moving",
+    title: "Approvals & Workflows",
+    detail:
+      "Route tasks and file uploads through a lightweight approval flow with clear pending, approved, and rejected states.",
+    accent: "#0ea5e9",
+    bullets: [
+      "Pending / approved / rejected states",
+      "Approval chain with timestamps",
+      "Full audit trail per request",
+    ],
+  },
+  calendar: {
+    eyebrow: "plan your week",
+    title: "Calendar & Scheduling",
+    detail:
+      "See projects, milestones, and appointments on a shared calendar so nothing slips between the cracks.",
+    accent: "#ec4899",
+    bullets: [
+      "Shared workspace calendar",
+      "Upcoming tasks and deadlines",
+      "Appointments and reminders",
+    ],
+  },
+  clients: {
+    eyebrow: "grow relationships",
+    title: "Clients & Contractors",
+    detail:
+      "Keep clients, contractors, and staffing in one directory with contact details, project links, and engagement history.",
+    accent: "#14b8a6",
+    bullets: [
+      "Unified client and contractor directory",
+      "Project and engagement history",
+      "Staff and team assignment",
+    ],
+  },
+  reports: {
+    eyebrow: "see performance",
+    title: "Reports & Analytics",
+    detail:
+      "Turn timesheets, tasks, and performance into clear reports that help leadership make confident decisions.",
+    accent: "#ef4444",
+    bullets: [
+      "Time and workload reports",
+      "Per-team performance insights",
+      "Exportable, shareable summaries",
+    ],
+  },
+  stocks: {
+    eyebrow: "stay stocked",
+    title: "Stocks & Inventory",
+    detail:
+      "Monitor inventory levels with real-time stock in/out, low-stock alerts, and simple item records.",
+    accent: "#10b981",
+    bullets: [
+      "Live stock-in and stock-out tracking",
+      "Low-stock and out-of-stock alerts",
+      "Item-level inventory records",
+    ],
+  },
 };
 
 function FeaturePanel({ id }: { id: string }) {
