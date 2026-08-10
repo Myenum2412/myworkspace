@@ -5,26 +5,18 @@
  * Tests OAuth flow, calendar discovery, and event sync
  */
 
-const http = require("http");
-const https = require("https");
-const url = require("url");
+const http = require("node:http");
+const https = require("node:https");
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
 
-// Test user credentials
-const TEST_USERS = {
-  myenumam: {
-    email: "myenumam@gmail.com",
-    password: "@Meenu2412",
-    name: "Myenum Am",
-  },
-  amarnath: {
-    email: "amarnathkerala2003@gmail.com",
-    password: "test123", // May need to check actual password
-    name: "Amarnath Mk",
-  },
-};
+for (const key of ["TEST_USER_EMAIL", "TEST_OTHER_EMAIL"]) {
+  if (!process.env[key]) {
+    console.error(`${key} environment variable is required`);
+    process.exit(1);
+  }
+}
 
 async function makeRequest(options, data = null) {
   return new Promise((resolve, reject) => {
@@ -117,9 +109,10 @@ async function testCalendarEndpoints() {
     {
       name: "Token Encryption",
       test: () => {
-        const crypto = require("crypto");
-        process.env.CALENDAR_TOKEN_ENCRYPTION_KEY =
-          "de30534a560a27eb256e2fc8fc5dff7a5478b3cc06e80a315b968299572e20f8";
+        const crypto = require("node:crypto");
+        if (!process.env.CALENDAR_TOKEN_ENCRYPTION_KEY) {
+          throw new Error("CALENDAR_TOKEN_ENCRYPTION_KEY environment variable is required");
+        }
 
         function encryptToken(plaintext) {
           const masterKey = Buffer.from(process.env.CALENDAR_TOKEN_ENCRYPTION_KEY, "hex");
@@ -197,10 +190,9 @@ async function testCalendarEndpoints() {
   console.log("\n5. Checking database schema...");
   try {
     const { MongoClient } = require("mongodb");
-    const client = new MongoClient(
-      process.env.MONGODB_URI ||
-        "mongodb+srv://workmyspace2412_db_user:aREoh3wCAz0j6agO@cluster0.hvtabns.mongodb.net/myworkspace?appName=Cluster0",
-    );
+    const uri = process.env.MONGODB_URI;
+    if (!uri) throw new Error("MONGODB_URI environment variable is required");
+    const client = new MongoClient(uri);
     await client.connect();
     const db = client.db();
 
@@ -210,7 +202,9 @@ async function testCalendarEndpoints() {
     );
 
     console.log(`   ✅ Found ${calendarCollections.length} calendar-related collections`);
-    calendarCollections.forEach((c) => console.log(`      - ${c.name}`));
+    for (const c of calendarCollections) {
+      console.log(`      - ${c.name}`);
+    }
 
     await client.close();
   } catch (e) {
@@ -221,19 +215,19 @@ async function testCalendarEndpoints() {
   console.log("\n6. Testing task allocation...");
   try {
     const { MongoClient } = require("mongodb");
-    const client = new MongoClient(
-      process.env.MONGODB_URI ||
-        "mongodb+srv://workmyspace2412_db_user:aREoh3wCAz0j6agO@cluster0.hvtabns.mongodb.net/myworkspace?appName=Cluster0",
-    );
+    const uri = process.env.MONGODB_URI;
+    if (!uri) throw new Error("MONGODB_URI environment variable is required");
+    const client = new MongoClient(uri);
     await client.connect();
     const db = client.db();
 
-    const tasks = await db
-      .collection("tasks")
-      .find({ assigneeId: "7028618c-f086-4bcd-bc83-7a01a6b4fbcf" })
-      .toArray();
-    console.log(`   ✅ Found ${tasks.length} tasks assigned to amarnathkerala2003@gmail.com`);
-    tasks.forEach((t) => console.log(`      - ${t.title} (${t.status})`));
+    const assigneeId = process.env.TEST_OTHER_USER_ID;
+    if (!assigneeId) throw new Error("TEST_OTHER_USER_ID environment variable is required");
+    const tasks = await db.collection("tasks").find({ assigneeId }).toArray();
+    console.log(`   ✅ Found ${tasks.length} tasks assigned to ${process.env.TEST_OTHER_EMAIL}`);
+    for (const t of tasks) {
+      console.log(`      - ${t.title} (${t.status})`);
+    }
 
     await client.close();
   } catch (e) {
@@ -246,7 +240,7 @@ async function testCalendarEndpoints() {
   console.log("1. Login to the application");
   console.log("2. Navigate to /calendar");
   console.log('3. Click "Connect Google Calendar"');
-  console.log("4. Authorize with myenumam@gmail.com");
+  console.log("4. Authorize with " + process.env.TEST_USER_EMAIL);
   console.log("5. Verify calendar events sync");
 }
 

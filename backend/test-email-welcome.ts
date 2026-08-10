@@ -1,10 +1,12 @@
 import { sendUserWelcomeEmail } from "./src/lib/mail/index.js";
 
 async function test() {
+  const email = process.env.TEST_EMAIL;
+  if (!email) throw new Error("TEST_EMAIL environment variable is required");
   try {
     await sendUserWelcomeEmail(
-      "myenumam@gmail.com",
-      "Myenumam",
+      email,
+      "Test User",
       "MyWorkspace",
       null,
       "User",

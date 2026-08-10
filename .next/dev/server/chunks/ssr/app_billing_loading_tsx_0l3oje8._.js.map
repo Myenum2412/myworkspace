@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "debugId": "9060c668-25cf-75be-950b-ef3055aa88bd",
-  "sections": [
-    {"offset": {"line": 5, "column": 0}, "map": {"version":3,"sources":["file:///root/myworkspace/frontend/app/billing/loading.tsx"],"sourcesContent":["export default function Loading() { return null; }\n"],"names":["Loading"],"mappings":";;;;AAAe,SAASA;IAAY,OAAO;AAAM"}}]
-}

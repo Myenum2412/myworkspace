@@ -1,7 +1,0 @@
-var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/departments/route.js")
-R.c("server/chunks/[root-of-the-server]__18f9b25._.js")
-R.c("server/chunks/[root-of-the-server]__1367tnw._.js")
-R.c("server/chunks/_0jyrcf8._.js")
-R.c("server/chunks/_next-internal_server_app_api_departments_route_actions_1jrpd2e.js")
-R.m(934864)
-module.exports=R.m(934864).exports

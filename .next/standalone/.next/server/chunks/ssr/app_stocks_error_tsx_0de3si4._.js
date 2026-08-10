@@ -1,5 +1,0 @@
-;!function(){try { var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof global?global:"undefined"!=typeof window?window:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&((e._debugIds|| (e._debugIds={}))[n]="91ccf2ef-6321-3b02-2e98-8bec7b934231")}catch(e){}}();
-module.exports=[778132,a=>{"use strict";var b=a.i(187924),c=a.i(572131);a.s(["default",0,function({error:a,reset:d}){let e=(0,c.useRef)(null);return(0,c.useEffect)(()=>{let b=a.digest??a.message;b!==e.current&&(e.current=b,console.error("[stocks] Error:",a))},[a]),(0,b.jsxs)("main",{className:"flex flex-1 flex-col items-center justify-center gap-4 p-4",children:[(0,b.jsx)("h1",{className:"text-xl font-bold",children:"Something went wrong"}),(0,b.jsx)("p",{className:"text-sm text-muted-foreground",children:a.message||"Failed to load the inventory page. Please try again."}),(0,b.jsx)("button",{onClick:d,className:"px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm",children:"Try again"})]})}])}];
-
-//# debugId=91ccf2ef-6321-3b02-2e98-8bec7b934231
-//# sourceMappingURL=app_stocks_error_tsx_0de3si4._.js.map

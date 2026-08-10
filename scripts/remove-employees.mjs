@@ -1,8 +1,11 @@
 import { MongoClient } from "mongodb";
 
-const uri =
-  "mongodb+srv://workmyspace2412_db_user:aREoh3wCAz0j6agO@cluster0.hvtabns.mongodb.net/?appName=Cluster0";
-const dbName = "myworkspace";
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+  console.error("MONGODB_URI environment variable is required");
+  process.exit(1);
+}
+const dbName = process.env.MONGODB_DB || "myworkspace";
 
 const employeeRoles = ["staffs", "members", "hr"];
 
@@ -19,7 +22,6 @@ async function removeEmployees() {
       .toArray();
 
     const userIds = employeeUsers.map((u) => u.id);
-    const objectIds = employeeUsers.map((u) => u._id);
 
     console.log(`Found ${userIds.length} employee records to remove`);
 

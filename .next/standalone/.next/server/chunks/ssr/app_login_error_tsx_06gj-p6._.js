@@ -1,5 +1,0 @@
-;!function(){try { var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof global?global:"undefined"!=typeof window?window:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&((e._debugIds|| (e._debugIds={}))[n]="7cd98506-972d-eb85-ba7f-2b2ee574f07a")}catch(e){}}();
-module.exports=[135918,a=>{"use strict";var b=a.i(187924),c=a.i(572131),d=a.i(340695);a.s(["default",0,function({error:a,reset:e}){return(0,c.useEffect)(()=>{console.error("[LoginPage] Unhandled error:",a)},[a]),(0,b.jsxs)("div",{className:"flex min-h-dvh flex-col items-center justify-center gap-4 p-8 text-center bg-background",children:[(0,b.jsx)("h2",{className:"text-lg font-semibold",children:"This page couldn't load"}),(0,b.jsx)("p",{className:"text-sm text-muted-foreground max-w-md",children:"Something went wrong loading the sign-in page. This may be a temporary issue."}),(0,b.jsx)("div",{className:"flex gap-3",children:(0,b.jsx)(d.Button,{onClick:()=>e(),children:"Try again"})})]})}])}];
-
-//# debugId=7cd98506-972d-eb85-ba7f-2b2ee574f07a
-//# sourceMappingURL=app_login_error_tsx_06gj-p6._.js.map

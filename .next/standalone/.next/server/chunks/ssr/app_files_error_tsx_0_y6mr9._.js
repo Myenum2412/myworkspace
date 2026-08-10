@@ -1,5 +1,0 @@
-;!function(){try { var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof global?global:"undefined"!=typeof window?window:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&((e._debugIds|| (e._debugIds={}))[n]="b04a0547-f0a5-cbe2-5a93-bbdff1c20bc3")}catch(e){}}();
-module.exports=[555727,a=>{"use strict";var b=a.i(187924);a.s(["default",0,function({error:a,reset:c}){return(0,b.jsxs)("div",{className:"flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center",children:[(0,b.jsx)("h2",{className:"text-lg font-semibold",children:"Something went wrong"}),(0,b.jsx)("p",{className:"text-sm text-muted-foreground max-w-md",children:a.message||"An unexpected error occurred. Please try again."}),(0,b.jsx)("div",{className:"flex gap-3",children:(0,b.jsx)("button",{onClick:()=>c(),className:"inline-flex items-center justify-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90",children:"Try again"})})]})}])}];
-
-//# debugId=b04a0547-f0a5-cbe2-5a93-bbdff1c20bc3
-//# sourceMappingURL=app_files_error_tsx_0_y6mr9._.js.map

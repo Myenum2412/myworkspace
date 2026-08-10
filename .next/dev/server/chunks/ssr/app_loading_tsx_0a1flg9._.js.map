@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "debugId": "4fa3591f-ee27-7111-962e-3c2d329ecead",
-  "sections": [
-    {"offset": {"line": 5, "column": 0}, "map": {"version":3,"sources":["file:///root/myworkspace/frontend/app/loading.tsx"],"sourcesContent":["export default function RootLoading() {\n  return null;\n}\n"],"names":["RootLoading"],"mappings":";;;;AAAe,SAASA;IACtB,OAAO;AACT"}}]
-}

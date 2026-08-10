@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "debugId": "faa283f8-364e-b14a-fbe7-b33a7237063f",
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/client/layout.tsx"],"sourcesContent":["export default function ClientLayout({ children }: { children: React.ReactNode }) {\n  return <>{children}</>;\n}\n"],"names":["ClientLayout","children"],"mappings":"0EAAe,SAASA,AAAa,UAAEC,CAAQ,CAAiC,EAC9E,MAAO,CAAA,EAAA,EAAA,GAAA,EAAA,EAAA,QAAA,CAAA,UAAGA,GACZ"}}]
-}

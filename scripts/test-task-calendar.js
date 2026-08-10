@@ -2,14 +2,21 @@
 
 /**
  * Test Script: Google Calendar with Task Allocation
- * Tests sending calendar invitations from myenumam@gmail.com to amarnathkerala2003@gmail.com
+ * Tests sending calendar invitations between users.
  */
 
 const { MongoClient } = require("mongodb");
 
-const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  "mongodb+srv://workmyspace2412_db_user:aREoh3wCAz0j6agO@cluster0.hvtabns.mongodb.net/myworkspace?appName=Cluster0";
+const MONGODB_URI = process.env.MONGODB_URI;
+const SENDER_EMAIL = process.env.SENDER_EMAIL;
+const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL;
+
+if (!MONGODB_URI || !SENDER_EMAIL || !RECIPIENT_EMAIL) {
+  console.error(
+    "MONGODB_URI, SENDER_EMAIL, and RECIPIENT_EMAIL environment variables are required",
+  );
+  process.exit(1);
+}
 
 async function testTaskCalendarIntegration() {
   console.log("=== Google Calendar + Task Allocation Test ===\n");
@@ -20,15 +27,15 @@ async function testTaskCalendarIntegration() {
 
   // 1. Get user info
   console.log("1. User Information:");
-  const myenumam = await db.collection("users").findOne({ email: "myenumam@gmail.com" });
-  const amarnath = await db.collection("users").findOne({ email: "amarnathkerala2003@gmail.com" });
+  const sender = await db.collection("users").findOne({ email: SENDER_EMAIL });
+  const recipient = await db.collection("users").findOne({ email: RECIPIENT_EMAIL });
 
-  console.log(`   Sender: ${myenumam.name} (${myenumam.email}) - Role: ${myenumam.role}`);
-  console.log(`   Recipient: ${amarnath.name} (${amarnath.email}) - Role: ${amarnath.role}`);
+  console.log(`   Sender: ${sender.name} (${sender.email}) - Role: ${sender.role}`);
+  console.log(`   Recipient: ${recipient.name} (${recipient.email}) - Role: ${recipient.role}`);
 
-  // 2. Get tasks assigned to Amarnath
-  console.log("\n2. Tasks Assigned to Amarnath:");
-  const tasks = await db.collection("tasks").find({ assigneeId: amarnath.id }).toArray();
+  // 2. Get tasks assigned to the recipient
+  console.log(`\n2. Tasks Assigned to ${recipient.name}:`);
+  const tasks = await db.collection("tasks").find({ assigneeId: recipient.id }).toArray();
 
   if (tasks.length === 0) {
     console.log("   No tasks found");
@@ -60,7 +67,7 @@ async function testTaskCalendarIntegration() {
   // 4. Test calendar event creation (simulated)
   console.log("\n4. Calendar Event Creation Test:");
   console.log("   To create a calendar event from a task:");
-  console.log("   1. User logs in and connects Google Calendar");
+  console.log("   1. Sender logs in and connects Google Calendar");
   console.log("   2. Navigate to task details");
   console.log('   3. Click "Create Calendar Event"');
   console.log("   4. Event is created with task details");
@@ -71,7 +78,7 @@ async function testTaskCalendarIntegration() {
   console.log("   To send calendar invitation:");
   console.log("   1. Create calendar event with attendees");
   console.log("   2. Google Calendar sends email invitations");
-  console.log("   3. Recipient receives invitation at amarnathkerala2003@gmail.com");
+  console.log(`   3. Recipient receives invitation at ${RECIPIENT_EMAIL}`);
 
   // 6. API Endpoints available
   console.log("\n6. Available API Endpoints:");
@@ -84,25 +91,25 @@ async function testTaskCalendarIntegration() {
 
   // 7. Test script for actual testing
   console.log("\n7. Manual Test Steps:");
-  console.log("   Step 1: Login as myenumam@gmail.com");
+  console.log(`   Step 1: Login as ${SENDER_EMAIL}`);
   console.log("   Step 2: Go to /calendar");
   console.log('   Step 3: Click "Connect Google Calendar"');
-  console.log("   Step 4: Authorize with myenumam@gmail.com");
+  console.log(`   Step 4: Authorize with ${SENDER_EMAIL}`);
   console.log("   Step 5: Create a new event");
-  console.log("   Step 6: Add amarnathkerala2003@gmail.com as attendee");
+  console.log(`   Step 6: Add ${RECIPIENT_EMAIL} as attendee`);
   console.log("   Step 7: Save event");
-  console.log("   Step 8: Check amarnathkerala2003@gmail.com email for invitation");
+  console.log(`   Step 8: Check ${RECIPIENT_EMAIL} email for invitation`);
 
   // 8. Sample calendar event payload
   console.log("\n8. Sample Calendar Event Payload:");
   const sampleEvent = {
-    title: "Task Review: fhhjmb",
-    description: "Review task assigned to Amarnath Mk",
+    title: "Task Review",
+    description: "Review task assigned to recipient",
     start: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
     end: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString(), // Tomorrow + 1 hour
     attendees: [
-      { email: "myenumam@gmail.com", name: "Myenum Am" },
-      { email: "amarnathkerala2003@gmail.com", name: "Amarnath Mk" },
+      { email: SENDER_EMAIL, name: sender.name },
+      { email: RECIPIENT_EMAIL, name: recipient.name },
     ],
   };
   console.log(JSON.stringify(sampleEvent, null, 2));
@@ -117,7 +124,7 @@ async function testTaskCalendarIntegration() {
   console.log("\nTo complete the test:");
   console.log("1. Login to http://localhost:3000");
   console.log("2. Connect Google Calendar");
-  console.log("3. Create event with amarnathkerala2003@gmail.com as attendee");
+  console.log(`3. Create event with ${RECIPIENT_EMAIL} as attendee`);
   console.log("4. Verify email invitation is sent");
 }
 

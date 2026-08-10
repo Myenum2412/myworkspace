@@ -13,6 +13,9 @@ async function seedAdmin() {
 
   const email = env.ADMIN_EMAIL;
   const password = env.ADMIN_PASSWORD;
+  if (!email) {
+    throw new Error("ADMIN_EMAIL environment variable is required for seeding");
+  }
   if (!password) {
     throw new Error("ADMIN_PASSWORD environment variable is required for seeding");
   }

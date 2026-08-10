@@ -1,5 +1,0 @@
-;!function(){try { var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof global?global:"undefined"!=typeof window?window:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&((e._debugIds|| (e._debugIds={}))[n]="f72b9c3b-f693-985f-833f-b19b5065aaae")}catch(e){}}();
-module.exports=[166049,a=>{"use strict";var b=a.i(187924),c=a.i(572131);a.s(["default",0,function({error:a,reset:d}){return(0,c.useEffect)(()=>{console.error("[reworks] Error:",a)},[a]),(0,b.jsxs)("main",{className:"flex flex-1 flex-col items-center justify-center gap-4 p-4",children:[(0,b.jsx)("h1",{className:"text-xl font-bold",children:"Something went wrong"}),(0,b.jsx)("p",{className:"text-sm text-muted-foreground",children:a.message||"Failed to load the reworks page. Please try again."}),(0,b.jsx)("button",{onClick:d,className:"px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm",children:"Try again"})]})}])}];
-
-//# debugId=f72b9c3b-f693-985f-833f-b19b5065aaae
-//# sourceMappingURL=app_reworks_error_tsx_0bz-t8a._.js.map

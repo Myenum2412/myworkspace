@@ -1,5 +1,0 @@
-;!function(){try { var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof global?global:"undefined"!=typeof window?window:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&((e._debugIds|| (e._debugIds={}))[n]="18d0ac78-a283-1a54-5149-e95cafa37af0")}catch(e){}}();
-module.exports=[678141,a=>{"use strict";var b=a.i(187924),c=a.i(572131),d=a.i(340695);a.s(["default",0,function({error:a,reset:e}){return(0,c.useEffect)(()=>{console.error("[RootError]",a)},[a]),(0,b.jsxs)("div",{className:"flex min-h-dvh flex-col items-center justify-center gap-4 p-8 text-center bg-background",children:[(0,b.jsx)("h2",{className:"text-lg font-semibold",children:"Something went wrong"}),(0,b.jsx)("p",{className:"text-sm text-muted-foreground max-w-md",children:"An unexpected error occurred. Please try again."}),(0,b.jsxs)("div",{className:"flex gap-3",children:[(0,b.jsx)(d.Button,{onClick:()=>e(),children:"Try again"}),(0,b.jsx)(d.Button,{variant:"outline",onClick:()=>window.location.href="/",children:"Go home"})]})]})}])}];
-
-//# debugId=18d0ac78-a283-1a54-5149-e95cafa37af0
-//# sourceMappingURL=app_error_tsx_20-epnw._.js.map

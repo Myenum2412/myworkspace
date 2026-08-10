@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 import { MongoClient } from "mongodb";
 
 const env = readFileSync("/root/myworkspace/backend/.env", "utf8");
@@ -6,7 +6,9 @@ const uri = env.match(/^MONGODB_URI=['"]?(.+?)['"]?$/m)[1].trim();
 const c = new MongoClient(uri);
 await c.connect();
 const db = c.db("myworkspace");
-const staff = await db.collection("users").findOne({ email: "pallatharjun119@gmail.com" });
+const email = process.env.USER_EMAIL;
+if (!email) throw new Error("USER_EMAIL environment variable is required");
+const staff = await db.collection("users").findOne({ email });
 const sid = staff._id.toString();
 console.log(
   "STAFF",

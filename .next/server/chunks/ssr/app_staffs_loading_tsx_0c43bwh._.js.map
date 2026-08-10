@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "debugId": "8adf07b2-ae2c-1631-e471-cce9fbe92437",
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/staffs/loading.tsx"],"sourcesContent":["export default function Loading() { return null; }\n"],"names":["Loading"],"mappings":"yDAAe,SAASA,EAAY,OAAO,IAAM"}}]
-}

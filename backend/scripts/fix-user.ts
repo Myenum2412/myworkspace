@@ -2,12 +2,14 @@ import mongoose from "mongoose";
 import { User } from "../src/lib/db/models/User.js";
 
 async function main() {
-  await mongoose.connect(process.env.MONGODB_URI!);
+  const uri = process.env.MONGODB_URI;
+  if (!uri) throw new Error("MONGODB_URI environment variable is required");
+  await mongoose.connect(uri);
 
-  const result = await User.updateOne(
-    { email: "myenumam@gmail.com" },
-    { $set: { isActive: true } },
-  );
+  const email = process.env.USER_EMAIL;
+  if (!email) throw new Error("USER_EMAIL environment variable is required");
+
+  const result = await User.updateOne({ email }, { $set: { isActive: true } });
   console.log("Updated:", result.modifiedCount, "matched:", result.matchedCount);
 
   // Also fix any other users missing isActive
@@ -26,7 +28,7 @@ async function main() {
   // because the scheduler filters status $nin: ["completed", "cancelled", "closed"]
   // Draft tasks ARE included though, so that's fine.
 
-  const u = await User.findOne({ email: "myenumam@gmail.com" }).lean();
+  const u = await User.findOne({ email }).lean();
   console.log("User now:", JSON.stringify({ id: u?.id, email: u?.email, isActive: u?.isActive }));
 
   await mongoose.disconnect();

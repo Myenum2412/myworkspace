@@ -19,7 +19,7 @@ export const env = {
     })(),
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || "30d",
   JWT_ISSUER: process.env.JWT_ISSUER || "myworkspace",
-  ADMIN_EMAIL: process.env.ADMIN_EMAIL || "developer@myenum.in",
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL || "",
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || "",
   CORS_ORIGIN: (process.env.CORS_ORIGIN || "http://localhost:3000,https://myworkspace.myenum.in")
     .split(",")

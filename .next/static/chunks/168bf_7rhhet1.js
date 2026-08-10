@@ -1,4 +1,0 @@
-;!function(){try { var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof global?global:"undefined"!=typeof window?window:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&((e._debugIds|| (e._debugIds={}))[n]="cd6c03f3-c513-7cf1-a975-bce4780a683c")}catch(e){}}();
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,303534,e=>{"use strict";var t=e.i(618566),u=e.i(271645);e.s(["default",0,function(){let e=(0,t.useRouter)();return(0,u.useEffect)(()=>{e.replace("/login")},[e]),null}])}]);
-
-//# debugId=cd6c03f3-c513-7cf1-a975-bce4780a683c

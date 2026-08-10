@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "debugId": "c87611d5-a4e3-27d8-3e58-643bf9f3b598",
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/admin/security/page.tsx"],"sourcesContent":["\"use client\";\n\nimport { AlertTriangle, Loader2, RefreshCw } from \"lucide-react\";\n\ninterface FailedLogin {\n  _id: string;\n  email: string;\n  ipAddress: string;\n  userAgent: string;\n  reason: string;\n  createdAt: string;\n}\n\ninterface RiskEvent {\n  _id: string;\n  userId: string;\n  email: string;\n  riskType: string;\n  riskScore: number;\n  action: string;\n  createdAt: string;\n}\n\nexport default function AdminSecurityPage() {\n  return (\n    <div className=\"p-6 max-w-7xl mx-auto space-y-6\">\n      <div>\n        <h1 className=\"text-2xl font-bold text-gray-900 dark:text-gray-100\">Security Administration</h1>\n        <p className=\"text-sm text-gray-500 mt-1\">Security monitoring and audit logs</p>\n      </div>\n    </div>\n  );\n}\n"],"names":["AdminSecurityPage","className"],"mappings":"2EAuBe,SAASA,EACtB,MACE,CAAA,EAAA,EAAA,GAAA,EAAC,MAAA,CAAIC,UAAU,2CACb,CAAA,EAAA,EAAA,IAAA,EAAC,MAAA,WACC,CAAA,EAAA,EAAA,GAAA,EAAC,KAAA,CAAGA,UAAU,+DAAsD,4BACpE,CAAA,EAAA,EAAA,GAAA,EAAC,IAAA,CAAEA,UAAU,sCAA6B,2CAIlD"}}]
-}

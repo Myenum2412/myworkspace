@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "debugId": "0b35128e-0695-645b-a9c9-dd475ccc48b4",
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/dashboard/loading.tsx"],"sourcesContent":["export default function DashboardLoading() {\n  return null;\n}\n"],"names":["DashboardLoading"],"mappings":"yDAAe,SAASA,EACtB,OAAO,IACT"}}]
-}

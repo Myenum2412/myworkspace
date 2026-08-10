@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "debugId": "f72b9c3b-f693-985f-833f-b19b5065aaae",
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/reworks/error.tsx"],"sourcesContent":["\"use client\";\n\nimport { useEffect } from \"react\";\n\nexport default function Error({\n  error,\n  reset,\n}: {\n  error: Error & { digest?: string };\n  reset: () => void;\n}) {\n  useEffect(() => {\n    console.error(\"[reworks] Error:\", error);\n  }, [error]);\n\n  return (\n    <main className=\"flex flex-1 flex-col items-center justify-center gap-4 p-4\">\n      <h1 className=\"text-xl font-bold\">Something went wrong</h1>\n      <p className=\"text-sm text-muted-foreground\">\n        {error.message || \"Failed to load the reworks page. Please try again.\"}\n      </p>\n      <button\n        onClick={reset}\n        className=\"px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm\"\n      >\n        Try again\n      </button>\n    </main>\n  );\n}\n"],"names":["Error","error","reset","console","className","message","onClick"],"mappings":"0DAEA,EAAA,EAAA,CAAA,CAAA,yBAEe,SAASA,AAAM,OAC5BC,CAAK,CACLC,OAAK,CAIN,EAKC,MAJA,CAAA,EAAA,EAAA,SAAA,AAAS,EAAC,KACRC,QAAQF,KAAK,CAAC,mBAAoBA,EACpC,EAAG,CAACA,EAAM,EAGR,CAAA,EAAA,EAAA,IAAA,EAAC,OAAA,CAAKG,UAAU,uEACd,CAAA,EAAA,EAAA,GAAA,EAAC,KAAA,CAAGA,UAAU,6BAAoB,yBAClC,CAAA,EAAA,EAAA,GAAA,EAAC,IAAA,CAAEA,UAAU,yCACVH,EAAMI,OAAO,EAAI,uDAEpB,CAAA,EAAA,EAAA,GAAA,EAAC,SAAA,CACCC,QAASJ,EACTE,UAAU,2EACX,gBAKP"}}]
-}

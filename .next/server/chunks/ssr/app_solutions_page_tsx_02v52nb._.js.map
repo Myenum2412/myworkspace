@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "debugId": "11796d93-1320-68ff-fa1e-8b1d8670a939",
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/solutions/page.tsx"],"sourcesContent":["\"use client\";\n\nimport { Metadata } from \"next\";\n\nexport default function SolutionsPage() {\n  return (\n    <main className=\"flex min-h-screen flex-col items-center justify-center p-8\">\n      <h1 className=\"text-3xl font-bold\">Solutions</h1>\n      <p className=\"mt-4 text-muted-foreground\">Coming soon.</p>\n    </main>\n  );\n}\n"],"names":["SolutionsPage","className"],"mappings":"2EAIe,SAASA,EACtB,MACE,CAAA,EAAA,EAAA,IAAA,EAAC,OAAA,CAAKC,UAAU,uEACd,CAAA,EAAA,EAAA,GAAA,EAAC,KAAA,CAAGA,UAAU,8BAAqB,cACnC,CAAA,EAAA,EAAA,GAAA,EAAC,IAAA,CAAEA,UAAU,sCAA6B,mBAGhD"}}]
-}

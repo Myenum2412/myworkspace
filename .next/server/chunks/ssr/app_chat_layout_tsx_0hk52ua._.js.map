@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "debugId": "a4a9c8a2-2740-1967-cd99-8357bce3391e",
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["../../../../app/chat/layout.tsx"],"sourcesContent":["import type { Metadata } from \"next\";\nimport { getChatMetadata } from \"@/lib/seo/seo-config\";\n\nexport const metadata: Metadata = getChatMetadata();\n\nexport default function ChatLayout({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\n  return <>{children}</>;\n}\n"],"names":["metadata","ChatLayout","children"],"mappings":"yDAGO,IAAMA,EAAqB,CAAA,EAAA,AAFlC,EAAA,CAAA,CAAA,QAEkC,eAAA,AAAe,qBAElC,SAASC,AAAW,UACjCC,CAAQ,CAGT,EACC,MAAO,CAAA,EAAA,EAAA,GAAA,EAAA,EAAA,QAAA,CAAA,UAAGA,GACZ"}}]
-}
