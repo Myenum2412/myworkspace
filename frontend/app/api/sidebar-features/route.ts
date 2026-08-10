@@ -10,7 +10,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  const orgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
 
   const org = await db
     .collection(collections.organizations)
@@ -27,7 +27,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  const orgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
   const body = await request.json();
 
   await db

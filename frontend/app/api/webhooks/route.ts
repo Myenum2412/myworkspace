@@ -11,7 +11,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  const orgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
 
   const docs = await db
     .collection(collections.webhookConfigs)
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  const orgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
   const body = await req.json();
   const { integration, webhookUrl, events } = body;
 
@@ -95,7 +95,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  const orgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
   const integration = searchParams.get("integration");

@@ -67,15 +67,26 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             return token;
           }
 
-          let dbUser = await db
-            .collection("users")
-            .findOne({ id: userId })
-            .catch(() => null);
+          let dbUser: any = null;
+          try {
+            dbUser = await db.collection("users").findOne({ id: userId });
+          } catch {
+            // transient DB error → keep the session intact this round
+            (token as any).lastVerified = 0;
+            return token;
+          }
           if (!dbUser) {
-            dbUser = await db
-              .collection(collections.clientUsers)
-              .findOne({ id: userId })
-              .catch(() => null);
+            try {
+              dbUser = await db.collection(collections.clientUsers).findOne({ id: userId });
+            } catch {
+              (token as any).lastVerified = 0;
+              return token;
+            }
+          }
+
+          // Account no longer exists (deleted/removed) → sign out immediately.
+          if (!dbUser) {
+            return null;
           }
 
           // Terminated / deactivated / suspended accounts must be signed out

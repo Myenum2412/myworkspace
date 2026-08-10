@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  const orgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
 
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
@@ -65,7 +65,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  const orgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 

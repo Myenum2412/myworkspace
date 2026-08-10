@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  const orgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
   const body = await request.json();
 
   if (!body.galleryId) {

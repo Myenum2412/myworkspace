@@ -10,7 +10,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  const orgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
 
   const galleries = await db
     .collection(collections.qrGalleries)
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  const orgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
   const body = await request.json();
 
   if (!body.name?.trim()) {
@@ -57,7 +57,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const orgId = await requireUserOrgId(session.user.id, session.user.email);
+  const orgId = await requireUserOrgId(session.user.id, session.user.email, session.user.orgId);
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
