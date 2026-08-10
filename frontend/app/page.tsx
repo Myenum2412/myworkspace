@@ -6,6 +6,7 @@ import CtaSection3 from "@/components/cta-section-3";
 import Feature2 from "@/components/feature-2";
 import { FeaturePlatform } from "@/components/feature-platform";
 import { HeroFinancial } from "@/components/landing/hero-financial";
+import NewsletterBlock from "@/components/newsletter-block";
 
 const CAROUSEL_ITEMS: CarouselItem[] = [
   {
@@ -58,6 +59,7 @@ export default function Home() {
         <CircularCarousel items={CAROUSEL_ITEMS} />
       </section>
       <CtaSection3 />
+      <NewsletterBlock />
     </main>
   );
 }
