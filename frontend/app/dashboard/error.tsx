@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { isChunkLoadError } from "@/lib/chunk-load-error";
 
-export default function FilesError({
+export default function DashboardError({
   error,
   reset,
 }: {
@@ -11,6 +11,10 @@ export default function FilesError({
   reset: () => void;
 }) {
   const [reloading, setReloading] = useState(false);
+
+  useEffect(() => {
+    console.error("[DashboardError]", error);
+  }, [error]);
 
   useEffect(() => {
     if (!isChunkLoadError(error)) return;
@@ -34,6 +38,13 @@ export default function FilesError({
           className="inline-flex items-center justify-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
           {reloading ? "Reloading..." : "Try again"}
+        </button>
+        <button
+          type="button"
+          onClick={() => (window.location.href = "/")}
+          className="inline-flex items-center justify-center rounded-sm border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+        >
+          Go home
         </button>
       </div>
     </div>

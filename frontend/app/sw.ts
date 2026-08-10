@@ -10,7 +10,7 @@ declare global {
 
 declare const self: any;
 
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 const CACHE_NAMES = {
   static: `static-assets-${CACHE_VERSION}`,
   images: `images-${CACHE_VERSION}`,
@@ -76,18 +76,6 @@ const fontCache = new CacheFirst({
     },
   ],
 });
-
-function createOfflineImageResponse(): Response {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
-    <rect fill="#f3f4f6" width="400" height="300"/>
-    <text fill="#9ca3af" font-family="sans-serif" font-size="16" text-anchor="middle" x="200" y="140">Offline</text>
-    <text fill="#9ca3af" font-family="sans-serif" font-size="12" text-anchor="middle" x="200" y="165">Image unavailable</text>
-  </svg>`;
-  return new Response(svg, {
-    status: 200,
-    headers: { "Content-Type": "image/svg+xml", "Cache-Control": "no-store" },
-  });
-}
 
 const FALLBACK_PATHS = ["/offline.html", "/offline"];
 
@@ -181,6 +169,29 @@ const serwist = new Serwist({
 
 serwist.addEventListeners();
 
+// ── On activation, purge caches from older app versions (stale chunk refs) ──
+self.addEventListener("activate", (event: any) => {
+  event.waitUntil(
+    (async () => {
+      const expected = new Set(Object.values(CACHE_NAMES));
+      const keys = await self.caches.keys();
+      await Promise.all(
+        keys
+          .filter(
+            (key: string) =>
+              key.startsWith("static-assets-") ||
+              key.startsWith("images-") ||
+              key.startsWith("api-responses-") ||
+              key.startsWith("fonts-") ||
+              key.startsWith("fallback-"),
+          )
+          .filter((key: string) => !expected.has(key))
+          .map((key: string) => self.caches.delete(key)),
+      );
+    })(),
+  );
+});
+
 // ── Offline fallback for navigations only (Serwist handles caching) ──
 self.addEventListener("fetch", (event: any) => {
   const request = event.request;
@@ -197,10 +208,6 @@ self.addEventListener("fetch", (event: any) => {
     event.respondWith(fetch(request).catch(() => handleOfflineFallback(request)));
   }
 });
-
-function buildOfflineImagePlaceholder(): Response {
-  return createOfflineImageResponse();
-}
 
 // ── Push event listener ──
 self.addEventListener("push", (event: any) => {
@@ -224,7 +231,7 @@ self.addEventListener("push", (event: any) => {
     }
 
     event.waitUntil(self.registration.showNotification(title, options));
-  } catch (err) {
+  } catch {
     const title = event.data.text();
     event.waitUntil(
       self.registration.showNotification(title, {
