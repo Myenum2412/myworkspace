@@ -9,7 +9,6 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarRail } from "@/component
 import {
   ActivityIcon,
   BriefcaseIcon,
-  CalendarClockIcon,
   ClockIcon,
   FolderIcon,
   FolderKanbanIcon,
@@ -39,11 +38,6 @@ function buildStaffNavData(t: (key: TermKey) => string) {
       title: t("nav.staffTimesheet"),
       url: "/staffs/timesheet",
       icon: <ClockIcon className="size-6" />,
-    },
-    {
-      title: t("nav.staffUpcomingTasks"),
-      url: "/staffs/upcoming-tasks",
-      icon: <CalendarClockIcon className="size-6" />,
     },
     { title: t("nav.fileManager"), url: "/staffs/files", icon: <FolderIcon className="size-6" /> },
     {
