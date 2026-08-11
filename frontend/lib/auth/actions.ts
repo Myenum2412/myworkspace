@@ -25,7 +25,7 @@ export async function loginAction(formData: FormData) {
     redirect("/login?error=Email+and+password+are+required");
   }
 
-  let user;
+  let user: any = null;
   let isClient = false;
 
   try {
@@ -153,7 +153,7 @@ export async function loginAction(formData: FormData) {
         })
         .catch(() => {});
     }
-  } catch (err) {}
+  } catch {}
 
   const role = isClient ? ROLES.CLIENTS : user?.role;
   const redirectPath = getRedirectPath(role);
@@ -279,34 +279,36 @@ export async function verifySignupOtpAction(formData: FormData) {
   }
 
   const apiUrl = process.env.API_URL || "http://localhost:4000";
+  let res: Response;
   try {
-    const res = await fetch(`${apiUrl}/api/auth/verify-signup-otp`, {
+    res = await fetch(`${apiUrl}/api/auth/verify-signup-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, otp }),
     });
-    const data = await res.json();
-    if (!res.ok) {
-      return { error: data.error || data.message || "Invalid verification code" };
-    }
-
-    const { password } = data.data!;
-
-    try {
-      await signIn("credentials", { email, password, redirect: true, redirectTo: "/dashboard" });
-    } catch (err) {
-      const isRedirect =
-        err instanceof Error &&
-        "digest" in err &&
-        typeof (err as Error & { digest: string }).digest === "string" &&
-        (err as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT");
-      if (isRedirect) {
-        throw err;
-      }
-      return { error: "Something went wrong. Please try signing in manually." };
-    }
   } catch {
     return { error: "Unable to connect. Please try again." };
+  }
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    return { error: data.error || data.message || "Invalid verification code" };
+  }
+
+  const { password } = data.data!;
+
+  try {
+    await signIn("credentials", { email, password, redirect: true, redirectTo: "/dashboard" });
+  } catch (err) {
+    const isRedirect =
+      err instanceof Error &&
+      "digest" in err &&
+      typeof (err as Error & { digest: string }).digest === "string" &&
+      (err as Error & { digest: string }).digest.startsWith("NEXT_REDIRECT");
+    if (isRedirect) {
+      throw err;
+    }
+    return { error: "Something went wrong. Please try signing in manually." };
   }
 }
 

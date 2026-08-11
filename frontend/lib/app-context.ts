@@ -7,6 +7,8 @@ export const PUBLIC_ROUTES = [
   "/signup",
   "/signup-mongo",
   "/forgot-password",
+  "/reset-password",
+  "/verify-email",
   "/auth/not-found",
   "/",
   "/features",

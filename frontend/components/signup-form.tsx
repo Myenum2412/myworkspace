@@ -14,6 +14,7 @@ function GoogleIcon() {
   return (
     <svg
       role="img"
+      aria-label="Google"
       viewBox="0 0 48 48"
       className="size-5 shrink-0"
       xmlns="http://www.w3.org/2000/svg"
@@ -83,7 +84,16 @@ export function SignupForm({
     form.set("email", email);
     form.set("otp", otp);
 
-    await verifySignupOtpAction(form);
+    try {
+      const result = await verifySignupOtpAction(form);
+      if (result?.error) {
+        setError(result.error);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (step === "otp") {
