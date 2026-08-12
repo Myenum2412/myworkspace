@@ -20,6 +20,7 @@ module.exports = {
         NODE_ENV: "production",
         PORT: 3000,
         API_URL: process.env.API_URL || "http://localhost:4000",
+        NODE_OPTIONS: "--no-deprecation --dns-result-order=ipv4first",
       },
     },
   ],

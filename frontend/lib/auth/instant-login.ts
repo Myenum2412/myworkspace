@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
-import { redirect } from "next/navigation";
 import type { BootstrapData } from "@/lib/api/bootstrap";
 import { db } from "@/lib/db";
 import { collections } from "@/lib/db/schema";
@@ -25,6 +24,7 @@ const AUTH_ERRORS: Record<string, string> = {
   EmailCreateAccount: "Could not create an account with this email.",
   Callback: "There was a problem signing in.",
   OAuthAccountNotLinked: "This email is already associated with another account.",
+  OAuthAccountNotFound: "No account found for this email. Please sign up with this email first.",
   EmailSignin: "There was a problem sending the verification email.",
   SessionRequired: "Please sign in to access this page.",
   Configuration: "Server configuration error. Please contact support.",
@@ -125,7 +125,7 @@ export async function instantLoginAction(
     const redirectTo = getRedirectPath(role);
 
     revalidatePath(redirectTo, "page");
-    revalidateTag("dashboard");
+    revalidateTag("dashboard", "max");
 
     return {
       success: true,

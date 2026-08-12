@@ -4,7 +4,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
-import { apiUrl } from "@/lib/api";
 import { fetchBootstrapData, invalidateBootstrapCache } from "@/lib/api/bootstrap";
 import { recordLoginTime } from "@/lib/performance";
 import { ROLES } from "@/lib/rbac";
@@ -18,6 +17,7 @@ const AUTH_ERRORS: Record<string, string> = {
   EmailCreateAccount: "Could not create an account with this email.",
   Callback: "There was a problem signing in.",
   OAuthAccountNotLinked: "This email is already associated with another account.",
+  OAuthAccountNotFound: "No account found for this email. Please sign up with this email first.",
   EmailSignin: "There was a problem sending the verification email.",
   SessionRequired: "Please sign in to access this page.",
   Configuration: "Server configuration error. Please contact support.",

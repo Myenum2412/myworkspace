@@ -1,9 +1,16 @@
+import { setDefaultResultOrder } from "node:dns";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import LinkedIn from "next-auth/providers/linkedin";
+import { v4 as uuid } from "uuid";
 import { ROLES } from "@/lib/rbac";
+
+// Some hosts resolve Google's endpoints to an unreachable IPv6 address first,
+// which makes the OAuth callback fetch time out (UND_ERR_CONNECT_TIMEOUT).
+// Prefer IPv4 for all outbound connections from this server.
+setDefaultResultOrder("ipv4first");
 
 declare module "next-auth" {
   interface Session {
@@ -25,6 +32,92 @@ declare module "next-auth" {
     orgId?: string;
     onboardingCompleted?: boolean;
     tourCompleted?: boolean;
+  }
+}
+
+async function autoProvisionOAuthUser(email: string, name?: string | null, image?: string | null) {
+  const { db } = await import("@/lib/db");
+  const { collections } = await import("@/lib/db/schema");
+  const { getNextSequence } = await import("@/lib/db/counter");
+
+  const userId = uuid();
+  const orgId = uuid();
+  const displayName = name?.trim() || email.split("@")[0];
+  let slug =
+    displayName
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "") || `org-${userId}`;
+  const existingSlug = await db.collection(collections.organizations).findOne({ slug });
+  if (existingSlug) slug = `${slug}-${userId}`;
+
+  const userNumber = await getNextSequence("userNumber");
+  const now = new Date();
+
+  await db.collection(collections.organizations).updateOne(
+    { id: orgId },
+    {
+      $setOnInsert: {
+        id: orgId,
+        name: `${displayName}'s Organization`,
+        slug,
+        plan: "enterprise",
+        ownerId: userId,
+        createdBy: userId,
+        subscriptionStatus: "active",
+        trialEnd: null,
+        currentPeriodEnd: null,
+        createdAt: now,
+        updatedAt: now,
+      },
+    },
+    { upsert: true },
+  );
+
+  await db.collection(collections.orgMembers).updateOne(
+    { orgId, userId },
+    {
+      $setOnInsert: {
+        orgId,
+        userId,
+        role: ROLES.MEMBERS,
+        createdBy: userId,
+        joinedAt: now,
+      },
+    },
+    { upsert: true },
+  );
+
+  const userDoc = {
+    id: userId,
+    userNumber,
+    name: displayName,
+    email,
+    emailVerified: true,
+    orgId,
+    image: image || null,
+    status: "online",
+    role: ROLES.MEMBERS,
+    permissions: [],
+    isActive: true,
+    tokenVersion: 0,
+    failedLoginAttempts: 0,
+    createdBy: userId,
+    lastLogin: now,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  try {
+    await db.collection(collections.users).insertOne(userDoc);
+    return userDoc;
+  } catch (err) {
+    const code = (err as { code?: number })?.code;
+    if (code === 11000) {
+      const existing = await db.collection(collections.users).findOne({ email });
+      if (existing) return existing;
+    }
+    throw err;
   }
 }
 
@@ -205,15 +298,24 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           return false;
         }
 
-        const existing = await db.collection("users").findOne({ email: user.email });
+        let existing = (await db.collection("users").findOne({ email: user.email })) as any;
 
-        // OAuth providers do NOT auto-create accounts. An account must have
-        // been created by an authorised workspace member first.
+        // OAuth auto-provisions an account (user + org + membership) on the
+        // first sign-in with a new email, mirroring the backend signup flow.
         if (!existing) {
-          console.warn(
-            `[AUTH] OAuth sign-in rejected — no account found for email: ${user.email} (provider: ${account.provider})`,
-          );
-          return "/login?error=OAuthAccountNotLinked";
+          console.log(`[AUTH] OAuth sign-in — auto-creating account for email: ${user.email}`);
+          let created: Record<string, unknown> | null = null;
+          try {
+            created = await autoProvisionOAuthUser(user.email, user.name, user.image);
+          } catch (err) {
+            console.error("[AUTH] Failed to auto-provision OAuth account:", err);
+          }
+          // A concurrent sign-in may have created it meanwhile — re-check.
+          const fallback = await db.collection("users").findOne({ email: user.email });
+          existing = created ?? fallback;
+          if (!existing) {
+            return "/login?error=OAuthAccountNotFound";
+          }
         }
 
         // Terminated / deactivated / suspended accounts cannot sign in.

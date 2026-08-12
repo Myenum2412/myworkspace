@@ -17,7 +17,9 @@ function GoogleIcon() {
       viewBox="0 0 48 48"
       className="size-5 shrink-0"
       xmlns="http://www.w3.org/2000/svg"
+      aria-label="Google"
     >
+      <title>Google</title>
       <path
         fill="#EA4335"
         d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
@@ -46,6 +48,7 @@ const AUTH_ERRORS: Record<string, string> = {
   EmailCreateAccount: "Could not create an account with this email.",
   Callback: "There was a problem signing in.",
   OAuthAccountNotLinked: "This email is already associated with another account.",
+  OAuthAccountNotFound: "No account found for this email. Please sign up with this email first.",
   EmailSignin: "There was a problem sending the verification email.",
   SessionRequired: "Please sign in to access this page.",
   Configuration: "Server configuration error. Please contact support.",
@@ -60,7 +63,7 @@ export function LoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { loading, error: loginError, step, instantLogin } = useInstantLogin();
+  const { loading, error: loginError, instantLogin } = useInstantLogin();
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -139,6 +142,7 @@ export function LoginForm({
                   strokeWidth={1.5}
                   stroke="currentColor"
                   className="size-4"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -154,6 +158,7 @@ export function LoginForm({
                   strokeWidth={1.5}
                   stroke="currentColor"
                   className="size-4"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
