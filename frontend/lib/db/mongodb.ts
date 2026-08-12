@@ -28,10 +28,9 @@ export async function connectToMongo() {
           ? uri
           : uri + (uri.includes("?") ? "&" : "?") + "retryWrites=true&w=majority",
         {
-          serverSelectionTimeoutMS: 30000,
-          connectTimeoutMS: 30000,
+          serverSelectionTimeoutMS: 10000,
+          connectTimeoutMS: 10000,
           maxPoolSize: 20,
-          minPoolSize: 2,
           maxIdleTimeMS: 30000,
           tls: true,
           tlsAllowInvalidCertificates: isDev,
@@ -127,3 +126,6 @@ export const db = new Proxy({} as Db, {
     };
   },
 });
+
+// Eagerly connect to MongoDB in the background on module import
+connectToMongo().catch(() => {});

@@ -231,8 +231,8 @@ export default function RootLayout({
                     location.reload();
                     return;
                   }
-                  setTimeout(showRecovery, 5000);
-                }, 9000);
+                  setTimeout(showRecovery, 10000);
+                }, 20000);
               }
               if (document.readyState === "loading") {
                 document.addEventListener("DOMContentLoaded", boot);

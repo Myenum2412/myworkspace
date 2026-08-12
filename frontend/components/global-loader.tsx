@@ -49,13 +49,13 @@ export function GlobalLoader({ children }: { children: React.ReactNode }) {
         markReloaded();
         window.location.reload();
       }
-    }, 6000);
+    }, 15000);
 
     const stuckTimer = window.setTimeout(() => {
       if (reloaded) {
         setSessionStuck(true);
       }
-    }, 13000);
+    }, 30000);
 
     return () => {
       window.clearTimeout(reloadTimer);
