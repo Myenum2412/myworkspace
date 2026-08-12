@@ -125,7 +125,7 @@ export async function instantLoginAction(
     const redirectTo = getRedirectPath(role);
 
     revalidatePath(redirectTo, "page");
-    revalidateTag("dashboard", "max");
+    revalidateTag("dashboard");
 
     return {
       success: true,
