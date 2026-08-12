@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/public/login-bg.png" alt="MyWorkSpace logo" width="90" height="60" />
+  <img src="frontend/public/logo.jpeg" alt="MyWorkSpace logo" width="90" height="60" />
   <strong>MyWorkSpace</strong>
 </p>
 
