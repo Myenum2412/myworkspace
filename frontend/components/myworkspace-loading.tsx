@@ -17,6 +17,8 @@ export function MyWorkspaceLoading({
 }: MyWorkspaceLoadingProps) {
   return (
     <div
+      id="workspace-loading-screen"
+      data-workspace-loading="true"
       className={
         fullScreen
           ? "flex min-h-screen items-center justify-center bg-background text-foreground"

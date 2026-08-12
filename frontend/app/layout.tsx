@@ -192,9 +192,62 @@ export default function RootLayout({
         {/* Early Hints compatibility */}
         <meta httpEquiv="Accept-CH" content="DPR, Viewport-Width, Width" />
 
+        {/* Loading-screen watchdog: recovers even if React hydration fails.
+            If the "Loading workspace..." screen is still on screen after a few
+            seconds the session fetch (or a stale service-worker shell) is hung.
+            Force one hard reload per session, then show a recovery UI. */}
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: static watchdog script, no user input
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function () {
+              if (typeof window === "undefined") return;
+              var KEY = "mws-session-reload";
+              function reloaded() {
+                try { return sessionStorage.getItem(KEY) === "1"; } catch (e) { return false; }
+              }
+              function mark() {
+                try { sessionStorage.setItem(KEY, "1"); } catch (e) {}
+              }
+              function el() { return document.getElementById("workspace-loading-screen"); }
+              function showRecovery() {
+                var node = el();
+                if (!node) return;
+                try {
+                  node.innerHTML =
+                    '<div style="display:flex;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;text-align:center;font-family:system-ui,sans-serif;color:#0f172a;background:#fff">' +
+                    '<h2 style="font-size:18px;font-weight:600;margin:0">Something went wrong</h2>' +
+                    '<p style="font-size:14px;color:#64748b;max-width:420px;margin:0">The workspace is taking too long to load. Check your connection and try again.</p>' +
+                    '<button onclick="location.reload()" style="padding:10px 20px;font-size:14px;font-weight:500;color:#fff;background:#0f172a;border:none;border-radius:6px;cursor:pointer">Reload</button>' +
+                    "</div>";
+                } catch (e) {}
+              }
+              function boot() {
+                if (!el()) return;
+                setTimeout(function () {
+                  if (!el()) return;
+                  if (!reloaded()) {
+                    mark();
+                    location.reload();
+                    return;
+                  }
+                  setTimeout(showRecovery, 5000);
+                }, 9000);
+              }
+              if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", boot);
+              } else {
+                boot();
+              }
+            })();
+            `,
+          }}
+        />
+
         {/* Google Analytics */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-1W2KRGMXJE" />
         <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: static GA bootstrap, no user input
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
@@ -210,15 +263,19 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://sentry.io" />
 
         {/* Structured Data */}
-        {jsonLd.map((item, i) => (
-          <script
-            key={i}
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(item).replace(/</g, "\\u003c"),
-            }}
-          />
-        ))}
+        {jsonLd.map((item, i) => {
+          return (
+            <script
+              // biome-ignore lint/suspicious/noArrayIndexKey: static JSON-LD list, order is stable
+              key={i}
+              type="application/ld+json"
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: static SEO JSON-LD, no user input
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify(item).replace(/</g, "\\u003c"),
+              }}
+            />
+          );
+        })}
       </head>
       <body
         className="min-h-full flex flex-col bg-background text-foreground"

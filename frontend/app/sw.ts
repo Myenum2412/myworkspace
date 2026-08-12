@@ -10,7 +10,7 @@ declare global {
 
 declare const self: any;
 
-const CACHE_VERSION = "v4";
+const CACHE_VERSION = "v5";
 const CACHE_NAMES = {
   static: `static-assets-${CACHE_VERSION}`,
   images: `images-${CACHE_VERSION}`,
