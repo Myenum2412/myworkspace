@@ -1,9 +1,11 @@
 import { jest } from "@jest/globals";
-import { eventProducer } from "../../../src/lib/queue/producer.js";
 
-jest.mock("../../../src/lib/queue/connection.js", () => ({
-  getChannel: jest.fn(),
+const mockPublish = jest.fn().mockReturnValue(true);
+
+jest.unstable_mockModule("../../../src/lib/queue/connection.js", () => ({
+  getChannel: jest.fn().mockResolvedValue(undefined),
   isRabbitMQConfigured: jest.fn(() => true),
+  publishWithConfirm: mockPublish,
   EXCHANGES: {
     UPLOAD_EVENTS: "upload.events",
     FILE_EVENTS: "file.events",
@@ -32,21 +34,11 @@ jest.mock("../../../src/lib/queue/connection.js", () => ({
   },
 }));
 
-const mockPublish = jest.fn().mockReturnValue(true);
-
-jest.mock("../../../src/lib/queue/producer.js", () => {
-  const actual = jest.requireActual("../../../src/lib/queue/producer.js");
-  return {
-    ...actual,
-    eventProducer: {
-      ...actual.eventProducer,
-    },
-  };
-});
-
-jest.mock("amqplib", () => ({
+jest.unstable_mockModule("amqplib", () => ({
   connect: jest.fn(),
 }));
+
+const { eventProducer } = await import("../../../src/lib/queue/producer.js");
 
 describe("eventProducer", () => {
   const baseParams = {

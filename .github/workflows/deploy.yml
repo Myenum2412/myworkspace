@@ -29,10 +29,10 @@ jobs:
         ports:
           - 27017:27017
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js 22
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
@@ -77,7 +77,7 @@ jobs:
       backend_tag: ${{ steps.meta.outputs.tags }}
       frontend_tag: ${{ steps.meta.outputs.tags }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

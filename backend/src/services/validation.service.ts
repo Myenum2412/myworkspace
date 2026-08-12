@@ -123,10 +123,20 @@ export function validateEmail(email: string): string {
  * Check if a MIME type is allowed for upload.
  * All types are accepted except explicitly dangerous ones.
  */
+const DANGEROUS_MIME_TYPES = new Set([
+  "application/x-httpd-php",
+  "application/x-php",
+  "application/x-shockwave-flash",
+  "application/x-sharedlib",
+  "application/x-java-applet",
+  "application/x-msdownload",
+]);
+
 export function isAllowedMimeType(mimeType: string): boolean {
   const mime = mimeType.toLowerCase();
   // Block known dangerous MIME types
   if (
+    DANGEROUS_MIME_TYPES.has(mime) ||
     mime.startsWith("application/x-msdownload") ||
     mime.startsWith("application/x-executable") ||
     mime === "application/x-sharedlib"

@@ -193,12 +193,15 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
 
       if (!account || !user.email) return true;
 
+      // Credentials provider is handled fully in `authorize` — no extra DB check needed here.
+      if (account.provider === "credentials") return true;
+
       try {
         const { db } = await import("@/lib/db");
 
-        // Skip if database is not available
+        // Skip if database is not available — allow credentials through but block OAuth
         if (!db) {
-          console.warn("[AUTH] Database not available, skipping sign-in processing");
+          console.warn("[AUTH] Database not available during OAuth sign-in");
           return false;
         }
 
@@ -207,11 +210,15 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         // OAuth providers do NOT auto-create accounts. An account must have
         // been created by an authorised workspace member first.
         if (!existing) {
-          return false;
+          console.warn(
+            `[AUTH] OAuth sign-in rejected — no account found for email: ${user.email} (provider: ${account.provider})`,
+          );
+          return "/login?error=OAuthAccountNotLinked";
         }
 
         // Terminated / deactivated / suspended accounts cannot sign in.
         if (existing.isActive === false) {
+          console.warn(`[AUTH] OAuth sign-in rejected — account deactivated: ${user.email}`);
           return false;
         }
 
