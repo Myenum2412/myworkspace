@@ -1,4 +1,9 @@
+import { setDefaultResultOrder } from "node:dns";
 import { type Collection, type Db, MongoClient } from "mongodb";
+
+try {
+  setDefaultResultOrder("ipv4first");
+} catch {}
 
 const dbName = process.env.MONGODB_DB || "myworkspace";
 
