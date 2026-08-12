@@ -1,5 +1,6 @@
 <p align="center">
-  <img src="frontend/public/logobg.png" alt="MyWorkSpace login background" width="100%" />
+  <img src="frontend/public/login-bg.png" alt="MyWorkSpace logo" width="90" height="60" />
+  <strong>MyWorkSpace</strong>
 </p>
 
 # MyWorkSpace — A Unified Collaboration & Business Management Platform
@@ -27,6 +28,10 @@ The platform is role-aware by design. Different users — executives, project ma
 ### Purpose
 
 The purpose of MyWorkSpace is threefold. First, it centralises operations so that all work-related information lives in one place. Second, it automates repetitive administrative tasks such as invoice reminders, approval routing, and attendance tracking so that teams can focus on high-value work. Third, it provides full visibility into what is happening across the organisation in real time, empowering leaders with the data they need to make confident decisions.
+
+<p align="center">
+  <img src="frontend/public/dashboard.png" alt="MyWorkSpace dashboard" width="100%" />
+</p>
 
 ---
 
