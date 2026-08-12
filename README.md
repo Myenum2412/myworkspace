@@ -1,6 +1,11 @@
 <p align="center">
-  <img src="frontend/public/logo.jpeg" alt="MyWorkSpace logo" width="90" height="60" />
-  <strong>MyWorkSpace</strong>
+  <img
+    src="frontend/public/logo.jpeg"
+    alt="MyWorkSpace logo"
+    width="90"
+    height="90"
+    style="border-radius: 50%; object-fit: cover; border: 3px solid #000;"
+  />
 </p>
 
 # MyWorkSpace — A Unified Collaboration & Business Management Platform
