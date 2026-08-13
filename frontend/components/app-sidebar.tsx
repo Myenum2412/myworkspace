@@ -115,7 +115,7 @@ export function AppSidebar({
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarBrand title={t("app.name")} />
+      <SidebarBrand title="" />
       <SidebarContent>
         <NavMain items={visibleItems} label={t("nav.dashboard")} />
         <NavMain items={settingsItems} label={t("nav.settings")} className="mt-auto" />
