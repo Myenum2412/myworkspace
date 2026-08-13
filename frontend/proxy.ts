@@ -396,7 +396,11 @@ export const proxy = auth((req) => {
     return response;
   }
 
-  if (pathname.startsWith("/api") || pathname.startsWith("/_next")) {
+  if (
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/monitoring")
+  ) {
     return;
   }
 
