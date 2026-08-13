@@ -147,7 +147,7 @@ export function GlobalLoader({ children }: { children: React.ReactNode }) {
         </div>
       );
     }
-    return <MyWorkspaceLoading message="Loading workspace..." />;
+    return <MyWorkspaceLoading text="" message="Loading workspace..." />;
   }
 
   return <>{children}</>;
