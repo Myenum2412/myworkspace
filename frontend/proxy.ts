@@ -372,7 +372,7 @@ function canAccessRoute(pathname: string, role: string): boolean {
   // Check prefix match (longest match first)
   const sortedPaths = Object.keys(ROLE_ROUTE_ACCESS).sort((a, b) => b.length - a.length);
   for (const routePath of sortedPaths) {
-    if (pathname.startsWith(routePath + "/") || pathname === routePath) {
+    if (pathname.startsWith(`${routePath}/`) || pathname === routePath) {
       return ROLE_ROUTE_ACCESS[routePath].includes(role);
     }
   }
@@ -461,7 +461,7 @@ export const proxy = auth((req) => {
       // Shared workspace routes that are explicitly listed in ROLE_ROUTE_ACCESS
       // (e.g. /change-order) are reachable by their allowed roles, not just owners.
       const routePath = ROLE_ROUTE_PATHS.find(
-        (p) => pathname === p || pathname.startsWith(p + "/"),
+        (p) => pathname === p || pathname.startsWith(`${p}/`),
       );
       if (routePath && ROLE_ROUTE_ACCESS[routePath].includes(roleLower)) {
         return;
