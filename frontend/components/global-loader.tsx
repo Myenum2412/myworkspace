@@ -63,6 +63,21 @@ export function GlobalLoader({ children }: { children: React.ReactNode }) {
     };
   }, [status]);
 
+  // Recovery screen auto-retries: clear the reload flag and reload the page
+  // after a short countdown so users don't dead-end on the error screen.
+  useEffect(() => {
+    if (!sessionStuck) return;
+    const retryTimer = window.setTimeout(() => {
+      try {
+        sessionStorage.removeItem(RELOAD_FLAG);
+      } catch {
+        /* storage unavailable */
+      }
+      window.location.reload();
+    }, 8000);
+    return () => window.clearTimeout(retryTimer);
+  }, [sessionStuck]);
+
   useEffect(() => {
     if (status !== "authenticated" || initRef.current) return;
     initRef.current = true;
@@ -116,11 +131,19 @@ export function GlobalLoader({ children }: { children: React.ReactNode }) {
           </p>
           <button
             type="button"
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              try {
+                sessionStorage.removeItem(RELOAD_FLAG);
+              } catch {
+                /* storage unavailable */
+              }
+              window.location.reload();
+            }}
             className="inline-flex items-center justify-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             Reload
           </button>
+          <p className="text-xs text-muted-foreground">Retrying automatically…</p>
         </div>
       );
     }

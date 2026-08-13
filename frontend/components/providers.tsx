@@ -7,6 +7,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { memo, useEffect, useState } from "react";
@@ -83,11 +84,17 @@ const onPersistSuccess = (queryClient: QueryClient) => () => {
   queryClient.resumePausedMutations();
 };
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  children,
+  session,
+}: {
+  children: React.ReactNode;
+  session?: Session | null;
+}) {
   const [queryClient] = useState(createQueryClient);
 
   return (
-    <SessionProvider refetchInterval={300} refetchOnWindowFocus={false}>
+    <SessionProvider session={session} refetchInterval={300} refetchOnWindowFocus={false}>
       <OnlineStatusManager queryClient={queryClient} />
       <PersistQueryClientProvider
         client={queryClient}

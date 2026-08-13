@@ -11,6 +11,7 @@ import { OfflineBanner } from "@/components/offline-banner";
 import { OfflineSyncManager } from "@/components/offline-sync-manager";
 import { PerformanceMonitor } from "@/components/performance-monitor";
 import { Providers } from "@/components/providers";
+import { auth } from "@/lib/auth/config";
 import {
   organizationJsonLd,
   siteConfig,
@@ -160,7 +161,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -168,6 +169,7 @@ export default function RootLayout({
   const jsonLd = [organizationJsonLd(), webSiteJsonLd(), softwareApplicationJsonLd()];
   const apiUrl = process.env.API_URL || "http://localhost:4000";
   const cdnUrl = process.env.CDN_URL;
+  const session = await auth().catch(() => null);
 
   return (
     <html
@@ -231,7 +233,17 @@ export default function RootLayout({
                     location.reload();
                     return;
                   }
-                  setTimeout(showRecovery, 10000);
+                  setTimeout(function () {
+                    showRecovery();
+                    // Auto-retry: clear the flag and reload after a short
+                    // countdown so the session fetch gets a fresh chance.
+                    setTimeout(function () {
+                      try {
+                        sessionStorage.removeItem(KEY);
+                      } catch (e) {}
+                      location.reload();
+                    }, 8000);
+                  }, 10000);
                 }, 20000);
               }
               if (document.readyState === "loading") {
@@ -281,7 +293,7 @@ export default function RootLayout({
         className="min-h-full flex flex-col bg-background text-foreground"
         suppressHydrationWarning
       >
-        <Providers>
+        <Providers session={session}>
           <CsrfInterceptor />
           <ContextMenuProvider />
           <NotificationInitializer />
