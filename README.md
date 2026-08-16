@@ -290,8 +290,8 @@ The net result is a construction operation where projects are delivered with bet
 </p>
 
 <p align="center">
-  <a href="#"><img src="https://img.shields.io/badge/Website-www.myspace.example-000000" alt="Website"></a>
-  <a href="#"><img src="https://img.shields.io/badge/Email-sales%40myspace.example-blue" alt="Email"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Website-myworkspace.myenum.in-000000" alt="Website"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Email-developer@myenum.in-blue" alt="Email"></a>
   <a href="#"><img src="https://img.shields.io/badge/Docs-Documentation-brightgreen" alt="Docs"></a>
   <a href="#"><img src="https://img.shields.io/badge/API-REST%20%7C%20Webhooks-informational" alt="API"></a>
 </p>
