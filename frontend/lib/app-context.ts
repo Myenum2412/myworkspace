@@ -23,6 +23,9 @@ export const PUBLIC_ROUTES = [
   "/guides",
   "/helpcenter",
   "/new-update",
+  "/privacy",
+  "/terms",
+  "/security",
 ];
 export const WORKSPACE_ROUTES = [
   "/dashboard",
