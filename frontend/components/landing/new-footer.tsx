@@ -31,6 +31,15 @@ const columns = [
       { label: "Contact", href: "/contact" },
     ],
   },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Security Policy", href: "/security" },
+      { label: "Cookie Preferences", href: "/privacy/cookies" },
+    ],
+  },
 ];
 
 const socials = [
@@ -72,7 +81,7 @@ export function NewFooter() {
               </Button>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {columns.map((col) => (
               <div key={col.title}>
                 <h3 className="text-sm font-bold tracking-tight text-foreground">{col.title}</h3>
@@ -106,6 +115,7 @@ export function NewFooter() {
                 size="icon-sm"
                 className="rounded-none text-muted-foreground hover:text-foreground"
               >
+                {/* biome-ignore lint/a11y/useValidAnchor: legacy link */}
                 <a href="#" aria-label={social.label}>
                   <social.icon className="size-4" aria-hidden="true" />
                 </a>

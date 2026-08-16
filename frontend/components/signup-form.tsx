@@ -129,6 +129,17 @@ export function SignupForm({
           >
             {loading ? "Verifying..." : "Verify & Create Account"}
           </Button>
+          <p className="text-center text-[10px] text-muted-foreground mt-2 leading-normal">
+            By verifying, you agree to our{" "}
+            <Link href="/terms" className="underline hover:text-foreground">
+              Terms & Conditions
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="underline hover:text-foreground">
+              Privacy Policy
+            </Link>
+            .
+          </p>
         </form>
 
         <div className="text-center">
@@ -224,6 +235,17 @@ export function SignupForm({
         <Button type="submit" className="w-full mt-1 font-semibold" disabled={loading}>
           {loading ? "Sending..." : "Send verification code"}
         </Button>
+        <p className="text-center text-[10px] text-muted-foreground mt-2 leading-normal">
+          By signing up, you agree to our{" "}
+          <Link href="/terms" className="underline hover:text-foreground">
+            Terms & Conditions
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="underline hover:text-foreground">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </form>
 
       <div className="relative flex items-center gap-3">
