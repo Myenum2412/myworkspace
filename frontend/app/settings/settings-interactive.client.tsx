@@ -270,7 +270,7 @@ export function SettingsPageClient({
           subtitle={<p>Manage your account, billing, and team settings.</p>}
         />
 
-        <Tabs defaultValue="account" className="gap-6">
+        <Tabs defaultValue="general" className="gap-6">
           <TabsList className="w-full sm:w-auto">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="team">Team</TabsTrigger>
