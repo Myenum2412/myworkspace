@@ -142,8 +142,7 @@ export function DashboardOverviewClient({ dashboardData: initialData }: Props) {
     fetch("/api/dashboard/data")
       .then((r) => r.json())
       .then((data) => setDashboardData(data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => {});
   }, [initialData]);
 
   const {
