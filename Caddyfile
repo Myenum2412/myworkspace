@@ -1,0 +1,100 @@
+myworkspace.myenum.in {
+    # HTTP/3 (QUIC) enabled by default in Caddy 2.8+
+
+    # ── Resource Hints ──
+    header Link "</web-app-manifest-192x192.png>; rel=preload; as=image; fetchpriority=high"
+    header Link "</_next/static/css/*>; rel=preload; as=style"
+    header Link "https://fonts.googleapis.com; rel=preconnect; crossorigin"
+    header Link "https://fonts.gstatic.com; rel=preconnect; crossorigin"
+
+    # ── API routes ──
+    # Socket.IO (WebSocket upgrade + long-polling) must hit the backend directly,
+    # since Next.js rewrites do not proxy WebSocket upgrades.
+    handle /api/socketio/* {
+        reverse_proxy localhost:4000 {
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+        }
+    }
+
+    # Large TUS uploads go straight to the backend (no extra proxy hop).
+    handle /api/files-tus/* {
+        reverse_proxy localhost:4000
+    }
+
+    # Everything else under /api goes to the Next.js frontend. Next.js serves
+    # its own route handlers (e.g. /api/employees, /api/auth/*) and falls back
+    # to the Express backend (port 4000) for backend-owned routes via the
+    # rewrites in frontend/next.config.js.
+    handle /api/* {
+        reverse_proxy localhost:3000 {
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+        }
+    }
+
+    # ── Static uploads and banners → Express backend ──
+    handle /uploads/* {
+        header Cache-Control "public, max-age=604800, stale-while-revalidate=86400"
+        reverse_proxy localhost:4000
+    }
+    handle /banners/* {
+        header Cache-Control "public, max-age=86400"
+        reverse_proxy localhost:4000
+    }
+
+    # ── Service worker (no cache) ──
+    handle /sw.js {
+        header Cache-Control "public, max-age=0, must-revalidate"
+        header Service-Worker-Allowed "/"
+        reverse_proxy localhost:3000
+    }
+
+    # ── Offline page ──
+    handle /offline.html {
+        header Cache-Control "public, max-age=0, must-revalidate"
+        reverse_proxy localhost:3000
+    }
+
+    # ── Manifest ──
+    handle /manifest.json {
+        header Cache-Control "public, max-age=86400"
+        header Content-Type "application/manifest+json"
+        reverse_proxy localhost:3000
+    }
+
+    # ── Everything else → Next.js frontend ──
+    handle {
+        reverse_proxy localhost:3000 {
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+        }
+    }
+
+    # ── Security Headers ──
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    }
+
+    # ── File Upload Size (10GB for TUS) ──
+    request_body /api/files-tus/* {
+        max_size 10737418240
+    }
+
+    # ── Compression (zstd + gzip) ──
+    encode zstd gzip
+
+    # ── Logging ──
+    log {
+        output file /var/log/caddy/myworkspace.log
+        format json
+    }
+}

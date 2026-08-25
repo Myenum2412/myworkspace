@@ -1,0 +1,14 @@
+{
+  "name": "myworkspace-cache",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "node-cache": "^5.1.2",
+    "redis": "^4.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5"
+  }
+}

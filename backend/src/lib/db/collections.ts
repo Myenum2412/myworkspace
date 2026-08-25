@@ -1,0 +1,40 @@
+// MongoDB Collection Names
+export const collections = {
+  // Existing collections
+  users: "users",
+  organizations: "organizations",
+  orgMembers: "org_members",
+  tasks: "tasks",
+  projects: "projects",
+  clients: "clients",
+  appointments: "appointments",
+  doctors: "doctors",
+  products: "products",
+  invoices: "invoices",
+  shares: "shares",
+  notifications: "notifications",
+  activity: "activity",
+  fileAttachments: "fileAttachments",
+  counters: "counters",
+
+  // Business collections
+  categories: "categories",
+  inventory: "inventory",
+  orders: "orders",
+  orderItems: "orderItems",
+  promotions: "promotions",
+  faq: "faq",
+  businessSettings: "businessSettings",
+  stocks: "stocks",
+  engagements: "engagements",
+
+  // Calendar collections
+  calendarConnections: "calendar_connections",
+  calendarEvents: "calendar_events",
+  syncTokens: "sync_tokens",
+
+  // Realtime collaboration
+  chatChannels: "chat_channels",
+  chatMessages: "chat_messages",
+  calls: "calls",
+} as const;

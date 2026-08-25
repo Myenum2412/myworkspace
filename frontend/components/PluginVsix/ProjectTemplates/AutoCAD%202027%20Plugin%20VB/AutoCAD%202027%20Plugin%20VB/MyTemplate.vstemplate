@@ -1,0 +1,29 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Project">
+  <TemplateData>
+    <Name>AutoCAD 2027 Plugin VB</Name>
+    <Description>Basic plugin template for creating .NET projects in AutoCAD 2027</Description>
+    <ProjectType>VisualBasic</ProjectType>
+    <ProjectSubType>
+    </ProjectSubType>
+    <SortOrder>1000</SortOrder>
+    <CreateNewFolder>true</CreateNewFolder>
+    <DefaultName>AutoCAD 2027 Plugin VB</DefaultName>
+    <ProvideDefaultName>true</ProvideDefaultName>
+    <LocationField>Enabled</LocationField>
+    <EnableLocationBrowseButton>true</EnableLocationBrowseButton>
+    <CreateInPlace>true</CreateInPlace>
+    <Icon>__TemplateIcon.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <Project TargetFileName="ExamplePluginVB.vbproj" File="ExamplePluginVB.vbproj" ReplaceParameters="true">
+      <Folder Name="My Project" TargetFolderName="My Project">
+        <ProjectItem ReplaceParameters="true" TargetFileName="Application.myapp">Application.myapp</ProjectItem>
+        <ProjectItem ReplaceParameters="true" TargetFileName="launchSettings.json">launchSettings.json</ProjectItem>
+      </Folder>
+      <ProjectItem ReplaceParameters="true" TargetFileName="myCommands.vb">myCommands.vb</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="myCommands.resx">myCommands.resx</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="myCommands.Designer.vb">myCommands.Designer.vb</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="PluginExtension.vb">PluginExtension.vb</ProjectItem>
+    </Project>
+  </TemplateContent>
+</VSTemplate>

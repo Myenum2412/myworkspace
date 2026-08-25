@@ -1,0 +1,177 @@
+import { v4 as uuid } from "uuid";
+import { env } from "../../config/env.js";
+import { AppError } from "../../middleware/error.js";
+import { FileAttachment } from "../db/models/FileAttachment.js";
+import { StorageQuota } from "../db/models/StorageQuota.js";
+import { UploadApproval } from "../db/models/UploadApproval.js";
+import { UploadSession } from "../db/models/UploadSession.js";
+import { computeChecksum, getStorageProvider, getStorageType } from "../storage/providers.js";
+
+/** Hard per-user storage limit: 2 GB */
+export const USER_STORAGE_LIMIT_BYTES = Number.MAX_SAFE_INTEGER;
+
+export type OrchestratorResult =
+  | { kind: "created"; fileId: string; isDuplicate: boolean }
+  | { kind: "duplicate"; fileId: string };
+
+export interface FinalizeInput {
+  orgId: string;
+  clientId?: string | null;
+  folderId?: string | null;
+  uploaderId: string;
+  name: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  buffer: Buffer;
+  checksum?: string;
+  skipDuplicates?: boolean;
+  needsApproval?: boolean;
+}
+
+export async function checkOrgQuota(orgId: string, additionalBytes: number): Promise<void> {
+  const quota = await StorageQuota.findOne({ orgId }).lean();
+  if (quota && quota.usedStorageBytes + additionalBytes > quota.maxStorageBytes) {
+    throw new AppError(413, "Organization storage quota exceeded");
+  }
+}
+
+export async function updateUsedStorage(orgId: string, deltaBytes: number): Promise<void> {
+  await StorageQuota.updateOne(
+    { orgId },
+    { $inc: { usedStorageBytes: deltaBytes } },
+    { upsert: true },
+  );
+}
+
+/** Compute total non-deleted file storage used by a specific user within an org. */
+export async function getUserStorageUsed(orgId: string, userId: string): Promise<number> {
+  const result = await FileAttachment.aggregate([
+    { $match: { orgId, uploaderId: userId, deletedAt: null } },
+    { $group: { _id: null, total: { $sum: "$size" } } },
+  ]);
+  return result[0]?.total || 0;
+}
+
+/** Check per-user 1 GB storage limit. Throws 413 if exceeded. */
+export async function checkUserQuota(
+  orgId: string,
+  userId: string,
+  additionalBytes: number,
+): Promise<void> {
+  const used = await getUserStorageUsed(orgId, userId);
+  if (used + additionalBytes > USER_STORAGE_LIMIT_BYTES) {
+    const usedMB = (used / (1024 * 1024)).toFixed(1);
+    const limitMB = (USER_STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(0);
+    throw new AppError(413, `User storage limit exceeded. Used: ${usedMB} MB of ${limitMB} MB`);
+  }
+}
+
+export function categorizeMime(
+  mimeType: string,
+): "image" | "video" | "audio" | "document" | "archive" | "general" {
+  if (mimeType.startsWith("image/")) return "image";
+  if (mimeType.startsWith("video/")) return "video";
+  if (mimeType.startsWith("audio/")) return "audio";
+  if (
+    mimeType.includes("pdf") ||
+    mimeType.includes("document") ||
+    mimeType.includes("msword") ||
+    mimeType.includes("sheet") ||
+    mimeType.includes("presentation") ||
+    mimeType.includes("opendocument")
+  )
+    return "document";
+  if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("tar"))
+    return "archive";
+  return "general";
+}
+
+// Idempotent finalize: dedup via checksum, write to storage, persist FileAttachment,
+// update quota, write activity log. Returns created-or-duplicate marker.
+export async function finalizeUpload(input: FinalizeInput): Promise<OrchestratorResult> {
+  const {
+    orgId,
+    clientId,
+    folderId,
+    uploaderId,
+    name,
+    originalName,
+    mimeType,
+    size,
+    buffer,
+    checksum,
+    skipDuplicates = true,
+  } = input;
+
+  if (!orgId) throw new AppError(400, "orgId is required");
+  if (!uploaderId) throw new AppError(400, "uploaderId is required");
+
+  const sha = checksum ?? (await computeChecksum(buffer));
+
+  // Duplicate detection — same checksum in same org/folder plane.
+  const existingDuplicate = await FileAttachment.findOne({
+    orgId,
+    checksum: sha,
+    deletedAt: null,
+    $or: [{ folderId: folderId || null }, { folderId: { $exists: false } }],
+  }).lean();
+
+  if (existingDuplicate && skipDuplicates) {
+    return { kind: "duplicate", fileId: existingDuplicate.id };
+  }
+
+  await checkOrgQuota(orgId, size);
+  await checkUserQuota(orgId, uploaderId, size);
+
+  const provider = getStorageProvider();
+  const storagePath = `${orgId}/${Date.now()}-${uuid()}-${name}`;
+  await provider.save(buffer, storagePath);
+
+  const fileId = uuid();
+  const storageProvider = getStorageType();
+  const approvalStatus = input.needsApproval ? "pending" : "none";
+  await FileAttachment.create({
+    id: fileId,
+    orgId,
+    folderId: folderId || null,
+    clientId: clientId || null,
+    uploaderId,
+    createdBy: uploaderId,
+    name,
+    originalName,
+    mimeType,
+    size,
+    storagePath,
+    storageProvider,
+    category: categorizeMime(mimeType),
+    checksum: sha,
+    currentVersion: 1,
+    approvalStatus,
+  });
+
+  if (input.needsApproval) {
+    await UploadApproval.create({
+      uploadId: fileId,
+      tusId: fileId,
+      orgId,
+      uploaderId,
+      uploaderRole: "staffs",
+      approvedBy: null,
+      status: "pending",
+      fileName: originalName,
+      fileSize: size,
+      mimeType,
+      folderId: folderId || null,
+      projectId: null,
+      workspaceId: null,
+      clientId: null,
+      reviewedAt: null,
+      rejectionReason: "",
+    });
+  }
+
+  await updateUsedStorage(orgId, size);
+
+  return { kind: "created", fileId, isDuplicate: false };
+}

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: myworkspace
+  labels:
+    app.kubernetes.io/name: myworkspace
+    app.kubernetes.io/part-of: myworkspace

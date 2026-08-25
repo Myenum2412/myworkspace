@@ -1,0 +1,109 @@
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+import RedisStore from "rate-limit-redis";
+import { logger } from "../lib/logger/index.js";
+import { getValkey, isValkeyConnected } from "../lib/valkey.js";
+
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many attempts. Try again later." },
+  skip: (req) => req.path === "/health",
+});
+
+export const socketTokenLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many token requests. Try again later." },
+});
+
+export const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 600,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many requests. Try again later." },
+  skip: (req) => req.path === "/health",
+});
+
+export const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many upload requests. Try again later." },
+  keyGenerator: (req) => `upload:${ipKeyGenerator(req.ip || "unknown")}`,
+});
+
+export const shareDownloadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many share download requests. Try again later." },
+  keyGenerator: (req) => `share_download:${ipKeyGenerator(req.ip || "unknown")}`,
+});
+
+export const searchLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many search requests. Try again later." },
+  keyGenerator: (req) => `search:${ipKeyGenerator(req.ip || "unknown")}`,
+});
+
+export const downloadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many download requests. Try again later." },
+  keyGenerator: (req) => `download:${ipKeyGenerator(req.ip || "unknown")}`,
+});
+
+export const publicInfoLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many requests. Try again later." },
+  keyGenerator: (req) => `public_info:${ipKeyGenerator(req.ip || "unknown")}`,
+});
+
+export function promoteRateLimitersToValkey() {
+  try {
+    const client = getValkey();
+
+    // Poll for Valkey readiness with exponential backoff
+    let attempts = 0;
+    const maxAttempts = 10;
+    const check = () => {
+      if (isValkeyConnected()) {
+        const store = new RedisStore({
+          sendCommand: (...args: string[]) => (client as any).call(...args),
+        });
+        (authLimiter as any).store = store;
+        (socketTokenLimiter as any).store = store;
+        (apiLimiter as any).store = store;
+        (uploadLimiter as any).store = store;
+        (shareDownloadLimiter as any).store = store;
+        (searchLimiter as any).store = store;
+        (downloadLimiter as any).store = store;
+        (publicInfoLimiter as any).store = store;
+        logger.info("Rate limiters promoted to Valkey-backed store");
+        return;
+      }
+      if (attempts < maxAttempts) {
+        attempts++;
+        setTimeout(check, Math.min(500 * attempts, 5000));
+      }
+    };
+    check();
+  } catch {
+    // silently fall back to in-memory
+  }
+}

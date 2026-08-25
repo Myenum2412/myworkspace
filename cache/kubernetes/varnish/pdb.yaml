@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: varnish
+  namespace: cache-system
+  labels:
+    app.kubernetes.io/name: varnish
+    app.kubernetes.io/part-of: myworkspace
+    app.kubernetes.io/component: cache
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: varnish

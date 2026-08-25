@@ -1,0 +1,127 @@
+export const env = {
+  PORT: parseInt(process.env.PORT || "4000", 10),
+  MONGODB_URI:
+    process.env.MONGODB_URI ||
+    (() => {
+      throw new Error("MONGODB_URI environment variable is required");
+    })(),
+  JWT_SECRET:
+    process.env.JWT_SECRET ||
+    (() => {
+      throw new Error("JWT_SECRET environment variable is required");
+    })(),
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "15m",
+  JWT_REFRESH_SECRET:
+    process.env.JWT_REFRESH_SECRET ||
+    process.env.JWT_SECRET ||
+    (() => {
+      throw new Error("JWT_REFRESH_SECRET or JWT_SECRET environment variable is required");
+    })(),
+  JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || "30d",
+  JWT_ISSUER: process.env.JWT_ISSUER || "myworkspace",
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL || "",
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || "",
+  CORS_ORIGIN: (process.env.CORS_ORIGIN || "http://localhost:3000,https://myworkspace.myenum.in")
+    .split(",")
+    .map((s) => s.trim()),
+  NODE_ENV: process.env.NODE_ENV || "development",
+  RESEND_API_KEY: process.env.RESEND_API_KEY || "",
+  MAIL_FROM: process.env.MAIL_FROM || "onboarding@resend.dev",
+  SMTP_HOST: process.env.SMTP_HOST || "",
+  SMTP_PORT: parseInt(process.env.SMTP_PORT || "587", 10),
+  SMTP_USER: process.env.SMTP_USER || "",
+  SMTP_PASS: process.env.SMTP_PASS || "",
+  APP_URL: process.env.APP_URL || "http://localhost:3000",
+
+  // Websocket connect-src for Helmet CSP (derived from APP_URL).
+  BASE_URL_WS:
+    process.env.BASE_URL_WS ||
+    (process.env.APP_URL || "http://localhost:3000").replace(/^http/, "ws"),
+
+  // TUS resumable upload (tus-node-server + FileStore).
+  TUS_PREFIX: process.env.TUS_PREFIX || "/files-tus",
+  TUS_MAX_SIZE: Number(process.env.TUS_MAX_SIZE || 2 * 1024 * 1024 * 1024),
+  TUS_TTL_MS: Number(process.env.TUS_TTL_MS || 24 * 60 * 60 * 1000),
+
+  // Upload limits (env-configurable, default 2 GB)
+  MAX_FILE_SIZE: Number(process.env.MAX_FILE_SIZE || 2 * 1024 * 1024 * 1024),
+  MAX_FILES_PER_UPLOAD: Number(process.env.MAX_FILES_PER_UPLOAD || 50),
+  EXPRESS_JSON_LIMIT: process.env.EXPRESS_JSON_LIMIT || "50mb",
+
+  // "1" enables per-request stage timing logs (PERF_LOG) and auth debug logs.
+  // Off by default — zero cost in production.
+  PERF_LOG: process.env.PERF_LOG || "0",
+  AUTH_DEBUG: process.env.AUTH_DEBUG || "0",
+
+  // Cloudflare R2 Object Storage
+  R2_ENDPOINT: process.env.R2_ENDPOINT || "",
+  R2_ACCESS_KEY: process.env.R2_ACCESS_KEY || "",
+  R2_SECRET_KEY: process.env.R2_SECRET_KEY || "",
+  R2_BUCKET: process.env.R2_BUCKET || "myworkspace",
+  R2_PUBLIC_URL: process.env.R2_PUBLIC_URL || "",
+  R2_REGION: process.env.R2_REGION || "auto",
+
+  LOG_LEVEL: process.env.LOG_LEVEL || "",
+
+  // Valkey connection string. VALKEY_URL is canonical; REDIS_URL is accepted as
+  // a backward-compatible alias (both schemes are RESP wire-compatible).
+  VALKEY_URL: process.env.VALKEY_URL || process.env.REDIS_URL || "redis://localhost:6379",
+  REDIS_URL: process.env.REDIS_URL || process.env.VALKEY_URL || "redis://localhost:6379",
+
+  RABBITMQ_URL: process.env.RABBITMQ_URL || "",
+  RABBITMQ_PREFETCH: process.env.RABBITMQ_PREFETCH || "10",
+
+  SENTRY_DSN: process.env.SENTRY_DSN || "",
+
+  VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY || "",
+  VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || "",
+  VAPID_SUBJECT: process.env.VAPID_SUBJECT || "mailto:admin@myenum.in",
+
+  // ntfy push notification server. All push notifications are published to the
+  // per-user topic "{NTFY_TOPIC_PREFIX}-{userId}" on this server.
+  // Auto-derives "https://<host>" (same domain as the app) when not explicitly set.
+  NTFY_BASE_URL: (process.env.NTFY_BASE_URL || deriveNtfyBaseUrl() || "").replace(/\/+$/, ""),
+  NTFY_TOPIC_PREFIX: process.env.NTFY_TOPIC_PREFIX || "mws",
+
+  // Scheduler Configuration (JobScheduler.NET / Bree)
+  SCHEDULER_HEARTBEAT_INTERVAL: process.env.SCHEDULER_HEARTBEAT_INTERVAL || "* * * * *",
+  SCHEDULER_HEALTH_CHECK_INTERVAL_MS: parseInt(
+    process.env.SCHEDULER_HEALTH_CHECK_INTERVAL_MS || "30000",
+    10,
+  ),
+  SCHEDULER_METRICS_INTERVAL_MS: parseInt(process.env.SCHEDULER_METRICS_INTERVAL_MS || "60000", 10),
+  SCHEDULER_MAX_CONCURRENT_JOBS: parseInt(process.env.SCHEDULER_MAX_CONCURRENT_JOBS || "50", 10),
+  SCHEDULER_DEFAULT_RETRIES: parseInt(process.env.SCHEDULER_DEFAULT_RETRIES || "3", 10),
+  SCHEDULER_DEFAULT_RETRY_DELAY_MS: parseInt(
+    process.env.SCHEDULER_DEFAULT_RETRY_DELAY_MS || "60000",
+    10,
+  ),
+  SCHEDULER_JOB_TTL_DAYS: parseInt(process.env.SCHEDULER_JOB_TTL_DAYS || "90", 10),
+
+  // Business Configuration
+  BUSINESS_NAME: process.env.BUSINESS_NAME || "MyWorkSpace",
+  BUSINESS_TIMEZONE: process.env.BUSINESS_TIMEZONE || "Asia/Kolkata",
+  BUSINESS_CURRENCY: process.env.BUSINESS_CURRENCY || "INR",
+  BUSINESS_SUPPORT_EMAIL: process.env.BUSINESS_SUPPORT_EMAIL || "support@myworkspace.com",
+  BUSINESS_HOURS_START: parseInt(process.env.BUSINESS_HOURS_START || "9", 10),
+  BUSINESS_HOURS_END: parseInt(process.env.BUSINESS_HOURS_END || "18", 10),
+
+  // mediasoup SFU (WebRTC call server). The UDP/TCP RTC port range must be
+  // open on the server's firewall so browsers can reach the media worker.
+  MEDIASOUP_ENABLED: process.env.MEDIASOUP_ENABLED !== "false",
+  MEDIASOUP_LISTEN_IP: process.env.MEDIASOUP_LISTEN_IP || "0.0.0.0",
+  MEDIASOUP_ANNOUNCED_IP: process.env.MEDIASOUP_ANNOUNCED_IP || "127.0.0.1",
+  MEDIASOUP_RTC_MIN_PORT: parseInt(process.env.MEDIASOUP_RTC_MIN_PORT || "20000", 10),
+  MEDIASOUP_RTC_MAX_PORT: parseInt(process.env.MEDIASOUP_RTC_MAX_PORT || "20020", 10),
+  MEDIASOUP_WORKER_LOG_LEVEL: process.env.MEDIASOUP_WORKER_LOG_LEVEL || "warn",
+};
+
+function deriveNtfyBaseUrl(): string {
+  const appUrl = process.env.APP_URL || process.env.CORS_ORIGIN?.split(",")[0] || "";
+  if (!appUrl) return "";
+  try {
+    return new URL(appUrl).origin;
+  } catch {
+    return "";
+  }
+}

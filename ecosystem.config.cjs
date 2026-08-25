@@ -1,0 +1,38 @@
+module.exports = {
+  apps: [
+    {
+      name: "myworkspace-backend",
+      script: "dist/index.js",
+      cwd: "./backend",
+      node_args: "--env-file=.env",
+      env: {
+        NODE_ENV: "production",
+        HOST: "127.0.0.1",
+        PORT: process.env.PORT || 4000,
+      },
+    },
+    {
+      name: "myworkspace-frontend",
+      script: "node_modules/next/dist/bin/next",
+      args: "start --port 3000",
+      cwd: "./frontend",
+      env: {
+        NODE_ENV: "production",
+        PORT: 3000,
+        API_URL: process.env.API_URL || "http://localhost:4000",
+        NODE_OPTIONS: "--no-deprecation --dns-result-order=ipv4first",
+      },
+    },
+  ],
+  deploy: {
+    backend_production_server: {
+      user: "ubuntu",
+      host: "51.21.222.25",
+      ref: "origin/main",
+      repo: "git@github.com:Myenum2412/myworkspace.git",
+      path: "/var/www/myworkspace-backend",
+      "post-deploy":
+        "cp /var/www/myworkspace-backend/shared/.env /var/www/myworkspace-backend/current/backend/.env && cd backend && rm -rf node_modules dist && NODE_OPTIONS=--max-old-space-size=2048 npm ci --include=dev && NODE_OPTIONS=--max-old-space-size=2048 npm run build && cd /var/www/myworkspace-backend/current && pm2 delete myworkspace-backend 2>/dev/null; true && pm2 start ecosystem.config.cjs --only myworkspace-backend && pm2 save",
+    },
+  },
+};

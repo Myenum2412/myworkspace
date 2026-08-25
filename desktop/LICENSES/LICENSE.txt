@@ -1,0 +1,64 @@
+MyWorkspace END USER LICENSE AGREEMENT
+
+Copyright (c) 2024-2026 MyWorkspace. All rights reserved.
+
+IMPORTANT - READ CAREFULLY: This End User License Agreement ("EULA") is a legal
+agreement between you (either an individual or a single entity) and MyWorkspace
+for the MyWorkspace software product identified above, which includes computer
+software and may include associated media, printed materials, and "online" or
+electronic documentation ("SOFTWARE PRODUCT").
+
+By installing, copying, downloading, accessing, or otherwise using the SOFTWARE
+PRODUCT, you agree to be bound by the terms of this EULA. If you do not agree
+to the terms of this EULA, do not install or use the SOFTWARE PRODUCT.
+
+1. GRANT OF LICENSE
+   MyWorkspace grants you a non-exclusive, non-transferable license to use the
+   SOFTWARE PRODUCT for your personal or business purposes, subject to the
+   terms and conditions set forth in this EULA.
+
+2. DESCRIPTION OF RIGHTS AND LIMITATIONS
+   • Installation and Use: You may install and use one copy of the SOFTWARE
+     PRODUCT on a single computer.
+   • Backup Copies: You may make one copy of the SOFTWARE PRODUCT for backup
+     purposes only.
+   • No Modification: You may not modify, adapt, or create derivative works
+     based on the SOFTWARE PRODUCT.
+   • No Reverse Engineering: You may not reverse engineer, decompile, or
+     disassemble the SOFTWARE PRODUCT, except to the extent that such activity
+     is expressly permitted by applicable law.
+
+3. INTELLECTUAL PROPERTY RIGHTS
+   All title and intellectual property rights in and to the SOFTWARE PRODUCT
+   (including but not limited to any images, photographs, animations, video,
+   audio, music, text, and "applets" incorporated into the SOFTWARE PRODUCT)
+   are owned by MyWorkspace or its suppliers.
+
+4. PRIVACY
+   The SOFTWARE PRODUCT may collect and transmit usage data to improve the
+   product. This data is handled in accordance with our Privacy Policy
+   available at https://app.myworkspace.com/privacy.
+
+5. DISCLAIMER OF WARRANTY
+   THE SOFTWARE PRODUCT IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+   EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+6. LIMITATION OF LIABILITY
+   IN NO EVENT SHALL MYWORKSPACE BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+   INDIRECT, OR CONSEQUENTIAL DAMAGES WHATSOEVER ARISING OUT OF THE USE OF
+   OR INABILITY TO USE THE SOFTWARE PRODUCT.
+
+7. TERMINATION
+   Without prejudice to any other rights, MyWorkspace may terminate this EULA
+   if you fail to comply with the terms and conditions. In such event, you
+   must destroy all copies of the SOFTWARE PRODUCT.
+
+8. GOVERNING LAW
+   This EULA is governed by the laws of the jurisdiction in which you
+   reside or, if you are a business entity, the jurisdiction of your
+   principal place of business.
+
+For inquiries regarding this EULA, contact:
+MyWorkspace Legal Department
+legal@myworkspace.com

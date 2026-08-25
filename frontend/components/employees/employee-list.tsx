@@ -1,0 +1,346 @@
+"use client";
+
+import { useState } from "react";
+import type { Employee } from "@/app/employees/columns";
+import { PageHeader } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ArrowDownIcon,
+  ArrowUpDownIcon,
+  ArrowUpIcon,
+  ChevronLeft,
+  ChevronRight,
+  PlusIcon,
+  SearchIcon,
+  UsersIcon,
+  XIcon,
+} from "@/lib/icons";
+import { EmployeeTableRow } from "./employee-table-row";
+import type { SortDir, SortField } from "./employee-types";
+
+type EmployeeListProps = {
+  filteredCount: number;
+  paginatedEmployees: Employee[];
+  totalPages: number;
+  page: number;
+  rowsPerPage: number;
+  searchQuery: string;
+  hasActiveFilters: boolean;
+  sortField: SortField;
+  sortDir: SortDir;
+  onSearchChange: (value: string) => void;
+  onSearchClear: () => void;
+  onSort: (field: SortField) => void;
+  onPageChange: (page: number) => void;
+  onRowsPerPageChange: (rows: number) => void;
+  onAdd: () => void;
+  onView: (emp: Employee) => void;
+  onEdit: (emp: Employee) => void;
+  onTerminate: (emp: Employee) => void;
+};
+
+function getSortIcon(field: SortField, sortField: SortField, sortDir: SortDir) {
+  if (sortField !== field) return <ArrowUpDownIcon className="size-3.5 text-muted-foreground/40" />;
+  return sortDir === "asc" ? (
+    <ArrowUpIcon className="size-3.5 text-foreground" />
+  ) : (
+    <ArrowDownIcon className="size-3.5 text-foreground" />
+  );
+}
+
+export function EmployeeList({
+  filteredCount,
+  paginatedEmployees,
+  totalPages,
+  page,
+  rowsPerPage,
+  searchQuery,
+  hasActiveFilters,
+  sortField,
+  sortDir,
+  onSearchChange,
+  onSearchClear,
+  onSort,
+  onPageChange,
+  onRowsPerPageChange,
+  onAdd,
+  onView,
+  onEdit,
+  onTerminate,
+}: EmployeeListProps) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paginatedEmployees.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedEmployees.map((e) => e.id)));
+    }
+  };
+
+  const allSelected =
+    paginatedEmployees.length > 0 && selectedIds.size === paginatedEmployees.length;
+
+  return (
+    <>
+      <main className="flex flex-1 flex-col gap-0 p-4 sm:p-6">
+        <PageHeader
+          className="mb-4 sm:mb-6"
+          icon={<UsersIcon className="size-6" />}
+          title={<h1>Employees</h1>}
+          subtitle={
+            <p>
+              {filteredCount} {filteredCount === 1 ? "member" : "members"}
+              {hasActiveFilters ? " found" : " total"}
+            </p>
+          }
+          search={
+            <div className="relative">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search employees..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="pl-9 h-9 border border-gray-200 bg-white rounded-sm shadow-none focus-visible:ring-0 w-full"
+              />
+              {searchQuery && (
+                <button
+                  onClick={onSearchClear}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                >
+                  <XIcon className="size-4" />
+                </button>
+              )}
+            </div>
+          }
+          actions={
+            <Button onClick={onAdd} className="gap-2 shrink-0 touch-target">
+              <PlusIcon className="size-4" />
+              Add Employee
+            </Button>
+          }
+        />
+
+        {/* Table View */}
+        <div className="border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col sm:max-h-[calc(100vh-280px)]">
+          <div className="overflow-x-auto overflow-y-auto flex-1">
+            <table className="table-premium w-full text-sm text-left" style={{ minWidth: 1300 }}>
+              <thead className="sticky top-0 z-10">
+                <tr>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap w-10">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all"
+                      className="border-white"
+                    />
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onSort("name")}
+                      className="inline-flex items-center gap-1.5 text-white-800 transition-colors"
+                    >
+                      Employee {getSortIcon("name", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <span className="text-gray-800">ID</span>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onSort("email")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
+                      Email {getSortIcon("email", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onSort("department")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
+                      Department {getSortIcon("department", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onSort("designation")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
+                      Designation {getSortIcon("designation", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onSort("phone")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
+                      Phone {getSortIcon("phone", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onSort("employmentType")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
+                      Type {getSortIcon("employmentType", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onSort("branchName")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
+                      Branch {getSortIcon("branchName", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onSort("location")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
+                      Location {getSortIcon("location", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onSort("role")}
+                      className="inline-flex items-center gap-1.5 text-white-800  transition-colors"
+                    >
+                      Role {getSortIcon("role", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onSort("joiningDate")}
+                      className="inline-flex items-center gap-1.5 text-white-800 hover:text-white transition-colors"
+                    >
+                      Joined {getSortIcon("joiningDate", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onSort("status")}
+                      className="inline-flex items-center gap-1.5 text-white-800 transition-colors"
+                    >
+                      Status {getSortIcon("status", sortField, sortDir)}
+                    </button>
+                  </th>
+                  <th className="text-right font-semibold px-4 py-3.5 text-white-800 whitespace-nowrap">
+                    <span className="text-gray-800">Action</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedEmployees.length === 0 ? (
+                  <tr>
+                    <td colSpan={14} className="text-center py-16 bg-white">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="flex items-center justify-center size-12 rounded-sm bg-muted">
+                          <UsersIcon className="size-6 text-muted-foreground/50" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">
+                            {hasActiveFilters
+                              ? "No employees match your filters"
+                              : "No employees yet"}
+                          </p>
+                          <p className="text-xs text-muted-foreground/60 mt-1">
+                            {hasActiveFilters
+                              ? "Try adjusting your search or filter criteria"
+                              : "Click 'Add Employee' to get started"}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedEmployees.map((emp) => (
+                    <EmployeeTableRow
+                      key={emp.id}
+                      employee={emp}
+                      selected={selectedIds.has(emp.id)}
+                      onToggleSelect={toggleSelect}
+                      onView={onView}
+                      onEdit={onEdit}
+                      onTerminate={onTerminate}
+                    />
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+            <span className="text-sm text-muted-foreground">
+              {filteredCount === 0
+                ? "0 items"
+                : `${page * rowsPerPage + 1}–${Math.min((page + 1) * rowsPerPage, filteredCount)} of ${filteredCount}`}
+            </span>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                {filteredCount} {filteredCount === 1 ? "employee" : "employees"}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Rows per page:
+                </span>
+                <Select
+                  value={String(rowsPerPage)}
+                  onValueChange={(value) => onRowsPerPageChange(Number(value))}
+                >
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="60">60</SelectItem>
+                    <SelectItem value="90">90</SelectItem>
+                    <SelectItem value="120">120</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onPageChange(page - 1)}
+                  disabled={page === 0}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onPageChange(page + 1)}
+                  disabled={(page + 1) * rowsPerPage >= filteredCount}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}

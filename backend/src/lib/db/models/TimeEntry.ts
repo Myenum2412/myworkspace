@@ -1,0 +1,38 @@
+import { type Document, model, Schema } from "mongoose";
+
+export interface ITimeEntry extends Document {
+  orgId: string;
+  userId: string;
+  createdBy: string;
+  updatedBy?: string;
+  date: Date;
+  startTime?: string;
+  endTime?: string;
+  duration: number;
+  description: string;
+  billable: boolean;
+  status: "pending" | "approved" | "rejected";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const timeEntrySchema = new Schema<ITimeEntry>(
+  {
+    orgId: { type: String, required: true },
+    userId: { type: String, required: true },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
+    date: { type: Date, required: true },
+    startTime: String,
+    endTime: String,
+    duration: { type: Number, required: true, default: 0 },
+    description: { type: String, default: "" },
+    billable: { type: Boolean, default: true },
+    status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+  },
+  { collection: "time_entries", timestamps: true },
+);
+
+timeEntrySchema.index({ orgId: 1, userId: 1, date: -1 });
+
+export const TimeEntry = model<ITimeEntry>("TimeEntry", timeEntrySchema);

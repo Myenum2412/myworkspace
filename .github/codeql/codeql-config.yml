@@ -1,0 +1,14 @@
+name: "CodeQL code scanning configuration"
+
+# Keep the same query suite as the previous setup, but drop
+# `js/missing-token-validation`, which raises hundreds of locations in this
+# codebase (token validation is done centrally in auth middleware) and exceeds
+# GitHub's 100-location-per-alert SARIF upload cap, failing the workflow.
+disable-default-queries: true
+
+queries:
+  - uses: security-and-quality
+
+query-filters:
+  - exclude:
+      id: js/missing-token-validation

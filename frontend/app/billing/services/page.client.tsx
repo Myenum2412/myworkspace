@@ -1,0 +1,258 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, Pencil, PlusCircleIcon, Search, Trash2, X } from "@/lib/icons";
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  rate: number;
+  unit: string;
+  status: string;
+  created: string;
+}
+
+export default function BillingServicesPage() {
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  async function fetchServices() {
+    try {
+      const res = await fetch("/api/billing/services");
+      if (res.ok) {
+        const data = await res.json();
+        setServices(data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch services:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const toggleSelectItem = (id: string) => {
+    setSelectedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === filtered.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(filtered.map((s) => s.id)));
+    }
+  };
+
+  const deleteSelected = async () => {
+    if (selectedItems.size === 0) return;
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/billing/services", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selectedItems) }),
+      });
+      if (res.ok) {
+        setServices((prev) => prev.filter((s) => !selectedItems.has(s.id)));
+        setSelectedItems(new Set());
+      }
+    } catch (error) {
+      console.error("Failed to delete services:", error);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const deleteItem = async (id: string) => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/billing/services/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setServices((prev) => prev.filter((s) => s.id !== id));
+        setSelectedItems((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      }
+    } catch (error) {
+      console.error("Failed to delete service:", error);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const filtered = services.filter(
+    (s) =>
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.description.toLowerCase().includes(search.toLowerCase()) ||
+      s.category.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Services</h1>
+        <div className="flex items-center gap-3">
+          {selectedItems.size > 0 && (
+            <Button variant="destructive" size="sm" onClick={deleteSelected} disabled={deleting}>
+              <Trash2 className="mr-1.5" />
+              Delete ({selectedItems.size})
+            </Button>
+          )}
+          <Button asChild>
+            <Link href="/billing/services/new">
+              <PlusCircleIcon className="mr-2" />
+              New Service
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 max-w-sm">
+        <div className="relative flex-1">
+          <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Input
+            placeholder=""
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-9"
+          />
+          {search && (
+            <X
+              className="size-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
+              onClick={() => setSearch("")}
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="border border-gray-200 bg-white overflow-hidden flex flex-col">
+        <div className="overflow-x-auto overflow-y-auto flex-1">
+          <table className="table-premium w-full text-sm text-left" style={{ minWidth: 800 }}>
+            <thead className="sticky top-0 z-10">
+              <tr>
+                <th className="w-10 px-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.size === filtered.length && filtered.length > 0}
+                    onChange={toggleSelectAll}
+                    className="size-4 accent-blue-600"
+                  />
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-black">Name</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-black">Category</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-black">Description</span>
+                </th>
+                <th className="text-right font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-black">Rate</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-black">Unit</span>
+                </th>
+                <th className="text-left font-semibold px-4 py-3.5 whitespace-nowrap">
+                  <span className="text-black">Status</span>
+                </th>
+                <th className="text-center font-semibold px-4 py-3.5 whitespace-nowrap w-24">
+                  <span className="text-black">Action</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-16 bg-white">
+                    <p className="text-sm text-gray-500">No services found</p>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((service) => (
+                  <tr
+                    key={service.id}
+                    className="border-b border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-2 align-middle">
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.has(service.id)}
+                        onChange={() => toggleSelectItem(service.id)}
+                        className="size-4 accent-blue-600"
+                      />
+                    </td>
+                    <td className="px-4 py-3 align-middle font-medium text-gray-900">
+                      {service.name}
+                    </td>
+                    <td className="px-4 py-3 align-middle text-gray-500">{service.category}</td>
+                    <td className="px-4 py-3 align-middle text-gray-500 max-w-[200px] truncate">
+                      {service.description}
+                    </td>
+                    <td className="px-4 py-3 align-middle text-right text-gray-700">
+                      ${service.rate.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 align-middle text-gray-700">{service.unit}</td>
+                    <td className="px-4 py-3 align-middle">
+                      {service.status === "Active" ? (
+                        <span className="inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                          Inactive
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 align-middle text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <Link href={`/billing/services/${service.id}/edit`}>
+                          <Pencil className="size-4 text-blue-500 hover:text-blue-700 cursor-pointer" />
+                        </Link>
+                        <button
+                          onClick={() => deleteItem(service.id)}
+                          disabled={deleting}
+                          className="p-1 text-red-400 hover:text-red-600 disabled:opacity-50"
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

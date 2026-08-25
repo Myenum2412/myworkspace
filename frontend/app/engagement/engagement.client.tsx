@@ -1,0 +1,252 @@
+"use client";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Engagement } from "@/app/engagement/columns";
+import { columns, makeActionsCell } from "@/app/engagement/columns";
+import { DataTable } from "@/app/engagement/data-table";
+import { EngagementForm } from "@/app/engagement/engagement-form";
+import { PageHeader } from "@/components/page-header";
+import Stats07 from "@/components/stats-07";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { HeartHandshakeIcon, Loader2, PlusIcon, SearchIcon } from "@/lib/icons";
+
+type EngagementPageProps = {
+  initialEngagements: Engagement[];
+};
+
+export default function EngagementPage({ initialEngagements }: EngagementPageProps) {
+  const [engagements, setEngagements] = useState<Engagement[]>(initialEngagements);
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingEngagement, setEditingEngagement] = useState<Engagement | null>(null);
+  const [viewingEngagement, setViewingEngagement] = useState<Engagement | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredEngagements = useMemo(() => {
+    if (!searchQuery) return engagements;
+    const q = searchQuery.toLowerCase();
+    return engagements.filter(
+      (e) =>
+        e.customerName.toLowerCase().includes(q) ||
+        e.contact?.toLowerCase().includes(q) ||
+        e.source?.toLowerCase().includes(q) ||
+        e.status?.toLowerCase().includes(q) ||
+        e.assignedTo?.toLowerCase().includes(q),
+    );
+  }, [engagements, searchQuery]);
+
+  async function refreshEngagements() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/engagements", { credentials: "include" });
+      const data = await res.json();
+      const list = data.data || [];
+      setEngagements(Array.isArray(list) ? list : []);
+    } catch {
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refreshEngagements();
+  }, []);
+
+  async function handleSave(formData: Omit<Engagement, "id">) {
+    try {
+      if (editingEngagement) {
+        await fetch(`/api/engagements?id=${editingEngagement.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(formData),
+        });
+      } else {
+        await fetch("/api/engagements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(formData),
+        });
+      }
+      await refreshEngagements();
+      setShowForm(false);
+      setEditingEngagement(null);
+    } catch {}
+  }
+
+  async function handleDelete(engagement: Engagement) {
+    try {
+      await fetch(`/api/engagements?id=${engagement.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      await refreshEngagements();
+    } catch {}
+  }
+
+  const handleView = useCallback((engagement: Engagement) => setViewingEngagement(engagement), []);
+  const handleEdit = useCallback((engagement: Engagement) => {
+    setEditingEngagement(engagement);
+    setShowForm(true);
+  }, []);
+
+  // Stats summary
+  const stats = useMemo(() => {
+    const total = engagements.length;
+    const won = engagements.filter((e) => e.status === "Won").length;
+    const newCount = engagements.filter((e) => e.status === "New").length;
+    const pending = engagements.filter((e) => e.status === "Pending").length;
+    const followUp = engagements.filter((e) => e.status === "Follow-up").length;
+    const lost = engagements.filter((e) => e.status === "Lost").length;
+    return { total, won, newCount, pending, followUp, lost };
+  }, [engagements]);
+
+  if (loading && engagements.length === 0) {
+    return (
+      <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      </main>
+    );
+  }
+
+  const total = engagements.length;
+  const won = engagements.filter((e) => e.status === "Won").length;
+  const newCount = engagements.filter((e) => e.status === "New").length;
+
+  return (
+    <>
+      <main className="flex flex-1 flex-col gap-4 p-3 sm:p-4 md:p-6 min-w-0 max-w-full">
+        <PageHeader
+          icon={<HeartHandshakeIcon className="size-6" />}
+          title="Interaction Followups"
+          search={
+            <div className="relative w-full">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search interactions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 bg-white"
+              />
+            </div>
+          }
+          actions={
+            <Button onClick={() => setShowForm(true)} className="shrink-0">
+              <PlusIcon className="mr-2 size-4" />
+              Add Interaction Followup
+            </Button>
+          }
+        />
+
+        {/* Stats Overview */}
+        <Stats07
+          items={[
+            { name: "Total", value: stats.total, subtitle: "All interactions" },
+            { name: "New", value: stats.newCount, subtitle: "New leads" },
+            { name: "Won", value: stats.won, subtitle: "Closed deals" },
+            { name: "Pending", value: stats.pending, subtitle: "Awaiting response" },
+            { name: "Follow-up", value: stats.followUp, subtitle: "Need follow-up" },
+            { name: "Lost", value: stats.lost, subtitle: "Lost deals" },
+          ]}
+        />
+
+        <div className="flex-1">
+          <DataTable
+            columns={[...columns, makeActionsCell(handleView, handleEdit, handleDelete)]}
+            data={filteredEngagements}
+            onRowClick={handleView}
+            hideSearchBar
+          />
+        </div>
+      </main>
+
+      {viewingEngagement && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setViewingEngagement(null)}
+        >
+          <div
+            className="bg-background rounded-sm shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold">Interaction Followup Details</h2>
+            </div>
+            <div className="p-6 space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <span className="font-medium text-muted-foreground">Date:</span>{" "}
+                  {viewingEngagement.date}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Customer:</span>{" "}
+                  {viewingEngagement.customerName}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Contact:</span>{" "}
+                  {viewingEngagement.contact || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Source:</span>{" "}
+                  {viewingEngagement.source || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Status:</span>{" "}
+                  {viewingEngagement.status || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Assigned To:</span>{" "}
+                  {viewingEngagement.assignedTo || "—"}
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Follow-up Date:</span>{" "}
+                  {viewingEngagement.followUpDate || "—"}
+                </div>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Remarks:</span>
+                <p className="mt-1 text-muted-foreground">
+                  {viewingEngagement.remarks || "No remarks."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showForm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => {
+            setShowForm(false);
+            setEditingEngagement(null);
+          }}
+        >
+          <div
+            className="bg-background rounded-sm shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold">
+                {editingEngagement ? "Edit Interaction Followup" : "Add Interaction Followup"}
+              </h2>
+            </div>
+            <div className="p-6">
+              <EngagementForm
+                engagement={editingEngagement}
+                onSave={handleSave}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingEngagement(null);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

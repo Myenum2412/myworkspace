@@ -1,0 +1,436 @@
+import { type Response, Router } from "express";
+import type { PipelineStage } from "mongoose";
+import { Team } from "../lib/db/models/Team.js";
+import { TeamMember } from "../lib/db/models/TeamMember.js";
+import { User } from "../lib/db/models/User.js";
+import { requireOrgMembership, requireOrgMembershipFromRequest } from "../lib/org-utils.js";
+import { isAdminRole } from "../lib/rbac/index.js";
+import { optionalString, requireString } from "../lib/validate.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { cacheEnhanced } from "../middleware/cache-enhanced.js";
+import { AppError } from "../middleware/error.js";
+import { processEvent } from "../services/notification-engine.service.js";
+
+const router = Router();
+
+router.use(authenticate);
+
+// List all teams in the user's org with member counts, pagination, filtering, and sorting
+router.get(
+  "/",
+  cacheEnhanced({ ttl: 30, varyByOrg: true, varyByQuery: true, tags: ["teams"] }),
+  async (req: AuthRequest, res: Response) => {
+    const orgId = await requireOrgMembershipFromRequest(req);
+
+    // Pagination params
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const skip = (page - 1) * limit;
+
+    // Name search filter
+    const nameSearch = (req.query.name as string)?.trim();
+
+    // Sorting params
+    const allowedSortFields: Record<string, string> = {
+      name: "name",
+      createdAt: "createdAt",
+      memberCount: "memberCount",
+    };
+    const sortBy = allowedSortFields[req.query.sortBy as string] || "createdAt";
+    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+
+    // Build match stage for the aggregation
+    const teamMatch: Record<string, unknown> = { orgId };
+    if (nameSearch) {
+      teamMatch.name = { $regex: nameSearch, $options: "i" };
+    }
+
+    // Aggregation pipeline: get teams with member counts and lead user info in one query
+    const pipeline: PipelineStage[] = [
+      { $match: teamMatch },
+      {
+        $addFields: {
+          _teamIdStr: { $toString: "$_id" },
+        },
+      },
+      {
+        $lookup: {
+          from: "teammembers",
+          let: { teamIdStr: "$_teamIdStr" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$teamId", "$$teamIdStr"],
+                },
+              },
+            },
+          ],
+          as: "members",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: {
+            leadIds: {
+              $filter: {
+                input: "$members",
+                as: "m",
+                cond: { $eq: ["$$m.role", "team_lead"] },
+              },
+            },
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: ["$id", "$$leadIds.userId"],
+                },
+              },
+            },
+            { $project: { name: 1, email: 1, image: 1 } },
+          ],
+          as: "leadUsers",
+        },
+      },
+      {
+        $addFields: {
+          memberCount: { $size: "$members" },
+          leadUser: { $arrayElemAt: ["$leadUsers", 0] },
+        },
+      },
+      { $project: { _teamIdStr: 0, members: 0, leadUsers: 0 } },
+      // Sorting
+      { $sort: { [sortBy]: sortOrder } },
+      // Pagination
+      { $skip: skip },
+      { $limit: limit },
+    ];
+
+    // Count total matching teams for pagination metadata
+    const countPipeline: PipelineStage[] = [{ $match: teamMatch }, { $count: "total" }];
+
+    const [teams, countResult] = await Promise.all([
+      Team.aggregate(pipeline),
+      Team.aggregate(countPipeline),
+    ]);
+
+    const total = countResult.length > 0 ? countResult[0].total : 0;
+    const totalPages = Math.ceil(total / limit);
+
+    const result = teams.map((t) => ({
+      id: t._id.toString(),
+      name: t.name,
+      description: t.description || "",
+      memberCount: t.memberCount || 0,
+      leadName: t.leadUser?.name || "",
+      leadAvatar: t.leadUser?.image || "",
+      createdAt: t.createdAt,
+    }));
+
+    res.json({
+      success: true,
+      data: result,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    });
+  },
+);
+
+// Get single team with full member details using aggregation
+router.get("/:id", async (req: AuthRequest, res: Response) => {
+  const team = await Team.findById(req.params.id).lean();
+  if (!team) throw new AppError(404, "Team not found");
+
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
+
+  // Aggregation pipeline: get team with all members and their user details in one query
+  const pipeline: PipelineStage[] = [
+    { $match: { _id: team._id } },
+    {
+      $addFields: {
+        _teamIdStr: { $toString: "$_id" },
+      },
+    },
+    {
+      $lookup: {
+        from: "teammembers",
+        let: { teamIdStr: "$_teamIdStr" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ["$teamId", "$$teamIdStr"],
+              },
+            },
+          },
+        ],
+        as: "teamMembers",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        let: {
+          memberIds: "$teamMembers.userId",
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $in: ["$id", "$$memberIds"],
+              },
+            },
+          },
+          {
+            $project: {
+              name: 1,
+              email: 1,
+              image: 1,
+              status: 1,
+              department: 1,
+              designation: 1,
+            },
+          },
+        ],
+        as: "users",
+      },
+    },
+    {
+      $addFields: {
+        members: {
+          $map: {
+            input: "$teamMembers",
+            as: "tm",
+            in: {
+              $mergeObjects: [
+                {
+                  id: "$$tm._id",
+                  userId: "$$tm.userId",
+                  role: "$$tm.role",
+                },
+                {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: "$users",
+                        as: "u",
+                        cond: { $eq: ["$$u.id", "$$tm.userId"] },
+                      },
+                    },
+                    0,
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _teamIdStr: 0,
+        teamMembers: 0,
+        users: 0,
+      },
+    },
+  ];
+
+  const result = await Team.aggregate(pipeline);
+  if (result.length === 0) throw new AppError(404, "Team not found");
+
+  const teamData = result[0];
+
+  const members = (teamData.members as Record<string, unknown>[]).map((m) => ({
+    id: (m.id as { toString: () => string }).toString
+      ? (m.id as { toString: () => string }).toString()
+      : m.id,
+    userId: (m.userId as { toString: () => string }).toString
+      ? (m.userId as { toString: () => string }).toString()
+      : m.userId,
+    name: (m.name as string) || "Unknown",
+    email: (m.email as string) || "",
+    avatar: (m.image as string) || "",
+    status: (m.status as string) || "offline",
+    department: (m.department as string) || "",
+    designation: (m.designation as string) || "",
+    role: m.role as string,
+  }));
+
+  res.json({
+    success: true,
+    data: {
+      id: teamData._id.toString(),
+      name: teamData.name,
+      description: teamData.description || "",
+      createdAt: teamData.createdAt,
+      members,
+    },
+  });
+});
+
+// Create a team
+router.post("/", async (req: AuthRequest, res: Response) => {
+  // All org members can create teams
+  const name = requireString(req.body.name, "name", { min: 1, max: 200 });
+  const description = optionalString(req.body.description, "description", { max: 5000 }) ?? "";
+  // Enforce workspace isolation: resolve orgId from membership, not from request body
+  const orgId = await requireOrgMembershipFromRequest(req, req.body.orgId || undefined);
+
+  const team = await Team.create({
+    orgId,
+    name,
+    description,
+    createdBy: req.user!.userId,
+  });
+
+  processEvent({
+    type: "team_announcement",
+    category: "messages",
+    userId: req.user!.userId,
+    orgId,
+    createdBy: req.user!.userId,
+    title: "Team created",
+  }).catch(() => {});
+  res.status(201).json({ success: true, data: { id: team._id.toString(), name: team.name } });
+});
+
+// Update a team
+router.put("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update teams");
+  const team = await Team.findById(req.params.id).lean();
+  if (!team) throw new AppError(404, "Team not found");
+
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
+
+  const { name, description } = req.body;
+  const updates: Record<string, unknown> = {};
+  if (name !== undefined) updates.name = name;
+  if (description !== undefined) updates.description = description;
+  if (Object.keys(updates).length > 0) updates.updatedBy = req.user!.userId;
+
+  await Team.findByIdAndUpdate(req.params.id, updates);
+  processEvent({
+    type: "team_update",
+    category: "messages",
+    userId: req.user!.userId,
+    orgId: team.orgId.toString(),
+    createdBy: req.user!.userId,
+    title: "Team updated",
+  }).catch(() => {});
+  res.json({ success: true });
+});
+
+// Delete a team
+router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete teams");
+  const team = await Team.findById(req.params.id).lean();
+  if (!team) throw new AppError(404, "Team not found");
+
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
+
+  await Promise.all([
+    TeamMember.deleteMany({ teamId: team._id.toString() }),
+    Team.findByIdAndDelete(req.params.id),
+  ]);
+
+  res.json({ success: true });
+});
+
+// Add member to team
+router.post("/:id/members", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can manage team members");
+  const team = await Team.findById(req.params.id).lean();
+  if (!team) throw new AppError(404, "Team not found");
+
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
+
+  const { userId, role } = req.body;
+  if (!userId) throw new AppError(400, "userId is required");
+
+  // Verify user belongs to same org
+  await requireOrgMembership(userId, team.orgId.toString());
+
+  // Check not already in team
+  const existing = await TeamMember.findOne({ teamId: team._id.toString(), userId })
+    .select("_id")
+    .lean();
+  if (existing) throw new AppError(400, "User is already a member of this team");
+
+  const teamMember = await TeamMember.create({
+    orgId: team.orgId,
+    teamId: team._id.toString(),
+    userId,
+    role: role || "team_staff",
+    createdBy: req.user!.userId,
+  });
+
+  processEvent({
+    type: "department_access_changed",
+    category: "permissions",
+    userId: req.user!.userId,
+    orgId: team.orgId.toString(),
+    createdBy: req.user!.userId,
+    title: "Team member added",
+  }).catch(() => {});
+  res.status(201).json({ success: true, data: { id: teamMember._id.toString() } });
+});
+
+// Remove member from team
+router.delete("/:teamId/members/:userId", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can remove team members");
+  const team = await Team.findById(req.params.teamId).lean();
+  if (!team) throw new AppError(404, "Team not found");
+
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
+
+  await TeamMember.deleteOne({ teamId: team._id.toString(), userId: req.params.userId });
+  processEvent({
+    type: "permission_revoked",
+    category: "permissions",
+    userId: req.user!.userId,
+    orgId: team.orgId.toString(),
+    createdBy: req.user!.userId,
+    title: "Team member removed",
+  }).catch(() => {});
+  res.json({ success: true });
+});
+
+// Update member role
+router.patch("/:teamId/members/:userId/role", async (req: AuthRequest, res: Response) => {
+  if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can change member roles");
+  const team = await Team.findById(req.params.teamId).lean();
+  if (!team) throw new AppError(404, "Team not found");
+
+  await requireOrgMembershipFromRequest(req, team.orgId.toString());
+
+  const { role } = req.body;
+  if (!role || !["team_lead", "team_staff"].includes(role))
+    throw new AppError(400, "Valid role required (team_lead or team_staff)");
+
+  if (role === "team_lead") {
+    // Demote any existing team lead to team_staff
+    await TeamMember.updateMany(
+      { teamId: team._id.toString(), role: "team_lead" },
+      { role: "team_staff" },
+    );
+  }
+
+  await TeamMember.updateOne({ teamId: team._id.toString(), userId: req.params.userId }, { role });
+  processEvent({
+    type: "role_changed",
+    category: "permissions",
+    userId: req.user!.userId,
+    orgId: team.orgId.toString(),
+    createdBy: req.user!.userId,
+    title: "Team role changed",
+  }).catch(() => {});
+  res.json({ success: true });
+});
+
+export default router;

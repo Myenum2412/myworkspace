@@ -1,0 +1,56 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import OverviewClient from "./overview-client";
+
+export default function OverviewPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/overview")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled) setData(d);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (status === "loading" || loading)
+    return (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="size-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </div>
+    );
+  if (!session?.user) return null;
+
+  const defaults = {
+    overviewTasks: [],
+    currentUserId: "",
+    teamTasks: [],
+    allTasks: [],
+    orgId: "",
+    myTasks: [],
+    userId: "",
+    upcomingTasks: [],
+  };
+
+  return <OverviewClient {...(data || defaults)} />;
+}

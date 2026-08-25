@@ -1,0 +1,93 @@
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useIndustry } from "@/components/industry-provider";
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
+import { SidebarBrand } from "@/components/sidebar-brand";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarRail } from "@/components/ui/sidebar";
+import {
+  ActivityIcon,
+  BriefcaseIcon,
+  ClockIcon,
+  FolderIcon,
+  FolderKanbanIcon,
+  LayoutDashboardIcon,
+  ListTodoIcon,
+  RotateCcwIcon,
+} from "@/lib/icons";
+import type { TermKey } from "@/lib/industry-terms";
+import { ROLES } from "@/lib/rbac";
+
+function buildStaffNavData(t: (key: TermKey) => string) {
+  return [
+    {
+      title: t("nav.dashboard"),
+      url: "/staffs",
+      icon: <LayoutDashboardIcon className="size-6" />,
+      isActive: true,
+    },
+    { title: t("nav.staffTasks"), url: "/staffs/tasks", icon: <ListTodoIcon className="size-6" /> },
+    {
+      title: t("nav.projects"),
+      url: "/staffs/projects",
+      icon: <BriefcaseIcon className="size-6" />,
+    },
+    {
+      title: t("nav.staffTimesheet"),
+      url: "/staffs/timesheet",
+      icon: <ClockIcon className="size-6" />,
+    },
+    { title: t("nav.fileManager"), url: "/staffs/files", icon: <FolderIcon className="size-6" /> },
+    {
+      title: t("nav.staffActivity"),
+      url: "/staffs/activity",
+      icon: <ActivityIcon className="size-6" />,
+    },
+    { title: t("nav.reworks"), url: "/staffs/reworks", icon: <RotateCcwIcon className="size-6" /> },
+    {
+      title: t("nav.changeOrder"),
+      url: "/change-order",
+      icon: <ListTodoIcon className="size-6" />,
+    },
+    {
+      title: t("nav.chatting"),
+      url: "/chat",
+      icon: <FolderKanbanIcon className="size-6" />,
+    },
+  ];
+}
+
+interface NavUserData {
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+export function StaffSidebar({
+  user,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
+  user: NavUserData;
+}) {
+  const { data: session } = useSession();
+  const { t } = useIndustry();
+  const currentRole = ((session?.user as Record<string, unknown>)?.role as string) || "";
+  if (currentRole !== ROLES.STAFFS && currentRole !== ROLES.TEAM_STAFF) {
+    return null;
+  }
+  const navItems = buildStaffNavData(t);
+
+  return (
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarBrand title={t("app.name")} subtitle="Staff Panel" />
+      <SidebarContent>
+        <NavMain items={navItems} label="Navigation" />
+      </SidebarContent>
+      <SidebarFooter>
+        <NavUser user={user} />
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  );
+}

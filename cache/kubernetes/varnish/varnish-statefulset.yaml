@@ -1,0 +1,157 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: varnish-config
+  namespace: myworkspace
+data:
+  default.vcl: |
+    vcl 4.1;
+    import directors;
+    backend backend {
+      .host = "backend-service";
+      .port = "4000";
+      .connect_timeout = 5s;
+      .first_byte_timeout = 30s;
+      .between_bytes_timeout = 10s;
+      .max_connections = 500;
+    }
+    backend frontend {
+      .host = "frontend-service";
+      .port = "3000";
+      .connect_timeout = 5s;
+      .first_byte_timeout = 30s;
+      .between_bytes_timeout = 10s;
+      .max_connections = 500;
+    }
+    sub vcl_init {
+      new cluster = directors.round_robin();
+      cluster.add_backend(backend);
+      cluster.add_backend(frontend);
+    }
+    sub vcl_recv {
+      if (req.method != "GET" && req.method != "HEAD") { return (pass); }
+      if (req.url ~ "^/(_next/static|uploads|banners)/" || req.url ~ "\.(js|css|svg|png|jpg|jpeg|gif|ico|webp|avif|woff2?|ttf|eot|otf|pdf)$") {
+        unset req.http.cookie;
+        return (hash);
+      }
+      if (req.url ~ "^/api/(dashboard|search|settings|user/profile)" && req.method == "GET") {
+        unset req.http.cookie;
+        return (hash);
+      }
+      return (pass);
+    }
+    sub vcl_backend_response {
+      if (beresp.http.content-type ~ "^(text/css|application/javascript)") { set beresp.ttl = 365d; }
+      else if (beresp.http.content-type ~ "^(image/|font/)") { set beresp.ttl = 365d; }
+      else if (beresp.http.content-type ~ "^application/json") {
+        if (bereq.url ~ "/api/dashboard") { set beresp.ttl = 120s; }
+        else if (bereq.url ~ "/api/settings") { set beresp.ttl = 300s; }
+        else { set beresp.ttl = 30s; }
+        set beresp.grace = 600s;
+      } else { set beresp.ttl = 60s; set beresp.grace = 300s; }
+      if (beresp.ttl > 0s) { unset beresp.http.set-cookie; }
+    }
+    sub vcl_deliver {
+      if (obj.hits > 0) { set resp.http.X-Cache = "HIT"; }
+      else { set resp.http.X-Cache = "MISS"; }
+      unset resp.http.X-Varnish;
+      unset resp.http.Via;
+    }
+    sub vcl_hit {
+      if (obj.ttl >= 0s) { return (deliver); }
+      if (obj.ttl + obj.grace > 0s && std.healthy(req.backend_hint)) { return (deliver); }
+      return (miss);
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: varnish
+  namespace: myworkspace
+  labels:
+    app: varnish
+    layer: l4-cache
+spec:
+  selector:
+    app: varnish
+  ports:
+    - name: http
+      port: 80
+      targetPort: 6081
+    - name: admin
+      port: 6082
+      targetPort: 6082
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: varnish
+  namespace: myworkspace
+  labels:
+    app: varnish
+    layer: l4-cache
+spec:
+  serviceName: varnish
+  replicas: 3
+  selector:
+    matchLabels:
+      app: varnish
+  template:
+    metadata:
+      labels:
+        app: varnish
+    spec:
+      containers:
+        - name: varnish
+          image: varnish:7.6
+          args:
+            - "-f"
+            - "/etc/varnish/default.vcl"
+            - "-s"
+            - "malloc,4G"
+            - "-p"
+            - "default_ttl=3600"
+            - "-p"
+            - "default_grace=86400"
+            - "-p"
+            - "thread_pools=4"
+            - "-p"
+            - "thread_pool_max=1000"
+            - "-p"
+            - "thread_pool_min=50"
+            - "-p"
+            - "lru_interval=300"
+            - "-p"
+            - "http_resp_hdr_len=16384"
+            - "-p"
+            - "http_resp_size=1048576"
+          ports:
+            - containerPort: 6081
+              name: http
+            - containerPort: 6082
+              name: admin
+          volumeMounts:
+            - name: config
+              mountPath: /etc/varnish
+          resources:
+            requests:
+              cpu: "1"
+              memory: "1Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          readinessProbe:
+            httpGet:
+              path: /nginx-health
+              port: 6081
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 6081
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      volumes:
+        - name: config
+          configMap:
+            name: varnish-config

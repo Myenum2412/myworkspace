@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myworkspace-config
+  namespace: myworkspace
+data:
+  NODE_ENV: "production"
+  PORT: "4000"
+  MONGODB_DB: "myworkspace"
+  CORS_ORIGIN: "https://myworkspace.myenum.in"
+  NEXTAUTH_URL: "https://myworkspace.myenum.in"
+  TRIAL_DAYS: "15"
+  LOG_LEVEL: "info"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: myworkspace-secrets
+  namespace: myworkspace
+type: Opaque
+stringData:
+  MONGODB_URI: "mongodb+srv://user:pass@cluster.mongodb.net/myworkspace"
+  JWT_SECRET: "CHANGE_ME_TO_A_STRONG_SECRET"
+  NEXTAUTH_SECRET: "CHANGE_ME_TO_A_STRONG_SECRET"
+  ADMIN_EMAIL: "admin@myworkspace.com"
+  ADMIN_PASSWORD: "CHANGE_ME"
+  RESEND_API_KEY: "re_CHANGE_ME"
+  STRIPE_SECRET_KEY: "sk_live_CHANGE_ME"
+  STRIPE_WEBHOOK_SECRET: "whsec_CHANGE_ME"
+  # REDIS_URL is retained for backward compatibility; it targets the Valkey
+  # service (Valkey is RESP-wire-compatible, so the connection string is unchanged).
+  REDIS_URL: "redis://myworkspace-redis:6379"
+  # VALKEY_URL is the canonical Valkey connection string.
+  VALKEY_URL: "redis://myworkspace-redis:6379"
+  NTFY_BASE_URL: "https://myworkspace.myenum.in"
+
+

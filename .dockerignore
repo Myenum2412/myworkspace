@@ -1,0 +1,17 @@
+node_modules
+dist
+build
+.next
+.git
+.gitignore
+*.md
+.env
+.env.example
+.gitkeep
+Dockerfile
+.dockerignore
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage
+.turbo

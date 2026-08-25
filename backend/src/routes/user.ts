@@ -1,0 +1,473 @@
+import { type Response, Router } from "express";
+import fs from "fs";
+import mongoose from "mongoose";
+import multer from "multer";
+import path from "path";
+import { cacheManager } from "../lib/cache.js";
+import { Organization } from "../lib/db/models/Organization.js";
+import { OrgMember } from "../lib/db/models/OrgMember.js";
+import { Session } from "../lib/db/models/Session.js";
+import { User } from "../lib/db/models/User.js";
+import { type AuthRequest, authenticate } from "../middleware/auth.js";
+import { AppError } from "../middleware/error.js";
+import { processEvent } from "../services/notification-engine.service.js";
+
+const router = Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+
+const isObjectId = (id: string) => /^[0-9a-fA-F]{24}$/.test(id);
+
+router.get("/me", authenticate, async (req: AuthRequest, res: Response) => {
+  const user = await User.findOne({ id: req.user!.userId })
+    .select("id name email image role status createdAt")
+    .lean();
+  if (!user) throw new AppError(404, "User not found");
+
+  res.json({
+    success: true,
+    data: {
+      id: user.id || user._id.toString(),
+      name: user.name,
+      email: user.email,
+      image: user.image,
+      role: user.role,
+      status: user.status,
+      createdAt: user.createdAt,
+    },
+  });
+});
+
+router.get("/profile", authenticate, async (req: AuthRequest, res: Response) => {
+  const user = await User.findOne({ id: req.user!.userId })
+    .select(
+      "id name email image role status phone secondaryPhone department company address city state country zipCode linkedin github twitter website bannerUrl createdAt",
+    )
+    .lean();
+  if (!user) throw new AppError(404, "User not found");
+
+  const userId = user.id || (user as any)._id?.toString();
+  const member = await OrgMember.findOne({ userId }).select("orgId role").lean();
+
+  let org = null;
+  let memberCount = 0;
+  if (member) {
+    [org, memberCount] = await Promise.all([
+      Organization.findOne({ id: member.orgId })
+        .select(
+          "id name slug domain businessType industry gstNumber panNumber cinNumber companyEmail mobileNumber alternateMobileNumber website addressLine1 addressLine2 city state pincode country logo authorizedPersonName designation authorizedPersonEmail authorizedPersonMobile numberOfEmployees companyDescription plan createdAt",
+        )
+        .lean(),
+      OrgMember.countDocuments({ orgId: member.orgId }),
+    ]);
+  }
+
+  res.json({
+    success: true,
+    data: {
+      user: {
+        id: user._id.toString(),
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        secondaryPhone: (user as any).secondaryPhone || "",
+        department: user.department || "",
+        company: user.company || "",
+        address: user.address || "",
+        city: user.city || "",
+        state: user.state || "",
+        country: user.country || "",
+        zipCode: user.zipCode || "",
+        linkedin: (user as any).linkedin || "",
+        github: (user as any).github || "",
+        twitter: (user as any).twitter || "",
+        website: (user as any).website || "",
+        status: user.status || "offline",
+        role: user.role || "staffs",
+        image: user.image || "",
+        bannerUrl: user.bannerUrl || "",
+        createdAt: user.createdAt || new Date().toISOString(),
+      },
+      org: org
+        ? {
+            id: org.id || org._id.toString(),
+            name: org.name || "",
+            slug: org.slug || "",
+            domain: org.domain || "",
+            businessType: org.businessType || "",
+            industry: org.industry || "",
+            gstNumber: org.gstNumber || "",
+            panNumber: org.panNumber || "",
+            cinNumber: org.cinNumber || "",
+            companyEmail: org.companyEmail || "",
+            mobileNumber: org.mobileNumber || "",
+            alternateMobileNumber: org.alternateMobileNumber || "",
+            website: org.website || "",
+            addressLine1: org.addressLine1 || "",
+            addressLine2: org.addressLine2 || "",
+            city: org.city || "",
+            state: org.state || "",
+            pincode: org.pincode || "",
+            country: org.country || "India",
+            logoUrl: org.logo || "",
+            authorizedPersonName: org.authorizedPersonName || "",
+            designation: org.designation || "",
+            authorizedPersonEmail: org.authorizedPersonEmail || "",
+            authorizedPersonMobile: org.authorizedPersonMobile || "",
+            numberOfEmployees: org.numberOfEmployees || 0,
+            companyDescription: org.companyDescription || "",
+            plan: org.plan || "free",
+            createdAt: org.createdAt || new Date().toISOString(),
+          }
+        : null,
+      memberCount,
+    },
+  });
+});
+
+router.patch("/profile", authenticate, async (req: AuthRequest, res: Response) => {
+  const user = await User.findOne({ id: req.user!.userId });
+  if (!user) throw new AppError(404, "User not found");
+
+  const {
+    name,
+    email,
+    phone,
+    secondaryPhone,
+    department,
+    company,
+    address,
+    city,
+    state,
+    country,
+    zipCode,
+    linkedin,
+    github,
+    twitter,
+    website,
+    companyName,
+    companyDomain,
+    businessType,
+    industry,
+    gstNumber,
+    panNumber,
+    cinNumber,
+    companyEmail,
+    mobileNumber,
+    alternateMobileNumber,
+    orgWebsite,
+    addressLine1,
+    addressLine2,
+    orgCity,
+    orgState,
+    pincode,
+    orgCountry,
+    authorizedPersonName,
+    designation,
+    authorizedPersonEmail,
+    authorizedPersonMobile,
+    numberOfEmployees,
+    companyDescription,
+  } = req.body;
+
+  // Update user fields
+  const userUpdates: Record<string, unknown> = {};
+  const userFieldMap: Record<string, unknown> = {
+    name,
+    email,
+    phone,
+    secondaryPhone,
+    department,
+    company,
+    address,
+    city,
+    state,
+    country,
+    zipCode,
+    linkedin,
+    github,
+    twitter,
+    website,
+  };
+  for (const [key, val] of Object.entries(userFieldMap)) {
+    if (val !== undefined) userUpdates[key] = val;
+  }
+  if (Object.keys(userUpdates).length > 0) {
+    userUpdates.updatedAt = new Date();
+    await User.findByIdAndUpdate(user._id, { $set: userUpdates });
+  }
+
+  // Update org fields
+  let member = await OrgMember.findOne({ userId: user.id }).select("orgId").lean();
+  if (!member) {
+    const legacyMember = (await await mongoose.connection
+      .db!.collection("orgmembers")
+      .findOne({ userId: user.id }, { projection: { orgId: 1 } })) as Record<
+      string,
+      unknown
+    > | null;
+    if (legacyMember) {
+      member = { orgId: String(legacyMember.orgId), userId: user.id, role: "staffs" } as any;
+    }
+  }
+  const orgId = member?.orgId as string | undefined;
+  if (orgId) {
+    const orgUpdates: Record<string, unknown> = {};
+    const orgFieldMap: Record<string, unknown> = {
+      name: companyName,
+      domain: companyDomain,
+      businessType,
+      industry,
+      gstNumber,
+      panNumber,
+      cinNumber,
+      companyEmail,
+      mobileNumber,
+      alternateMobileNumber,
+      website: orgWebsite,
+      addressLine1,
+      addressLine2,
+      city: orgCity,
+      state: orgState,
+      pincode,
+      country: orgCountry,
+      authorizedPersonName,
+      designation,
+      authorizedPersonEmail,
+      authorizedPersonMobile,
+      numberOfEmployees: numberOfEmployees !== undefined ? Number(numberOfEmployees) : undefined,
+      companyDescription,
+    };
+    for (const [key, val] of Object.entries(orgFieldMap)) {
+      if (val !== undefined) orgUpdates[key] = val;
+    }
+    if (Object.keys(orgUpdates).length > 0) {
+      orgUpdates.updatedAt = new Date();
+      await Organization.findOneAndUpdate({ id: orgId }, { $set: orgUpdates });
+    }
+  }
+
+  cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);
+  processEvent({
+    type: "profile_updated",
+    category: "auth",
+    userId: req.user!.userId,
+    orgId: orgId!,
+    createdBy: req.user!.userId,
+    title: "Profile updated",
+  }).catch(() => {});
+
+  // Fetch updated data and return it
+  const updatedUser = await User.findOne({ id: req.user!.userId })
+    .select(
+      "id name email image role status phone secondaryPhone department company address city state country zipCode linkedin github twitter website bannerUrl createdAt",
+    )
+    .lean();
+  const updatedMember = await OrgMember.findOne({ userId: user.id }).select("orgId").lean();
+  let updatedOrg = null;
+  let updatedMemberCount = 0;
+  if (updatedMember?.orgId) {
+    updatedOrg = await Organization.findOne({ id: updatedMember.orgId as string })
+      .select(
+        "id name slug domain businessType industry gstNumber panNumber cinNumber companyEmail mobileNumber alternateMobileNumber website addressLine1 addressLine2 city state pincode country logo authorizedPersonName designation authorizedPersonEmail authorizedPersonMobile numberOfEmployees companyDescription plan createdAt",
+      )
+      .lean();
+    updatedMemberCount = await OrgMember.countDocuments({ orgId: updatedMember.orgId });
+  }
+
+  res.json({
+    success: true,
+    message: "Profile updated successfully",
+    user: updatedUser
+      ? {
+          id: updatedUser._id.toString(),
+          name: updatedUser.name || "",
+          email: updatedUser.email || "",
+          phone: updatedUser.phone || "",
+          secondaryPhone: (updatedUser as any).secondaryPhone || "",
+          department: updatedUser.department || "",
+          company: updatedUser.company || "",
+          address: updatedUser.address || "",
+          city: updatedUser.city || "",
+          state: updatedUser.state || "",
+          country: updatedUser.country || "",
+          zipCode: updatedUser.zipCode || "",
+          linkedin: (updatedUser as any).linkedin || "",
+          github: (updatedUser as any).github || "",
+          twitter: (updatedUser as any).twitter || "",
+          website: (updatedUser as any).website || "",
+          status: updatedUser.status || "offline",
+          role: updatedUser.role || "staffs",
+          image: updatedUser.image || "",
+          bannerUrl: updatedUser.bannerUrl || "",
+          createdAt: updatedUser.createdAt || new Date().toISOString(),
+        }
+      : null,
+    org: updatedOrg
+      ? {
+          id: updatedOrg.id || updatedOrg._id.toString(),
+          name: updatedOrg.name || "",
+          slug: updatedOrg.slug || "",
+          domain: updatedOrg.domain || "",
+          businessType: updatedOrg.businessType || "",
+          industry: updatedOrg.industry || "",
+          gstNumber: updatedOrg.gstNumber || "",
+          panNumber: updatedOrg.panNumber || "",
+          cinNumber: updatedOrg.cinNumber || "",
+          companyEmail: updatedOrg.companyEmail || "",
+          mobileNumber: updatedOrg.mobileNumber || "",
+          alternateMobileNumber: updatedOrg.alternateMobileNumber || "",
+          website: updatedOrg.website || "",
+          addressLine1: updatedOrg.addressLine1 || "",
+          addressLine2: updatedOrg.addressLine2 || "",
+          city: updatedOrg.city || "",
+          state: updatedOrg.state || "",
+          pincode: updatedOrg.pincode || "",
+          country: updatedOrg.country || "India",
+          logoUrl: updatedOrg.logo || "",
+          authorizedPersonName: updatedOrg.authorizedPersonName || "",
+          designation: updatedOrg.designation || "",
+          authorizedPersonEmail: updatedOrg.authorizedPersonEmail || "",
+          authorizedPersonMobile: updatedOrg.authorizedPersonMobile || "",
+          numberOfEmployees: updatedOrg.numberOfEmployees || 0,
+          companyDescription: updatedOrg.companyDescription || "",
+          plan: updatedOrg.plan || "free",
+          createdAt: updatedOrg.createdAt || new Date().toISOString(),
+        }
+      : null,
+    memberCount: updatedMemberCount,
+  });
+});
+
+/**
+ * Resolve a target user's status record, but only if they belong to the
+ * caller's organization. Cross-org reads are tenant-escape attempts → 403.
+ */
+async function resolveOrgScopedUser(userId: string, actorOrgId: string) {
+  let user;
+  if (isObjectId(userId)) {
+    user = await User.findById(userId).select("id status orgId").lean();
+  } else {
+    user = await User.findOne({ id: userId }).select("id status orgId").lean();
+  }
+  if (!user) return null;
+
+  const dbOrgId =
+    user.orgId || (await OrgMember.findOne({ userId: user.id }).select("orgId").lean())?.orgId;
+  if (dbOrgId && String(dbOrgId) !== String(actorOrgId)) {
+    throw new AppError(403, "Access denied: user is not in your organization");
+  }
+  return user;
+}
+
+router.get("/status", authenticate, async (req: AuthRequest, res: Response) => {
+  const userId = (req.query.userId as string) || req.user?.userId;
+  if (!userId) throw new AppError(400, "userId is required");
+
+  const user = await resolveOrgScopedUser(userId, req.user!.orgId!);
+  res.json({ success: true, data: { status: user?.status || "offline" } });
+});
+
+router.post("/status", authenticate, async (req: AuthRequest, res: Response) => {
+  const { status, userId: bodyUserId } = req.body;
+  if (!status) throw new AppError(400, "Status is required");
+  if (!["online", "offline", "break"].includes(status)) throw new AppError(400, "Invalid status");
+
+  const targetUserId = bodyUserId || req.user?.userId;
+  if (!targetUserId) throw new AppError(400, "userId is required");
+
+  // Only allow updating your own status; a different userId is only accepted
+  // if the target belongs to the caller's org (and even then, self-scoped).
+  if (bodyUserId && bodyUserId !== req.user?.userId) {
+    await resolveOrgScopedUser(targetUserId, req.user!.orgId!);
+  }
+
+  if (isObjectId(targetUserId)) {
+    await User.findByIdAndUpdate(targetUserId, { status });
+  } else {
+    await User.findOneAndUpdate({ id: targetUserId }, { status });
+  }
+
+  // Update active session if this is the current user
+  if (!bodyUserId || bodyUserId === req.user?.userId) {
+    const activeSession = await Session.findOne({
+      userId: isObjectId(targetUserId) ? targetUserId : req.user?.userId,
+      logoutTime: { $exists: false },
+    })
+      .sort({ loginTime: -1 })
+      .select("_id currentStatus statusTransitions loginTime totalBreakDuration duration");
+
+    if (activeSession && activeSession.currentStatus !== status) {
+      const previousStatus = activeSession.currentStatus;
+      if (activeSession.currentStatus === "break" && status !== "break") {
+        const breakStart = [...activeSession.statusTransitions]
+          .reverse()
+          .find((t) => t.status === "break");
+        if (breakStart) {
+          activeSession.totalBreakDuration += Date.now() - breakStart.timestamp.getTime();
+        }
+      }
+      activeSession.statusTransitions.push({ status, timestamp: new Date() });
+      activeSession.currentStatus = status;
+      await activeSession.save();
+    }
+  }
+
+  cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);
+  const statusMember = await OrgMember.findOne({ userId: req.user!.userId }).select("orgId").lean();
+  processEvent({
+    type: "profile_updated",
+    category: "auth",
+    userId: req.user!.userId,
+    orgId: statusMember!.orgId,
+    createdBy: req.user!.userId,
+    title: "Profile updated",
+  }).catch(() => {});
+
+  res.json({ success: true });
+});
+
+router.get("/banner", authenticate, async (req: AuthRequest, res: Response) => {
+  const user = await User.findOne({ id: req.user!.userId }).select("image").lean();
+  res.json({ success: true, data: { bannerUrl: user?.image || null } });
+});
+
+router.post(
+  "/banner",
+  authenticate,
+  upload.single("banner"),
+  async (req: AuthRequest, res: Response) => {
+    let bannerUrl = req.body.url;
+
+    if (req.file) {
+      const bannersDir = path.resolve("public", "banners");
+      if (!fs.existsSync(bannersDir)) {
+        fs.mkdirSync(bannersDir, { recursive: true });
+      }
+      const ext = path.extname(req.file.originalname) || ".jpg";
+      const filename = `${req.user!.userId}${ext}`;
+      fs.writeFileSync(path.join(bannersDir, filename), req.file.buffer);
+      bannerUrl = `/banners/${filename}`;
+    }
+
+    if (bannerUrl) {
+      await User.findOneAndUpdate({ id: req.user!.userId }, { image: bannerUrl });
+    }
+
+    cacheManager.invalidatePattern(`user:${req.user!.userId}:profile`);
+    const bannerMember = await OrgMember.findOne({ userId: req.user!.userId })
+      .select("orgId")
+      .lean();
+    processEvent({
+      type: "profile_updated",
+      category: "auth",
+      userId: req.user!.userId,
+      orgId: bannerMember!.orgId,
+      createdBy: req.user!.userId,
+      title: "Profile updated",
+    }).catch(() => {});
+
+    res.json({ bannerUrl });
+  },
+);
+
+export default router;

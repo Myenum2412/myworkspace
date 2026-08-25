@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+Allow: /blog
+Allow: /blog/*
+Allow: /pricing
+Allow: /features
+Allow: /solutions
+Allow: /about
+
+Disallow: /api/
+Disallow: /orgmenu/
+Disallow: /staffs/
+Disallow: /client/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /_next/
+Disallow: /login
+Disallow: /signup
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /verify-email
+
+Sitemap: https://myworkspace.myenum.in/sitemap.xml

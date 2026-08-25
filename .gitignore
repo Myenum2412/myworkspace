@@ -1,0 +1,20 @@
+.vercel
+.env*
+.md*
+node_modules/
+
+# dependencies
+/.claude
+/.mimocode
+/.opencode
+
+# Desktop app build output
+desktop/dist/
+desktop/node_modules/
+desktop/out/
+backend/data/uploads/
+backend/dist/
+*.tsbuildinfo
+*.log
+.DS_Store
+.next

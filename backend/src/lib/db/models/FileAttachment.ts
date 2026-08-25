@@ -1,0 +1,129 @@
+import { type Document, model, Schema } from "mongoose";
+
+export type FileCategory =
+  | "profile"
+  | "report"
+  | "general"
+  | "document"
+  | "image"
+  | "video"
+  | "audio"
+  | "archive";
+
+export interface IFileAttachment extends Document {
+  id: string;
+  orgId: string;
+  workspaceId: string | null;
+  taskId: string | null;
+  projectId: string | null;
+  clientId: string | null;
+  staffId: string | null;
+  departmentId: string | null;
+  folderId: string | null;
+  uploaderId: string;
+  moduleName: string | null;
+  entityId: string | null;
+  createdBy: string;
+  updatedBy?: string;
+  name: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  storagePath: string;
+  storageProvider: "local";
+  category: FileCategory;
+  description: string;
+  tags: string[];
+  isLocked: boolean;
+  lockedBy: string | null;
+  currentVersion: number;
+  checksum: string;
+  isDuplicate: boolean;
+  duplicateOf: string | null;
+  virusScanStatus: "pending" | "clean" | "infected" | "error";
+  virusScanResult: string;
+  thumbnailPath: string | null;
+  approvalStatus: "none" | "pending" | "approved" | "rejected";
+  approvedBy: string | null;
+  approvalNote: string;
+  lastAccessedAt: Date | null;
+  deletedAt: Date | null;
+  deletedBy: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const fileAttachmentSchema = new Schema<IFileAttachment>(
+  {
+    id: { type: String, required: true, unique: true },
+    orgId: { type: String, required: true, index: true },
+    workspaceId: { type: String, default: null, index: true },
+    taskId: { type: String, default: null, index: true },
+    projectId: { type: String, default: null, index: true },
+    clientId: { type: String, default: null, index: true },
+    staffId: { type: String, default: null, index: true },
+    departmentId: { type: String, default: null, index: true },
+    folderId: { type: String, default: null, index: true },
+    uploaderId: { type: String, required: true, index: true },
+    moduleName: { type: String, default: null, index: true },
+    entityId: { type: String, default: null, index: true },
+    createdBy: { type: String, required: true },
+    updatedBy: { type: String },
+    name: { type: String, required: true },
+    originalName: { type: String, required: true },
+    mimeType: { type: String, required: true },
+    size: { type: Number, required: true },
+    storagePath: { type: String, required: true },
+    storageProvider: {
+      type: String,
+      enum: ["local"],
+      default: "local",
+    },
+    category: {
+      type: String,
+      enum: ["profile", "report", "general", "document", "image", "video", "audio", "archive"],
+      default: "general",
+    },
+    description: { type: String, default: "" },
+    tags: { type: [String], default: [] },
+    isLocked: { type: Boolean, default: false },
+    lockedBy: { type: String, default: null },
+    currentVersion: { type: Number, default: 1 },
+    checksum: { type: String, default: "" },
+    isDuplicate: { type: Boolean, default: false },
+    duplicateOf: { type: String, default: null },
+    virusScanStatus: {
+      type: String,
+      enum: ["pending", "clean", "infected", "error"],
+      default: "pending",
+    },
+    virusScanResult: { type: String, default: "" },
+    thumbnailPath: { type: String, default: null },
+    approvalStatus: {
+      type: String,
+      enum: ["none", "pending", "approved", "rejected"],
+      default: "none",
+    },
+    approvedBy: { type: String, default: null },
+    approvalNote: { type: String, default: "" },
+    lastAccessedAt: { type: Date, default: null },
+    deletedAt: { type: Date, default: null },
+    deletedBy: { type: String, default: null },
+  },
+  { timestamps: true, collection: "file_attachments" },
+);
+
+fileAttachmentSchema.index({ orgId: 1, folderId: 1, deletedAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, projectId: 1, deletedAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, moduleName: 1, entityId: 1, deletedAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, clientId: 1, deletedAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, uploaderId: 1, deletedAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, name: "text", description: "text", tags: "text" });
+fileAttachmentSchema.index({ orgId: 1, mimeType: 1 });
+fileAttachmentSchema.index({ checksum: 1, orgId: 1 });
+fileAttachmentSchema.index({ category: 1, orgId: 1 });
+fileAttachmentSchema.index({ orgId: 1, approvalStatus: 1 });
+fileAttachmentSchema.index({ orgId: 1, uploaderId: 1, createdAt: 1 });
+fileAttachmentSchema.index({ orgId: 1, deletedAt: 1, createdAt: 1 });
+
+export const FileAttachment = model<IFileAttachment>("FileAttachment", fileAttachmentSchema);

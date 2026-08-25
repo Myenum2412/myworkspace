@@ -1,0 +1,134 @@
+/**
+ * Asset Generator for MyWorkspace Desktop Installer.
+ *
+ * Generates placeholder icons and images needed by the installer.
+ * In production, replace these with designer-crafted assets.
+ *
+ * Usage:
+ *   node build/generate-assets.js
+ */
+
+const fs = require("fs");
+const path = require("path");
+
+const ASSETS_DIR = path.resolve(__dirname, "..", "assets");
+
+const ASSETS = {
+  // These files will be created as minimal valid files.
+  // Replace with real assets before distribution.
+  "icon.ico": Buffer.from(
+    "0000010001001010000001002000680400001600000028000000100000002000000001002000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "hex"
+  ),
+};
+
+function generateBMP(width, height) {
+  const rowSize = Math.ceil((width * 3) / 4) * 4;
+  const pixelDataSize = rowSize * height;
+  const fileSize = 14 + 40 + pixelDataSize;
+
+  const buffer = Buffer.alloc(fileSize, 0);
+
+  // BMP header
+  buffer.write("BM", 0);
+  buffer.writeUInt32LE(fileSize, 2);
+  buffer.writeUInt32LE(14 + 40, 10);
+
+  // DIB header
+  buffer.writeUInt32LE(40, 14);
+  buffer.writeInt32LE(width, 18);
+  buffer.writeInt32LE(height, 22);
+  buffer.writeUInt16LE(1, 26);
+  buffer.writeUInt16LE(24, 28);
+  buffer.writeUInt32LE(0, 34);
+  buffer.writeUInt32LE(pixelDataSize, 38);
+
+  // Pixel data (dark blue gradient)
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const offset = 14 + 40 + (height - 1 - y) * rowSize + x * 3;
+      const r = Math.round((y / height) * 50);
+      const g = Math.round((y / height) * 30);
+      const b = Math.round(100 + (y / height) * 55);
+      buffer.writeUInt8(b, offset);
+      buffer.writeUInt8(g, offset + 1);
+      buffer.writeUInt8(r, offset + 2);
+    }
+  }
+
+  return buffer;
+}
+
+function generatePNG() {
+  // Minimal valid 32x32 PNG (blue square)
+  // Real implementation would use sharp or canvas
+  const png = Buffer.from(
+    "89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7AF4000000017352474200AECE1CE90000000467414D410000B18F0BFC6105000000097048597300000EC300000EC301C76FA8640000000F494441545847EDC101010000008220FFAF6E0601400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080DFC901010000008020FFAFE9061D0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "hex"
+  );
+  return png;
+}
+
+async function main() {
+  console.log("🔨 Generating installer assets...\n");
+
+  if (!fs.existsSync(ASSETS_DIR)) {
+    fs.mkdirSync(ASSETS_DIR, { recursive: true });
+  }
+
+  // Icon files (ICO format placeholder)
+  for (const [name, data] of Object.entries(ASSETS)) {
+    const filePath = path.join(ASSETS_DIR, name);
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, data);
+      console.log(`   ✓  Created: ${name} (${data.length} bytes)`);
+    } else {
+      console.log(`   ✓  Exists: ${name}`);
+    }
+  }
+
+  // PNG files
+  const pngFiles = ["icon.png", "tray-icon.png", "project-icon.png", "template-icon.png"];
+  for (const name of pngFiles) {
+    const filePath = path.join(ASSETS_DIR, name);
+    if (!fs.existsSync(filePath)) {
+      const pngData = generatePNG();
+      fs.writeFileSync(filePath, pngData);
+      console.log(`   ✓  Created: ${name} (${pngData.length} bytes)`);
+    } else {
+      console.log(`   ✓  Exists: ${name}`);
+    }
+  }
+
+  // ICO from PNG (simple copy for placeholder)
+  const icoFiles = ["project-icon.ico", "template-icon.ico"];
+  for (const name of icoFiles) {
+    const filePath = path.join(ASSETS_DIR, name);
+    if (!fs.existsSync(filePath)) {
+      // For placeholder, just copy the icon data
+      fs.writeFileSync(filePath, ASSETS["icon.ico"]);
+      console.log(`   ✓  Created: ${name} (placeholder)`);
+    } else {
+      console.log(`   ✓  Exists: ${name}`);
+    }
+  }
+
+  // Installer sidebar BMP
+  const bmpPath = path.join(ASSETS_DIR, "installer-sidebar.bmp");
+  if (!fs.existsSync(bmpPath)) {
+    const bmpData = generateBMP(164, 314);
+    fs.writeFileSync(bmpPath, bmpData);
+    console.log(`   ✓  Created: installer-sidebar.bmp (${bmpData.length} bytes)`);
+  } else {
+    console.log(`   ✓  Exists: installer-sidebar.bmp`);
+  }
+
+  console.log("\n✅  Asset generation complete!");
+  console.log("   📁  Assets are in:", ASSETS_DIR);
+  console.log("   ⚠️   Replace with designer-crafted assets before production release.\n");
+}
+
+main().catch((err) => {
+  console.error("❌ Asset generation failed:", err);
+  process.exit(1);
+});

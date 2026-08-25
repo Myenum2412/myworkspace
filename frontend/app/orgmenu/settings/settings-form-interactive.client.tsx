@@ -1,0 +1,122 @@
+"use client";
+
+import { useActionState } from "react";
+import { saveSettings } from "@/actions/settings";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AlertCircleIcon, CheckCircle2Icon, PaletteIcon, Settings2Icon } from "@/lib/icons";
+
+interface SettingsFormInteractiveProps {
+  initial: {
+    timezone: string;
+    dateFormat: string;
+    brandName: string;
+  };
+}
+
+export function SettingsFormInteractive({ initial }: SettingsFormInteractiveProps) {
+  const [state, formAction, pending] = useActionState(saveSettings, null);
+
+  return (
+    <form
+      action={formAction}
+      className="[&_input]:border-black [&_input]:bg-white [&_select>button]:border-black [&_select>button]:bg-white [&_textarea]:border-black [&_textarea]:bg-white"
+    >
+      {state?.success && (
+        <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-400 rounded-sm px-3 py-2 mb-4">
+          <CheckCircle2Icon className="size-4" />
+          Settings saved successfully
+        </div>
+      )}
+      {state?.error && (
+        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-sm px-3 py-2 mb-4">
+          <AlertCircleIcon className="size-4" />
+          {state.error}
+        </div>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Settings2Icon className="size-5 text-muted-foreground" />
+              <CardTitle>Preferences</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Timezone</Label>
+              <Select name="timezone" defaultValue={initial.timezone}>
+                <SelectTrigger id="timezone">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UTC">UTC</SelectItem>
+                  <SelectItem value="America/New_York">Eastern (EST/EDT)</SelectItem>
+                  <SelectItem value="America/Chicago">Central (CST/CDT)</SelectItem>
+                  <SelectItem value="America/Denver">Mountain (MST/MDT)</SelectItem>
+                  <SelectItem value="America/Los_Angeles">Pacific (PST/PDT)</SelectItem>
+                  <SelectItem value="Europe/London">London (GMT/BST)</SelectItem>
+                  <SelectItem value="Europe/Berlin">Berlin (CET/CEST)</SelectItem>
+                  <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
+                  <SelectItem value="Asia/Shanghai">Shanghai (CST)</SelectItem>
+                  <SelectItem value="Asia/Kolkata">India (IST)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Date format</Label>
+              <Select name="dateFormat" defaultValue={initial.dateFormat}>
+                <SelectTrigger id="dateFormat">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
+                  <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
+                  <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <PaletteIcon className="size-5 text-muted-foreground" />
+              <CardTitle>Branding</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Organization display name</Label>
+              <Input
+                id="brandName"
+                name="brandName"
+                defaultValue={initial.brandName}
+                placeholder=""
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Customize colors and logo for your organization.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-6 flex justify-end">
+        <Button type="submit" disabled={pending} className="w-32 h-10">
+          {pending ? "Saving..." : "Save Settings"}
+        </Button>
+      </div>
+    </form>
+  );
+}

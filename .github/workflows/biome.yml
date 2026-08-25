@@ -1,0 +1,55 @@
+name: Biome (Format & Lint)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  lint-changed:
+    name: Biome — changed files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci --include=dev
+      - name: Determine baseline for changed files
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
+            base="$(git rev-parse HEAD~1 2>/dev/null || echo '')"
+          fi
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+      - name: Check formatting, linting and import order only for changed files
+        if: steps.base.outputs.base != ''
+        run: npx biome check --changed --since=${{ steps.base.outputs.base }} .
+
+  lint-full:
+    name: Biome — full codebase (debt trend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci --include=dev
+      - name: Full repo diagnostics (informational while legacy debt exists)
+        run: npx biome check .
+        continue-on-error: true

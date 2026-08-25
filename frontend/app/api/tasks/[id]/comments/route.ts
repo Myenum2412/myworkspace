@@ -1,0 +1,124 @@
+import type { ObjectId } from "mongodb";
+import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
+import { collections } from "@/lib/db/schema";
+import { getUserOrgId } from "@/lib/org";
+
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    const comments = await db
+      .collection(collections.taskComments)
+      .find({ taskId: id })
+      .sort({ createdAt: 1 })
+      .toArray();
+
+    const userIds = [
+      ...new Set(comments.map((c: Record<string, unknown>) => c.senderId as string)),
+    ];
+    const users =
+      userIds.length > 0
+        ? await db
+            .collection(collections.users)
+            .find({ id: { $in: userIds } }, { projection: { id: 1, name: 1, image: 1 } })
+            .toArray()
+        : [];
+    const userMap = new Map(
+      (users as unknown as Record<string, unknown>[]).map((u) => [
+        u.id as string,
+        { name: (u.name as string) || "", image: (u.image as string) || "" },
+      ]),
+    );
+
+    const data = (comments as unknown as Record<string, unknown>[]).map((c) => {
+      const sender = userMap.get(c.senderId as string);
+      return {
+        id: (c._id as ObjectId).toString(),
+        taskId: c.taskId,
+        senderId: c.senderId,
+        senderName: sender?.name || (c.senderName as string) || (c.senderId as string).slice(0, 8),
+        senderAvatar: sender?.image || (c.senderAvatar as string) || "",
+        content: c.content,
+        createdAt: c.createdAt,
+        seenBy: Array.isArray(c.seenBy) ? c.seenBy : [],
+        attachments: Array.isArray(c.attachments) ? c.attachments : [],
+      };
+    });
+
+    return NextResponse.json({ data });
+  } catch {
+    return NextResponse.json({ error: "Could not load comments" }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const { content, attachments } = await request.json();
+
+    if ((!content || !content.trim()) && !(Array.isArray(attachments) && attachments.length)) {
+      return NextResponse.json({ error: "Content is required" }, { status: 400 });
+    }
+
+    const doc = {
+      taskId: id,
+      senderId: session.user.id,
+      senderName: session.user.name || "",
+      senderAvatar: session.user.image || "",
+      content: (content || "").trim(),
+      attachments: Array.isArray(attachments)
+        ? attachments.map((a) => ({
+            id: a.id,
+            name: a.name || a.originalName || "",
+            size: a.size || 0,
+            type: a.type || a.mimeType || "application/octet-stream",
+          }))
+        : [],
+      createdAt: new Date(),
+      seenBy: [session.user.id],
+    };
+
+    const result = await db.collection(collections.taskComments).insertOne(doc);
+
+    try {
+      const orgId = await getUserOrgId(session.user.id, session.user.email);
+      if (orgId) {
+        await db.collection(collections.activityLogs).insertOne({
+          orgId,
+          userId: session.user.id,
+          createdBy: session.user.id,
+          action: "task.comment_added",
+          entityType: "task",
+          entityId: id,
+          description: `Comment added: "${(content || "").slice(0, 60)}"`,
+          success: true,
+          createdAt: new Date(),
+        });
+      }
+    } catch {}
+
+    return NextResponse.json(
+      {
+        data: {
+          id: result.insertedId.toString(),
+          ...doc,
+        },
+      },
+      { status: 201 },
+    );
+  } catch {
+    return NextResponse.json({ error: "Failed to create comment" }, { status: 500 });
+  }
+}

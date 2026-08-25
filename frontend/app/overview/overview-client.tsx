@@ -1,0 +1,95 @@
+"use client";
+
+import TeamTasksOverview from "@/components/team-tasks-overview";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { AllTasksProps } from "../alltasks/alltasks-interactive.client";
+import AllTasksInteractive from "../alltasks/alltasks-interactive.client";
+import type { MyTasksProps } from "../mytasks/mytasks-interactive.client";
+import MyTasksInteractive from "../mytasks/mytasks-interactive.client";
+import type { TeamTask } from "../teamtasks/teamtasks-interactive.client";
+import type { UpcomingTask } from "../upcomingtasks/upcomingtasks-interactive.client";
+import UpcomingTasksInteractive from "../upcomingtasks/upcomingtasks-interactive.client";
+import type { Task } from "./columns.client";
+import OverviewInteractive from "./overview-interactive.client";
+
+type OverviewClientProps = {
+  overviewTasks: Task[];
+  currentUserId: string;
+  teamTasks: TeamTask[];
+  allTasks: AllTasksProps["initialTasks"];
+  orgId: string;
+  myTasks: MyTasksProps["initialTasks"];
+  userId: string;
+  upcomingTasks: UpcomingTask[];
+};
+
+export default function OverviewClient({
+  overviewTasks,
+  currentUserId,
+  teamTasks,
+  allTasks,
+  orgId,
+  myTasks,
+  userId,
+  upcomingTasks,
+}: OverviewClientProps) {
+  return (
+    <Tabs defaultValue="overview" className="w-full flex-1 min-h-0 flex flex-col">
+      <TabsList className="border-b border-border rounded-b-none justify-start w-full bg-transparent h-auto p-0 gap-1 max-h-10! *:flex-none">
+        <TabsTrigger
+          value="overview"
+          className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
+        >
+          Overview
+        </TabsTrigger>
+        <TabsTrigger
+          value="team_tasks"
+          className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
+        >
+          Team Tasks
+        </TabsTrigger>
+        <TabsTrigger
+          value="all_tasks"
+          className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
+        >
+          All Tasks
+        </TabsTrigger>
+        <TabsTrigger
+          value="my_tasks"
+          className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
+        >
+          My Tasks
+        </TabsTrigger>
+        <TabsTrigger
+          value="upcoming_tasks"
+          className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
+        >
+          Upcoming Tasks
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="overview" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
+        <OverviewInteractive tasks={overviewTasks} currentUserId={currentUserId} />
+      </TabsContent>
+
+      <TabsContent value="team_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
+        <TeamTasksOverview tasks={teamTasks} />
+      </TabsContent>
+
+      <TabsContent value="all_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
+        <AllTasksInteractive initialTasks={allTasks} orgId={orgId} />
+      </TabsContent>
+
+      <TabsContent value="my_tasks" className="flex-1 min-h-0 data-[state=active]:flex flex-col">
+        <MyTasksInteractive initialTasks={myTasks} orgId={orgId} userId={userId} />
+      </TabsContent>
+
+      <TabsContent
+        value="upcoming_tasks"
+        className="flex-1 min-h-0 data-[state=active]:flex flex-col"
+      >
+        <UpcomingTasksInteractive initialTasks={upcomingTasks} />
+      </TabsContent>
+    </Tabs>
+  );
+}

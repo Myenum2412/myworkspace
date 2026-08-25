@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: varnish
+  namespace: cache-system
+  labels:
+    app.kubernetes.io/name: varnish
+    app.kubernetes.io/part-of: myworkspace
+    app.kubernetes.io/component: cache
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: varnish
+  template:
+    metadata:
+      labels:
+        app: varnish
+        app.kubernetes.io/name: varnish
+        app.kubernetes.io/part-of: myworkspace
+        app.kubernetes.io/component: cache
+    spec:
+      containers:
+        - name: varnish
+          image: varnish:7.6
+          ports:
+            - containerPort: 80
+              name: http
+            - containerPort: 6082
+              name: admin
+          env:
+            - name: VARNISH_MEMORY
+              value: "2g"
+            - name: VARNISH_STORAGE
+              value: "malloc,2g"
+            - name: VARNISH_INSTANCE
+              value: "varnish"
+          volumeMounts:
+            - name: vcl-config
+              mountPath: /etc/varnish/default.vcl
+              subPath: default.vcl
+              readOnly: true
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: "1"
+            requests:
+              memory: 512Mi
+              cpu: 250m
+          readinessProbe:
+            exec:
+              command:
+                - varnishadm
+                - ping
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - varnishadm
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+      volumes:
+        - name: vcl-config
+          configMap:
+            name: varnish-config
+            items:
+              - key: default.vcl
+                path: default.vcl

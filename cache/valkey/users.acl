@@ -1,0 +1,19 @@
+# Valkey ACL Users
+# Application roles with least-privilege access
+
+user default off
+
+# Application user - full cache access
+user appuser on >${VALKEY_PASSWORD} ~* +@all -@dangerous +@connection -@admin
+
+# Session cache user
+user sessionuser on >${SESSION_CACHE_PASSWORD} ~session:* +get +set +expire +del +exists +ttl
+
+# API cache user
+user apicacheuser on >${API_CACHE_PASSWORD} ~api:* +get +set +expire +del +exists
+
+# Read-only reporting user
+user readonlyuser on >${READONLY_PASSWORD} ~* +get +exists +ttl +keys +type +info
+
+# Monitoring user
+user monitoringuser on >${MONITORING_PASSWORD} ~* +info +ping +cluster|info +slowlog|get +memory|stats
