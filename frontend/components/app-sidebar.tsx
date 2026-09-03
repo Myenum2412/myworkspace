@@ -5,21 +5,9 @@ import { useIndustry } from "@/components/industry-provider";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { SidebarBrand } from "@/components/sidebar-brand";
+import { SvglIcon } from "@/components/svgl-icon";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarRail } from "@/components/ui/sidebar";
-import {
-  AttachMoneyIcon,
-  BarChart3Icon,
-  BriefcaseIcon,
-  CameraAltIcon,
-  ChatIcon,
-  CheckCheckIcon,
-  LayoutDashboardIcon,
-  ListChecksIcon,
-  MuiFolderIcon,
-  RotateCcwIcon,
-  Settings2Icon,
-  UsersIcon,
-} from "@/lib/icons";
+import { Settings2Icon } from "@/lib/icons";
 import { filterNavByRole } from "@/lib/rbac/navigation";
 
 export interface NavItem {
@@ -64,27 +52,55 @@ export function AppSidebar({
     {
       title: t("nav.dashboard"),
       url: "/dashboard",
-      icon: <LayoutDashboardIcon className="size-6" />,
+      icon: <SvglIcon name="linear" className="size-6" alt="dashboard" />,
       isActive: true,
     },
-    { title: t("nav.overview"), url: "/overview", icon: <ListChecksIcon className="size-6" /> },
-    { title: t("nav.employees"), url: "/employees", icon: <UsersIcon className="size-6" /> },
-    { title: t("nav.projects"), url: "/projects", icon: <BriefcaseIcon className="size-6" /> },
-    { title: t("nav.approvals"), url: "/approvals", icon: <CheckCheckIcon className="size-6" /> },
-    { title: t("nav.fileManager"), url: "/files", icon: <MuiFolderIcon className="size-6" /> },
-    { title: t("nav.billing"), url: "/billing", icon: <AttachMoneyIcon className="size-6" /> },
-    { title: t("nav.chatting"), url: "/chat", icon: <ChatIcon className="size-6" /> },
+    {
+      title: t("nav.overview"),
+      url: "/overview",
+      icon: <SvglIcon name="asana" className="size-6" alt="overview" />,
+    },
+    {
+      title: t("nav.employees"),
+      url: "/employees",
+      icon: <SvglIcon name="slack" className="size-6" alt="employees" />,
+    },
+    {
+      title: t("nav.projects"),
+      url: "/projects",
+      icon: <SvglIcon name="notion" className="size-6" alt="projects" />,
+    },
+    {
+      title: t("nav.approvals"),
+      url: "/approvals",
+      icon: <SvglIcon name="clickup" className="size-6" alt="approvals" />,
+    },
+    {
+      title: t("nav.fileManager"),
+      url: "/files",
+      icon: <SvglIcon name="google_drive" className="size-6" alt="files" />,
+    },
+    {
+      title: t("nav.billing"),
+      url: "/billing",
+      icon: <SvglIcon name="stripe" className="size-6" alt="billing" />,
+    },
+    {
+      title: t("nav.chatting"),
+      url: "/chat",
+      icon: <SvglIcon name="slack" className="size-6" alt="chat" />,
+    },
     {
       title: t("nav.reports"),
       url: "/dashboard/reports",
-      icon: <BarChart3Icon className="size-6" />,
+      icon: <SvglIcon name="vercel" className="size-6" alt="reports" />,
     },
   ];
 
   const photographyItem: NavItem = {
     title: t("nav.photography"),
     url: "/photography",
-    icon: <CameraAltIcon className="size-6" />,
+    icon: <SvglIcon name="figma" className="size-6" alt="photography" />,
   };
 
   const settingsItem: NavItem = {
