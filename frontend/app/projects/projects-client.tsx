@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Clients from "@/app/clients/clients.client";
 import type { Client } from "@/app/clients/columns";
-import ContractorsPage from "@/app/contractors/contractors-page";
 import { useIndustry } from "@/components/industry-provider";
 import type { Project } from "@/components/projects/project-types";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -80,12 +79,6 @@ export default function ProjectsClient({
           >
             {t("nav.clients")}
           </TabsTrigger>
-          <TabsTrigger
-            value="contractors"
-            className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2"
-          >
-            {t("page.projects.contractors")}
-          </TabsTrigger>
         </TabsList>
       </Tabs>
       <div className="flex-1 overflow-auto">
@@ -105,9 +98,6 @@ export default function ProjectsClient({
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
           />
-        )}
-        {activeTab === "contractors" && (
-          <ContractorsPage searchQuery={searchQuery} onSearchChange={setSearchQuery} />
         )}
       </div>
     </div>
