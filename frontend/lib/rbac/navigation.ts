@@ -205,15 +205,6 @@ const NAV_ACCESS_CONTROL: Record<string, string[]> = {
 
   // ── Settings ──
   "/settings": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
-  "/change-order": [
-    ROLES.ORG_ADMIN,
-    ROLES.MEMBERS,
-    ROLES.MANAGER,
-    ROLES.STAFFS,
-    ROLES.TEAM_STAFF,
-    ROLES.FINANCE,
-  ],
-
   // ── Staff Management ──
   "/staffs": [
     ROLES.ORG_ADMIN,
@@ -245,18 +236,6 @@ const NAV_ACCESS_CONTROL: Record<string, string[]> = {
     ROLES.STAFFS,
     ROLES.TEAM_STAFF,
     ROLES.HR,
-  ],
-
-  // ── Reworks ──
-  "/reworks": [
-    ROLES.ORG_ADMIN,
-    ROLES.MEMBERS,
-    ROLES.MANAGER,
-    ROLES.TEAM_LEADER,
-    ROLES.STAFFS,
-    ROLES.TEAM_STAFF,
-    ROLES.HR,
-    ROLES.FINANCE,
   ],
 
   // ── Platform Admin ──

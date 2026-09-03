@@ -72,13 +72,7 @@ export function AppSidebar({
     { title: t("nav.projects"), url: "/projects", icon: <BriefcaseIcon className="size-6" /> },
     { title: t("nav.approvals"), url: "/approvals", icon: <CheckCheckIcon className="size-6" /> },
     { title: t("nav.fileManager"), url: "/files", icon: <MuiFolderIcon className="size-6" /> },
-    { title: t("nav.reworks"), url: "/reworks", icon: <RotateCcwIcon className="size-6" /> },
     { title: t("nav.billing"), url: "/billing", icon: <AttachMoneyIcon className="size-6" /> },
-    {
-      title: t("nav.changeOrder"),
-      url: "/change-order",
-      icon: <ListChecksIcon className="size-6" />,
-    },
     { title: t("nav.chatting"), url: "/chat", icon: <ChatIcon className="size-6" /> },
     {
       title: t("nav.reports"),

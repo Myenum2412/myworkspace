@@ -57,8 +57,6 @@ export const WORKSPACE_ROUTES = [
   "/files",
   "/attendance",
   "/appointments",
-  "/reworks",
-  "/change-order",
   "/chat",
 ];
 

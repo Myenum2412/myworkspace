@@ -75,10 +75,8 @@ const WORKSPACE_PREFIXES = [
   "/attendance",
   "/appointments",
   "/ai",
-  "/reworks",
   "/addons",
   "/chat",
-  "/change-order",
   "/notifications",
 ];
 
@@ -242,22 +240,6 @@ const ROLE_ROUTE_ACCESS: Record<string, string[]> = {
   ],
   "/settings": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
   "/overview": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER],
-  "/change-order": [
-    ROLES.ORG_ADMIN,
-    ROLES.MEMBERS,
-    ROLES.MANAGER,
-    ROLES.STAFFS,
-    ROLES.TEAM_STAFF,
-    ROLES.FINANCE,
-  ],
-  "/reworks": [
-    ROLES.ORG_ADMIN,
-    ROLES.MEMBERS,
-    ROLES.MANAGER,
-    ROLES.TEAM_LEADER,
-    ROLES.STAFFS,
-    ROLES.TEAM_STAFF,
-  ],
 
   // HR specific
   "/attendance": [ROLES.ORG_ADMIN, ROLES.MEMBERS, ROLES.MANAGER, ROLES.HR],
