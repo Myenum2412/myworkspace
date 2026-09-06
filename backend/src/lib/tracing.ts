@@ -26,7 +26,7 @@ export function initializeTelemetry() {
     const { BatchSpanProcessor } = require("@opentelemetry/sdk-trace-base");
     const { MeterProvider, PeriodicExportingMetricReader } = require("@opentelemetry/sdk-metrics");
     const { HttpInstrumentation } = require("@opentelemetry/instrumentation-http");
-    const { ExpressInstrumentation } = require("@opentelemetry/instrumentation-express");
+    const { FastifyInstrumentation } = require("@opentelemetry/instrumentation-fastify");
     const { MongoDBInstrumentation } = require("@opentelemetry/instrumentation-mongodb");
     const { registerInstrumentations } = require("@opentelemetry/instrumentation");
 
@@ -74,7 +74,7 @@ export function initializeTelemetry() {
       tracerProvider,
       instrumentations: [
         new HttpInstrumentation(),
-        new ExpressInstrumentation(),
+        new FastifyInstrumentation(),
         new MongoDBInstrumentation(),
       ],
     });

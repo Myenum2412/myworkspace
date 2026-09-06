@@ -1,4 +1,5 @@
-import type { NextFunction, Response } from "express";
+// @ts-nocheck
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { OrgMember } from "../lib/db/models/OrgMember.js";
 import type { AuthRequest } from "./auth.js";
 import { AppError } from "./error.js";

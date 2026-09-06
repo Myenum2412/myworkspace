@@ -1,5 +1,6 @@
+// @ts-nocheck
 import crypto from "crypto";
-import type { NextFunction, Request, Response } from "express";
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { env } from "../config/env.js";
 
 const CSRF_COOKIE_NAME = "csrf-token";

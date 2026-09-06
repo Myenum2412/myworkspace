@@ -1,8 +1,11 @@
 import type { Server } from "http";
-import request from "supertest";
 import app from "../../../src/app.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin } from "../../__helpers__/users.js";
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
 
 let server: Server;
 beforeAll(async () => {
@@ -27,7 +30,7 @@ describe("RBAC enforcement", () => {
     // For /api/admin/users we test authorizePermission("MANAGE_USERS"): a regular
     // user has no permissions and is rejected.
     const regular = await seedOrgWithAdmin({ email: `rr-${Date.now()}@ex.seeded` });
-    const res = await agent().get("/api/admin/users").set(regular.headers);
-    expect([401, 403]).toContain(res.status);
+    const res = await agent().get("/api/admin/users"), headers:{regular.headers};
+    expect([401, 403]).toContain(res.statusCode);
   });
 });

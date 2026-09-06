@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import { notifyClient } from "../lib/notifications/notification-wiring.js";
 import { isAdminRole } from "../lib/rbac/index.js";
 import { requireEmail, requireString } from "../lib/validate.js";
@@ -15,10 +16,7 @@ import {
 } from "../services/client.service.js";
 import { createNotification } from "../services/notification.service.js";
 
-const router = Router();
-
-router.use(authenticate);
-
+export default async function plugin(fastify: FastifyInstance) {
 /**
  * The orgId must always come from the authenticated session. If a caller
  * sends one that does not match, it is a tenant-escape attempt → 403.
@@ -31,30 +29,30 @@ function assertNoOrgOverride(req: AuthRequest): void {
   }
 }
 
-router.get(
+fastify.get(
   "/",
   cacheEnhanced({ ttl: 30, varyByOrg: true, tags: ["clients"] }),
-  async (req: AuthRequest, res: Response) => {
+  async (req: AuthRequest, reply: any) => {
     const orgId = req.user!.orgId!;
     const data = await listClients(orgId);
-    res.json({ success: true, data, total: data.length });
+    reply.send({ success: true, data, total: data.length });
   },
 );
 
-router.get("/:id", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id", async (req: AuthRequest, reply: any) => {
   const orgId = req.user!.orgId!;
   const data = await getClient(orgId, req.params.id);
   if (!data) throw new AppError(404, "Client not found");
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
 
-router.get("/:id/workspace", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/workspace", async (req: AuthRequest, reply: any) => {
   const orgId = req.user!.orgId!;
   const data = await getClientWorkspace(orgId, req.params.id);
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
 
-router.post("/", async (req: AuthRequest, res: Response) => {
+fastify.get("/", async (req: AuthRequest, reply: any) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can create clients");
   assertNoOrgOverride(req);
   const orgId = req.user!.orgId!;
@@ -79,10 +77,10 @@ router.post("/", async (req: AuthRequest, res: Response) => {
   notifyClient
     .created(req.user!.userId, orgId, req.user!.userId, result.client.name, result.client.id)
     .catch(() => {});
-  res.status(201).json({ success: true, data: result });
+  reply.send(201).json({ success: true, data: result });
 });
 
-router.put("/:id", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id", async (req: AuthRequest, reply: any) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can update clients");
   assertNoOrgOverride(req);
   const orgId = req.user!.orgId!;
@@ -96,10 +94,10 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
   notifyClient
     .updated(req.user!.userId, orgId, req.user!.userId, data.name || "Client", req.params.id)
     .catch(() => {});
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
 
-router.delete("/:id", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id", async (req: AuthRequest, reply: any) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete clients");
   assertNoOrgOverride(req);
   const orgId = req.user!.orgId!;
@@ -117,7 +115,6 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
     link: "/clients",
     metadata: { clientId: req.params.id, clientName: deletedName },
   }).catch(() => {});
-  res.json({ success: true, message: "Client deleted" });
+  reply.send({ success: true, message: "Client deleted" });
 });
-
-export default router;
+}

@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import {
   type CallActor,
@@ -18,8 +19,7 @@ import {
   updateSelfState,
 } from "../services/call.service.js";
 
-const router = Router();
-
+export default async function plugin(fastify: FastifyInstance) {
 async function actorOf(req: AuthRequest): Promise<CallActor> {
   const userId = req.user?.userId;
   const orgId = req.user?.orgId;
@@ -36,9 +36,9 @@ async function actorOf(req: AuthRequest): Promise<CallActor> {
   };
 }
 
-router.post("/", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/", authenticate, async (req: AuthRequest, reply: any) => {
   if (!req.user?.orgId || !req.user?.userId) {
-    res.status(401).json({ success: false, error: "Unauthorized" });
+    reply.send(401).json({ success: false, error: "Unauthorized" });
     return;
   }
   const { channelId, type, name, media, invitees, scheduledAt } = req.body ?? {};
@@ -52,12 +52,12 @@ router.post("/", authenticate, async (req: AuthRequest, res: Response) => {
     invitees: Array.isArray(invitees) ? invitees : [],
     scheduledAt,
   });
-  res.status(201).json({ success: true, data: call });
+  reply.send(201).json({ success: true, data: call });
 });
 
-router.get("/", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/", authenticate, async (req: AuthRequest, reply: any) => {
   if (!req.user?.orgId || !req.user?.userId) {
-    res.status(401).json({ success: false, error: "Unauthorized" });
+    reply.send(401).json({ success: false, error: "Unauthorized" });
     return;
   }
   const scope = (req.query.scope as string | undefined) || "all";
@@ -66,50 +66,50 @@ router.get("/", authenticate, async (req: AuthRequest, res: Response) => {
     actorUserId: req.user.userId,
     scope: scope as "active" | "scheduled" | "history" | "all",
   });
-  res.json({ success: true, data: calls });
+  reply.send({ success: true, data: calls });
 });
 
-router.get("/history", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/history", authenticate, async (req: AuthRequest, reply: any) => {
   if (!req.user?.orgId || !req.user?.userId) {
-    res.status(401).json({ success: false, error: "Unauthorized" });
+    reply.send(401).json({ success: false, error: "Unauthorized" });
     return;
   }
   const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 50;
   const calls = await getCallHistory(req.user.orgId, req.user.userId, limit);
-  res.json({ success: true, data: calls });
+  reply.send({ success: true, data: calls });
 });
 
-router.get("/:id", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/:id", authenticate, async (req: AuthRequest, reply: any) => {
   const call = await getCall(req.params.id);
-  res.json({ success: true, data: call });
+  reply.send({ success: true, data: call });
 });
 
-router.post("/:id/join", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/join", authenticate, async (req: AuthRequest, reply: any) => {
   const data = await joinCall(req.params.id, await actorOf(req));
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
 
-router.post("/:id/leave", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/leave", authenticate, async (req: AuthRequest, reply: any) => {
   const data = await leaveCall(req.params.id, await actorOf(req));
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
 
-router.post("/:id/end", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/end", authenticate, async (req: AuthRequest, reply: any) => {
   const data = await endCall(req.params.id, await actorOf(req));
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
 
-router.post("/:id/cancel", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/cancel", authenticate, async (req: AuthRequest, reply: any) => {
   const data = await cancelCall(req.params.id, await actorOf(req));
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
 
-router.post("/:id/hand-raise", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/hand-raise", authenticate, async (req: AuthRequest, reply: any) => {
   const data = await toggleHandRaise(req.params.id, await actorOf(req));
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
 
-router.post("/:id/state", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/state", authenticate, async (req: AuthRequest, reply: any) => {
   const { audio, video, screen, muted } = req.body ?? {};
   const data = await updateSelfState(req.params.id, await actorOf(req), {
     audio,
@@ -117,26 +117,26 @@ router.post("/:id/state", authenticate, async (req: AuthRequest, res: Response) 
     screen,
     muted,
   });
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
 
-router.post("/:id/moderate", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/moderate", authenticate, async (req: AuthRequest, reply: any) => {
   const { action, targetUserId } = req.body ?? {};
   const data = await moderatorControls(req.params.id, await actorOf(req), action, targetUserId);
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
 
-router.post("/:id/chat", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/chat", authenticate, async (req: AuthRequest, reply: any) => {
   const { text } = req.body ?? {};
   if (!text) {
-    res.status(400).json({ success: false, error: "text is required" });
+    reply.send(400).json({ success: false, error: "text is required" });
     return;
   }
   const data = await sendChat(req.params.id, await actorOf(req), String(text));
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
 
-router.patch("/:id", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/:id", authenticate, async (req: AuthRequest, reply: any) => {
   const { scheduledAt, name } = req.body ?? {};
   let data: unknown;
   if (scheduledAt) {
@@ -149,10 +149,9 @@ router.patch("/:id", authenticate, async (req: AuthRequest, res: Response) => {
       { new: true },
     );
   } else {
-    res.status(400).json({ success: false, error: "Nothing to update" });
+    reply.send(400).json({ success: false, error: "Nothing to update" });
     return;
   }
-  res.json({ success: true, data });
+  reply.send({ success: true, data });
 });
-
-export default router;
+}

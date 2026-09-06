@@ -1,9 +1,12 @@
 import type { Server } from "http";
 import mongoose from "mongoose";
-import request from "supertest";
 import app from "../../../src/app.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin } from "../../__helpers__/fixtures.js";
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
 
 let server: Server;
 let ctx: Awaited<ReturnType<typeof seedOrgWithAdmin>>;
@@ -27,10 +30,10 @@ describe("Chaos / resilience scenarios", () => {
       const originalState = mongoose.connection.readyState;
       try {
         await mongoose.disconnect();
-        const res = await request(server).get("/api/tasks").set(ctx.headers);
+        const res = await request(server).get("/api/tasks"), headers:{ctx.headers};
 
-        expect(res.status).toBeGreaterThanOrEqual(400);
-        expect(res.body.error || res.body.success === false).toBeTruthy();
+        expect(res.statusCode).toBeGreaterThanOrEqual(400);
+        expect(JSON.parse(res.payload).error || JSON.parse(res.payload).success === false).toBeTruthy();
       } finally {
         // Reconnect
         if (mongoose.connection.readyState === 0) {
@@ -46,17 +49,17 @@ describe("Chaos / resilience scenarios", () => {
   describe("Misconfigured rate limiter", () => {
     it("still processes requests even when rate limit is hit", async () => {
       const res = await request(server).get("/api/health");
-      expect(res.status).toBe(200);
-      expect(res.body.status).toBeDefined();
+      expect(res.statusCode).toBe(200);
+      expect(JSON.parse(res.payload).status).toBeDefined();
     });
   });
 
   describe("Large payload rejection", () => {
     it("rejects request body exceeding size limit", async () => {
       const largePayload = { data: "x".repeat(60 * 1024 * 1024) }; // 60MB
-      const res = await request(server).post("/api/tasks").set(ctx.headers).send(largePayload);
+      const res = await request(server).post("/api/tasks"), headers:{ctx.headers}, payload:largePayload;
       // Should fail with entity too large or validation error
-      expect([400, 413, 500]).toContain(res.status);
+      expect([400, 413, 500]).toContain(res.statusCode);
     });
   });
 
@@ -64,8 +67,8 @@ describe("Chaos / resilience scenarios", () => {
     it("write completes even if client doesn't receive response", async () => {
       const createPromise = request(server)
         .post("/api/tasks")
-        .set(ctx.headers)
-        .send({ title: "Fire and Forget", orgId: ctx.orgId });
+        , headers:{ctx.headers}
+        , payload:{ title: "Fire and Forget", orgId: ctx.orgId };
 
       // Don't await the response; just verify the write completed eventually
       const { status } = await createPromise;
@@ -79,9 +82,9 @@ describe("Chaos / resilience scenarios", () => {
       try {
         await mongoose.disconnect();
         const res = await request(server).get("/api/health");
-        if (res.status === 200) {
-          expect(res.body.checks.mongodb).toBe("disconnected");
-          expect(res.body.status).toBe("degraded");
+        if (res.statusCode === 200) {
+          expect(JSON.parse(res.payload).checks.mongodb).toBe("disconnected");
+          expect(JSON.parse(res.payload).status).toBe("degraded");
         }
       } finally {
         if (mongoose.connection.readyState === 0) {

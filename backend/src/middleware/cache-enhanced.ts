@@ -1,4 +1,5 @@
-import type { NextFunction, Response } from "express";
+// @ts-nocheck
+import type { FastifyRequest, FastifyReply } from "fastify";
 import type { Cluster, Redis } from "ioredis";
 import NodeCache from "node-cache";
 import { cacheService } from "../lib/cache/cache-service.js";

@@ -1,10 +1,13 @@
 import type { Server } from "http";
-import request from "supertest";
 import { v4 as uuid } from "uuid";
 import app from "../../../src/app.js";
 import { Message } from "../../../src/lib/db/models/Message.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin } from "../../__helpers__/fixtures.js";
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
 
 let server: Server;
 let ctx: Awaited<ReturnType<typeof seedOrgWithAdmin>>;
@@ -29,57 +32,57 @@ describe("Chat REST API", () => {
       const convId = conversationId();
       const res = await request(server)
         .post("/api/chat/messages")
-        .set(ctx.headers)
-        .send({ conversationId: convId, content: "Hello World" });
+        , headers:{ctx.headers}
+        , payload:{ conversationId: convId, content: "Hello World" };
 
-      expect(res.status).toBe(201);
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.content).toBe("Hello World");
-      expect(res.body.data.conversationId).toBe(convId);
+      expect(res.statusCode).toBe(201);
+      expect(JSON.parse(res.payload).success).toBe(true);
+      expect(JSON.parse(res.payload).data.content).toBe("Hello World");
+      expect(JSON.parse(res.payload).data.conversationId).toBe(convId);
     });
 
     it("returns 400 when content is missing", async () => {
       const res = await request(server)
         .post("/api/chat/messages")
-        .set(ctx.headers)
-        .send({ conversationId: conversationId() });
+        , headers:{ctx.headers}
+        , payload:{ conversationId: conversationId( });
 
-      expect(res.status).toBe(400);
+      expect(res.statusCode).toBe(400);
     });
 
     it("returns 400 when conversationId is missing", async () => {
       const res = await request(server)
         .post("/api/chat/messages")
-        .set(ctx.headers)
-        .send({ content: "Hello" });
+        , headers:{ctx.headers}
+        , payload:{ content: "Hello" };
 
-      expect(res.status).toBe(400);
+      expect(res.statusCode).toBe(400);
     });
 
     it("rejects unauthenticated requests", async () => {
       const res = await request(server)
         .post("/api/chat/messages")
-        .send({ conversationId: conversationId(), content: "Hello" });
+        , payload:{ conversationId: conversationId(, content: "Hello" });
 
-      expect(res.status).toBe(401);
+      expect(res.statusCode).toBe(401);
     });
 
     it("supports messageType and replyTo", async () => {
       const convId = conversationId();
       const first = await request(server)
         .post("/api/chat/messages")
-        .set(ctx.headers)
-        .send({ conversationId: convId, content: "Original" });
+        , headers:{ctx.headers}
+        , payload:{ conversationId: convId, content: "Original" };
 
-      const res = await request(server).post("/api/chat/messages").set(ctx.headers).send({
+      const res = await request(server).post("/api/chat/messages"), headers:{ctx.headers}, payload:{
         conversationId: convId,
         content: "Reply",
         messageType: "text",
         replyTo: first.body.data.id,
-      });
+      };
 
-      expect(res.status).toBe(201);
-      expect(res.body.data.replyTo).toBe(first.body.data.id);
+      expect(res.statusCode).toBe(201);
+      expect(JSON.parse(res.payload).data.replyTo).toBe(first.body.data.id);
     });
   });
 
@@ -88,17 +91,17 @@ describe("Chat REST API", () => {
       const convId = conversationId();
       await request(server)
         .post("/api/chat/messages")
-        .set(ctx.headers)
-        .send({ conversationId: convId, content: "Msg 1" });
+        , headers:{ctx.headers}
+        , payload:{ conversationId: convId, content: "Msg 1" };
       await request(server)
         .post("/api/chat/messages")
-        .set(ctx.headers)
-        .send({ conversationId: convId, content: "Msg 2" });
+        , headers:{ctx.headers}
+        , payload:{ conversationId: convId, content: "Msg 2" };
 
-      const res = await request(server).get(`/api/chat/messages/${convId}`).set(ctx.headers);
+      const res = await request(server).get(`/api/chat/messages/${convId}`), headers:{ctx.headers};
 
-      expect(res.status).toBe(200);
-      expect(res.body.data.length).toBe(2);
+      expect(res.statusCode).toBe(200);
+      expect(JSON.parse(res.payload).data.length).toBe(2);
     });
 
     it("respects limit query param", async () => {
@@ -106,30 +109,30 @@ describe("Chat REST API", () => {
       for (let i = 0; i < 5; i++) {
         await request(server)
           .post("/api/chat/messages")
-          .set(ctx.headers)
-          .send({ conversationId: convId, content: `Msg ${i}` });
+          , headers:{ctx.headers}
+          , payload:{ conversationId: convId, content: `Msg ${i}` };
       }
 
       const res = await request(server)
         .get(`/api/chat/messages/${convId}?limit=2`)
-        .set(ctx.headers);
+        , headers:{ctx.headers};
 
-      expect(res.status).toBe(200);
-      expect(res.body.data.length).toBe(2);
+      expect(res.statusCode).toBe(200);
+      expect(JSON.parse(res.payload).data.length).toBe(2);
     });
 
     it("scopes messages to org", async () => {
       const convId = conversationId();
       await request(server)
         .post("/api/chat/messages")
-        .set(ctx.headers)
-        .send({ conversationId: convId, content: "Org1 Msg" });
+        , headers:{ctx.headers}
+        , payload:{ conversationId: convId, content: "Org1 Msg" };
 
       const ctx2 = await seedOrgWithAdmin({ email: `chat2-${Date.now()}@example.com` });
-      const res = await request(server).get(`/api/chat/messages/${convId}`).set(ctx2.headers);
+      const res = await request(server).get(`/api/chat/messages/${convId}`), headers:{ctx2.headers};
 
-      expect(res.status).toBe(200);
-      expect(res.body.data.length).toBe(0);
+      expect(res.statusCode).toBe(200);
+      expect(JSON.parse(res.payload).data.length).toBe(0);
     });
   });
 
@@ -138,13 +141,13 @@ describe("Chat REST API", () => {
       const convId = conversationId();
       await request(server)
         .post("/api/chat/messages")
-        .set(ctx.headers)
-        .send({ conversationId: convId, content: "Unread" });
+        , headers:{ctx.headers}
+        , payload:{ conversationId: convId, content: "Unread" };
 
-      const res = await request(server).post(`/api/chat/messages/${convId}/read`).set(ctx.headers);
+      const res = await request(server).post(`/api/chat/messages/${convId}/read`), headers:{ctx.headers};
 
-      expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
+      expect(res.statusCode).toBe(200);
+      expect(JSON.parse(res.payload).success).toBe(true);
 
       const msgs = await Message.find({ conversationId: convId }).lean();
       expect(msgs.length).toBe(1);
@@ -156,14 +159,14 @@ describe("Chat REST API", () => {
       const convId = conversationId();
       await request(server)
         .post("/api/chat/messages")
-        .set(ctx.headers)
-        .send({ conversationId: convId, content: "Hello" });
+        , headers:{ctx.headers}
+        , payload:{ conversationId: convId, content: "Hello" };
 
-      const res = await request(server).get("/api/chat/conversations").set(ctx.headers);
+      const res = await request(server).get("/api/chat/conversations"), headers:{ctx.headers};
 
-      expect(res.status).toBe(200);
-      expect(res.body.data.length).toBe(1);
-      expect(res.body.data[0].conversationId).toBe(convId);
+      expect(res.statusCode).toBe(200);
+      expect(JSON.parse(res.payload).data.length).toBe(1);
+      expect(JSON.parse(res.payload).data[0].conversationId).toBe(convId);
     });
   });
 });

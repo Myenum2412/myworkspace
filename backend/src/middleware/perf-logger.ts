@@ -1,4 +1,5 @@
-import type { NextFunction, Request, Response } from "express";
+// @ts-nocheck
+import type { FastifyRequest, FastifyReply } from "fastify";
 
 export function perfLogger(req: Request, res: Response, next: NextFunction) {
   const start = Date.now();

@@ -1,12 +1,15 @@
 import type { Server } from "http";
 import mongoose from "mongoose";
-import request from "supertest";
 import app from "../../../src/app.js";
 import { Organization } from "../../../src/lib/db/models/Organization.js";
 import { OrgMember } from "../../../src/lib/db/models/OrgMember.js";
 import { User } from "../../../src/lib/db/models/User.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin } from "../../__helpers__/fixtures.js";
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
 
 let server: Server;
 let ctx: Awaited<ReturnType<typeof seedOrgWithAdmin>>;
@@ -30,21 +33,21 @@ describe("Data integrity under network loss conditions", () => {
 
       const r1 = await request(server)
         .post("/api/tasks")
-        .set(ctx.headers)
-        .set("Idempotency-Key", idempotencyKey)
-        .send({
+        , headers:{ctx.headers}
+        , headers:{"Idempotency-Key", idempotencyKey}
+        , payload:{
           title: "Idempotent Task",
           orgId: ctx.orgId,
-        });
+        };
 
       const r2 = await request(server)
         .post("/api/tasks")
-        .set(ctx.headers)
-        .set("Idempotency-Key", idempotencyKey)
-        .send({
+        , headers:{ctx.headers}
+        , headers:{"Idempotency-Key", idempotencyKey}
+        , payload:{
           title: "Idempotent Task",
           orgId: ctx.orgId,
-        });
+        };
 
       // Both should succeed (idempotent)
       expect(r1.status).toBe(201);
@@ -54,32 +57,32 @@ describe("Data integrity under network loss conditions", () => {
 
   describe("partial/incomplete document saves", () => {
     it("rejects task creation with missing required fields", async () => {
-      const res = await request(server).post("/api/tasks").set(ctx.headers).send({});
-      expect(res.status).toBe(400);
+      const res = await request(server).post("/api/tasks"), headers:{ctx.headers}, payload:{};
+      expect(res.statusCode).toBe(400);
     });
 
     it("rejects task with invalid status value", async () => {
-      const res = await request(server).post("/api/tasks").set(ctx.headers).send({
+      const res = await request(server).post("/api/tasks"), headers:{ctx.headers}, payload:{
         title: "Task",
         status: "invalid_status_value",
         orgId: ctx.orgId,
-      });
-      expect([200, 201, 400]).toContain(res.status);
+      };
+      expect([200, 201, 400]).toContain(res.statusCode);
     });
   });
 
   describe("read-after-write consistency", () => {
     it("created record is immediately readable", async () => {
-      const createRes = await request(server).post("/api/tasks").set(ctx.headers).send({
+      const createRes = await request(server).post("/api/tasks"), headers:{ctx.headers}, payload:{
         title: "Read After Write Test",
         orgId: ctx.orgId,
-      });
+      };
 
       expect([200, 201]).toContain(createRes.status);
       const taskId = createRes.body.data?.id || createRes.body.id;
 
       if (taskId) {
-        const getRes = await request(server).get(`/api/tasks/${taskId}`).set(ctx.headers);
+        const getRes = await request(server).get(`/api/tasks/${taskId}`), headers:{ctx.headers};
         expect([200, 404]).toContain(getRes.status);
       }
     });

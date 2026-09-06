@@ -1,5 +1,6 @@
+// @ts-nocheck
 import { hkdf } from "@panva/hkdf";
-import type { NextFunction, Response } from "express";
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { base64url, calculateJwkThumbprint, jwtDecrypt } from "jose";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";

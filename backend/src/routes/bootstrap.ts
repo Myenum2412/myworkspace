@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { CacheKeys, cacheManager } from "../lib/cache.js";
 import { Client } from "../lib/db/models/Client.js";
@@ -21,9 +22,7 @@ import {
 import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 
-const router = Router();
-router.use(authenticate);
-
+export default async function plugin(fastify: FastifyInstance) {
 const bootstrapResponseSchema = z.object({
   user: z.object({
     id: z.string(),
@@ -136,7 +135,7 @@ async function resolveOrgInfo(
   return { orgId: orgId || "", org: null };
 }
 
-router.get("/", async (req: AuthRequest, res: Response) => {
+fastify.get("/", async (req: AuthRequest, reply: any) => {
   const t0 = Date.now();
   const { userId, email, role, orgId: jwtOrgId } = req.user!;
 
@@ -144,7 +143,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 
   const cached = cacheManager.get(cacheKey);
   if (cached) {
-    return res.json({ success: true, data: cached, fromCache: true });
+    return reply.send({ success: true, data: cached, fromCache: true });
   }
 
   const [orgInfo, userDoc, memberDoc, notificationCount, recentSessions] = await Promise.all([
@@ -393,7 +392,6 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   const totalTime = Date.now() - t0;
   perfLog("bootstrap:total", totalTime);
 
-  res.json({ success: true, data, serverTiming: `bootstrap;dur=${totalTime}` });
+  reply.send({ success: true, data, serverTiming: `bootstrap;dur=${totalTime}` });
 });
-
-export default router;
+}

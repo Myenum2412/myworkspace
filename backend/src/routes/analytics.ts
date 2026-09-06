@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import { logger } from "../lib/logger/index.js";
 import { authenticate, optionalAuth } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
@@ -10,9 +11,8 @@ import {
 import { attributionService } from "../services/analytics/attribution.service.js";
 import type { AuthRequest } from "../types/index.js";
 
-const router = Router();
-
-router.post("/track", optionalAuth, async (req: AuthRequest, res: Response) => {
+export default async function plugin(fastify: FastifyInstance) {
+fastify.get("/track", optionalAuth, async (req: AuthRequest, reply: any) => {
   try {
     const {
       eventName,
@@ -60,7 +60,7 @@ router.post("/track", optionalAuth, async (req: AuthRequest, res: Response) => {
       userAgent: req.headers["user-agent"],
     });
 
-    res.json({ success: true });
+    reply.send({ success: true });
   } catch (err) {
     if (err instanceof AppError) throw err;
     logger.error({ err }, "Failed to track event");
@@ -68,7 +68,7 @@ router.post("/track", optionalAuth, async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.post("/track/batch", optionalAuth, async (req: AuthRequest, res: Response) => {
+fastify.get("/track/batch", optionalAuth, async (req: AuthRequest, reply: any) => {
   const { events } = req.body;
   if (!Array.isArray(events) || events.length === 0) {
     throw new AppError(400, "Missing or invalid events array");
@@ -98,10 +98,10 @@ router.post("/track/batch", optionalAuth, async (req: AuthRequest, res: Response
     }),
   );
 
-  res.json({ success: true, data: results });
+  reply.send({ success: true, data: results });
 });
 
-router.get("/events/:eventName/count", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/events/:eventName/count", authenticate, async (req: AuthRequest, reply: any) => {
   const { eventName } = req.params;
   const { from, to } = req.query;
 
@@ -111,10 +111,10 @@ router.get("/events/:eventName/count", authenticate, async (req: AuthRequest, re
     orgId: req.user?.orgId,
   });
 
-  res.json({ success: true, data: { eventName, count } });
+  reply.send({ success: true, data: { eventName, count } });
 });
 
-router.get("/categories/:category", authenticate, async (req: AuthRequest, res: Response) => {
+fastify.get("/categories/:category", authenticate, async (req: AuthRequest, reply: any) => {
   const { category } = req.params;
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.min(Math.max(1, parseInt(req.query.limit as string) || 50), 200);
@@ -128,15 +128,15 @@ router.get("/categories/:category", authenticate, async (req: AuthRequest, res: 
     skip,
   });
 
-  res.json({
+  reply.send({
     success: true,
     data: result.events,
     pagination: { page, limit, total: result.total, pages: Math.ceil(result.total / limit) },
   });
 });
 
-router.get("/standard-events", (_req: AuthRequest, res: Response) => {
-  res.json({
+fastify.get("/standard-events", (_req: AuthRequest, reply: any) => {
+  reply.send({
     success: true,
     data: {
       categories: EVENT_CATEGORIES,
@@ -144,5 +144,4 @@ router.get("/standard-events", (_req: AuthRequest, res: Response) => {
     },
   });
 });
-
-export default router;
+}

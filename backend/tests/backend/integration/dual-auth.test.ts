@@ -1,11 +1,14 @@
 import type { Server } from "http";
 import jwt from "jsonwebtoken";
-import request from "supertest";
 import { v4 as uuid } from "uuid";
 import app from "../../../src/app.js";
 import { signToken } from "../../../src/config/auth.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { expiredJWT, seedOrgWithAdmin, tamperedJWT } from "../../__helpers__/fixtures.js";
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
 
 let server: Server;
 
@@ -29,8 +32,8 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
 
   describe("JWT Bearer", () => {
     it("authenticates with valid Bearer token", async () => {
-      const res = await request(server).get("/api/tasks").set(ctx.headers);
-      expect(res.status).toBe(200);
+      const res = await request(server).get("/api/tasks"), headers:{ctx.headers};
+      expect(res.statusCode).toBe(200);
     });
 
     it("rejects expired Bearer token", async () => {
@@ -40,14 +43,14 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
         role: "members",
         orgId: ctx.orgId,
       });
-      const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${expired}`);
-      expect(res.status).toBe(401);
+      const res = await request(server).get("/api/tasks"), headers:{"Authorization", `Bearer ${expired}`};
+      expect(res.statusCode).toBe(401);
     });
 
     it("rejects tampered Bearer token", async () => {
       const bad = tamperedJWT(ctx.token);
-      const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${bad}`);
-      expect(res.status).toBe(401);
+      const res = await request(server).get("/api/tasks"), headers:{"Authorization", `Bearer ${bad}`};
+      expect(res.statusCode).toBe(401);
     });
   });
 
@@ -61,9 +64,9 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
       });
       const res = await request(server)
         .get("/api/tasks")
-        .set("Authorization", `Bearer ${badBearer}`)
-        .set("Cookie", "authjs.session-token=invalid-jwe-token");
-      expect(res.status).toBe(401);
+        , headers:{"Authorization", `Bearer ${badBearer}`}
+        , headers:{"Cookie", "authjs.session-token=invalid-jwe-token"};
+      expect(res.statusCode).toBe(401);
     });
   });
 
@@ -81,8 +84,8 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
 
       const res = await request(server)
         .get("/api/tasks")
-        .set("Authorization", `Bearer ${newToken}`);
-      expect(res.status).toBe(200);
+        , headers:{"Authorization", `Bearer ${newToken}`};
+      expect(res.statusCode).toBe(200);
     });
 
     it("revoked token is rejected", async () => {
@@ -93,10 +96,10 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
       );
       const res = await request(server)
         .get("/api/tasks")
-        .set("Authorization", `Bearer ${revokedToken}`);
+        , headers:{"Authorization", `Bearer ${revokedToken}`};
       // Token is still validly signed, but if the app checks revocation status,
       // it should reject. For now, verify the token parses.
-      expect(res.status).toBe(200);
+      expect(res.statusCode).toBe(200);
     });
   });
 
@@ -118,8 +121,8 @@ describe("Dual-auth: JWT Bearer and JWE cookie paths", () => {
       });
 
       const [r1, r2] = await Promise.all([
-        request(server).get("/api/tasks").set("Authorization", `Bearer ${token1}`),
-        request(server).get("/api/tasks").set("Authorization", `Bearer ${token2}`),
+        request(server).get("/api/tasks"), headers:{"Authorization", `Bearer ${token1}`},
+        request(server).get("/api/tasks"), headers:{"Authorization", `Bearer ${token2}`},
       ]);
 
       expect(r1.status).toBe(200);

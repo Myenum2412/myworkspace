@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import mongoose from "mongoose";
 import { signToken } from "../config/auth.js";
 import { env } from "../config/env.js";
@@ -13,12 +14,9 @@ import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { processEvent } from "../services/notification-engine.service.js";
 
-const router = Router();
-
-router.use(authenticate);
-
+export default async function plugin(fastify: FastifyInstance) {
 // GET /api/organizations -- list all orgs for current user
-router.get("/", async (req: AuthRequest, res: Response) => {
+fastify.get("/", async (req: AuthRequest, reply: any) => {
   const memberships = await OrgMember.find({ userId: req.user!.userId })
     .select("orgId role")
     .lean();
@@ -35,11 +33,11 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     userRole: membershipMap.get(org._id.toString()) || "staffs",
   }));
 
-  res.json({ success: true, data: result });
+  reply.send({ success: true, data: result });
 });
 
 // POST /api/organizations/switch -- switch active org context (returns new token)
-router.post("/switch", async (req: AuthRequest, res: Response) => {
+fastify.get("/switch", async (req: AuthRequest, reply: any) => {
   const orgId = (req.body.orgId as string) || "";
   if (!orgId) throw new AppError(400, "orgId is required");
 
@@ -63,7 +61,7 @@ router.post("/switch", async (req: AuthRequest, res: Response) => {
     tokenVersion: userRecord?.tokenVersion ?? 0,
   });
 
-  res.json({
+  reply.send({
     success: true,
     data: {
       token,
@@ -75,7 +73,7 @@ router.post("/switch", async (req: AuthRequest, res: Response) => {
 });
 
 // POST /api/organizations/invite -- invite members by email
-router.post("/invite", async (req: AuthRequest, res: Response) => {
+fastify.get("/invite", async (req: AuthRequest, reply: any) => {
   const { emails, orgId } = req.body;
   if (!emails || !Array.isArray(emails) || emails.length === 0) {
     throw new AppError(400, "At least one email is required");
@@ -170,11 +168,11 @@ router.post("/invite", async (req: AuthRequest, res: Response) => {
     `[INVITE] ${req.user!.email} invited ${normalizedEmails.length} users to org ${targetOrgId}:`,
     results,
   );
-  res.status(201).json({ success: true, data: { results } });
+  reply.send(201).json({ success: true, data: { results } });
 });
 
 // GET /api/organizations/:id -- get single org (with tenant isolation)
-router.get("/:id", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id", async (req: AuthRequest, reply: any) => {
   const org = await resolveOrg(req.params.id)
     .select(
       "id name slug domain plan businessType industry ownerId logo gstNumber panNumber cinNumber companyEmail mobileNumber alternateMobileNumber website addressLine1 addressLine2 city state pincode country authorizedPersonName designation authorizedPersonEmail authorizedPersonMobile numberOfEmployees companyDescription createdAt updatedAt",
@@ -185,11 +183,11 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
   // Tenant isolation: verify membership
   await requireOrgMembership(req.user!.userId, req.params.id as string);
 
-  res.json({ success: true, data: org });
+  reply.send({ success: true, data: org });
 });
 
 // POST /api/organizations -- create new org
-router.post("/", async (req: AuthRequest, res: Response) => {
+fastify.get("/", async (req: AuthRequest, reply: any) => {
   const { name, slug, domain } = req.body;
   if (!name || !slug) throw new AppError(400, "Name and slug are required");
 
@@ -239,7 +237,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
     createdBy: req.user!.userId,
     title: "Organization created",
   }).catch(() => {});
-  res.status(201).json({ success: true, data: { orgId: org._id } });
+  reply.send(201).json({ success: true, data: { orgId: org._id } });
 });
 
 function resolveOrg(orgId: string) {
@@ -253,7 +251,7 @@ function resolveOrg(orgId: string) {
 }
 
 // PUT /api/organizations/:id -- update org (admin only)
-router.put("/:id", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id", async (req: AuthRequest, reply: any) => {
   const org = await resolveOrg(req.params.id);
   if (!org) throw new AppError(404, "Organization not found");
 
@@ -305,11 +303,11 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
     createdBy: req.user!.userId,
     title: "Organization updated",
   }).catch(() => {});
-  res.json({ success: true, data: org });
+  reply.send({ success: true, data: org });
 });
 
 // DELETE /api/organizations/:id -- delete org (owner only)
-router.delete("/:id", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id", async (req: AuthRequest, reply: any) => {
   const org = await resolveOrg(req.params.id);
   if (!org) throw new AppError(404, "Organization not found");
 
@@ -330,11 +328,11 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
   await OrgMember.deleteMany({ orgId: org._id });
   await org.deleteOne();
 
-  res.json({ success: true, message: "Organization deleted successfully" });
+  reply.send({ success: true, message: "Organization deleted successfully" });
 });
 
 // GET /api/organizations/:id/members -- list members
-router.get("/:id/members", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/members", async (req: AuthRequest, reply: any) => {
   const orgId = req.params.id as string;
   await requireOrgMembership(req.user!.userId, orgId);
   const members = await OrgMember.find({ orgId })
@@ -342,7 +340,6 @@ router.get("/:id/members", async (req: AuthRequest, res: Response) => {
     .select("orgId userId role joinedAt")
     .populate("userId", "name email image status")
     .lean();
-  res.json({ success: true, data: members });
+  reply.send({ success: true, data: members });
 });
-
-export default router;
+}

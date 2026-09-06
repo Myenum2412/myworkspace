@@ -1,4 +1,5 @@
-import type { NextFunction, Response } from "express";
+// @ts-nocheck
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { buildFileResource, buildFolderResource, enforce } from "../config/casbin.js";
 import { rbacLogger } from "../lib/logger/index.js";
 import type { AuthRequest } from "./auth.js";

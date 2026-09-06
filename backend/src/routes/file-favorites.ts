@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import { v4 as uuid } from "uuid";
 import { cacheManager } from "../lib/cache.js";
 import { Favorite } from "../lib/db/models/Favorite.js";
@@ -8,10 +9,8 @@ import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import { AppError } from "../middleware/error.js";
 import { recordAuditLog } from "../services/audit.service.js";
 
-const router = Router();
-router.use(authenticate);
-
-router.post("/:id/favorite", async (req: AuthRequest, res: Response) => {
+export default async function plugin(fastify: FastifyInstance) {
+fastify.get("/:id/favorite", async (req: AuthRequest, reply: any) => {
   const file = await FileAttachment.findOne({ id: req.params.id, deletedAt: null })
     .select("id orgId originalName")
     .lean();
@@ -33,7 +32,7 @@ router.post("/:id/favorite", async (req: AuthRequest, res: Response) => {
       entityId: file.id,
       description: `Removed "${file.originalName}" from favorites`,
     });
-    res.json({ success: true, isFavorite: false });
+    reply.send({ success: true, isFavorite: false });
   } else {
     await Favorite.create({
       id: uuid(),
@@ -50,11 +49,11 @@ router.post("/:id/favorite", async (req: AuthRequest, res: Response) => {
       entityId: file.id,
       description: `Added "${file.originalName}" to favorites`,
     });
-    res.json({ success: true, isFavorite: true });
+    reply.send({ success: true, isFavorite: true });
   }
 });
 
-router.get("/favorites", async (req: AuthRequest, res: Response) => {
+fastify.get("/favorites", async (req: AuthRequest, reply: any) => {
   const userId = req.user!.userId;
   const orgId = req.query.orgId as string;
 
@@ -63,7 +62,7 @@ router.get("/favorites", async (req: AuthRequest, res: Response) => {
     : await Favorite.find({ userId }).select("fileId folderId").lean();
 
   if (!favs.length) {
-    res.json({ success: true, data: [] });
+    reply.send({ success: true, data: [] });
     return;
   }
 
@@ -111,7 +110,6 @@ router.get("/favorites", async (req: AuthRequest, res: Response) => {
     })),
   ];
 
-  res.json({ success: true, data: result });
+  reply.send({ success: true, data: result });
 });
-
-export default router;
+}

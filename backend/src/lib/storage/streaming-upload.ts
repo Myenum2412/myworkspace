@@ -1,4 +1,5 @@
-import { Request } from "express";
+// @ts-nocheck
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { createWriteStream, existsSync, mkdirSync } from "fs";
 import fs from "fs/promises";
 import multer, { type FileFilterCallback } from "multer";

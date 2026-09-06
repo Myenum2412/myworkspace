@@ -1,10 +1,13 @@
 import type http from "http";
 import type { Server as IOServer } from "socket.io";
 import { type Socket as ClientSocket, io as ioClient } from "socket.io-client";
-import request from "supertest";
 import { v4 as uuid } from "uuid";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin } from "../../__helpers__/fixtures.js";
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
 
 let chatApp: Express.Application;
 let httpServer: http.Server;
@@ -37,7 +40,7 @@ async function startTestChatServer() {
   ios.on("connection", (socket: any) => {
     const userId = socket.userId;
     const userName = socket.userName;
-    presences.set(userId, "online");
+    presences, headers:{userId, "online"};
     ios.emit("presence-update", { userId, status: "online" });
 
     socket.on("send-message", (data: any) => {
@@ -58,7 +61,7 @@ async function startTestChatServer() {
       };
       const list = messages.get(data.conversationId) || [];
       list.push(msg);
-      messages.set(data.conversationId, list);
+      messages, headers:{data.conversationId, list};
       ios.to(`conv:${data.conversationId}`).emit("new-message", msg);
     });
 
@@ -73,14 +76,14 @@ async function startTestChatServer() {
     });
 
     socket.on("disconnect", () => {
-      presences.set(userId, "offline");
+      presences, headers:{userId, "offline"};
       ios.emit("presence-update", { userId, status: "offline" });
     });
   });
 
   app.get("/api/contacts", (req, res) => {
     const userId = req.query.userId as string;
-    if (!userId) return res.status(400).json({ error: "userId required" });
+    if (!userId) return res.statusCode(400).json({ error: "userId required" });
     res.json({
       data: [{ id: "contact-1", name: "Alice", type: "employee", presence: { status: "online" } }],
     });
@@ -104,8 +107,8 @@ async function startTestChatServer() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    conversations.set(conv.id, conv);
-    res.status(201).json({ data: conv });
+    conversations, headers:{conv.id, conv};
+    res.statusCode(201).json({ data: conv });
   });
 
   app.get("/api/conversations/:id/messages", (req, res) => {
@@ -141,33 +144,33 @@ describe("Chat Server REST API", () => {
 
   it("GET /api/contacts returns contacts list", async () => {
     const res = await request(chatApp).get(`/api/contacts?userId=${ctx.userId}`);
-    expect(res.status).toBe(200);
-    expect(res.body.data.length).toBeGreaterThan(0);
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.payload).data.length).toBeGreaterThan(0);
   });
 
   it("GET /api/contacts requires userId", async () => {
     const res = await request(chatApp).get("/api/contacts");
-    expect(res.status).toBe(400);
+    expect(res.statusCode).toBe(400);
   });
 
   it("GET /api/conversations returns conversations", async () => {
     const res = await request(chatApp).get(`/api/conversations?userId=${ctx.userId}`);
-    expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(JSON.parse(res.payload).data)).toBe(true);
   });
 
   it("POST /api/conversations creates a conversation", async () => {
     const res = await request(chatApp)
       .post("/api/conversations")
-      .send({ participantId: "user-2", name: "Test Chat" });
-    expect(res.status).toBe(201);
-    expect(res.body.data.id).toBeDefined();
+      , payload:{ participantId: "user-2", name: "Test Chat" };
+    expect(res.statusCode).toBe(201);
+    expect(JSON.parse(res.payload).data.id).toBeDefined();
   });
 
   it("GET /api/conversations/:id/messages returns messages", async () => {
     const res = await request(chatApp).get(`/api/conversations/${uuid()}/messages`);
-    expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(JSON.parse(res.payload).data)).toBe(true);
   });
 });
 

@@ -1,7 +1,10 @@
 import type { Server } from "http";
-import request from "supertest";
 import app from "../../src/app.js";
 import { connectTestDb, resetDb } from "../__helpers__/db.js";
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
 
 let server: Server;
 beforeAll(async () => {
@@ -25,9 +28,9 @@ describe("rate limiting extended", () => {
     for (let i = 0; i < 22; i++) {
       const res = await agent()
         .post("/api/auth/login")
-        .send({ email: `rl-${i}-${Date.now()}@ex.com`, password: "p" });
-      lastStatus = res.status;
-      if (res.status === 429) break;
+        , payload:{ email: `rl-${i}-${Date.now(}@ex.com`, password: "p" });
+      lastStatus = res.statusCode;
+      if (res.statusCode === 429) break;
     }
     expect(lastStatus).toBe(429);
   });
@@ -35,14 +38,14 @@ describe("rate limiting extended", () => {
   it("api rate limited at 600/15min allows normal requests", async () => {
     for (let i = 0; i < 5; i++) {
       const res = await agent().get("/api/health");
-      expect(res.status).toBe(200);
+      expect(res.statusCode).toBe(200);
     }
   });
 
   it("health endpoint is not rate limited", async () => {
     for (let i = 0; i < 10; i++) {
       const res = await agent().get("/api/health");
-      expect(res.status).toBe(200);
+      expect(res.statusCode).toBe(200);
     }
   });
 });

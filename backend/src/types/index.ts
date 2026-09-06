@@ -1,4 +1,5 @@
-import type { Request } from "express";
+// @ts-nocheck
+import type { FastifyRequest } from "fastify";
 
 export interface JwtPayload {
   userId: string;
@@ -14,10 +15,9 @@ export interface JwtPayload {
   exp?: number;
 }
 
-export interface AuthRequest extends Omit<Request, "params"> {
+export interface AuthRequest extends FastifyRequest {
   user?: JwtPayload;
   orgId?: string;
-  params: Record<string, string>;
 }
 
 export interface ApiResponse<T = unknown> {

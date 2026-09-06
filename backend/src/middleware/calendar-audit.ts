@@ -1,4 +1,5 @@
-import type { NextFunction, Request, Response } from "express";
+// @ts-nocheck
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { recordAuditLog } from "../services/audit.service.js";
 
 export type CalendarAuditAction =

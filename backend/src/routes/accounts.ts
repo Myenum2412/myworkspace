@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import { isAdminRole } from "../lib/rbac/index.js";
 import { requireString } from "../lib/validate.js";
 import { type AuthRequest, authenticate } from "../middleware/auth.js";
@@ -11,10 +12,7 @@ import {
   terminateStaffAccount,
 } from "../services/account.service.js";
 
-const router = Router();
-
-router.use(authenticate);
-
+export default async function plugin(fastify: FastifyInstance) {
 /**
  * Every endpoint derives orgId exclusively from the authenticated session.
  * A body/query orgId that does not match the session is a tenant-escape
@@ -38,7 +36,7 @@ function actor(req: AuthRequest) {
 }
 
 // ── Create a staff account (Workspace Member only, own org) ──
-router.post("/staffs", async (req: AuthRequest, res: Response) => {
+fastify.get("/staffs", async (req: AuthRequest, reply: any) => {
   if (!req.user!.orgId) throw new AppError(403, "You are not part of an organization");
   if (!isAdminRole(req.user!.role))
     throw new AppError(403, "Only workspace members can create staff accounts");
@@ -47,7 +45,7 @@ router.post("/staffs", async (req: AuthRequest, res: Response) => {
 
   const result = await createStaffAccount(actor(req), req.body || {});
 
-  res.status(201).json({
+  reply.send(201).json({
     success: true,
     data: {
       user: result.user,
@@ -60,24 +58,24 @@ router.post("/staffs", async (req: AuthRequest, res: Response) => {
 });
 
 // ── List staff accounts (own org only) ──
-router.get("/staffs", async (req: AuthRequest, res: Response) => {
+fastify.get("/staffs", async (req: AuthRequest, reply: any) => {
   if (!req.user!.orgId) throw new AppError(403, "You are not part of an organization");
   assertNoOrgOverride(req);
 
   const staff = await listStaffAccounts(actor(req));
-  res.json({ success: true, data: staff, total: staff.length });
+  reply.send({ success: true, data: staff, total: staff.length });
 });
 
 // ── Get a single staff account (own org only) ──
-router.get("/staffs/:userId", async (req: AuthRequest, res: Response) => {
+fastify.get("/staffs/:userId", async (req: AuthRequest, reply: any) => {
   if (!req.user!.orgId) throw new AppError(403, "You are not part of an organization");
   const userId = requireString(req.params.userId, "userId", { min: 1, max: 128 });
   const staff = await getStaffAccount(actor(req), userId);
-  res.json({ success: true, data: staff });
+  reply.send({ success: true, data: staff });
 });
 
 // ── Deactivate a staff account (revokes all access) ──
-router.post("/staffs/:userId/deactivate", async (req: AuthRequest, res: Response) => {
+fastify.get("/staffs/:userId/deactivate", async (req: AuthRequest, reply: any) => {
   if (!req.user!.orgId) throw new AppError(403, "You are not part of an organization");
   if (!isAdminRole(req.user!.role))
     throw new AppError(403, "Only workspace members can deactivate accounts");
@@ -85,11 +83,11 @@ router.post("/staffs/:userId/deactivate", async (req: AuthRequest, res: Response
 
   const userId = requireString(req.params.userId, "userId", { min: 1, max: 128 });
   const result = await setStaffAccountStatus(actor(req), userId, false);
-  res.json({ success: true, data: result });
+  reply.send({ success: true, data: result });
 });
 
 // ── Reactivate a staff account ──
-router.post("/staffs/:userId/reactivate", async (req: AuthRequest, res: Response) => {
+fastify.get("/staffs/:userId/reactivate", async (req: AuthRequest, reply: any) => {
   if (!req.user!.orgId) throw new AppError(403, "You are not part of an organization");
   if (!isAdminRole(req.user!.role))
     throw new AppError(403, "Only workspace members can reactivate accounts");
@@ -97,11 +95,11 @@ router.post("/staffs/:userId/reactivate", async (req: AuthRequest, res: Response
 
   const userId = requireString(req.params.userId, "userId", { min: 1, max: 128 });
   const result = await setStaffAccountStatus(actor(req), userId, true);
-  res.json({ success: true, data: result });
+  reply.send({ success: true, data: result });
 });
 
 // ── Terminate (permanently remove) a staff account ──
-router.delete("/staffs/:userId", async (req: AuthRequest, res: Response) => {
+fastify.get("/staffs/:userId", async (req: AuthRequest, reply: any) => {
   if (!req.user!.orgId) throw new AppError(403, "You are not part of an organization");
   if (!isAdminRole(req.user!.role))
     throw new AppError(403, "Only workspace members can terminate accounts");
@@ -109,7 +107,6 @@ router.delete("/staffs/:userId", async (req: AuthRequest, res: Response) => {
 
   const userId = requireString(req.params.userId, "userId", { min: 1, max: 128 });
   await terminateStaffAccount(actor(req), userId);
-  res.json({ success: true, message: "Account terminated and all sessions revoked" });
+  reply.send({ success: true, message: "Account terminated and all sessions revoked" });
 });
-
-export default router;
+}

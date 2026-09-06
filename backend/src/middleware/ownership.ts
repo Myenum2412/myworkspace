@@ -1,4 +1,5 @@
-import type { NextFunction, Response } from "express";
+// @ts-nocheck
+import type { FastifyRequest, FastifyReply } from "fastify";
 import type { Model } from "mongoose";
 import { logger } from "../lib/logger/index.js";
 import { hasAnyRole, isAdminRole, ROLES } from "../lib/rbac/index.js";

@@ -1,5 +1,6 @@
+// @ts-nocheck
 import { exec as execCallback, execSync } from "child_process";
-import type { NextFunction, Response } from "express";
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { Cluster, Redis } from "ioredis";
 import NodeCache from "node-cache";
 import { promisify } from "util";

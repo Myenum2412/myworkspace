@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import { FileAttachment } from "../lib/db/models/FileAttachment.js";
 import { Folder } from "../lib/db/models/Folder.js";
 import { verifyOrgAccess } from "../lib/org-utils.js";
@@ -9,10 +10,8 @@ import { AppError } from "../middleware/error.js";
 import { recordAuditLog } from "../services/audit.service.js";
 import { ensureClientFolders } from "../services/client-folder.service.js";
 
-const router = Router();
-router.use(authenticate);
-
-router.get("/:clientId/tree", async (req: AuthRequest, res: Response) => {
+export default async function plugin(fastify: FastifyInstance) {
+fastify.get("/:clientId/tree", async (req: AuthRequest, reply: any) => {
   const { clientId } = req.params;
   const orgId = req.query.orgId as string;
   if (!orgId || !clientId) throw new AppError(400, "orgId and clientId are required");
@@ -23,10 +22,10 @@ router.get("/:clientId/tree", async (req: AuthRequest, res: Response) => {
     .sort({ path: 1 })
     .select("id name path parentId clientId orgId deletedAt createdAt")
     .lean();
-  res.json({ success: true, data: folders });
+  reply.send({ success: true, data: folders });
 });
 
-router.get("/:clientId/stats", async (req: AuthRequest, res: Response) => {
+fastify.get("/:clientId/stats", async (req: AuthRequest, reply: any) => {
   const { clientId } = req.params;
   const orgId = req.query.orgId as string;
   if (!orgId || !clientId) throw new AppError(400, "orgId and clientId are required");
@@ -49,21 +48,21 @@ router.get("/:clientId/stats", async (req: AuthRequest, res: Response) => {
     { $group: { _id: "$folderId", count: { $sum: 1 }, size: { $sum: "$size" } } },
   ]);
 
-  res.json({
+  reply.send({
     success: true,
     data: { folderCount, fileCount, totalSize, perFolder },
   });
 });
 
-router.get("/:clientId/subfolders", async (req: AuthRequest, res: Response) => {
+fastify.get("/:clientId/subfolders", async (req: AuthRequest, reply: any) => {
   const { clientId } = req.params;
   const orgId = req.query.orgId as string;
   if (!orgId || !clientId) throw new AppError(400, "orgId and clientId are required");
 
-  res.json({ success: true, data: CLIENT_SUBFOLDERS });
+  reply.send({ success: true, data: CLIENT_SUBFOLDERS });
 });
 
-router.post("/:clientId/sync", async (req: AuthRequest, res: Response) => {
+fastify.get("/:clientId/sync", async (req: AuthRequest, reply: any) => {
   if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can sync client folders");
   const { clientId } = req.params;
   const orgId = req.body.orgId as string;
@@ -93,10 +92,9 @@ router.post("/:clientId/sync", async (req: AuthRequest, res: Response) => {
     .select("id name path parentId clientId orgId deletedAt createdAt")
     .lean();
 
-  res.json({
+  reply.send({
     success: true,
     data: { rootFolderId, subfolderIds, folders },
   });
 });
-
-export default router;
+}

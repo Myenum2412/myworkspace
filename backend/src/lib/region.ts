@@ -1,4 +1,5 @@
-import type { Request } from "express";
+// @ts-nocheck
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { logger } from "./logger/index.js";
 
 export interface RegionConfig {

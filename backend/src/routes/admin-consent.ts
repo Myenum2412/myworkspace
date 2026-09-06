@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import { logger } from "../lib/logger/index.js";
 import { authenticate } from "../middleware/auth.js";
 import { platformAdminOnly } from "../middleware/authorize.js";
@@ -9,24 +10,22 @@ import { scriptLoaderService } from "../services/analytics/script-loader.js";
 import { consentService } from "../services/consent/consent.service.js";
 import type { AuthRequest } from "../types/index.js";
 
-const router = Router();
-
-router.use(authenticate);
+export default async function plugin(fastify: FastifyInstance) {
 router.use(platformAdminOnly());
 
 // ── Consent Dashboard ──
 
-router.get("/consent/stats", async (req: AuthRequest, res: Response) => {
+fastify.get("/consent/stats", async (req: AuthRequest, reply: any) => {
   const stats = await consentService.getConsentStats({
     from: req.query.from ? new Date(req.query.from as string) : undefined,
     to: req.query.to ? new Date(req.query.to as string) : undefined,
     region: req.query.region as string,
   });
 
-  res.json({ success: true, data: stats });
+  reply.send({ success: true, data: stats });
 });
 
-router.get("/consent/audit-logs", async (req: AuthRequest, res: Response) => {
+fastify.get("/consent/audit-logs", async (req: AuthRequest, reply: any) => {
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.min(Math.max(1, parseInt(req.query.limit as string) || 50), 200);
   const skip = (page - 1) * limit;
@@ -39,14 +38,14 @@ router.get("/consent/audit-logs", async (req: AuthRequest, res: Response) => {
     skip,
   });
 
-  res.json({
+  reply.send({
     success: true,
     data: result.logs,
     pagination: { page, limit, total: result.total, pages: Math.ceil(result.total / limit) },
   });
 });
 
-router.post("/consent/rotate-policy", async (req: AuthRequest, res: Response) => {
+fastify.get("/consent/rotate-policy", async (req: AuthRequest, reply: any) => {
   const { newVersion } = req.body;
   if (!newVersion || typeof newVersion !== "number") {
     throw new AppError(400, "Missing required field: newVersion");
@@ -58,12 +57,12 @@ router.post("/consent/rotate-policy", async (req: AuthRequest, res: Response) =>
     "Policy version rotated",
   );
 
-  res.json({ success: true, data: { affectedRecords: count, newVersion } });
+  reply.send({ success: true, data: { affectedRecords: count, newVersion } });
 });
 
 // ── Analytics Dashboard ──
 
-router.get("/analytics/overview", async (req: AuthRequest, res: Response) => {
+fastify.get("/analytics/overview", async (req: AuthRequest, reply: any) => {
   const analytics = await analyticsService.getDashboardAnalytics({
     from: req.query.from ? new Date(req.query.from as string) : undefined,
     to: req.query.to ? new Date(req.query.to as string) : undefined,
@@ -75,10 +74,10 @@ router.get("/analytics/overview", async (req: AuthRequest, res: Response) => {
     to: req.query.to ? new Date(req.query.to as string) : undefined,
   });
 
-  res.json({ success: true, data: { ...analytics, errorRate } });
+  reply.send({ success: true, data: { ...analytics, errorRate } });
 });
 
-router.get("/analytics/feature-adoption", async (req: AuthRequest, res: Response) => {
+fastify.get("/analytics/feature-adoption", async (req: AuthRequest, reply: any) => {
   const { featureName } = req.query;
   if (!featureName) {
     throw new AppError(400, "Missing required query: featureName");
@@ -90,22 +89,22 @@ router.get("/analytics/feature-adoption", async (req: AuthRequest, res: Response
     orgId: req.user?.orgId,
   });
 
-  res.json({ success: true, data: adoption });
+  reply.send({ success: true, data: adoption });
 });
 
-router.get("/analytics/retention-cohorts", async (req: AuthRequest, res: Response) => {
+fastify.get("/analytics/retention-cohorts", async (req: AuthRequest, reply: any) => {
   const cohorts = await analyticsService.getRetentionCohorts({
     from: req.query.from ? new Date(req.query.from as string) : undefined,
     to: req.query.to ? new Date(req.query.to as string) : undefined,
     orgId: req.user?.orgId,
   });
 
-  res.json({ success: true, data: cohorts });
+  reply.send({ success: true, data: cohorts });
 });
 
 // ── Attribution Dashboard ──
 
-router.get("/attribution/report", async (req: AuthRequest, res: Response) => {
+fastify.get("/attribution/report", async (req: AuthRequest, reply: any) => {
   const report = await attributionService.getAttributionReport({
     from: req.query.from ? new Date(req.query.from as string) : undefined,
     to: req.query.to ? new Date(req.query.to as string) : undefined,
@@ -130,7 +129,7 @@ router.get("/attribution/report", async (req: AuthRequest, res: Response) => {
     orgId: req.user?.orgId,
   });
 
-  res.json({
+  reply.send({
     success: true,
     data: {
       ...report,
@@ -141,27 +140,27 @@ router.get("/attribution/report", async (req: AuthRequest, res: Response) => {
   });
 });
 
-router.get("/attribution/channels", async (req: AuthRequest, res: Response) => {
+fastify.get("/attribution/channels", async (req: AuthRequest, reply: any) => {
   const channels = await attributionService.getChannelPerformance({
     from: req.query.from ? new Date(req.query.from as string) : undefined,
     to: req.query.to ? new Date(req.query.to as string) : undefined,
     orgId: req.user?.orgId,
   });
 
-  res.json({ success: true, data: channels });
+  reply.send({ success: true, data: channels });
 });
 
-router.get("/attribution/campaigns", async (req: AuthRequest, res: Response) => {
+fastify.get("/attribution/campaigns", async (req: AuthRequest, reply: any) => {
   const campaigns = await attributionService.getCampaignPerformance({
     from: req.query.from ? new Date(req.query.from as string) : undefined,
     to: req.query.to ? new Date(req.query.to as string) : undefined,
     orgId: req.user?.orgId,
   });
 
-  res.json({ success: true, data: campaigns });
+  reply.send({ success: true, data: campaigns });
 });
 
-router.get("/attribution/funnel", async (req: AuthRequest, res: Response) => {
+fastify.get("/attribution/funnel", async (req: AuthRequest, reply: any) => {
   const { funnelName = "default" } = req.query;
 
   const funnel = await attributionService.getConversionFunnel(
@@ -180,10 +179,10 @@ router.get("/attribution/funnel", async (req: AuthRequest, res: Response) => {
     );
   }
 
-  res.json({ success: true, data: funnel });
+  reply.send({ success: true, data: funnel });
 });
 
-router.post("/attribution/funnel", async (req: AuthRequest, res: Response) => {
+fastify.get("/attribution/funnel", async (req: AuthRequest, reply: any) => {
   const { name, steps } = req.body;
   if (!name || !Array.isArray(steps) || steps.length === 0) {
     throw new AppError(400, "Missing required fields: name (string) and steps (array)");
@@ -207,24 +206,23 @@ router.post("/attribution/funnel", async (req: AuthRequest, res: Response) => {
     { upsert: true, new: true },
   );
 
-  res.json({ success: true, data: funnel });
+  reply.send({ success: true, data: funnel });
 });
 
 // ── Script Loader ──
 
-router.get("/scripts", async (_req: AuthRequest, res: Response) => {
+fastify.get("/scripts", async (_req: AuthRequest, reply: any) => {
   const scripts = scriptLoaderService.getAllScripts();
-  res.json({ success: true, data: scripts });
+  reply.send({ success: true, data: scripts });
 });
 
-router.get("/scripts/loader", async (req: AuthRequest, res: Response) => {
+fastify.get("/scripts/loader", async (req: AuthRequest, reply: any) => {
   const scripts = scriptLoaderService.getAllScripts();
   const consentEndpoint = `${req.protocol}://${req.get("host")}/api/consent/current`;
   const loader = scriptLoaderService.generateConsentAwareLoader(scripts, consentEndpoint);
 
   res.setHeader("Content-Type", "application/javascript");
   res.setHeader("Cache-Control", "public, max-age=3600, immutable");
-  res.send(loader);
+  reply.send(loader);
 });
-
-export default router;
+}

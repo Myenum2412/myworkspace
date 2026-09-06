@@ -1,12 +1,15 @@
 import type { Server } from "http";
 import mongoose from "mongoose";
-import request from "supertest";
 import app from "../../../src/app.js";
 import { Client } from "../../../src/lib/db/models/Client.js";
 import { FileAttachment } from "../../../src/lib/db/models/FileAttachment.js";
 import { Folder } from "../../../src/lib/db/models/Folder.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import { seedOrgWithAdmin } from "../../__helpers__/users.js";
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
 
 let server: Server;
 beforeAll(async () => {
@@ -57,9 +60,9 @@ describe("Client File Management — folders & files (backend canonical)", () =>
       });
     }
 
-    const res = await agent().get(`/api/folders?orgId=${a.orgId}`).set(a.headers);
-    expect(res.status).toBe(200);
-    const data = res.body.data as any[];
+    const res = await agent().get(`/api/folders?orgId=${a.orgId}`), headers:{a.headers};
+    expect(res.statusCode).toBe(200);
+    const data = JSON.parse(res.payload).data as any[];
     expect(Array.isArray(data)).toBe(true);
     expect(data.length).toBe(4);
     expect(
@@ -96,9 +99,9 @@ describe("Client File Management — folders & files (backend canonical)", () =>
     const c1 = await mkClient("Alpha", `a-${Date.now()}@ex.seeded`);
     const c2 = await mkClient("Beta", `b-${Date.now()}@ex.seeded`);
 
-    const res = await agent().get(`/api/folders?orgId=${a.orgId}&clientId=${c1}`).set(a.headers);
-    expect(res.status).toBe(200);
-    const data = res.body.data as any[];
+    const res = await agent().get(`/api/folders?orgId=${a.orgId}&clientId=${c1}`), headers:{a.headers};
+    expect(res.statusCode).toBe(200);
+    const data = JSON.parse(res.payload).data as any[];
     expect(data.length).toBe(1);
     expect(data[0].clientId).toBe(c1);
     expect(data.some((f) => f.clientId === c2)).toBe(false);
@@ -129,14 +132,14 @@ describe("Client File Management — folders & files (backend canonical)", () =>
       createdBy: a.userId,
     });
 
-    const res = await agent().get(`/api/folders?orgId=${b.orgId}`).set(b.headers);
-    expect(res.status).toBe(200);
-    expect(res.body.data).toEqual([]);
+    const res = await agent().get(`/api/folders?orgId=${b.orgId}`), headers:{b.headers};
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.payload).data).toEqual([]);
 
     // Cross-org scoped query also empty.
     const res2 = await agent()
       .get(`/api/folders?orgId=${b.orgId}&clientId=${clientId}`)
-      .set(b.headers);
+      , headers:{b.headers};
     expect(res2.body.data).toEqual([]);
   });
 
@@ -185,10 +188,10 @@ describe("Client File Management — folders & files (backend canonical)", () =>
 
     const res = await agent()
       .get(`/api/files/stats?orgId=${a.orgId}&clientId=${clientId}`)
-      .set(a.headers);
-    expect(res.status).toBe(200);
-    expect(res.body.data.totalFiles).toBe(30);
-    expect(res.body.data.totalSize).toBe(3000);
+      , headers:{a.headers};
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.payload).data.totalFiles).toBe(30);
+    expect(JSON.parse(res.payload).data.totalSize).toBe(3000);
   });
 
   it("PATCH /api/folders/:id renames a client folder and rewrites nested paths", async () => {
@@ -217,9 +220,9 @@ describe("Client File Management — folders & files (backend canonical)", () =>
 
     const res = await agent()
       .patch(`/api/folders/${rootId}`)
-      .set(a.headers)
-      .send({ name: "Documents" });
-    expect(res.status).toBe(200);
+      , headers:{a.headers}
+      , payload:{ name: "Documents" };
+    expect(res.statusCode).toBe(200);
 
     const root = await Folder.findOne({ id: rootId }).lean();
     const child = await Folder.findOne({ id: childId }).lean();
@@ -244,7 +247,7 @@ describe("Client File Management — folders & files (backend canonical)", () =>
 
     const res = await agent()
       .post("/api/files/upload")
-      .set(a.headers)
+      , headers:{a.headers}
       .field("orgId", a.orgId)
       .field("clientId", clientId)
       .field("folderId", folderId)
@@ -252,8 +255,8 @@ describe("Client File Management — folders & files (backend canonical)", () =>
       .field("tags", JSON.stringify(["a", "b"]))
       .attach("files", Buffer.from("hello world"), "hello.txt");
 
-    expect(res.status).toBe(201);
-    const file = await FileAttachment.findOne({ id: res.body.results[0].fileId }).lean();
+    expect(res.statusCode).toBe(201);
+    const file = await FileAttachment.findOne({ id: JSON.parse(res.payload).results[0].fileId }).lean();
     expect(file).not.toBeNull();
     expect(file?.orgId).toBe(a.orgId);
     expect(file?.clientId).toBe(clientId);
@@ -281,7 +284,7 @@ describe("Client File Management — folders & files (backend canonical)", () =>
     });
 
     const outsider = await seedOrgWithAdmin({ email: `out-${Date.now()}@ex.seeded` });
-    const res = await agent().get(`/api/folders?orgId=${a.orgId}`).set(outsider.headers);
-    expect(res.status).toBe(403);
+    const res = await agent().get(`/api/folders?orgId=${a.orgId}`), headers:{outsider.headers};
+    expect(res.statusCode).toBe(403);
   });
 });

@@ -1,6 +1,9 @@
 import type { Server } from "http";
-import request from "supertest";
 import app from "../../../src/app.js";
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
 
 let server: Server;
 beforeAll(() => {
@@ -13,10 +16,10 @@ afterAll((done) => {
 describe("health check", () => {
   it("GET /api/health returns 200 with ok payload", async () => {
     const res = await request(server).get("/api/health");
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(["ok", "degraded"]).toContain(res.body.status);
-    expect(res.body.checks).toBeDefined();
-    expect(res.body.timestamp).toBeDefined();
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.payload).success).toBe(true);
+    expect(["ok", "degraded"]).toContain(JSON.parse(res.payload).status);
+    expect(JSON.parse(res.payload).checks).toBeDefined();
+    expect(JSON.parse(res.payload).timestamp).toBeDefined();
   });
 });

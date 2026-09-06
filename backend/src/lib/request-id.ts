@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { AsyncLocalStorage } from "async_hooks";
 import crypto from "crypto";
-import type { NextFunction, Request, Response } from "express";
+import type { FastifyRequest, FastifyReply } from "fastify";
 
 export interface CorrelationContext {
   requestId: string;

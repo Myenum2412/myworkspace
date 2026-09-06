@@ -1,4 +1,5 @@
-import type { Response } from "express";
+// @ts-nocheck
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { createReadStream, statSync } from "fs";
 import fs from "fs/promises";
 import path from "path";

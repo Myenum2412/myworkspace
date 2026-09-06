@@ -1,7 +1,10 @@
 import type { Server } from "http";
-import request from "supertest";
 import app from "../../../src/app.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
 
 let server: Server;
 
@@ -26,7 +29,7 @@ describe("Complete auth workflow", () => {
     // 1. Signup
     const signupRes = await request(server)
       .post("/api/auth/signup")
-      .send({ name: "Workflow User", email, password: testPassword });
+      , payload:{ name: "Workflow User", email, password: testPassword };
     expect(signupRes.status).toBe(201);
     const token = signupRes.body.data?.token || signupRes.body.token;
     expect(token).toBeTruthy();
@@ -34,19 +37,19 @@ describe("Complete auth workflow", () => {
     // 2. Access protected route
     const tasksRes = await request(server)
       .get("/api/tasks")
-      .set("Authorization", `Bearer ${token}`);
+      , headers:{"Authorization", `Bearer ${token}`};
     expect(tasksRes.status).toBe(200);
 
     // 3. Logout
     const logoutRes = await request(server)
       .post("/api/auth/logout")
-      .set("Authorization", `Bearer ${token}`);
+      , headers:{"Authorization", `Bearer ${token}`};
     expect([200, 404]).toContain(logoutRes.status);
 
     // 4. Login again
     const loginRes = await request(server)
       .post("/api/auth/login")
-      .send({ email, password: testPassword });
+      , payload:{ email, password: testPassword };
     expect(loginRes.status).toBe(200);
     const newToken = loginRes.body.data?.token || loginRes.body.token;
     expect(newToken).toBeTruthy();
@@ -54,41 +57,41 @@ describe("Complete auth workflow", () => {
     // 5. Access with new token
     const tasksRes2 = await request(server)
       .get("/api/tasks")
-      .set("Authorization", `Bearer ${newToken}`);
+      , headers:{"Authorization", `Bearer ${newToken}`};
     expect(tasksRes2.status).toBe(200);
   });
 
   it("signup with weak password is rejected", async () => {
     const res = await request(server)
       .post("/api/auth/signup")
-      .send({ name: "Weak Password", email: testEmail(), password: "123" });
-    expect(res.status).toBe(400);
+      , payload:{ name: "Weak Password", email: testEmail(, password: "123" });
+    expect(res.statusCode).toBe(400);
   });
 
   it("signup with existing email returns 409", async () => {
     const email = testEmail();
     await request(server)
       .post("/api/auth/signup")
-      .send({ name: "First", email, password: testPassword });
+      , payload:{ name: "First", email, password: testPassword };
     const res = await request(server)
       .post("/api/auth/signup")
-      .send({ name: "Second", email, password: testPassword });
-    expect(res.status).toBe(409);
+      , payload:{ name: "Second", email, password: testPassword };
+    expect(res.statusCode).toBe(409);
   });
 
   it("login with wrong password increments failed attempts", async () => {
     const email = testEmail();
     await request(server)
       .post("/api/auth/signup")
-      .send({ name: "Lockout Test", email, password: testPassword });
+      , payload:{ name: "Lockout Test", email, password: testPassword };
 
     for (let i = 0; i < 5; i++) {
-      await request(server).post("/api/auth/login").send({ email, password: "wrongpass" });
+      await request(server).post("/api/auth/login"), payload:{ email, password: "wrongpass" };
     }
 
     const res = await request(server)
       .post("/api/auth/login")
-      .send({ email, password: "wrongpass" });
-    expect(res.status).toBe(423);
+      , payload:{ email, password: "wrongpass" };
+    expect(res.statusCode).toBe(423);
   });
 });

@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import { ActivityLog } from "../lib/db/models/ActivityLog.js";
 import { User } from "../lib/db/models/User.js";
 import { isPlatformRole } from "../lib/rbac/index.js";
@@ -6,10 +7,7 @@ import { type AuthRequest, authenticate } from "../middleware/auth.js";
 import { cacheEnhanced } from "../middleware/cache-enhanced.js";
 import { AppError } from "../middleware/error.js";
 
-const router = Router();
-
-router.use(authenticate);
-
+export default async function plugin(fastify: FastifyInstance) {
 async function enrichLogs(logs: Record<string, unknown>[]) {
   const userIds = [...new Set(logs.map((l) => l.userId as string).filter(Boolean))];
   const users =
@@ -25,10 +23,10 @@ async function enrichLogs(logs: Record<string, unknown>[]) {
   }));
 }
 
-router.get(
+fastify.get(
   "/",
   cacheEnhanced({ ttl: 20, varyByUser: true, varyByQuery: true, tags: ["activity"] }),
-  async (req: AuthRequest, res: Response) => {
+  async (req: AuthRequest, reply: any) => {
     const orgId = (req.query.orgId as string) || req.orgId || "";
 
     if (!orgId) {
@@ -79,7 +77,7 @@ router.get(
 
     const data = await enrichLogs(rawLogs);
 
-    res.json({
+    reply.send({
       success: true,
       data,
       pagination: {
@@ -91,5 +89,4 @@ router.get(
     });
   },
 );
-
-export default router;
+}

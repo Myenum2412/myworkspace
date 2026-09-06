@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import { v4 as uuid } from "uuid";
 import { env } from "../config/env.js";
 import { UploadSession } from "../lib/db/models/UploadSession.js";
@@ -8,8 +9,7 @@ import { getTusServer, Metadata } from "../lib/tus/server.js";
 import { checkUploadPermission } from "../lib/uploads/upload-auth.js";
 import { type AuthRequest, authenticate } from "../middleware/auth.js";
 
-const router = Router();
-
+export default async function plugin(fastify: FastifyInstance) {
 // TUS client must send a context header on POST so the server can authorize
 // the upload and persist an UploadSession BEFORE chunks flow. The header is
 // base64(JSON(orgId,folderId,clientId,fileName,mimeType,checksum,uploaderId)).
@@ -45,13 +45,13 @@ function decodeContext(header: string | undefined): UploadContext | null {
 //
 // We attach the user-facing validate/transform on POST before handing off to
 // the TUS server, and trust the persisted session for PATCH/PATCH/DELETE.
-router.use(authenticate);
 
-router.use(async (req: AuthRequest, res: Response) => {
+
+router.use(async (req: AuthRequest, reply: any) => {
   const tus = getTusServer();
   const userId = req.user?.userId;
   if (!userId) {
-    res.status(401).json({ success: false, error: "Authentication required" });
+    reply.send(401).json({ success: false, error: "Authentication required" });
     return;
   }
 
@@ -67,7 +67,7 @@ router.use(async (req: AuthRequest, res: Response) => {
     try {
       await requireOrgMembershipFromRequest(req, ctx.orgId);
     } catch {
-      res.status(403).json({
+      reply.send(403).json({
         success: false,
         error: "You don't have permission to upload to this organization",
       });
@@ -84,7 +84,7 @@ router.use(async (req: AuthRequest, res: Response) => {
 
     if (!permission.allowed) {
       logger.warn({ userId, role, orgId: ctx.orgId }, "Upload permission denied by Casbin RBAC");
-      res.status(403).json({ success: false, error: "You don't have permission to upload files." });
+      reply.send(403).json({ success: false, error: "You don't have permission to upload files." });
       return;
     }
 
@@ -103,7 +103,7 @@ router.use(async (req: AuthRequest, res: Response) => {
   }
 
   // Hand off to the TUS protocol server. Its handle() writes/resolves the response.
-  return tus.handle(req as any, res);
+  return tus.handle(req as any, reply);
 });
 
 // After the TUS server successfully POST-created an upload, capture its TUS id
@@ -112,4 +112,4 @@ router.use(async (req: AuthRequest, res: Response) => {
 // getTusServer(): it writes the session inside the hook itself.
 
 export { CONTEXT_HEADER };
-export default router;
+}

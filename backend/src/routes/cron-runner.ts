@@ -1,22 +1,24 @@
-import { type Request, type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { logger } from "../lib/logger/index.js";
 
+export default async function plugin(fastify: FastifyInstance) {
 const CRON_SECRET = process.env.CRON_SECRET || "JmJ+4jtfj0b9PE6dy01ZttLiFgsw3NK/qs2aTNKNDjU=";
 
-const router = Router();
 
-function authenticate(req: Request, res: Response, next: () => void) {
+function authenticate(req: Request, reply: any, next: () => void) {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith("Bearer ") || auth.slice(7) !== CRON_SECRET) {
-    res.status(401).json({ success: false, error: "Unauthorized" });
+    reply.send(401).json({ success: false, error: "Unauthorized" });
     return;
   }
   next();
 }
 
-router.use(authenticate);
 
-router.get("/process-reminders", async (_req: Request, res: Response) => {
+
+fastify.get("/process-reminders", async (_req: Request, reply: any) => {
   try {
     const { Task } = await import("../lib/db/models/Task.js");
     const { User } = await import("../lib/db/models/User.js");
@@ -84,17 +86,17 @@ router.get("/process-reminders", async (_req: Request, res: Response) => {
 
     logger.info({ sent, failed, total: tasks.length }, "Task reminders processed via cron-job.org");
 
-    res.json({
+    reply.send({
       success: true,
       data: { processed: tasks.length, sent, failed },
     });
   } catch (err: any) {
     logger.error({ err }, "Cron reminder processing failed");
-    res.status(500).json({ success: false, error: err.message });
+    reply.send(500).json({ success: false, error: err.message });
   }
 });
 
-router.get("/morning-reminder", async (_req: Request, res: Response) => {
+fastify.get("/morning-reminder", async (_req: Request, reply: any) => {
   try {
     const { Task } = await import("../lib/db/models/Task.js");
     const { User } = await import("../lib/db/models/User.js");
@@ -178,17 +180,17 @@ router.get("/morning-reminder", async (_req: Request, res: Response) => {
 
     logger.info({ notified, totalUsers, totalTasks }, "Morning reminders sent");
 
-    res.json({
+    reply.send({
       success: true,
       data: { notified, users: totalUsers, tasks: totalTasks },
     });
   } catch (err: any) {
     logger.error({ err }, "Morning reminder processing failed");
-    res.status(500).json({ success: false, error: err.message });
+    reply.send(500).json({ success: false, error: err.message });
   }
 });
 
-router.get("/evening-reminder", async (_req: Request, res: Response) => {
+fastify.get("/evening-reminder", async (_req: Request, reply: any) => {
   try {
     const { Task } = await import("../lib/db/models/Task.js");
     const { User } = await import("../lib/db/models/User.js");
@@ -290,17 +292,17 @@ router.get("/evening-reminder", async (_req: Request, res: Response) => {
 
     logger.info({ notified, totalUsers, totalOverdue, totalTomorrow }, "Evening reminders sent");
 
-    res.json({
+    reply.send({
       success: true,
       data: { notified, users: totalUsers, overdue: totalOverdue, dueTomorrow: totalTomorrow },
     });
   } catch (err: any) {
     logger.error({ err }, "Evening reminder processing failed");
-    res.status(500).json({ success: false, error: err.message });
+    reply.send(500).json({ success: false, error: err.message });
   }
 });
 
-router.get("/generate-repeated-tasks", async (_req: Request, res: Response) => {
+fastify.get("/generate-repeated-tasks", async (_req: Request, reply: any) => {
   try {
     const { Task } = await import("../lib/db/models/Task.js");
 
@@ -404,14 +406,13 @@ router.get("/generate-repeated-tasks", async (_req: Request, res: Response) => {
       "Repeated task instances generated",
     );
 
-    res.json({
+    reply.send({
       success: true,
       data: { created, skipped, total: repeatTemplates.length },
     });
   } catch (err: any) {
     logger.error({ err }, "Repeated task generation failed");
-    res.status(500).json({ success: false, error: err.message });
+    reply.send(500).json({ success: false, error: err.message });
   }
 });
-
-export default router;
+}

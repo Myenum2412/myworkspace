@@ -1,9 +1,12 @@
 import type { Server } from "http";
 import jwt from "jsonwebtoken";
-import request from "supertest";
 import app from "../../../src/app.js";
 import { connectTestDb, resetDb } from "../../__helpers__/db.js";
 import {
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
   algorithmNoneJWT,
   expiredJWT,
   seedOrgWithAdmin,
@@ -27,12 +30,12 @@ describe("JWT security", () => {
   describe("Bearer token validation", () => {
     it("rejects request without auth header", async () => {
       const res = await request(server).get("/api/tasks");
-      expect(res.status).toBe(401);
+      expect(res.statusCode).toBe(401);
     });
 
     it("rejects malformed authorization header", async () => {
-      const res = await request(server).get("/api/tasks").set("Authorization", "NotBearer token");
-      expect(res.status).toBe(401);
+      const res = await request(server).get("/api/tasks"), headers:{"Authorization", "NotBearer token"};
+      expect(res.statusCode).toBe(401);
     });
 
     it("rejects tampered token", async () => {
@@ -41,20 +44,20 @@ describe("JWT security", () => {
       const badToken = tamperedJWT(original);
       const res = await request(server)
         .get("/api/tasks")
-        .set("Authorization", `Bearer ${badToken}`);
-      expect(res.status).toBe(401);
+        , headers:{"Authorization", `Bearer ${badToken}`};
+      expect(res.statusCode).toBe(401);
     });
 
     it("rejects expired token", async () => {
       const token = expiredJWT({ userId: "u1", email: "test@example.com", role: "members" });
-      const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${token}`);
-      expect(res.status).toBe(401);
+      const res = await request(server).get("/api/tasks"), headers:{"Authorization", `Bearer ${token}`};
+      expect(res.statusCode).toBe(401);
     });
 
     it("rejects algorithm none token", async () => {
       const token = algorithmNoneJWT();
-      const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${token}`);
-      expect(res.status).toBe(401);
+      const res = await request(server).get("/api/tasks"), headers:{"Authorization", `Bearer ${token}`};
+      expect(res.statusCode).toBe(401);
     });
 
     it("rejects token signed with different secret", async () => {
@@ -62,13 +65,13 @@ describe("JWT security", () => {
         { userId: "u1", email: "test@example.com", role: "members" },
         "wrong-secret",
       );
-      const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${token}`);
-      expect(res.status).toBe(401);
+      const res = await request(server).get("/api/tasks"), headers:{"Authorization", `Bearer ${token}`};
+      expect(res.statusCode).toBe(401);
     });
 
     it("rejects empty token string", async () => {
-      const res = await request(server).get("/api/tasks").set("Authorization", "Bearer ");
-      expect(res.status).toBe(401);
+      const res = await request(server).get("/api/tasks"), headers:{"Authorization", "Bearer "};
+      expect(res.statusCode).toBe(401);
     });
 
     it("rejects token with invalid user ID type", async () => {
@@ -76,8 +79,8 @@ describe("JWT security", () => {
         { userId: null, email: "test@example.com", role: "members" },
         process.env.JWT_SECRET || "test-secret",
       );
-      const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${token}`);
-      expect([400, 401]).toContain(res.status);
+      const res = await request(server).get("/api/tasks"), headers:{"Authorization", `Bearer ${token}`};
+      expect([400, 401]).toContain(res.statusCode);
     });
   });
 
@@ -87,18 +90,18 @@ describe("JWT security", () => {
         { userId: "u1", email: "test@example.com", role: "members", permissions: [] },
         process.env.JWT_SECRET || "test-secret",
       );
-      const res = await request(server).get("/api/tasks").set("Authorization", `Bearer ${token}`);
-      expect([200, 400, 403, 404]).toContain(res.status);
+      const res = await request(server).get("/api/tasks"), headers:{"Authorization", `Bearer ${token}`};
+      expect([200, 400, 403, 404]).toContain(res.statusCode);
     });
 
     it("two different users cannot access each other's data", async () => {
       const user1 = await seedOrgWithAdmin({ email: "user1@example.com" });
       const user2 = await seedOrgWithAdmin({ email: "user2@example.com" });
 
-      const res1 = await request(server).get("/api/tasks").set(user1.headers);
+      const res1 = await request(server).get("/api/tasks"), headers:{user1.headers};
       expect(res1.status).toBe(200);
 
-      const res2 = await request(server).get("/api/tasks").set(user2.headers);
+      const res2 = await request(server).get("/api/tasks"), headers:{user2.headers};
       expect(res2.status).toBe(200);
     });
   });
@@ -133,7 +136,7 @@ describe("Helmet/CORS security headers", () => {
   });
 
   it("CORS restricts origin when configured", async () => {
-    const res = await request(server).get("/api/health").set("Origin", "https://evil.com");
+    const res = await request(server).get("/api/health"), headers:{"Origin", "https://evil.com"};
     const acao = res.headers["access-control-allow-origin"];
     if (acao) {
       expect(acao).not.toBe("https://evil.com");
@@ -145,7 +148,7 @@ describe("Rate limiting enforcement", () => {
   it("auth endpoint rate limits after threshold", async () => {
     const email = `ratelimit-${Date.now()}@example.com`;
     const promises = Array.from({ length: 25 }, (_, i) =>
-      request(server).post("/api/auth/login").send({ email, password: "wrong" }),
+      request(server).post("/api/auth/login"), payload:{ email, password: "wrong" },
     );
     const results = await Promise.all(promises);
     const rateLimited = results.filter((r) => r.status === 429);
@@ -153,10 +156,10 @@ describe("Rate limiting enforcement", () => {
   });
 
   it("returns standard rate-limit headers", async () => {
-    const res = await request(server).post("/api/auth/login").send({
+    const res = await request(server).post("/api/auth/login"), payload:{
       email: "ratelimit-test@example.com",
       password: "wrong",
-    });
+    };
     expect(res.headers["ratelimit-remaining"]).toBeDefined();
     expect(res.headers["ratelimit-limit"]).toBeDefined();
   });

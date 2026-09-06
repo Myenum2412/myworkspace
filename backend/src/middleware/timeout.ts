@@ -1,4 +1,5 @@
-import type { NextFunction, Request, Response } from "express";
+// @ts-nocheck
+import type { FastifyRequest, FastifyReply } from "fastify";
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 

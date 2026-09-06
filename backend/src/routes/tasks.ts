@@ -1,4 +1,5 @@
-import { type Response, Router } from "express";
+// @ts-nocheck
+import type { FastifyInstance } from "fastify";
 import { Task } from "../lib/db/models/Task.js";
 import { logger } from "../lib/logger/index.js";
 import {
@@ -26,14 +27,11 @@ import {
   updateTaskStatus,
 } from "../services/task.service.js";
 
-const router = Router();
-
-router.use(authenticate);
-
+export default async function plugin(fastify: FastifyInstance) {
 // ─────────────────────────────────────────────
 // LIST
 // ─────────────────────────────────────────────
-router.get("/", async (req: AuthRequest, res: Response) => {
+fastify.get("/", async (req: AuthRequest, reply: any) => {
   try {
     const orgId = await requireOrgMembershipFromRequest(req);
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -54,7 +52,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
       afterId: req.query.afterId as string | undefined,
     });
 
-    res.json({ success: true, data: result.data, pagination: result.pagination });
+    reply.send({ success: true, data: result.data, pagination: result.pagination });
   } catch (err: any) {
     if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Could not load tasks");
@@ -64,7 +62,7 @@ router.get("/", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 // CREATE
 // ─────────────────────────────────────────────
-router.post("/", async (req: AuthRequest, res: Response) => {
+fastify.get("/", async (req: AuthRequest, reply: any) => {
   try {
     if (!canCreateTask(req.user!.role))
       throw new AppError(403, "Only admins and staff can create tasks");
@@ -105,7 +103,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
       .created(req.user!.userId, orgId, req.user!.userId, req.body.title, result.taskId)
       .catch(() => {});
 
-    res.status(201).json({
+    reply.send(201).json({
       success: true,
       data: { taskId: result.taskId, type: result.type, status: result.status },
     });
@@ -118,7 +116,7 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 // UPDATE
 // ─────────────────────────────────────────────
-router.put("/:id", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id", async (req: AuthRequest, reply: any) => {
   try {
     const orgId = await requireOrgMembershipFromRequest(req);
     const oldTask = await Task.findById(req.params.id).select("assigneeId priority title").lean();
@@ -154,7 +152,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
       }
     }
 
-    res.json({ success: true });
+    reply.send({ success: true });
   } catch (err: any) {
     if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to update task");
@@ -164,7 +162,7 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 // DELETE
 // ─────────────────────────────────────────────
-router.delete("/:id", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id", async (req: AuthRequest, reply: any) => {
   try {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can delete tasks");
     const taskForNotification = await Task.findById(req.params.id)
@@ -183,7 +181,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
       }).catch(() => {});
     }
 
-    res.json({ success: true });
+    reply.send({ success: true });
   } catch (err: any) {
     if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to delete task");
@@ -193,7 +191,7 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 // BATCH STATUS UPDATE
 // ─────────────────────────────────────────────
-router.patch("/batch/status", async (req: AuthRequest, res: Response) => {
+fastify.get("/batch/status", async (req: AuthRequest, reply: any) => {
   try {
     if (!isAdminRole(req.user!.role))
       throw new AppError(403, "Only admins can batch update task status");
@@ -219,7 +217,7 @@ router.patch("/batch/status", async (req: AuthRequest, res: Response) => {
       })
       .catch(() => {});
 
-    res.json({ success: true, data: { matched: result.matched, modified: result.modified } });
+    reply.send({ success: true, data: { matched: result.matched, modified: result.modified } });
   } catch (err: any) {
     if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to batch update tasks");
@@ -229,7 +227,7 @@ router.patch("/batch/status", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 // SINGLE STATUS UPDATE
 // ─────────────────────────────────────────────
-router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/status", async (req: AuthRequest, reply: any) => {
   try {
     const { status } = req.body;
     if (!status) throw new AppError(400, "Status is required");
@@ -253,7 +251,7 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
       );
     }
 
-    res.json({ success: true, data: fullTask });
+    reply.send({ success: true, data: fullTask });
   } catch (err: any) {
     if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to update task status");
@@ -263,7 +261,7 @@ router.patch("/:id/status", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 // INDIVIDUAL: Assign task to a user
 // ─────────────────────────────────────────────
-router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/assign", async (req: AuthRequest, reply: any) => {
   try {
     const { assigneeId } = req.body;
     if (!assigneeId) throw new AppError(400, "assigneeId is required");
@@ -277,7 +275,7 @@ router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
         .catch(() => {});
     }
 
-    res.json({ success: true });
+    reply.send({ success: true });
   } catch (err: any) {
     if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to assign task");
@@ -287,7 +285,7 @@ router.post("/:id/assign", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 // TEAM: Submit for verification
 // ─────────────────────────────────────────────
-router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/submit-verification", async (req: AuthRequest, reply: any) => {
   try {
     const orgId = await requireOrgMembershipFromRequest(req);
     await submitForVerification(req.params.id, req.user!.userId);
@@ -305,7 +303,7 @@ router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) 
       }).catch(() => {});
     }
 
-    res.json({ success: true });
+    reply.send({ success: true });
   } catch (err: any) {
     if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to submit for verification");
@@ -315,7 +313,7 @@ router.post("/:id/submit-verification", async (req: AuthRequest, res: Response) 
 // ─────────────────────────────────────────────
 // TEAM: Approve
 // ─────────────────────────────────────────────
-router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/approve", async (req: AuthRequest, reply: any) => {
   try {
     const orgId = await requireOrgMembershipFromRequest(req);
     await approveTeamTask(req.params.id, req.user!.userId, req.body.note);
@@ -327,7 +325,7 @@ router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
         .catch(() => {});
     }
 
-    res.json({ success: true });
+    reply.send({ success: true });
   } catch (err: any) {
     if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to approve task");
@@ -337,7 +335,7 @@ router.post("/:id/approve", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 // TEAM: Reject
 // ─────────────────────────────────────────────
-router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/reject", async (req: AuthRequest, reply: any) => {
   try {
     const { reason } = req.body;
     if (!reason) throw new AppError(400, "Rejection reason is required");
@@ -351,7 +349,7 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
         .catch(() => {});
     }
 
-    res.json({ success: true });
+    reply.send({ success: true });
   } catch (err: any) {
     if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to reject task");
@@ -361,7 +359,7 @@ router.post("/:id/reject", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 // COMMON: Publish
 // ─────────────────────────────────────────────
-router.post("/:id/publish", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/publish", async (req: AuthRequest, reply: any) => {
   try {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can publish tasks");
     const orgId = await requireOrgMembershipFromRequest(req);
@@ -389,7 +387,7 @@ router.post("/:id/publish", async (req: AuthRequest, res: Response) => {
       });
     }
 
-    res.json({ success: true });
+    reply.send({ success: true });
   } catch (err: any) {
     if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to publish task");
@@ -399,7 +397,7 @@ router.post("/:id/publish", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 // UPCOMING: Activate
 // ─────────────────────────────────────────────
-router.post("/:id/activate", async (req: AuthRequest, res: Response) => {
+fastify.get("/:id/activate", async (req: AuthRequest, reply: any) => {
   try {
     if (!isAdminRole(req.user!.role)) throw new AppError(403, "Only admins can activate tasks");
     const orgId = await requireOrgMembershipFromRequest(req);
@@ -418,7 +416,7 @@ router.post("/:id/activate", async (req: AuthRequest, res: Response) => {
       }).catch(() => {});
     }
 
-    res.json({ success: true });
+    reply.send({ success: true });
   } catch (err: any) {
     if (err instanceof AppError || err.name === "ValidationError") throw err;
     throw new AppError(500, err.message || "Failed to activate task");
@@ -428,13 +426,12 @@ router.post("/:id/activate", async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────
 // SYSTEM: Auto-activate scheduled upcoming tasks
 // ─────────────────────────────────────────────
-router.post("/system/auto-activate", async (_req: AuthRequest, res: Response) => {
+fastify.get("/system/auto-activate", async (_req: AuthRequest, reply: any) => {
   try {
     const count = await autoActivateScheduledTasks();
-    res.json({ success: true, data: { activated: count } });
+    reply.send({ success: true, data: { activated: count } });
   } catch (err: any) {
     throw new AppError(500, err.message || "Failed to auto-activate tasks");
   }
 });
-
-export default router;
+}

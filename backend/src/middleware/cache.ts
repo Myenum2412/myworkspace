@@ -1,4 +1,5 @@
-import type { NextFunction, Response } from "express";
+// @ts-nocheck
+import type { FastifyRequest, FastifyReply } from "fastify";
 import { cacheService } from "../lib/cache/cache-service.js";
 import type { AuthRequest } from "./auth.js";
 

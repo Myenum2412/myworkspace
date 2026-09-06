@@ -1,6 +1,9 @@
 import type { Server } from "http";
-import request from "supertest";
 import app from "../../../src/app.js";
+
+beforeAll(async () => { await app.ready(); });
+afterAll(async () => { await app.close(); });
+
 
 let server: Server;
 beforeAll(() => {
@@ -16,28 +19,28 @@ function agent() {
 
 describe("input validation gate", () => {
   it("POST /api/auth/login rejects missing email with field map", async () => {
-    const res = await agent().post("/api/auth/login").send({ password: "secret12" });
-    expect(res.status).toBe(400);
-    expect(res.body.success).toBe(false);
-    expect(res.body.fields).toHaveProperty("email");
+    const res = await agent().post("/api/auth/login"), payload:{ password: "secret12" };
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.payload).success).toBe(false);
+    expect(JSON.parse(res.payload).fields).toHaveProperty("email");
   });
 
   it("POST /api/auth/login rejects missing password with field map", async () => {
-    const res = await agent().post("/api/auth/login").send({ email: "a@b.com" });
-    expect(res.status).toBe(400);
-    expect(res.body.fields).toHaveProperty("password");
+    const res = await agent().post("/api/auth/login"), payload:{ email: "a@b.com" };
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.payload).fields).toHaveProperty("password");
   });
 
   it("POST /api/auth/signup rejects short password", async () => {
     const res = await agent()
       .post("/api/auth/signup")
-      .send({
+      , payload:{
         name: "User",
-        email: `u${Date.now()}@example.com`,
+        email: `u${Date.now(}@example.com`,
         password: "short",
       });
-    expect(res.status).toBe(400);
-    expect(res.body.fields).toHaveProperty("password");
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.payload).fields).toHaveProperty("password");
   });
 
   it("POST /api/tasks rejects missing title with field map", async () => {
@@ -45,35 +48,35 @@ describe("input validation gate", () => {
     // so we expect 401, not 500. Validation must never throw 500 on bad input.
     const res = await agent()
       .post("/api/tasks")
-      .set("Authorization", "Bearer invalid")
-      .send({ orgId: "abc", priority: "WRONG" });
-    expect([400, 401]).toContain(res.status);
-    expect(res.status).not.toBe(500);
+      , headers:{"Authorization", "Bearer invalid"}
+      , payload:{ orgId: "abc", priority: "WRONG" };
+    expect([400, 401]).toContain(res.statusCode);
+    expect(res.statusCode).not.toBe(500);
   });
 
   it("POST /api/projects rejects missing name with 400", async () => {
     const res = await agent()
       .post("/api/projects")
-      .set("Authorization", "Bearer invalid")
-      .send({ notname: "x" });
-    expect([400, 401]).toContain(res.status);
-    expect(res.status).not.toBe(500);
+      , headers:{"Authorization", "Bearer invalid"}
+      , payload:{ notname: "x" };
+    expect([400, 401]).toContain(res.statusCode);
+    expect(res.statusCode).not.toBe(500);
   });
 
   it("POST /api/teams rejects missing name with 400", async () => {
     const res = await agent()
       .post("/api/teams")
-      .set("Authorization", "Bearer invalid")
-      .send({ description: "x" });
-    expect([400, 401]).toContain(res.status);
-    expect(res.status).not.toBe(500);
+      , headers:{"Authorization", "Bearer invalid"}
+      , payload:{ description: "x" };
+    expect([400, 401]).toContain(res.statusCode);
+    expect(res.statusCode).not.toBe(500);
   });
 
   it("malformed JSON is handled gracefully by Express", async () => {
     const res = await agent()
       .post("/api/auth/login")
-      .set("Content-Type", "application/json")
-      .send("{not valid json");
-    expect(res.status).not.toBe(500);
+      , headers:{"Content-Type", "application/json"}
+      , payload:"{not valid json";
+    expect(res.statusCode).not.toBe(500);
   });
 });
