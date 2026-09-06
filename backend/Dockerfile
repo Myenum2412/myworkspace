@@ -1,14 +1,14 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* .npmrc tsconfig.json ./
-RUN apk add --no-cache curl=8.21.0-r0
+RUN apk add --no-cache curl
 
 RUN npm ci --ignore-scripts && \
     npm cache clean --force
 
 FROM node:22-alpine AS builder
 WORKDIR /app
-RUN apk add --no-cache curl=8.21.0-r0
+RUN apk add --no-cache curl
 COPY package.json package-lock.json* .npmrc tsconfig.json ./
 COPY --from=deps /app/node_modules ./node_modules
 COPY src/ ./src/
