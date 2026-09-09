@@ -60,7 +60,7 @@
     "jsonwebtoken": "^9.0.2",
     "mediasoup": "^3.24.1",
     "mongoose": "^8.14.1",
-    "multer": "^2.2.0",
+    "multer": "^2.3.0",
     "node-cache": "^5.1.2",
     "nodemailer": "^9.0.3",
     "pino": "^10.3.1",
