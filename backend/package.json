@@ -41,7 +41,7 @@
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/exporter-prometheus": "^0.219.0",
     "@panva/hkdf": "^1.2.1",
-    "@sentry/node": "^8.54.0",
+    "@sentry/node": "^11.7.0",
     "agenda": "^6.2.5",
     "amqplib": "^2.0.1",
     "archiver": "^8.0.0",
